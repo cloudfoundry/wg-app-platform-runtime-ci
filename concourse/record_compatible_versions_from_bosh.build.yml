@@ -1,0 +1,18 @@
+platform: linux
+
+image: docker:///cloudfoundry/diego-pipeline
+
+inputs:
+  - name: diego-cf-compatibility
+  - name: diego-release
+  - name: diego-ci
+
+params:
+  BOSH_PASSWORD: ~
+  BOSH_TARGET: ~
+  BOSH_USER: ~
+  RELEASE_STAGE: ~
+  ENVIRONMENT_NAME: ~
+
+run:
+  path: diego-ci/concourse/record_compatible_versions_from_bosh

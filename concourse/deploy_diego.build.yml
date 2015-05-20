@@ -1,0 +1,19 @@
+---
+platform: linux
+
+image: docker:///cloudfoundry/diego-pipeline
+
+inputs:
+  - name: diego-release
+  - name: diego-ci
+  - name: deployments-runtime
+  - name: version
+
+params:
+  BOSH_PASSWORD: ~
+  BOSH_TARGET: ~
+  BOSH_USER: ~
+  ENVIRONMENT_NAME: ~
+
+run:
+  path: diego-ci/concourse/deploy_diego
