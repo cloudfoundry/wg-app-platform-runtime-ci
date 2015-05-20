@@ -4,7 +4,6 @@ platform: linux
 image: docker:///cloudfoundry/diego-pipeline
 
 inputs:
-  - name: diego-release
   - name: diego-ci
   - name: deployments-runtime
 

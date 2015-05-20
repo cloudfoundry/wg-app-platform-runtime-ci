@@ -10,7 +10,6 @@ params:
   DEPLOYMENT:
 
 inputs:
-  - name: diego-release
   - name: diego-ci
 
 run:

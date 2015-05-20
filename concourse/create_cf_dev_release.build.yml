@@ -5,7 +5,6 @@ image: docker:///cloudfoundry/diego-pipeline
 
 inputs:
   - name: cf-release
-  - name: diego-release
   - name: diego-ci
 
 run:
