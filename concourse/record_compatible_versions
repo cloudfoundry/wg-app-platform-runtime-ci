@@ -13,7 +13,8 @@ pushd diego-cf-compatibility
   git config user.email "cf-diego@pivotal.io"
   git config user.name "CI (Automated)"
 
-  git pull --ff-only
+  git remote add https $(git remote -v | grep origin | head -1 | awk '{ print $2 }'| sed 's/git@github.com:/https:\/\/github.com\//')
+  git pull https master
   echo ${current_date},${RELEASE_STAGE},${director_version},${new_row} >> compatibility-v1.csv
   git add compatibility-v1.csv
   git commit -m "Add CF-Diego compatibility record on ${current_date} at release stage ${RELEASE_STAGE}"
