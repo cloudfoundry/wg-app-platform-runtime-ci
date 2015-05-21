@@ -20,6 +20,7 @@ pushd diego-cf-compatibility
   git config user.email "cf-diego@pivotal.io"
   git config user.name "CI (Automated)"
 
+  git checkout master
   git pull --rebase origin master
 
   echo ${current_date},${RELEASE_STAGE},${director_version},${new_row} >> compatibility-v1.csv
