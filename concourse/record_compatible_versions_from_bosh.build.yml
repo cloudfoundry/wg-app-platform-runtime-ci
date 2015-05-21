@@ -5,6 +5,7 @@ image: docker:///cloudfoundry/diego-pipeline
 inputs:
   - name: diego-cf-compatibility
   - name: diego-ci
+  - name: runtime-credentials
 
 params:
   BOSH_PASSWORD: ~

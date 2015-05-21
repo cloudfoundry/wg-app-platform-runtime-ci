@@ -8,6 +8,7 @@ inputs:
   - name: diego-ci
   - name: diego-release-tarball
   - name: bosh-stemcell
+  - name: runtime-credentials
 
 params:
   VERSION_SOURCE: releases
