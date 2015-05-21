@@ -12,6 +12,7 @@ params:
   BOSH_USER: ~
   RELEASE_STAGE: ~
   ENVIRONMENT_NAME: ~
+  VERSION_SOURCE: bosh
 
 run:
-  path: diego-ci/concourse/record_compatible_versions_from_bosh
+  path: diego-ci/concourse/record_compatible_versions

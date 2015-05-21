@@ -9,5 +9,8 @@ inputs:
   - name: diego-release-tarball
   - name: bosh-stemcell
 
+params:
+  VERSION_SOURCE: releases
+
 run:
-  path: diego-ci/concourse/record_compatible_versions_from_releases
+  path: diego-ci/concourse/record_compatible_versions
