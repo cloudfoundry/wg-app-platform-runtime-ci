@@ -13,8 +13,13 @@ bosh releases
 
 bosh deployment ${acceptance_tests_manifest}
 bosh -n deploy
+
+set +e
 bosh run errand diego_acceptance_tests --download-logs --keep-alive
+errand_result=$?
+set -e
 
 original_name=$(ls diego_acceptance_tests.0.*.tgz)
 new_name=$(echo $original_name | sed 's/\.0\./\.0.0.0./')
 mv $original_name $new_name
+exit $errand_result
