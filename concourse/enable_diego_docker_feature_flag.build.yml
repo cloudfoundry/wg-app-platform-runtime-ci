@@ -1,0 +1,15 @@
+---
+platform: linux
+
+image: docker:///cloudfoundry/diego-pipeline
+
+inputs:
+  - name: diego-ci
+
+params:
+  CF_USER: ~
+  CF_PASSWORD: ~
+  CF_TARGET: ~
+
+run:
+  path: diego-ci/concourse/enable_diego_docker_feature_flag
