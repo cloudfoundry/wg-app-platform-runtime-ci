@@ -15,6 +15,7 @@ pushd diego-release
   spiff merge \
     manifest-generation/misc-templates/iaas-settings.yml \
     ${templates_path}/diego/iaas-settings-internal.yml \
+    ${stubs_path}/diego/iaas-settings.yml \
     /tmp/cf.yml \
     > /tmp/iaas-settings.yml
 
