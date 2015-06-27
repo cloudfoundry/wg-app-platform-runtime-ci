@@ -7,7 +7,6 @@ smoke_tests_manifest="${PWD}/${SMOKE_TESTS_MANIFEST}"
 $(dirname $0)/bosh_setup
 
 bosh deployment ${smoke_tests_manifest}
-bosh -n deploy
 
 set +e
 bosh run errand diego_smoke_tests --download-logs --keep-alive

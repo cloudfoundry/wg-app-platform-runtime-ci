@@ -10,7 +10,7 @@ inputs:
 params:
   BOSH_USER: ~
   BOSH_PASSWORD: ~
-  BOSH_TARGET: ~
+  BOSH_TARGET: ~  
   ACCEPTANCE_TESTS_MANIFEST: ~
 
 run:

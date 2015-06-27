@@ -7,6 +7,5 @@ canary_app_errand_manifest=${PWD}/${CANARY_APP_ERRAND_MANIFEST}
 $(dirname $0)/bosh_setup
 
 bosh deployment ${canary_app_errand_manifest}
-bosh -n deploy
 bosh run errand push_canary_app --keep-alive
 
