@@ -13,7 +13,7 @@ $(dirname $0)/bosh_setup
 pushd diego-release
   bosh download manifest ${cf_deployment_name} > /tmp/cf.yml
   spiff merge \
-    manifest-generation/misc-templates/iaas-settings.yml \
+    manifest-generation/misc-templates/aws-iaas-settings.yml \
     ${templates_path}/diego/iaas-settings-internal.yml \
     ${stubs_path}/diego/iaas-settings.yml \
     /tmp/cf.yml \
