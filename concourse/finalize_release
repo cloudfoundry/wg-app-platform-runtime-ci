@@ -9,8 +9,8 @@ FINAL_RELEASE_VERSION=$(cat version/number)
 DEV_RELEASE_TARBALL=$(ls $PWD/diego-dev-release/*.tgz)
 
 pushd diego-release
-  RELEASE_YML=$PWD/releases/diego/diego-${VERSION}.yml
-  RELEASE_TGZ=$PWD/releases/diego/diego-${VERSION}.tgz
+  RELEASE_YML=$PWD/releases/diego/diego-${FINAL_RELEASE_VERSION}.yml
+  RELEASE_TGZ=$PWD/releases/diego/diego-${FINAL_RELEASE_VERSION}.tgz
 
   # idempotently create tarball in case later parts of shipit fail
   if [ -e "${RELEASE_YML}" ]; then
