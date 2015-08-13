@@ -1,0 +1,16 @@
+---
+platform: linux
+
+image: docker:///cloudfoundry/diego-pipeline
+
+inputs:
+  - name: diego-dev-release
+  - name: cf-dev-release
+
+params:
+  BOSH_USER: ~
+  BOSH_PASSWORD: ~
+  BOSH_TARGET: ~
+
+run:
+  path: diego-ci/concourse/upload_releases

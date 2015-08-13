@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -e -x
+
+$(dirname $0)/bosh_setup
+
+bosh upload release --skip-if-exists cf-dev-release/*.tgz
+bosh upload release --skip-if-exists diego-dev-release/*.tgz
