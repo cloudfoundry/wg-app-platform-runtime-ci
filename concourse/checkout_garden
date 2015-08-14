@@ -14,7 +14,7 @@ pushd garden-linux-release-master
 popd
 
 # move switched repo somewhere so we can nuke its parent dir
-mv garden-linux-master /tmp/garden-linux-repo
+mv garden-linux-release-master /tmp/garden-linux-repo
 
 # tuck and roll
 cd /
