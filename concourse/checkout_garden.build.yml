@@ -1,0 +1,11 @@
+---
+platform: linux
+
+image: docker:///cloudfoundry/diego-pipeline
+
+inputs:
+- name: garden-linux-release-tarball
+- name: garden-linux-release-master
+
+run:
+  path: diego-ci/concourse/checkout_garden

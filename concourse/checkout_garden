@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -e -x
+
+WORKDIR=$PWD
+
+TAG=v$(cat garden-linux-release-tarball/version)
+
+# switch release repo to tag determined by tarball version
+pushd garden-linux-release-master
+  git fetch --tags
+  git checkout $TAG
+  git submodule update --init --recursive
+popd
+
+# move switched repo somewhere so we can nuke its parent dir
+mv garden-linux-master /tmp/garden-linux-repo
+
+# tuck and roll
+cd /
+
+# replace workdir with switched repo
+rm -rf $WORKDIR
+mv /tmp/garden-linux-repo $WORKDIR
