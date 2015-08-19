@@ -1,0 +1,13 @@
+---
+platform: linux
+
+image: docker:///concourse/git-resource
+
+inputs:
+- name: diego-ci
+- name: diego-release-master
+- name: diego-final-releases
+- name: garden-linux-release-tarball
+
+run:
+  path: diego-ci/concourse/generate_github_release
