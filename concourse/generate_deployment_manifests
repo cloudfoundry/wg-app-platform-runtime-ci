@@ -9,7 +9,7 @@ templates_path="${environment_path}/templates"
 cf_deployment_name="cf-${ENVIRONMENT_NAME}"
 
 pushd cf-release
-  ./generate_deployment_manifest \
+  ./scripts/generate_deployment_manifest \
     ${INFRASTRUCTURE} \
     ${stubs_path}/director-uuid.yml \
     ${stubs_path}/cf/*.yml \
