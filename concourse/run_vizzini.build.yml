@@ -1,0 +1,17 @@
+---
+platform: linux
+
+image: docker:///cloudfoundry/diego-pipeline
+
+inputs:
+  - name: deployments-runtime
+  - name: diego-ci
+
+params:
+  BOSH_USER: ~
+  BOSH_PASSWORD: ~
+  BOSH_TARGET: ~
+  VIZZINI_MANIFEST: ~
+
+run:
+  path: diego-ci/concourse/run_vizzini
