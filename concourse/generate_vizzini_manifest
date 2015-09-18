@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -e -x -u
+
+environment_path="${PWD}/${DEPLOYMENTS_DIR}/${ENVIRONMENT_NAME}"
+stubs_path="${environment_path}/stubs"
+
+cf_deployment_name="cf-${ENVIRONMENT_NAME}"
+
+$(dirname $0)/bosh_setup
+
+bosh download manifest ${cf_deployment_name} > /tmp/cf.yml
+spiff merge \
+  ${stubs_path}/vizzini/vizzini.yml \
+  /tmp/cf.yml \
+  > vizzini.yml
