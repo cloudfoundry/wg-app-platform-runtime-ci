@@ -35,7 +35,16 @@ generate_compatibility_row() {
   )
   garden_linux_data=$(echo $garden_linux_data | cut -d',' -f1)
 
-  echo ${cf_data},${diego_data},${garden_linux_data}
+  etcd_data=$(
+    $(dirname $0)/extract-release-and-sha \
+      ${tmpdir}/deployments \
+      ${tmpdir}/releases \
+      cf-${environment_name}-diego \
+      etcd \
+  )
+  etcd_data=$(echo $etcd_data | cut -d',' -f1)
+
+  echo ${cf_data},${diego_data},${garden_linux_data},${etcd_data}
 }
 
 $(dirname $0)/bosh_setup
