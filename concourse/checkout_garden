@@ -13,6 +13,8 @@ pushd garden-linux-release-master
   git submodule update --init --recursive
 popd
 
+exit 1
+
 cp -a garden-linux-release-master /tmp/garden-linux-repo
 
 cd /
