@@ -13,7 +13,7 @@ pushd garden-linux-release-master
   git submodule update --init --recursive
 popd
 
-# move switched repo somewhere so we can nuke its parent dir
+# copy switched repo somewhere so we can nuke its parent dir
 cp -a garden-linux-release-master /tmp/garden-linux-repo
 
 # tuck and roll
@@ -21,4 +21,5 @@ cd /
 
 # replace workdir with switched repo
 rm -rf $WORKDIR
-mv /tmp/garden-linux-repo $WORKDIR
+cp -a /tmp/garden-linux-repo $WORKDIR
+rm -rf /tmp/garden-linux-repo
