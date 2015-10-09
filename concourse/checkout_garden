@@ -13,14 +13,12 @@ pushd garden-linux-release-master
   git submodule update --init --recursive
 popd
 
-exit 1
-
 cp -a garden-linux-release-master /tmp/garden-linux-repo
 
 cd /
 
 # unmount everything in $WORKDIR so we can nuke it later
-cat /proc/mounts | grep $WORKDIR | awk {'print $2'} | sort -r | xargs umount
+cat /proc/mounts | grep $WORKDIR | awk {'print $2'} | tail -n +2 | xargs umount
 
 # $WORKDIR becomes garden-linux-repo
-mv /tmp/garden-linux-repo $WORKDIR
+mv /tmp/garden-linux-repo/* $WORKDIR
