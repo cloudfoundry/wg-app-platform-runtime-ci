@@ -12,7 +12,8 @@ params:
   BOSH_USER: ~
   BOSH_PASSWORD: ~
   BOSH_TARGET: ~
-  VIZZINI_MANIFEST: ~
+  MANIFEST: ~
+  ERRAND: ~
 
 run:
-  path: diego-ci/concourse/run_vizzini
+  path: diego-ci/concourse/run_errand

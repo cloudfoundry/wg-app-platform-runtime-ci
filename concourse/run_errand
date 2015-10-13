@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e -x -u
+
+manifest="${PWD}/${MANIFEST}"
+
+$(dirname $0)/bosh_setup
+
+bosh deployment ${manifest}
+
+set +e
+bosh run errand ${ERRAND} --keep-alive
+errand_result=$?
+
+exit $errand_result
