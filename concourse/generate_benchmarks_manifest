@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e -x -u
+
+bosh download manifest ${DIEGO_DEPLOYMENT} /tmp/diego.yml
+
+diego-release/scripts/generate-benchmarks-manifest \
+  /tmp/diego.yml \
+  deployments-runtime/diego-3/stubs/benchmarks/benchmark_properties.yml \
+  > benchmarks.yml
