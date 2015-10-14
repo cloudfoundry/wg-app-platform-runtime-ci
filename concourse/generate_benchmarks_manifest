@@ -2,6 +2,8 @@
 
 set -e -x -u
 
+$(dirname $0)/bosh_setup
+
 bosh download manifest ${DIEGO_DEPLOYMENT} /tmp/diego.yml
 
 diego-release/scripts/generate-benchmarks-manifest \
