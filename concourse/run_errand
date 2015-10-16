@@ -6,10 +6,17 @@ manifest="${PWD}/${MANIFEST}"
 
 $(dirname $0)/bosh_setup
 
+# Report which cf-release and diego-release SHAs were deployed together
+bosh deployments
+bosh releases
+
 bosh deployment ${manifest}
 
 set +e
-bosh run errand ${ERRAND} --keep-alive
+bosh run errand ${ERRAND} --download-logs --keep-alive
 errand_result=$?
 
+original_name=$(ls ${ERRAND}.0.*.tgz)
+new_name=$(echo $original_name | sed 's/\.0\./\.0.0.0./')
+mv $original_name $new_name
 exit $errand_result
