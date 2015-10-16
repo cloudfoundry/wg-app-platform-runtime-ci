@@ -15,6 +15,7 @@ bosh deployment ${manifest}
 set +e
 bosh run errand ${ERRAND} --download-logs --keep-alive
 errand_result=$?
+set -e
 
 original_name=$(ls ${ERRAND}.0.*.tgz)
 new_name=$(echo $original_name | sed 's/\.0\./\.0.0.0./')

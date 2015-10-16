@@ -10,8 +10,9 @@ inputs:
 params:
   BOSH_USER: ~
   BOSH_PASSWORD: ~
-  BOSH_TARGET: ~  
-  ACCEPTANCE_TESTS_MANIFEST: ~
+  BOSH_TARGET: ~
+  MANIFEST: ~
+  ERRAND: ~
 
 run:
-  path: diego-ci/concourse/run_dats
+  path: diego-ci/concourse/run_errand
