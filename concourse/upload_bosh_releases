@@ -4,10 +4,25 @@ set -e -x
 
 source ~/.bashrc
 
-setup_env() {
-  export WORKSPACE_DIR="$(pwd)"
+configure() {
+  export BOSH_LITE_IP="$(cat provision-bosh-lite/bosh_lite_ip)"
+}
 
-  bosh target $(cat provision-bosh-lite/bosh_lite_ip)
+log_in_to_bosh_lite() {
+  set +e
+  n=0
+  while [ true ]
+  do
+    # The bosh director may not yet be available
+    bosh -n target $BOSH_LITE_IP && break
+    n=$[$n+1]
+    if [ $n ge 5 ]
+    then
+      exit 1
+    fi
+    sleep 15
+  done
+  set -e
   bosh login admin admin
 }
 
@@ -18,7 +33,8 @@ upload_releases() {
 }
 
 main() {
-  setup_env
+  configure
+  log_in_to_bosh_lite
   upload_releases
 }
 
