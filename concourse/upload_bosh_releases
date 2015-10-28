@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -e -x
+
+source ~/.bashrc
+
+setup_env() {
+  export WORKSPACE_DIR="$(pwd)"
+
+  bosh target $($WORKSPACE_DIR/bosh_lite_ip)
+  bosh login -u admin -p admin
+}
+
+upload_releases() {
+  bosh upload release $CF_RELEASE
+  bosh upload release $DIEGO_RELEASE
+  bosh upload release $GARDEN_LINUX_RELEASE
+}
+
+main() {
+  setup_env
+  upload_releases
+}
+
+main
