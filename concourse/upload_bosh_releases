@@ -7,7 +7,7 @@ source ~/.bashrc
 setup_env() {
   export WORKSPACE_DIR="$(pwd)"
 
-  bosh target $($WORKSPACE_DIR/bosh_lite_ip)
+  bosh target $(provision-bosh-lite/bosh_lite_ip)
   bosh login -u admin -p admin
 }
 
