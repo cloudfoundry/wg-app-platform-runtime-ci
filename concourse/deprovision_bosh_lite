@@ -1,0 +1,24 @@
+#!/bin/bash
+set -e -x
+
+source ~/.bashrc
+
+export WORKSPACE_DIR="$(pwd)"
+export ENV_DIR="${WORKSPACE_DIR}/deployments-runtime/${ENVIRONMENT}"
+
+source $ENV_DIR/bootstrap_environment
+
+aws ec2 describe-instances --filters "Name=tag:Name,Values=${BOSH_LITE_NAME}" \
+  --output text --query 'Reservations[*].Instances[*].InstanceId' | \
+  tr '\n' ' ' > instances-to-delete
+
+if [ -s instances-to-delete ]
+then
+  echo "Deleting instances:"
+  cat instances-to-delete
+
+  aws ec2 terminate-instances --instance-ids `cat instances-to-delete`
+  sleep 90
+else
+  echo "No instances to delete"
+fi

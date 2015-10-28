@@ -1,0 +1,16 @@
+---
+platform: linux
+
+image: docker:///cloudfoundry/diego-pipeline
+
+inputs:
+  - name: diego-ci
+  - name: deployments-runtime
+  - name: bosh-lite
+
+params:
+  ENVIRONMENT:
+  BOSH_LITE_NAME: bosh-lite-ci
+
+run:
+  path: diego-ci/concourse/provision_bosh_lite
