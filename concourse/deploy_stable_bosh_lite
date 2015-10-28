@@ -1,0 +1,38 @@
+#!/bin/bash
+
+set -e -x
+
+source ~/.bashrc
+
+setup_dependencies() {
+  go get github.com/onsi/ginkgo/ginkgo
+  go get github.com/onsi/gomega
+}
+
+setup_config() {
+ cat > config.json <<EOF
+{
+  "bosh_director_url": "$(cat provision-bosh-lite/bosh_lite_ip)",
+  "bosh_admin_user": "admin",
+  "bosh_admin_password": "admin",
+  "cf_release_path": "$($PWD/cf-release)",
+  "diego_release_path": "$($PWD/diego-release)"
+}
+EOF
+
+  export CONFIG=$PWD/config.json
+}
+
+test_deploy_stable() {
+  pushd upgrade-stable-manifests
+    ginkgo -v
+  popd
+}
+
+main() {
+  install_ginkgo
+  setup_config
+  test_deploy_stable
+}
+
+main
