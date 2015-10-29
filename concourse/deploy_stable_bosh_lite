@@ -30,7 +30,7 @@ test_deploy_stable() {
 }
 
 main() {
-  install_ginkgo
+  setup_dependencies
   setup_config
   test_deploy_stable
 }
