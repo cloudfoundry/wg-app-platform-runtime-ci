@@ -15,8 +15,8 @@ setup_config() {
   "bosh_director_url": "$(cat provision-bosh-lite/bosh_lite_ip)",
   "bosh_admin_user": "admin",
   "bosh_admin_password": "admin",
-  "cf_release_path": "$($PWD/cf-release)",
-  "diego_release_path": "$($PWD/diego-release)"
+  "cf_release_path": "$PWD/cf-release",
+  "diego_release_path": "$PWD/diego-release"
 }
 EOF
 
