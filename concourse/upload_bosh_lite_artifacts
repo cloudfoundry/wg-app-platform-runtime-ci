@@ -32,10 +32,15 @@ upload_releases() {
   bosh upload release $GARDEN_LINUX_RELEASE
 }
 
+upload_stemcell() {
+  bosh upload stemcell $BOSH_STEMCELL
+}
+
 main() {
   configure
   log_in_to_bosh_lite
   upload_releases
+  upload_stemcell
 }
 
 main

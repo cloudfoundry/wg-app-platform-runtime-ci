@@ -11,6 +11,7 @@ params:
   CF_RELEASE: ~
   DIEGO_RELEASE: ~
   GARDEN_LINUX_RELEASE: ~
+  BOSH_STEMCELL: ~
 
 run:
-  path: diego-ci/concourse/upload_bosh_releases
+  path: diego-ci/concourse/upload_bosh_lite_artifacts
