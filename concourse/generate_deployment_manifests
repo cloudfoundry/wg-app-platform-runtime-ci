@@ -28,7 +28,6 @@ pushd diego-release
   cp ../cf-deployment.yml /tmp/cf.yml
 
   ./scripts/generate-deployment-manifest \
-    ${stubs_path}/director-uuid.yml \
     ${stubs_path}/diego/property-overrides.yml \
     ${stubs_path}/diego/instance-count-overrides.yml \
     ${stubs_path}/diego/persistent-disk-overrides.yml \
