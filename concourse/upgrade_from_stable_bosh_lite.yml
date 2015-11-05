@@ -1,0 +1,16 @@
+---
+platform: linux
+
+image: docker:///cloudfoundry/diego-pipeline
+
+inputs:
+- name: diego-ci
+- name: provision-bosh-lite
+- name: cf-release
+- name: diego-release
+- name: upgrade-stable-manifests
+
+params:
+
+run:
+  path: diego-ci/concourse/upgrade_from_stable_bosh_lite

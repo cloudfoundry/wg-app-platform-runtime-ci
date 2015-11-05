@@ -25,7 +25,7 @@ EOF
 
 test_deploy_stable() {
   pushd upgrade-stable-manifests
-    ginkgo -v -focus="V0"
+    ginkgo -v -focus="V-prime"
   popd
 }
 
