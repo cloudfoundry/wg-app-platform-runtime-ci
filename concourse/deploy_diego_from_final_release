@@ -25,6 +25,7 @@ pushd diego-release
     ${stubs_path}/diego/persistent-disk-overrides.yml \
     /tmp/iaas-settings.yml \
     ${stubs_path}/diego/additional-jobs.yml \
+    ${stubs_path}/diego/release-versions.yml \
     /tmp \
     > ../diego-deployment.yml
 popd
