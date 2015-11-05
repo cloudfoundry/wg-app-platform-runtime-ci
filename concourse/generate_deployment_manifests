@@ -2,11 +2,14 @@
 
 set -e -x -u
 
-environment_path="${PWD}/${DEPLOYMENTS_DIR}/${ENVIRONMENT_NAME}"
+if [ -z "$ENVIRONMENT_NAME" ]; then
+  environment_path="${PWD}/${DEPLOYMENTS_DIR}"
+else
+  environment_path="${PWD}/${DEPLOYMENTS_DIR}/${ENVIRONMENT_NAME}"
+fi
+
 stubs_path="${environment_path}/stubs"
 templates_path="${environment_path}/templates"
-
-cf_deployment_name="cf-${ENVIRONMENT_NAME}"
 
 pushd cf-release
   ./scripts/generate_deployment_manifest \
