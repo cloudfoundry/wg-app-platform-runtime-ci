@@ -4,8 +4,8 @@ platform: linux
 image: docker:///cloudfoundry/diego-pipeline
 
 inputs:
-- name: diego-dev-release
-- name: cf-dev-release
+- name: diego-release-tarball
+- name: cf-release-tarball
 - name: diego-ci
 
 params:
