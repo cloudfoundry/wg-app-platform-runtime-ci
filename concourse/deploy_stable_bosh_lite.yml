@@ -6,9 +6,9 @@ image: docker:///cloudfoundry/diego-pipeline
 inputs:
 - name: diego-ci
 - name: provision-bosh-lite
-- name: cf-release
-- name: diego-release
-- name: upgrade-stable-manifests
+- name: cf-stable-release
+- name: diego-stable-release
+- name: diego-upgrade-stability-tests
 
 params:
 
