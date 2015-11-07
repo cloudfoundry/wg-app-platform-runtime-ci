@@ -25,7 +25,7 @@ EOF
 }
 
 test_deploy_stable() {
-  pushd upgrade-stable-manifests
+  pushd diego-upgrade-stability-tests
     ginkgo -v -focus="V-prime"
   popd
 }

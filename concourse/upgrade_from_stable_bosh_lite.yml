@@ -7,7 +7,7 @@ inputs:
 - name: diego-ci
 - name: cf-release
 - name: diego-release
-- name: upgrade-stable-manifests
+- name: diego-upgrade-stability-tests
 
 params:
 
