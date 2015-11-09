@@ -12,4 +12,4 @@ inputs:
 params:
 
 run:
-  path: diego-ci/concourse/upgrade_from_stable_bosh_lite
+  path: diego-ci/concourse/run_dusts_bosh_lite
