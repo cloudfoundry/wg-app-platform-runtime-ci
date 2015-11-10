@@ -8,6 +8,7 @@ inputs:
 - name: cf-release
 - name: diego-release
 - name: diego-upgrade-stability-tests
+- name: provision-bosh-lite
 
 params:
 
