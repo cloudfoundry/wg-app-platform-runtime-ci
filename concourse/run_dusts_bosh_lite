@@ -20,7 +20,7 @@ setup_golang_dependencies() {
 setup_config() {
   cat > dusts_config.json <<EOF
 {
-  "bosh_director_url": "$(cat provision-bosh-lite/bosh_lite_ip)",
+  "bosh_director_url": "${BOSH_LITE_IP}",
   "bosh_admin_user": "admin",
   "bosh_admin_password": "admin",
   "v0_cf_release_path": "${PWD}/cf-release",

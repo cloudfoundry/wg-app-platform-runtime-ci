@@ -11,6 +11,7 @@ inputs:
 - name: provision-bosh-lite
 
 params:
+  BOSH_LITE_IP: ~
 
 run:
   path: diego-ci/concourse/run_dusts_bosh_lite
