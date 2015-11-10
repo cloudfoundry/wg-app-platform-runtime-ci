@@ -3,12 +3,13 @@
 set -e -x
 source ~/.bashrc
 export GOPATH=`pwd`
-DUSTS_PATH=$GOPATH/src/github.com/cloudfoundry-incubator/diego-upgrade-stability-tests
+export PATH=${PATH}:${GOPATH}/bin
+DUSTS_PATH=${GOPATH}/src/github.com/cloudfoundry-incubator/diego-upgrade-stability-tests
 
 setup_golang_dependencies() {
-  mkdir -p $DUSTS_PATH
-  mv diego-upgrade-stability-tests $DUSTS_PATH/..
-  pushd $DUSTS_PATH
+  mkdir -p ${DUSTS_PATH}
+  mv diego-upgrade-stability-tests ${DUSTS_PATH}/..
+  pushd ${DUSTS_PATH}
     set +e
     go get -t ./...
     go get github.com/onsi/ginkgo/ginkgo
@@ -22,18 +23,18 @@ setup_config() {
   "bosh_director_url": "$(cat provision-bosh-lite/bosh_lite_ip)",
   "bosh_admin_user": "admin",
   "bosh_admin_password": "admin",
-  "v0_cf_release_path": "$PWD/cf-release",
-  "v0_diego_release_path": "$PWD/diego-release",
-  "v1_cf_release_path": "$PWD/cf-release",
-  "v1_diego_release_path": "$PWD/diego-release"
+  "v0_cf_release_path": "${PWD}/cf-release",
+  "v0_diego_release_path": "${PWD}/diego-release",
+  "v1_cf_release_path": "${PWD}/cf-release",
+  "v1_diego_release_path": "${PWD}/diego-release"
 }
 EOF
 
-  export CONFIG=$PWD/dusts_config.json
+  export CONFIG=${PWD}/dusts_config.json
 }
 
 test_deploy_stable() {
-  pushd $DUSTS_PATH
+  pushd ${DUSTS_PATH}
     ginkgo -v
   popd
 }
