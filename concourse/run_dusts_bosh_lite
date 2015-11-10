@@ -11,6 +11,7 @@ setup_golang_dependencies() {
   pushd $DUSTS_PATH
     set +e
     go get -t ./...
+    go get github.com/onsi/ginkgo/ginkgo
     set -e
   popd
 }
