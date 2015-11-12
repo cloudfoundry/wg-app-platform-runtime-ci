@@ -1,0 +1,33 @@
+#!/bin/bash
+
+set -e -x
+
+source ~/.bashrc
+
+log_in_to_bosh_lite() {
+  export BOSH_TARGET="$(cat provision-bosh-lite/bosh_lite_ip)"
+  BOSH_USER=admin BOSH_PASSWORD=admin $(dirname $0)/bosh_setup
+}
+
+upload_releases() {
+  bosh upload release $CF_RELEASE_V0
+  bosh upload release $DIEGO_RELEASE_V0
+  bosh upload release $GARDEN_LINUX_RELEASE_V0
+
+  bosh upload release $CF_RELEASE_VPRIME
+  bosh upload release $DIEGO_RELEASE_VPRIME
+  bosh upload release $GARDEN_LINUX_RELEASE_VPRIME
+  bosh upload release $ETCD_RELEASE_VPRIME
+}
+
+upload_stemcell() {
+  bosh upload stemcell $BOSH_STEMCELL
+}
+
+main() {
+  log_in_to_bosh_lite
+  upload_releases
+  upload_stemcell
+}
+
+main
