@@ -8,10 +8,14 @@ inputs:
 - name: provision-bosh-lite
 
 params:
-  CF_RELEASE: ~
-  DIEGO_RELEASE: ~
-  GARDEN_LINUX_RELEASE: ~
+  CF_RELEASE_V0: ~
+  DIEGO_RELEASE_V0: ~
+  GARDEN_LINUX_RELEASE_V0: ~
+  CF_RELEASE_VPRIME: ~
+  DIEGO_RELEASE_VPRIME: ~
+  GARDEN_LINUX_RELEASE_VPRIME: ~
+  ETCD_RELEASE_VPRIME: ~
   BOSH_STEMCELL: ~
 
 run:
-  path: diego-ci/concourse/upload_bosh_lite_artifacts
+  path: diego-ci/concourse/upload_dusts_releases
