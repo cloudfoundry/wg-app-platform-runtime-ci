@@ -6,6 +6,10 @@ image: docker:///cloudfoundry/diego-pipeline
 inputs:
 - name: diego-ci
 - name: provision-bosh-lite
+- name: diego-release-tarball
+- name: cf-release-tarball
+- name: garden-linux-release-tarball
+- name: etcd-release-tarball
 
 params:
   CF_RELEASE_V0: ~
