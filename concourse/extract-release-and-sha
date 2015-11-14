@@ -9,6 +9,7 @@ release_name=$4
 
 releases=$(cat ${deployments_file} \
           | grep -v tests \
+          | grep -v cats \
           | grep -v canary \
           | grep -v "docker-registry" \
           | grep -v jarvice \
