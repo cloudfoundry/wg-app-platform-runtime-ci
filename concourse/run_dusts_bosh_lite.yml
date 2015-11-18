@@ -10,6 +10,7 @@ inputs:
 - name: cf-stable-release
 - name: diego-stable-release
 - name: diego-upgrade-stability-tests
+- name: bosh_lite_ip
 
 run:
   path: diego-ci/concourse/run_dusts_bosh_lite

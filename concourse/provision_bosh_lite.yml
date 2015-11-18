@@ -8,6 +8,10 @@ inputs:
   - name: deployments-runtime
   - name: bosh-lite
 
+outputs:
+  - name: bosh_lite_ip
+    path: provision_bosh_lite/bosh_lite_ip
+
 params:
   ENVIRONMENT:
   BOSH_LITE_NAME: bosh-lite-ci
