@@ -2,20 +2,17 @@
 
 set -e -x
 source ~/.bashrc
-export GOPATH=`pwd`
-export PATH=${PATH}:${GOPATH}/bin
-DUSTS_PATH=${GOPATH}/src/github.com/cloudfoundry-incubator/diego-upgrade-stability-tests
+
 PUBLIC_IP=$(cat provision-bosh-lite/bosh_lite_ip)
 OVERRIDE_DOMAIN=${PUBLIC_IP}.xip.io
 
 setup_golang_dependencies() {
-  mkdir -p ${DUSTS_PATH}
-  mv diego-upgrade-stability-tests ${DUSTS_PATH}/..
-  pushd ${DUSTS_PATH}
-    set +e
-    go get -t ./...
-    go get github.com/onsi/ginkgo/ginkgo
-    set -e
+  pushd diego-release
+    export GOROOT=/usr/local/go
+    export PATH=$GOROOT/bin:$PATH
+    export GOPATH=$PWD
+    export PATH=$PWD/bin:$PATH
+    go install github.com/onsi/ginkgo/ginkgo
   popd
 }
 
@@ -37,7 +34,7 @@ EOF
 }
 
 test_deploy_stable() {
-  pushd ${DUSTS_PATH}
+  pushd diego-release/src/github.com/cloudfoundry-incubator/diego-upgrade-stability-tests
     ginkgo -v
   popd
 }

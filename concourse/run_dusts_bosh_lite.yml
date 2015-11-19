@@ -9,7 +9,6 @@ inputs:
 - name: diego-release
 - name: cf-stable-release
 - name: diego-stable-release
-- name: diego-upgrade-stability-tests
 - name: provision-bosh-lite
 
 run:
