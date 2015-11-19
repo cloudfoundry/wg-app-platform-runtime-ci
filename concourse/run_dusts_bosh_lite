@@ -28,7 +28,7 @@ setup_config() {
   "v0_cf_release_path": "${PWD}/cf-stable-release",
   "v0_diego_release_path": "${PWD}/diego-stable-release",
   "v1_cf_release_path": "${PWD}/cf-release",
-  "v1_diego_release_path": "${PWD}/diego-release"
+  "v1_diego_release_path": "${PWD}/diego-release",
   "override_domain": "${OVERRIDE_DOMAIN}"
 }
 EOF
