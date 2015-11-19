@@ -5,8 +5,7 @@ source ~/.bashrc
 export GOPATH=`pwd`
 export PATH=${PATH}:${GOPATH}/bin
 DUSTS_PATH=${GOPATH}/src/github.com/cloudfoundry-incubator/diego-upgrade-stability-tests
-PUBLIC_IP=$(cat $PWD/bosh_lite_ip)
-OVERRIDE_DOMAIN=${PUBLIC_IP}.xip.io
+OVERRIDE_DOMAIN=${BOSH_LITE_IP}.xip.io
 
 setup_golang_dependencies() {
   mkdir -p ${DUSTS_PATH}
@@ -22,7 +21,7 @@ setup_golang_dependencies() {
 setup_config() {
   cat > dusts_config.json <<EOF
 {
-  "bosh_director_url": "${PUBLIC_IP}",
+  "bosh_director_url": "${BOSH_LITE_IP}",
   "bosh_admin_user": "admin",
   "bosh_admin_password": "admin",
   "v0_cf_release_path": "${PWD}/cf-stable-release",
