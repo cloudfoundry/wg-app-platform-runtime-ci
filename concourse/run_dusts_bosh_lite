@@ -19,7 +19,7 @@ setup_golang_dependencies() {
 setup_config() {
   cat > dusts_config.json <<EOF
 {
-  "cf_api_url": "api.$(cat ${PWD}/provision-bosh-lite/bosh_lite_ip)",
+  "cf_api_url": "api.$(cat ${PWD}/provision-bosh-lite/bosh_lite_ip).xip.io",
   "bosh_director_url": "${PUBLIC_IP}",
   "bosh_admin_user": "admin",
   "bosh_admin_password": "admin",
