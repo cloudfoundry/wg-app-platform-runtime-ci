@@ -22,10 +22,11 @@ setup_config() {
   "bosh_director_url": "${PUBLIC_IP}",
   "bosh_admin_user": "admin",
   "bosh_admin_password": "admin",
-  "v0_cf_release_path": "${PWD}/cf-stable-release",
-  "v0_diego_release_path": "${PWD}/diego-stable-release",
-  "v1_cf_release_path": "${PWD}/cf-release",
-  "v1_diego_release_path": "${PWD}/diego-release",
+  "base_directory": "${PWD}",
+  "v0_cf_release_path": "cf-stable-release",
+  "v0_diego_release_path": "diego-stable-release",
+  "v1_cf_release_path": "cf-release",
+  "v1_diego_release_path": "diego-release",
   "override_domain": "${OVERRIDE_DOMAIN}"
 }
 EOF
