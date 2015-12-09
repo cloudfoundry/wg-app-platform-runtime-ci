@@ -4,19 +4,29 @@ set -e -x -u
 
 deployments_file=$1
 releases_file=$2
-deployment_name=$3
+deployment_names=$3
 release_name=$4
 
-releases=$(cat ${deployments_file} \
-          | grep -v tests \
-          | grep -v cats \
-          | grep -v canary \
-          | grep -v "docker-registry" \
-          | grep -v jarvice \
-          | grep "${release_name}/" \
-          | cut -d'|' -f3 \
-          | cut -d'/' -f2 \
-          | tr -d ' ' \
+releases=""
+stemcells=""
+
+for deployment_name in $deployment_names; do
+  release=$(cat ${deployments_file} \
+    | jq ". \
+    | map(select(.name == \"${deployment_name}\"))[0].releases \
+    | map(select(.name == \"${release_name}\"))[0].version" -r \
+    )
+  releases="${releases}${release}\n"
+
+  stemcell=$(cat ${deployments_file} \
+    | jq ". \
+    | map(select(.name == \"${deployment_name}\"))[0].stemcells[0] \
+    | join(\"/\")" -r \
+    )
+  stemcells="${stemcells}${stemcell}\n"
+done
+
+releases=$(echo -en $releases \
           | sort \
           | uniq \
          )
@@ -28,15 +38,22 @@ if [ "${num_releases}" != "1" ]; then
 fi
 release=${releases}
 
+stemcells=$(echo -en $stemcells \
+          | sort \
+          | uniq \
+         )
+
+num_stemcells=$(echo "${stemcells}" | wc -l | tr -d ' ')
+if [ "${num_stemcells}" != "1" ]; then
+  echo "Expected 1 unique occurrence of a stemcell amongst deployments, found ${num_stemcells}"
+  exit 1
+fi
+stemcell=${stemcells}
+
 sha=$(cat ${releases_file} \
-     | grep "${release}" \
-     | cut -d'|' -f 4 \
-     | tr -d ' *+' \
+     | jq ". \
+     | map(select(.name == \"${release_name}\"))[0].release_versions \
+     | map(select(.version == \"${release}\"))[0].commit_hash" -r \
     )
 
-first_stemcell=$(cat ${deployments_file} \
-                | grep " ${deployment_name} " \
-                | cut -d'|' -f4 \
-                | tr -d ' ' \
-               )
-echo ${release},${sha},${first_stemcell}
+echo ${release},${sha},${stemcell}

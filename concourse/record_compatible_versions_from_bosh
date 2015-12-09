@@ -8,12 +8,14 @@ generate_compatibility_row() {
 
   tmpdir=$(mktemp -d /tmp/compatibility.XXXXX)
 
-  bosh deployments > ${tmpdir}/deployments
-  bosh releases > ${tmpdir}/releases
+  BOSH_URI="https://${BOSH_USER}:${BOSH_PASSWORD}@${BOSH_TARGET}"
+  curl -o ${tmpdir}/deployments -s -k ${BOSH_URI}/deployments
+  curl -o ${tmpdir}/releases -s -k ${BOSH_URI}/releases
+
   cf_data=$($(dirname $0)/extract-release-and-sha \
             ${tmpdir}/deployments \
             ${tmpdir}/releases \
-            cf-${environment_name} \
+            "cf-${environment_name} cf-${environment_name}-diego" \
             cf \
           )
 
