@@ -8,7 +8,7 @@ generate_compatibility_row() {
 
   tmpdir=$(mktemp -d /tmp/compatibility.XXXXX)
 
-  BOSH_URI="https://${BOSH_USER}:${BOSH_PASSWORD}@${BOSH_TARGET}"
+  BOSH_URI="https://${BOSH_USER}:${BOSH_PASSWORD}@${BOSH_TARGET}:25555"
   curl -o ${tmpdir}/deployments -s -k ${BOSH_URI}/deployments
   curl -o ${tmpdir}/releases -s -k ${BOSH_URI}/releases
 
