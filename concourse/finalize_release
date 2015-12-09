@@ -26,6 +26,7 @@ pushd diego-release
 
     echo "----- Adding master cloned release as remote"
     git remote add local-diego-release-master ../diego-release-master
+    git fetch local-diego-release-master
     git merge --no-edit local-diego-release-master/master
 
     echo "----- Update master and develop branches on origin"
