@@ -25,7 +25,7 @@ pushd diego-release
     bosh -n finalize release $DEV_RELEASE_TARBALL --version $FINAL_RELEASE_VERSION
 
     echo "----- Adding master cloned release as remote"
-    git add remote local-diego-release-master ../diego-release-master
+    git remote add local-diego-release-master ../diego-release-master
     git merge --no-edit local-diego-release-master/master
 
     echo "----- Update master and develop branches on origin"
