@@ -31,12 +31,11 @@ pushd diego-release
   cp ../cf-deployment.yml /tmp/cf.yml
 
   ./scripts/generate-deployment-manifest \
-    ${stubs_path}/diego/property-overrides.yml \
-    ${stubs_path}/diego/instance-count-overrides.yml \
-    ${stubs_path}/diego/persistent-disk-overrides.yml \
-    /tmp/iaas-settings.yml \
-    ${stubs_path}/diego/additional-jobs.yml \
-    ${stubs_path}/diego/release-versions.yml \
-    /tmp \
+    -c /tmp/cf.yml \
+    -i /tmp/iaas-settings.yml \
+    -p ${stubs_path}/diego/property-overrides.yml \
+    -n ${stubs_path}/diego/instance-count-overrides.yml \
+    -k ${stubs_path}/diego/persistent-disk-overrides.yml \
+    -v ${stubs_path}/diego/release-versions.yml \
     > ../diego-deployment.yml
 popd
