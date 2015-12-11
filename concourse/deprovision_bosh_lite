@@ -21,7 +21,10 @@ then
 
   aws ec2 terminate-instances --instance-ids ${instance_id}
   sleep 90
-  aws ec2 release-address --public-ip ${public_ip}
+
+  if [ ${public_ip} != "null" ]; then
+    aws ec2 release-address --public-ip ${public_ip}
+  fi
 else
   echo "No instances to delete"
 fi
