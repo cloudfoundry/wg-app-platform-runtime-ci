@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -e -x
 
 source ~/.bashrc
 
@@ -40,7 +40,7 @@ cat > command.json <<EOF
 }
 EOF
 
-  command_id=$(aws ec2 route53 change-resource-record-sets --cli-input-json "$(cat command.json)" | jq ".ChangeInfo.Id" -r)
+  command_id=$(aws route53 change-resource-record-sets --cli-input-json "$(cat command.json)" | jq ".ChangeInfo.Id" -r)
   aws route53 wait resource-record-sets-changed --id ${command_id}
 
   source $ENV_DIR/deployments/bosh-lite/boshlite_vagrant_env
