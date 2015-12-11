@@ -25,7 +25,7 @@ cat > command.json <<EOF
           {
               "Action": "UPSERT",
               "ResourceRecordSet": {
-                  "Name": "\\052.${DOMAIN}.",
+                  "Name": "*.${DOMAIN}.",
                   "Type": "A",
                   "TTL": 1,
                   "ResourceRecords": [
