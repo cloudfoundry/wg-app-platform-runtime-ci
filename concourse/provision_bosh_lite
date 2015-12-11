@@ -5,13 +5,43 @@ source ~/.bashrc
 
 setup_env() {
   export WORKSPACE_DIR="$(pwd)"
-  export ENV_DIR="${WORKSPACE_DIR}/deployments-runtime/${ENVIRONMENT}"
+  export ENV_DIR="${WORKSPACE_DIR}/${DEPLOYMENTS_DIR}/${ENVIRONMENT}"
 
   export BOSH_LITE_PRIVATE_KEY="${ENV_DIR}/keypair/id_rsa_bosh"
 
   source $ENV_DIR/bootstrap_environment
   export BOSH_AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
   export BOSH_AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+
+  export BOSH_LITE_ELASTIC_IP=$(aws ec2 allocate-address | jq '.PublicIp' -r)
+  hosted_zone_id=$(aws route53 list-hosted-zones | jq '.HostedZones[0].Id' -r)
+
+cat > command.json <<EOF
+{
+  "HostedZoneId": "${hosted_zone_id}",
+  "ChangeBatch": {
+      "Comment": "",
+      "Changes": [
+          {
+              "Action": "UPSERT",
+              "ResourceRecordSet": {
+                  "Name": "\\052.${DOMAIN}.",
+                  "Type": "A",
+                  "TTL": 1,
+                  "ResourceRecords": [
+                      {
+                          "Value": "${BOSH_LITE_ELASTIC_IP}"
+                      }
+                  ]
+              }
+          }
+      ]
+  }
+}
+EOF
+
+  command_id=$(aws ec2 route53 change-resource-record-sets --cli-input-json "$(cat command.json)" | jq ".ChangeInfo.Id" -r)
+  aws route53 wait resource-record-sets-changed --id ${command_id}
 
   source $ENV_DIR/deployments/bosh-lite/boshlite_vagrant_env
 }

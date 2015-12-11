@@ -13,6 +13,8 @@ params:
   BOSH_TARGET: ~
   BOSH_USER: ~
   DIEGO_DEPLOYMENT: ~
+  DEPLOYMENTS_DIR: ~
+  ENVIRONMENT: ~
 
 run:
   path: diego-ci/concourse/generate_benchmarks_manifest

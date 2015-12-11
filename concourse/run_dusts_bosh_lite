@@ -3,9 +3,6 @@
 set -e -x
 source ~/.bashrc
 
-PUBLIC_IP=$(cat provision-bosh-lite/bosh_lite_ip)
-OVERRIDE_DOMAIN=${PUBLIC_IP}.xip.io
-
 setup_golang_dependencies() {
   pushd diego-release
     export GOROOT=/usr/local/go
@@ -19,7 +16,7 @@ setup_golang_dependencies() {
 setup_config() {
   cat > dusts_config.json <<EOF
 {
-  "bosh_director_url": "${PUBLIC_IP}",
+  "bosh_director_url": "bosh.${DOMAIN}",
   "bosh_admin_user": "admin",
   "bosh_admin_password": "admin",
   "base_directory": "${PWD}",
@@ -27,7 +24,7 @@ setup_config() {
   "v0_diego_release_path": "diego-stable-release",
   "v1_cf_release_path": "cf-release",
   "v1_diego_release_path": "diego-release",
-  "override_domain": "${OVERRIDE_DOMAIN}"
+  "override_domain": "${DOMAIN}"
 }
 EOF
 

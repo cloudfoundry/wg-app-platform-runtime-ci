@@ -4,7 +4,7 @@ set -e -x
 source ~/.bashrc
 
 export WORKSPACE_DIR="$(pwd)"
-export ENV_DIR="${WORKSPACE_DIR}/deployments-runtime/${ENVIRONMENT}"
+export ENV_DIR="${WORKSPACE_DIR}/${DEPLOYMENTS_DIR}/${ENVIRONMENT}"
 
 source $ENV_DIR/bootstrap_environment
 
@@ -14,11 +14,14 @@ aws ec2 describe-instances --filters "Name=tag:Name,Values=${BOSH_LITE_NAME}" \
 
 if [ -s instances-to-delete ]
 then
-  echo "Deleting instances:"
-  cat instances-to-delete
+  instance_id=$(cat instances-to-delete)
+  public_ip=$(aws ec2 describe-addresses --filters "Name=instance-id,Values=${instance_id}" | jq '.Addresses[0].PublicIp' -r)
 
-  aws ec2 terminate-instances --instance-ids `cat instances-to-delete`
+  echo "Deleting instances: ${instance_id}"
+
+  aws ec2 terminate-instances --instance-ids ${instance_id}
   sleep 90
+  aws ec2 release-address --public-ip ${public_ip}
 else
   echo "No instances to delete"
 fi

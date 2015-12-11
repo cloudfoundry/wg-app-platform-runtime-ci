@@ -8,8 +8,9 @@ inputs:
   - name: diego-ci
 
 params:
-  ENVIRONMENT:
+  ENVIRONMENT: ~
   BOSH_LITE_NAME: bosh-lite-ci
+  DEPLOYMENTS_DIR: ~
 
 run:
   path: diego-ci/concourse/deprovision_bosh_lite

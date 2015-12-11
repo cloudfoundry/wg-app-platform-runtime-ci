@@ -9,8 +9,10 @@ inputs:
   - name: bosh-lite
 
 params:
-  ENVIRONMENT:
+  ENVIRONMENT: ~
   BOSH_LITE_NAME: bosh-lite-ci
+  DOMAIN: ~
+  DEPLOYMENTS_DIR: ~
 
 run:
   path: diego-ci/concourse/provision_bosh_lite
