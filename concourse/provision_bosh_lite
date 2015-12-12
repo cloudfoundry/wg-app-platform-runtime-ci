@@ -40,7 +40,7 @@ provision_bosh_lite() {
                   "TTL": 1,
                   "ResourceRecords": [
                       {
-                          "Value": "${BOSH_LITE_ELASTIC_IP}"
+                          "Value": "${BOSH_LITE_IP}"
                       }
                   ]
               }
