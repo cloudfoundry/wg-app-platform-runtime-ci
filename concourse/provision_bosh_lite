@@ -3,12 +3,6 @@ set -e -x
 
 source ~/.bashrc
 
-release_ip() {
-  echo "FAILED!"
-  echo "Releasing IP: $1"
-  aws ec2 release-address --public-ip $1
-}
-
 setup_env() {
   export WORKSPACE_DIR="$(pwd)"
   export ENV_DIR="${WORKSPACE_DIR}/${DEPLOYMENTS_DIR}/${ENVIRONMENT}"
@@ -19,10 +13,17 @@ setup_env() {
   export BOSH_AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
   export BOSH_AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 
-  export BOSH_LITE_ELASTIC_IP=$(aws ec2 allocate-address | jq '.PublicIp' -r)
-  hosted_zone_id=$(aws route53 list-hosted-zones | jq '.HostedZones[0].Id' -r)
+  source $ENV_DIR/deployments/bosh-lite/boshlite_vagrant_env
+}
 
-  trap "release_ip $BOSH_LITE_ELASTIC_IP" ERR
+provision_bosh_lite() {
+  pushd bosh-lite
+
+  BOSH_LITE_INSTANCE_TYPE="m3.2xlarge" vagrant up --provider=aws
+  BOSH_LITE_IP=`vagrant ssh-config 2>/dev/null | grep HostName | awk '{print $2}'`
+  echo $BOSH_LITE_IP > $WORKSPACE_DIR/bosh_lite_ip
+
+  hosted_zone_id=$(aws route53 list-hosted-zones | jq '.HostedZones[0].Id' -r)
 
   name="*.${DOMAIN}."
   cat > command.json <<EOF
@@ -51,16 +52,6 @@ EOF
 
   command_id=$(aws route53 change-resource-record-sets --cli-input-json "$(cat command.json)" | jq ".ChangeInfo.Id" -r)
   aws route53 wait resource-record-sets-changed --id ${command_id}
-
-  source $ENV_DIR/deployments/bosh-lite/boshlite_vagrant_env
-}
-
-provision_bosh_lite() {
-  pushd bosh-lite
-
-  BOSH_LITE_INSTANCE_TYPE="m3.2xlarge" vagrant up --provider=aws
-  BOSH_LITE_IP=`vagrant ssh-config 2>/dev/null | grep HostName | awk '{print $2}'`
-  echo $BOSH_LITE_IP > $WORKSPACE_DIR/bosh_lite_ip
 
   popd
 }

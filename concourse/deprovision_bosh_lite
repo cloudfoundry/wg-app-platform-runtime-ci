@@ -20,7 +20,7 @@ then
   echo "Deleting instances: ${instance_id}"
 
   aws ec2 terminate-instances --instance-ids ${instance_id}
-  sleep 90
+  aws ec2 wait instance-terminated --instance-ids ${instance_id}
 
   if [ ${public_ip} != "null" ]; then
     aws ec2 release-address --public-ip ${public_ip}
