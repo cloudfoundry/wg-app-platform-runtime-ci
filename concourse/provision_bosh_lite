@@ -3,6 +3,12 @@ set -e -x
 
 source ~/.bashrc
 
+release_ip() {
+  echo "FAILED!"
+  echo "Releasing IP: $1"
+  aws ec2 release-address --public-ip $1
+}
+
 setup_env() {
   export WORKSPACE_DIR="$(pwd)"
   export ENV_DIR="${WORKSPACE_DIR}/${DEPLOYMENTS_DIR}/${ENVIRONMENT}"
@@ -16,7 +22,10 @@ setup_env() {
   export BOSH_LITE_ELASTIC_IP=$(aws ec2 allocate-address | jq '.PublicIp' -r)
   hosted_zone_id=$(aws route53 list-hosted-zones | jq '.HostedZones[0].Id' -r)
 
-cat > command.json <<EOF
+  trap "release_ip $BOSH_LITE_ELASTIC_IP" ERR
+
+  name="*.${DOMAIN}."
+  cat > command.json <<EOF
 {
   "HostedZoneId": "${hosted_zone_id}",
   "ChangeBatch": {
@@ -25,7 +34,7 @@ cat > command.json <<EOF
           {
               "Action": "UPSERT",
               "ResourceRecordSet": {
-                  "Name": "\\\\52.${DOMAIN}.",
+                  "Name": "${name}",
                   "Type": "A",
                   "TTL": 1,
                   "ResourceRecords": [
