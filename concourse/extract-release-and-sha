@@ -38,17 +38,11 @@ if [ "${num_releases}" != "1" ]; then
 fi
 release=${releases}
 
-stemcells=$(echo -en $stemcells \
+stemcell=$(echo -en $stemcells \
           | sort \
           | uniq \
+          | head -1 \
          )
-
-num_stemcells=$(echo "${stemcells}" | wc -l | tr -d ' ')
-if [ "${num_stemcells}" != "1" ]; then
-  echo "Expected 1 unique occurrence of a stemcell amongst deployments, found ${num_stemcells}"
-  exit 1
-fi
-stemcell=${stemcells}
 
 sha=$(cat ${releases_file} \
      | jq ". \
