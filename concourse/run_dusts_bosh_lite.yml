@@ -13,6 +13,7 @@ inputs:
 
 params:
   DOMAIN: ~
+  MAX_POLLING_ERRORS: 1
 
 run:
   path: diego-ci/concourse/run_dusts_bosh_lite
