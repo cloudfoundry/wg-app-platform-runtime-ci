@@ -3,7 +3,7 @@
 ( cd diego-release-master && git rev-parse HEAD ) > commitish
 
 version=$(cat diego-final-releases/version)
-echo "Diego $version" > name
+echo "Diego v$version" > name
 echo "v$version" > version
 
 # rename garden-linux release file so it's easier to identify in
