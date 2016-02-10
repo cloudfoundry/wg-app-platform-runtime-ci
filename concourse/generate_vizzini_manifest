@@ -4,14 +4,27 @@ set -e -x -u
 
 environment_path="${PWD}/${DEPLOYMENTS_DIR}/${ENVIRONMENT_NAME}"
 stubs_path="${environment_path}/stubs"
+templates_path="${environment_path}/templates"
 
 cf_deployment_name="cf-${ENVIRONMENT_NAME}"
 
 $(dirname $0)/bosh_setup
 
 bosh download manifest ${cf_deployment_name} > /tmp/cf.yml
-spiff merge \
-  ${stubs_path}/vizzini/vizzini.yml \
-  /tmp/cf.yml \
-  ${stubs_path}/vizzini/vizzini-internal.yml \
-  > generated-manifest/vizzini.yml
+
+pushd diego-release
+  spiff merge \
+    manifest-generation/misc-templates/aws-iaas-settings.yml \
+    ${templates_path}/diego/iaas-settings-internal.yml \
+    ${stubs_path}/aws-resources.yml \
+    ../cf-deployment.yml \
+    > /tmp/iaas-settings.yml
+
+  cp ../cf-deployment.yml /tmp/cf.yml
+
+  ./scripts/generate-vizzini-manifest \
+    -c /tmp/cf.yml \
+    -p ${stubs_path}/vizzini/vizzini.yml \
+    -i /tmp/iaas-settings.yml \
+    > generated-manifest/vizzini.yml
+popd
