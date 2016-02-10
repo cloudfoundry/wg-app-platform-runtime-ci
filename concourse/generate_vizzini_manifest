@@ -17,10 +17,8 @@ pushd diego-release
     manifest-generation/misc-templates/aws-iaas-settings.yml \
     ${templates_path}/diego/iaas-settings-internal.yml \
     ${stubs_path}/aws-resources.yml \
-    ../cf-deployment.yml \
+    /tmp/cf.yml \
     > /tmp/iaas-settings.yml
-
-  cp ../cf-deployment.yml /tmp/cf.yml
 
   ./scripts/generate-vizzini-manifest \
     -c /tmp/cf.yml \
