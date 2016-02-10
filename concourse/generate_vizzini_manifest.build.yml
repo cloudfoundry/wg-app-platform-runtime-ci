@@ -7,6 +7,9 @@ inputs:
   - name: deployments-runtime
   - name: diego-ci
 
+outputs:
+  - name: generated-manifest
+
 params:
   BOSH_PASSWORD: ~
   BOSH_TARGET: ~

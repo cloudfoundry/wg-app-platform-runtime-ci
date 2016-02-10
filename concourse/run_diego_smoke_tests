@@ -15,5 +15,5 @@ set -e
 
 original_name=$(ls diego_smoke_tests.0.*.tgz)
 new_name=$(echo $original_name | sed 's/\.0\./\.0.0.0./')
-mv $original_name $new_name
+mv $original_name smoke-test-results/$new_name
 exit $errand_result

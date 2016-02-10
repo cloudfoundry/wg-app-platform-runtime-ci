@@ -8,6 +8,9 @@ inputs:
   - name: diego-release
   - name: diego-ci
 
+outputs:
+  - name: generated-diego-manifest
+
 params:
   BOSH_PASSWORD: ~
   BOSH_TARGET: ~

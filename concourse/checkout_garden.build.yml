@@ -4,9 +4,12 @@ platform: linux
 image: docker:///cloudfoundry/diego-pipeline
 
 inputs:
-- name: garden-linux-release-tarball
-- name: garden-linux-release-master
-- name: diego-ci
+  - name: garden-linux-release-tarball
+  - name: garden-linux-release-master
+  - name: diego-ci
+
+outputs:
+  - name: garden-linux-release
 
 run:
   path: diego-ci/concourse/checkout_garden

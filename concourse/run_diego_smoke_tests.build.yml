@@ -7,6 +7,9 @@ inputs:
   - name: deployments-runtime
   - name: diego-ci
 
+outputs:
+  - name: smoke-test-results
+
 params:
   BOSH_USER: ~
   BOSH_PASSWORD: ~

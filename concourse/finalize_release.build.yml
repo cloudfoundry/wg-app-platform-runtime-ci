@@ -11,5 +11,8 @@ inputs:
   - name: runtime-credentials
   - name: version
 
+outputs:
+  - name: finalized-release
+
 run:
   path: diego-ci/concourse/finalize_release

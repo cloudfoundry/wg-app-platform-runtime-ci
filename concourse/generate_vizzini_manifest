@@ -14,4 +14,4 @@ spiff merge \
   ${stubs_path}/vizzini/vizzini.yml \
   /tmp/cf.yml \
   ${stubs_path}/vizzini/vizzini-internal.yml \
-  > vizzini.yml
+  > generated-manifest/vizzini.yml

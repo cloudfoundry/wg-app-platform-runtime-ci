@@ -10,5 +10,8 @@ inputs:
 - name: garden-linux-release-tarball
 - name: etcd-release-tarball
 
+outputs:
+  - name: generated-release
+
 run:
   path: diego-ci/concourse/generate_github_release

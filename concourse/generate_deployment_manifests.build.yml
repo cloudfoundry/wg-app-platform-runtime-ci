@@ -9,6 +9,9 @@ inputs:
   - name: diego-ci
   - name: cf-release
 
+outputs:
+  - name: generated-manifest
+
 params:
   DEPLOYMENTS_DIR: ~
   ENVIRONMENT_NAME: ~

@@ -14,5 +14,5 @@ pushd cf-release
   version=$(date "+%s")
   bosh --parallel 4 -n create release --version ${version} --with-tarball
 
-  mv dev_releases/cf/*.tgz ../cf-dev-release-${version}.tgz
+  mv dev_releases/cf/*.tgz ../created-cf-release/cf-dev-release-${version}.tgz
 popd

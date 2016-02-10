@@ -7,6 +7,9 @@ inputs:
   - name: diego-ci
   - name: deployments-runtime
 
+outputs:
+  - name: errand-results
+
 params:
   BOSH_USER: ~
   BOSH_PASSWORD: ~

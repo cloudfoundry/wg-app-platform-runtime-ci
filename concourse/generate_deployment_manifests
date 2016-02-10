@@ -17,7 +17,7 @@ pushd cf-release
     ${stubs_path}/director-uuid.yml \
     ${stubs_path}/cf/*.yml \
     ${stubs_path}/diego/property-overrides.yml \
-    > ../cf-deployment.yml
+    > ../generated-manifest/cf-deployment.yml
 popd
 
 pushd diego-release
@@ -28,7 +28,7 @@ pushd diego-release
     ../cf-deployment.yml \
     > /tmp/iaas-settings.yml
 
-  cp ../cf-deployment.yml /tmp/cf.yml
+  cp ../generated-manifest/cf-deployment.yml /tmp/cf.yml
 
   ./scripts/generate-deployment-manifest \
     -c /tmp/cf.yml \
@@ -37,5 +37,5 @@ pushd diego-release
     -n ${stubs_path}/diego/instance-count-overrides.yml \
     -k ${stubs_path}/diego/persistent-disk-overrides.yml \
     -v ${stubs_path}/diego/release-versions.yml \
-    > ../diego-deployment.yml
+    > ../generated-manifest/diego-deployment.yml
 popd

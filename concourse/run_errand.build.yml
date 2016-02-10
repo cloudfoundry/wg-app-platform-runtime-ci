@@ -8,6 +8,9 @@ inputs:
   - name: diego-ci
   - name: generate-manifest
 
+outputs:
+  - name: errand-results
+
 params:
   BOSH_USER: ~
   BOSH_PASSWORD: ~
