@@ -25,7 +25,7 @@ pushd diego-release
     manifest-generation/misc-templates/aws-iaas-settings.yml \
     ${templates_path}/diego/iaas-settings-internal.yml \
     ${stubs_path}/aws-resources.yml \
-    ../cf-deployment.yml \
+    ../generated-manifest/cf-deployment.yml \
     > /tmp/iaas-settings.yml
 
   cp ../generated-manifest/cf-deployment.yml /tmp/cf.yml
