@@ -12,3 +12,5 @@ pushd diego-release
   git fetch local-diego-release-master
   git merge --no-edit local-diego-release-master/master
 popd
+
+cp -a diego-release merged-master/

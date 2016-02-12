@@ -3,10 +3,10 @@
 ( cd diego-release-master && git rev-parse HEAD ) > commitish
 
 version=$(cat diego-final-releases/version)
-echo "Diego v$version" > name
-echo "v$version" > version
+echo "Diego v$version" > generated-release/name
+echo "v$version" > generated-release/version
 
 # rename garden-linux release file so it's easier to identify in
 # the release, otherwise it's just "release.tgz"
 mv garden-linux-release-tarball/*.tgz generated-release/garden-linux-$(cat garden-linux-release-tarball/version).tgz
-mv etcd-release-tarball/*.tgz etcd-$(cat generated-release/etcd-release-tarball/version).tgz
+mv etcd-release-tarball/*.tgz generated-release/etcd-$(cat etcd-release-tarball/version).tgz
