@@ -10,4 +10,4 @@ diego-release/scripts/generate-benchmarks-manifest \
   /tmp/diego.yml \
   ${DEPLOYMENTS_DIR}/${ENVIRONMENT}/stubs/benchmarks/benchmark_properties.yml \
   ${DEPLOYMENTS_DIR}/${ENVIRONMENT}/stubs/diego/iaas-settings.yml \
-  > benchmarks.yml
+  > generated-manifest/benchmarks.yml
