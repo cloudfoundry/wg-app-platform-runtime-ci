@@ -8,6 +8,9 @@ inputs:
   - name: deployments-runtime
   - name: bosh-lite
 
+outputs:
+  - name: provisioned-bosh-lite
+
 params:
   ENVIRONMENT: ~
   BOSH_LITE_NAME: bosh-lite-ci

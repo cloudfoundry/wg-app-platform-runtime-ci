@@ -21,7 +21,7 @@ provision_bosh_lite() {
 
   BOSH_LITE_INSTANCE_TYPE="c3.4xlarge" vagrant up --provider=aws
   BOSH_LITE_IP=`vagrant ssh-config 2>/dev/null | grep HostName | awk '{print $2}'`
-  echo $BOSH_LITE_IP > $WORKSPACE_DIR/bosh_lite_ip
+  echo $BOSH_LITE_IP > ../provisioned-bosh-lite/bosh_lite_ip
 
   hosted_zone_id=$(aws route53 list-hosted-zones | jq '.HostedZones[0].Id' -r)
 
