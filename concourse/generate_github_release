@@ -1,6 +1,6 @@
 #!/bin/sh
 
-( cd diego-release-master && git rev-parse HEAD ) > commitish
+( cd diego-release-master && git rev-parse HEAD ) > generated-release/commitish
 
 version=$(cat diego-final-releases/version)
 echo "Diego v$version" > generated-release/name
