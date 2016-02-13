@@ -9,7 +9,7 @@ inputs:
 - name: diego-release
 - name: cf-stable-release
 - name: diego-stable-release
-- name: provision-bosh-lite
+- name: provisioned-bosh-lite
 - name: deployments-runtime
 
 params:
