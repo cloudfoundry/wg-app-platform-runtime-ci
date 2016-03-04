@@ -14,10 +14,7 @@ params:
   BOSH_USER: ~
   BOSH_PASSWORD: ~
   BOSH_TARGET: ~
-  SMOKE_TESTS_MANIFEST: ~
-  DEPLOYMENT_TAG: ~
-  DEPLOYMENTS_DIR: ~
-  DATADOG_API_KEY: ~
+  DEPLOYMENT_NAME: ~
 
 run:
-  path: diego-ci/concourse/run_diego_smoke_tests
+  path: diego-ci/concourse/run_smoke_tests
