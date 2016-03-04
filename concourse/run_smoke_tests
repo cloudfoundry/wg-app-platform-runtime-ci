@@ -4,9 +4,9 @@ set -e -x -u
 
 $(dirname $0)/bosh_setup
 
-bosh download manifest $(deployment_name) /tmp/$(deployment_name).yml
+bosh download manifest ${DEPLOYMENT_NAME} /tmp/${DEPLOYMENT_NAME}.yml
 
-bosh deployment /tmp/${deployment_name}.yml
+bosh deployment /tmp/${DEPLOYMENT_NAME}.yml
 
 set +e
 bosh run errand smoke_tests --download-logs --keep-alive
