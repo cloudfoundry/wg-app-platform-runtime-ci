@@ -10,6 +10,7 @@ inputs:
   - name: cf-release-tarball
   - name: garden-linux-release-tarball
   - name: etcd-release-tarball
+  - name: cflinuxfs2-rootfs-release-tarball
 
 params:
   CF_RELEASE_V0: ~
@@ -19,6 +20,7 @@ params:
   DIEGO_RELEASE_VPRIME: ~
   GARDEN_LINUX_RELEASE_VPRIME: ~
   ETCD_RELEASE_VPRIME: ~
+  ROOTFS_RELEASE_VPRIME: ~
   BOSH_STEMCELL: ~
 
 run:
