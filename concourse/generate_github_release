@@ -10,3 +10,4 @@ echo "v$version" > generated-release/version
 # the release, otherwise it's just "release.tgz"
 mv garden-linux-release-tarball/*.tgz generated-release/garden-linux-$(cat garden-linux-release-tarball/version).tgz
 mv etcd-release-tarball/*.tgz generated-release/etcd-$(cat etcd-release-tarball/version).tgz
+mv cflinuxfs2-rootfs-release-tarball/*.tgz generated-release/cflinuxfs-rootfs-$(cat cflinuxfs-rootfs-release-tarball/version).tgz
