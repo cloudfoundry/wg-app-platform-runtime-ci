@@ -13,12 +13,16 @@ $(dirname $0)/bosh_setup
 bosh download manifest ${cf_deployment_name} > /tmp/cf.yml
 
 pushd diego-release
-  spiff merge \
-    manifest-generation/misc-templates/aws-iaas-settings.yml \
-    ${templates_path}/diego/iaas-settings-internal.yml \
-    ${stubs_path}/aws-resources.yml \
-    /tmp/cf.yml \
-    > /tmp/iaas-settings.yml
+  if [ ! -f ${stubs_path}/vizzini/iaas-settings.yml ]; then
+    spiff merge \
+      manifest-generation/misc-templates/aws-iaas-settings.yml \
+      ${templates_path}/diego/iaas-settings-internal.yml \
+      ${stubs_path}/aws-resources.yml \
+      /tmp/cf.yml \
+      > /tmp/iaas-settings.yml
+  else
+    cp ${stubs_path}/vizzini/iaas-settings.yml /tmp/iaas-settings.yml
+  fi
 
   ./scripts/generate-vizzini-manifest \
     -c /tmp/cf.yml \
