@@ -19,4 +19,4 @@ params:
   USE_GUARDIAN: false
 
 run:
-  path: diego-ci/concourse/generate_deployment_manifests_new
+  path: diego-ci/concourse/generate_deployment_manifests
