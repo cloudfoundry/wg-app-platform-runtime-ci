@@ -11,29 +11,32 @@ fi
 stubs_path="${environment_path}/stubs"
 templates_path="${environment_path}/templates"
 
-guardian_flag=""
-if [ "$USE_GUARDIAN" == "true" ]; then
-  guardian_flag="-g"
-fi
-
 pushd cf-release
   ./scripts/generate_deployment_manifest \
     ${INFRASTRUCTURE} \
-    ${stubs_path}/cf/diego.yml \
-    ${stubs_path}/cf/properties.yml \
-    ${stubs_path}/cf/stub.yml \
+    ${stubs_path}/director-uuid.yml \
+    ${stubs_path}/cf/*.yml \
+    ${stubs_path}/diego/property-overrides.yml \
     > ../generated-manifest/cf-deployment.yml
 popd
 
 pushd diego-release
+  spiff merge \
+    manifest-generation/misc-templates/aws-iaas-settings.yml \
+    ${templates_path}/diego/iaas-settings-internal.yml \
+    ${stubs_path}/aws-resources.yml \
+    ../generated-manifest/cf-deployment.yml \
+    > /tmp/iaas-settings.yml
+
   cp ../generated-manifest/cf-deployment.yml /tmp/cf.yml
 
   ./scripts/generate-deployment-manifest \
     -c /tmp/cf.yml \
-    -i ${stubs_path}/diego/iaas-settings.yml \
+    -i /tmp/iaas-settings.yml \
     -p ${stubs_path}/diego/property-overrides.yml \
     -n ${stubs_path}/diego/instance-count-overrides.yml \
+    -k ${stubs_path}/diego/persistent-disk-overrides.yml \
     -v ${stubs_path}/diego/release-versions.yml \
-    -r ${guardian_flag} \
+    -r \
     > ../generated-manifest/diego-deployment.yml
 popd
