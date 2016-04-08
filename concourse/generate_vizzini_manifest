@@ -6,11 +6,11 @@ environment_path="${PWD}/${DEPLOYMENTS_DIR}/${ENVIRONMENT_NAME}"
 stubs_path="${environment_path}/stubs"
 templates_path="${environment_path}/templates"
 
-cf_deployment_name="cf-${ENVIRONMENT_NAME}"
+CF_DEPLOYMENT_NAME=${CF_DEPLOYMENT_NAME:-"cf-${ENVIRONMENT_NAME}"}
 
 $(dirname $0)/bosh_setup
 
-bosh download manifest ${cf_deployment_name} > /tmp/cf.yml
+bosh download manifest ${CF_DEPLOYMENT_NAME} > /tmp/cf.yml
 
 pushd diego-release
   if [ ! -f ${stubs_path}/vizzini/iaas-settings.yml ]; then
