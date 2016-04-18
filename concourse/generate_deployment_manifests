@@ -19,9 +19,7 @@ fi
 pushd cf-release
   ./scripts/generate_deployment_manifest \
     ${INFRASTRUCTURE} \
-    ${stubs_path}/cf/diego.yml \
-    ${stubs_path}/cf/properties.yml \
-    ${stubs_path}/cf/stub.yml \
+    ${stubs_path}/cf/*.yml \
     > ../generated-manifest/cf-deployment.yml
 popd
 
