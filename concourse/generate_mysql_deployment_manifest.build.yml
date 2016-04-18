@@ -1,0 +1,19 @@
+---
+platform: linux
+
+image: docker:///cloudfoundry/diego-pipeline
+
+inputs:
+  - name: deployments-runtime
+  - name: diego-ci
+  - name: cf-mysql-release
+
+outputs:
+  - name: generated-manifest
+
+params:
+  DEPLOYMENTS_DIR: ~
+  ENVIRONMENT_NAME: ~
+
+run:
+  path: diego-ci/concourse/generate_mysql_deployment_manifest

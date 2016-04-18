@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -e -x -u
+
+if [ -z "$ENVIRONMENT_NAME" ]; then
+  environment_path="${PWD}/${DEPLOYMENTS_DIR}"
+else
+  environment_path="${PWD}/${DEPLOYMENTS_DIR}/${ENVIRONMENT_NAME}"
+fi
+
+stubs_path="${environment_path}/stubs"
+
+pushd cf-mysql-release
+  ./scripts/generate-deployment-manifest \
+    -c "${stubs_path}/cf-mysql/standalone-cf-manifest.yml" \
+    -p "${stubs_path}/cf-mysql/property-overrides.yml" \
+    -i "${stubs_path}/cf-mysql/iaas-settings.yml" \
+    -n "${stubs_path}/cf-mysql/instance-count-overrides.yml" \
+    > ../generated-manifest/mysql-deployment.yml
+popd
