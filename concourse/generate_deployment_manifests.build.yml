@@ -17,6 +17,7 @@ params:
   ENVIRONMENT_NAME: ~
   INFRASTRUCTURE: ~
   USE_GUARDIAN: false
+  USE_SQL: false
 
 run:
   path: diego-ci/concourse/generate_deployment_manifests

@@ -11,6 +11,10 @@ fi
 stubs_path="${environment_path}/stubs"
 templates_path="${environment_path}/templates"
 
+if [ ! -z ${USE_SQL} ]; then
+  sql_option="-s ${stubs_path}/diego/diego-sql.yml"
+fi
+
 guardian_flag=""
 if [ "$USE_GUARDIAN" == "true" ]; then
   guardian_flag="-g"
@@ -31,6 +35,7 @@ pushd diego-release
     -i ${stubs_path}/diego/iaas-settings.yml \
     -p ${stubs_path}/diego/property-overrides.yml \
     -n ${stubs_path}/diego/instance-count-overrides.yml \
+    -s ${sql_option} \
     -v ${stubs_path}/diego/release-versions.yml \
     -r ${guardian_flag} \
     > ../generated-manifest/diego-deployment.yml
