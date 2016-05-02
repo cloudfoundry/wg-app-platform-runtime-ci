@@ -13,6 +13,7 @@ upload_releases() {
   bosh upload release $CF_RELEASE_V0
   bosh upload release $DIEGO_RELEASE_V0
   bosh upload release $GARDEN_LINUX_RELEASE_V0
+  bosh upload release $ETCD_RELEASE_V0
 
   bosh upload release $CF_RELEASE_VPRIME
   bosh upload release $DIEGO_RELEASE_VPRIME
