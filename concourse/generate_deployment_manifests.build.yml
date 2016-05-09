@@ -16,7 +16,7 @@ params:
   DEPLOYMENTS_DIR: ~
   ENVIRONMENT_NAME: ~
   INFRASTRUCTURE: ~
-  USE_GUARDIAN: false
+  USE_GARDEN_RUNC: false
   USE_SQL: false
 
 run:
