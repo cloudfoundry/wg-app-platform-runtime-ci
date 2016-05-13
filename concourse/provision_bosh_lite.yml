@@ -13,6 +13,7 @@ outputs:
 
 params:
   ENVIRONMENT: ~
+  BOSH_LITE_NAME: ~
   BOSH_LITE_PRIVATE_IP: ~
   DOMAIN: ~
   DEPLOYMENTS_DIR: ~

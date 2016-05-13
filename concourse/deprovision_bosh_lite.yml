@@ -9,7 +9,7 @@ inputs:
 
 params:
   ENVIRONMENT: ~
-  BOSH_LITE_NAME: bosh-lite-ci
+  BOSH_LITE_NAME: ~
   DEPLOYMENTS_DIR: ~
 
 run:
