@@ -13,7 +13,6 @@ outputs:
 
 params:
   ENVIRONMENT: ~
-  BOSH_LITE_NAME: bosh-lite-ci
   BOSH_LITE_PRIVATE_IP: ~
   DOMAIN: ~
   DEPLOYMENTS_DIR: ~

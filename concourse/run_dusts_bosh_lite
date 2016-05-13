@@ -26,12 +26,15 @@ setup_config() {
   "v1_diego_release_path": "diego-release",
   "override_domain": "${DOMAIN}",
   "max_polling_errors": ${MAX_POLLING_ERRORS},
-  "aws_stubs_directory": "deployments-runtime/diego-ci/stubs/cf"
+  "aws_stubs_directory": "deployments-runtime/diego-ci/stubs/cf",
+  "use_sql_vprime": ${USE_SQL_VPRIME}
 }
 EOF
 
   export CONFIG=${PWD}/dusts_config.json
 }
+
+
 
 test_deploy_stable() {
   pushd diego-release/src/github.com/cloudfoundry-incubator/diego-upgrade-stability-tests

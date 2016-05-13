@@ -20,6 +20,10 @@ upload_releases() {
   bosh upload release $GARDEN_LINUX_RELEASE_VPRIME
   bosh upload release $ETCD_RELEASE_VPRIME
   bosh upload release $ROOTFS_RELEASE_VPRIME
+
+  if [ -n $CF_MYSQL_RELEASE_VPRIME ]; then
+    bosh upload release $CF_MYSQL_RELEASE_VPRIME
+  fi
 }
 
 upload_stemcell() {
