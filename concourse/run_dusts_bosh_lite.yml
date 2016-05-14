@@ -15,7 +15,7 @@ inputs:
 params:
   DOMAIN: ~
   MAX_POLLING_ERRORS: 1
-  USE_SQL_VPRIME: false
+  USE_SQL_VPRIME: "false"
 
 run:
   path: diego-ci/concourse/run_dusts_bosh_lite
