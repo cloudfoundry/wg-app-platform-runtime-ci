@@ -10,6 +10,7 @@ echo "v$version" > generated-release/version
 
 # rename garden-linux release file so it's easier to identify in
 # the release, otherwise it's just "release.tgz"
+mv garden-runc-release-tarball/*.tgz generated-release/garden-runc-$(cat garden-runc-release-tarball/version).tgz
 mv garden-linux-release-tarball/*.tgz generated-release/garden-linux-$(cat garden-linux-release-tarball/version).tgz
 mv etcd-release-tarball/*.tgz generated-release/etcd-$(cat etcd-release-tarball/version).tgz
 mv cflinuxfs2-rootfs-release-tarball/*.tgz generated-release/cflinuxfs2-rootfs-$(cat cflinuxfs2-rootfs-release-tarball/version).tgz
