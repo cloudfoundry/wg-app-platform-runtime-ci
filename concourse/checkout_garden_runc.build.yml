@@ -12,4 +12,4 @@ outputs:
   - name: garden-runc-release
 
 run:
-  path: diego-ci/concourse/checkout_garden
+  path: diego-ci/concourse/checkout_garden_runc
