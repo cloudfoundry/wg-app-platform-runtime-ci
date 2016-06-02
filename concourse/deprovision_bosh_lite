@@ -8,8 +8,10 @@ export ENV_DIR="${WORKSPACE_DIR}/${DEPLOYMENTS_DIR}/${ENVIRONMENT}"
 
 source $ENV_DIR/bootstrap_environment
 
-aws ec2 describe-instances --filters "Name=tag:Name,Values=${BOSH_LITE_NAME}" \
-  --output text --query 'Reservations[*].Instances[*].InstanceId' | \
+instances=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${BOSH_LITE_NAME}" \
+  --output text --query 'Reservations[*].Instances[*].InstanceId')
+
+echo $instances | \
   tr '\n' ' ' > instances-to-delete
 
 if [ -s instances-to-delete ]
