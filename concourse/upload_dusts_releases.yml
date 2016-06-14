@@ -10,7 +10,7 @@ inputs:
   - name: cf-release-tarball
   - name: garden-linux-release-tarball
   - name: etcd-release-tarball
-  - name: cf-mysql-release-tarball
+  - name: cf-mysql-dev-release
   - name: cflinuxfs2-rootfs-release-tarball
 
 params:
