@@ -1,0 +1,14 @@
+---
+platform: linux
+
+image: docker:///cloudfoundry/diego-pipeline
+
+inputs:
+  - name: cf-mysql-release
+  - name: diego-ci
+
+outputs:
+  - name: created-cf-mysql-release
+
+run:
+  path: diego-ci/concourse/create_cf_mysql_dev_release

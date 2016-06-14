@@ -1,0 +1,9 @@
+#!/bin/bash
+set -e -x -u
+
+pushd cf-mysql-release
+  version=$(date "+%s")
+  bosh --parallel 4 -n create release --version ${version} --with-tarball
+
+  mv dev_releases/cf-mysql/*.tgz ../created-cf-mysql-release/cf-mysql-dev-release-${version}.tgz
+popd
