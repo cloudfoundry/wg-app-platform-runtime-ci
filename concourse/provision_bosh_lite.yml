@@ -17,6 +17,7 @@ params:
   BOSH_LITE_PRIVATE_IP: ~
   DOMAIN: ~
   DEPLOYMENTS_DIR: ~
+  BOSH_LITE_KEYPAIR: ~
 
 run:
   path: diego-ci/concourse/provision_bosh_lite
