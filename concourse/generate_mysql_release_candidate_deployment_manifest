@@ -12,7 +12,7 @@ stubs_path="${environment_path}/stubs"
 
 spiff merge \
     diego-release/manifest-generation/cf-mysql-stubs/cf-shim.yml \
-    generated-manifest/cf.yml \
+    generated-manifest/cf-deployment.yml \
   > generated-mysql-manifest/cf-augmented.yml
 
 pushd cf-mysql-release-release-candidate
