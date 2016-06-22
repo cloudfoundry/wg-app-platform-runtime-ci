@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -e -x -u
+
+if [ -z "$ENVIRONMENT_NAME" ]; then
+  environment_path="${PWD}/${DEPLOYMENTS_DIR}"
+else
+  environment_path="${PWD}/${DEPLOYMENTS_DIR}/${ENVIRONMENT_NAME}"
+fi
+
+stubs_path="${environment_path}/stubs"
+
+spiff merge \
+    diego-dev-release/manifest-generation/cf-mysql-stubs/cf-shim.yml \
+    generated-manifest/cf.yml \
+  > generated-mysql-manifest/cf-augmented.yml
+
+pushd cf-mysql-release-release-candidate
+  ./scripts/generate-deployment-manifest \
+    -c ../generated-mysql-manifest/cf-augmented.yml \
+    -p $stubs_path/cf-mysql/property-overrides.yml \
+    -i $stubs_path/cf-mysql/iaas-settings.yml \
+    -j $stubs_path/cf-mysql/job-overrides-consul.yml \
+    -n $stubs_path/cf-mysql/instance-count-overrides.yml \
+    > ../generated-mysql-manifest/cf-mysql.yml
+popd

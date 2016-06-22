@@ -1,0 +1,17 @@
+---
+platform: linux
+
+image: docker:///cloudfoundry/diego-pipeline
+
+inputs:
+  - name: cf-mysql-release-release-candidate
+
+outputs:
+  - name: generated-mysql-release-tarball
+
+params:
+  DEPLOYMENTS_DIR: ~
+  ENVIRONMENT_NAME: ~
+
+run:
+  path: diego-ci/concourse/generate_mysql_release_candidate_release_tarball
