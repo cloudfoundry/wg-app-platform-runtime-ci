@@ -5,6 +5,7 @@ image: docker:///cloudfoundry/diego-pipeline
 
 inputs:
   - name: cf-mysql-release-release-candidate
+  - name: diego-ci
 
 outputs:
   - name: generated-mysql-release-tarball
