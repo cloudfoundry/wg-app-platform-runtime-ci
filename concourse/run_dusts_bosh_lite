@@ -37,7 +37,7 @@ EOF
 
 
 test_deploy_stable() {
-  pushd diego-release/src/github.com/cloudfoundry-incubator/diego-upgrade-stability-tests
+  pushd diego-release/src/code.cloudfoundry.org/diego-upgrade-stability-tests
     ginkgo -v
   popd
 }
