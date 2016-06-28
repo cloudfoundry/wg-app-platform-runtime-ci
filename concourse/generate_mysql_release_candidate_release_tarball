@@ -3,6 +3,6 @@
 set -e -x -u
 
 pushd cf-mysql-release-release-candidate
-  bosh -n --parallel 10 create release --with-tarball
+  bosh -n --parallel 10 create release --with-tarball --version 26+dev.`date +'%s'`
   cp dev_releases/cf-mysql/*.tgz ../generated-mysql-release-tarball/cf-mysql-release.tgz
 popd
