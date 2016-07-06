@@ -7,7 +7,7 @@ $(dirname $0)/bosh_setup
 bosh download manifest ${DIEGO_DEPLOYMENT} /tmp/diego.yml
 
 diego-release/scripts/generate-benchmarks-manifest \
-  /tmp/diego.yml \
-  ${DEPLOYMENTS_DIR}/${ENVIRONMENT}/stubs/benchmarks/benchmark_properties.yml \
-  ${DEPLOYMENTS_DIR}/${ENVIRONMENT}/stubs/diego/iaas-settings.yml \
+  -c /tmp/diego.yml \
+  -p ${DEPLOYMENTS_DIR}/${ENVIRONMENT}/stubs/benchmarks/benchmark_properties.yml \
+  -i ${DEPLOYMENTS_DIR}/${ENVIRONMENT}/stubs/diego/iaas-settings.yml \
   > generated-manifest/benchmarks.yml
