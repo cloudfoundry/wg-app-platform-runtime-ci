@@ -6,6 +6,7 @@ image: docker:///cloudfoundry/diego-pipeline
 inputs:
 - name: diego-ci
 - name: cf-release
+- name: cf-mysql-release
 - name: diego-release
 - name: cf-stable-release
 - name: diego-stable-release
