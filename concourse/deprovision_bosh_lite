@@ -11,8 +11,7 @@ source $ENV_DIR/bootstrap_environment
 instances=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${BOSH_LITE_NAME}" \
   --output text --query 'Reservations[*].Instances[*].InstanceId')
 
-echo $instances | \
-  tr '\n' ' ' > instances-to-delete
+echo $instances | head -n-1 | tr '\n' ' ' > instances-to-delete
 
 if [ -s instances-to-delete ]
 then
