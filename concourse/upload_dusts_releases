@@ -29,7 +29,7 @@ upload_releases() {
 }
 
 upload_stemcell() {
-  bosh upload stemcell $BOSH_STEMCELL
+  bosh upload stemcell $BOSH_STEMCELL --skip-if-exists
 }
 
 main() {
