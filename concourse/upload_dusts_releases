@@ -16,6 +16,9 @@ upload_releases() {
   if [ -n "$ETCD_RELEASE_V0" ]; then
     bosh upload release $ETCD_RELEASE_V0
   fi
+  if [ -n "$ROOTFS_RELEASE_V0" ]; then
+    bosh upload release $ROOTFS_RELEASE_V0
+  fi
 
   bosh upload release $CF_RELEASE_VPRIME
   bosh upload release $DIEGO_RELEASE_VPRIME
