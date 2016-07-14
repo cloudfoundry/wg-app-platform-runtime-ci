@@ -5,7 +5,7 @@ set -e -x
 source ~/.bashrc
 
 log_in_to_bosh_lite() {
-  export BOSH_TARGET="$(cat provisioned-bosh-lite/bosh_lite_ip)"
+  export BOSH_TARGET=bosh.${DOMAIN}
   BOSH_USER=admin BOSH_PASSWORD=admin $(dirname $0)/bosh_setup
 }
 

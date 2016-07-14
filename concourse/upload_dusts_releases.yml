@@ -5,7 +5,6 @@ image: docker:///cloudfoundry/diego-pipeline
 
 inputs:
   - name: diego-ci
-  - name: provisioned-bosh-lite
   - name: diego-release-tarball
   - name: cf-release-tarball
   - name: garden-linux-release-tarball
@@ -25,6 +24,7 @@ params:
   CF_MYSQL_RELEASE_VPRIME: ~
   ROOTFS_RELEASE_VPRIME: ~
   BOSH_STEMCELL: ~
+  DOMAIN: ~
 
 run:
   path: diego-ci/concourse/upload_dusts_releases
