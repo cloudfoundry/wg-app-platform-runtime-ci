@@ -23,6 +23,6 @@ pushd cf-mysql-release-release-candidate
     -j $stubs_path/cf-mysql/job-overrides-consul.yml \
     -n $stubs_path/cf-mysql/instance-count-overrides.yml \
   | sed '/wsrep_max_ws_size/a\
-  \ \ \ \ \ \ binlog_expire_days: 5
+  \ \ \ \ \binlog_expire_days: 5
   ' > ../generated-mysql-manifest/cf-mysql.yml
 popd
