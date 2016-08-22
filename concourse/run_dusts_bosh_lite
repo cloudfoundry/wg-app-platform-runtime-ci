@@ -26,7 +26,7 @@ setup_config() {
   "v1_diego_release_path": "diego-release",
   "override_domain": "${DOMAIN}",
   "max_polling_errors": ${MAX_POLLING_ERRORS},
-  "aws_stubs_directory": "deployments-runtime/diego-ci/stubs/cf",
+  "aws_stubs_directory": "deployments-diego/diego-ci/stubs/cf",
   "use_sql_vprime": ${USE_SQL_VPRIME},
   "use_sql_v0": ${USE_SQL_V0},
   "diego_release_v0_legacy": ${DIEGO_RELEASE_V0_LEGACY}

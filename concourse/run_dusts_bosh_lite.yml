@@ -10,7 +10,7 @@ inputs:
 - name: diego-release
 - name: cf-stable-release
 - name: diego-stable-release
-- name: deployments-runtime
+- name: deployments-diego
 
 params:
   DOMAIN: ~
