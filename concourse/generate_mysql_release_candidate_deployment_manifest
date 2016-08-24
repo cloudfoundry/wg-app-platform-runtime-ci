@@ -10,14 +10,18 @@ fi
 
 stubs_path="${environment_path}/stubs"
 
-spiff merge \
-    diego-release/manifest-generation/cf-mysql-stubs/cf-shim.yml \
-    generated-manifest/cf-deployment.yml \
-  > generated-mysql-manifest/cf-augmented.yml
+pushd cf-release
+  ./scripts/generate_deployment_manifest \
+    ${INFRASTRUCTURE} \
+    ${stubs_path}/director-uuid.yml \
+    ${stubs_path}/cf/*.yml \
+    ${stubs_path}/diego/property-overrides.yml \
+    > ../generated-mysql-manifest/cf-deployment.yml
+popd
 
 pushd cf-mysql-release-release-candidate
   ./scripts/generate-deployment-manifest \
-    -c ../generated-mysql-manifest/cf-augmented.yml \
+    -c ../generated-mysql-manifest/cf-deployment.yml \
     -p $stubs_path/cf-mysql/property-overrides.yml \
     -i $stubs_path/cf-mysql/iaas-settings.yml \
     -j $stubs_path/cf-mysql/job-overrides-consul.yml \

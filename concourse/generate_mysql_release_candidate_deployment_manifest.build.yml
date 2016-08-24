@@ -9,6 +9,7 @@ inputs:
   - name: diego-ci
   - name: generated-manifest
   - name: cf-mysql-release-release-candidate
+  - name: cf-release
 
 outputs:
   - name: generated-mysql-manifest
@@ -16,6 +17,7 @@ outputs:
 params:
   DEPLOYMENTS_DIR: ~
   ENVIRONMENT_NAME: ~
+  INFRASTRUCTURE: ~
 
 run:
   path: diego-ci/concourse/generate_mysql_release_candidate_deployment_manifest
