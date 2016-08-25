@@ -25,5 +25,6 @@ pushd cf-mysql-release
     -p "${stubs_path}/cf-mysql/property-overrides.yml" \
     -i "${stubs_path}/cf-mysql/iaas-settings.yml" \
     -n "${stubs_path}/cf-mysql/instance-count-overrides.yml" \
+    -j "${stubs_path}/cf-mysql/job-overrides.yml" \
     > ../generated-manifest/mysql-deployment.yml
 popd
