@@ -2,7 +2,17 @@
 
 set -e -x -u
 
-cf api --skip-ssl-validation $CF_TARGET
+
+for i in $(seq 10); do
+  echo "Attempt #${i}"
+
+  if cf api --skip-ssl-validation $CF_TARGET; then
+    break
+  fi
+
+  sleep 1
+done
+
 cf auth $CF_USER $CF_PASSWORD
 
 # list existing feature flags
