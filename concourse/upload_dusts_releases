@@ -20,19 +20,19 @@ upload_releases() {
     bosh upload release $ROOTFS_RELEASE_V0
   fi
 
-  TERM=dumb bosh upload release $CF_RELEASE_VPRIME
-  TERM=dumb bosh upload release $DIEGO_RELEASE_VPRIME
-  TERM=dumb bosh upload release $GARDEN_LINUX_RELEASE_VPRIME
-  TERM=dumb bosh upload release $ETCD_RELEASE_VPRIME
-  TERM=dumb bosh upload release $ROOTFS_RELEASE_VPRIME
+  bosh upload release $CF_RELEASE_VPRIME | tee
+  bosh upload release $DIEGO_RELEASE_VPRIME | tee
+  bosh upload release $GARDEN_LINUX_RELEASE_VPRIME | tee
+  bosh upload release $ETCD_RELEASE_VPRIME | tee
+  bosh upload release $ROOTFS_RELEASE_VPRIME | tee
 
   if [ -n "$CF_MYSQL_RELEASE_VPRIME" ]; then
-    TERM=dumb bosh upload release $CF_MYSQL_RELEASE_VPRIME
+    bosh upload release $CF_MYSQL_RELEASE_VPRIME | tee
   fi
 }
 
 upload_stemcell() {
-  bosh upload stemcell $BOSH_STEMCELL --skip-if-exists
+  bosh upload stemcell $BOSH_STEMCELL --skip-if-exists | tee
 }
 
 main() {
