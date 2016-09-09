@@ -9,6 +9,7 @@ inputs:
 - name: diego-final-releases
 - name: garden-linux-release-tarball
 - name: garden-runc-release-tarball
+- name: garden-windows-release-tarball
 - name: etcd-release-tarball
 - name: cflinuxfs2-rootfs-release-tarball
 
