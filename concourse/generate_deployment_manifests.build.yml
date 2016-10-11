@@ -18,6 +18,7 @@ params:
   INFRASTRUCTURE: ~
   USE_GARDEN_RUNC: false
   USE_SQL: false
+  USE_NETMAN: false
 
 run:
   path: diego-ci/concourse/generate_deployment_manifests
