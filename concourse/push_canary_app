@@ -2,10 +2,23 @@
 
 set -e -x -u
 
-canary_app_errand_manifest=${PWD}/${CANARY_APP_ERRAND_MANIFEST}
+cf api ${API} --skip-ssl-validation
 
-$(dirname $0)/bosh_setup
+cf auth ${USER} ${PASSWORD}
 
-bosh deployment ${canary_app_errand_manifest}
-bosh run errand push_canary_app --keep-alive
+cf create-org ${ORG}
+cf target -o ${ORG}
 
+cf create-space ${SPACE}
+cf target -s ${SPACE}
+
+export APP_NAME=${APP_NAME}
+export DATADOG_API_KEY=${DATADOG_API_KEY}
+export DEPLOYMENT_NAME=${DEPLOYMENT_NAME}
+export DOMAIN=${APP_DOMAIN}
+export INSTANCE_COUNT=${INSTANCE_COUNT}
+export CF_STACK=${CF_STACK}
+
+cd diegocanaryapp
+
+./scripts/deploy

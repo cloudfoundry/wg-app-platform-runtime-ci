@@ -5,13 +5,20 @@ image: docker:///cloudfoundry/diego-pipeline
 
 inputs:
   - name: diego-ci
-  - name: deployments-diego
+  - name: diegocanaryapp
 
 params:
-  BOSH_USER: ~
-  BOSH_PASSWORD: ~
-  BOSH_TARGET: ~
-  CANARY_APP_ERRAND_MANIFEST: ~
+  API: ~
+  ORG: ~
+  PASSWORD: ~
+  SPACE: ~
+  USER: ~
+  APP_DOMAIN: ~
+  APP_NAME: ~
+  DEPLOYMENT_NAME: ~
+  INSTANCE_COUNT: ~
+  DATADOG_API_KEY: ~
+  CF_STACK: ~
 
 run:
   path: diego-ci/concourse/push_canary_app
