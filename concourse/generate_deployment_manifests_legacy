@@ -16,11 +16,6 @@ if [ "$USE_SQL" == "true" ]; then
   sql_option="-s ${stubs_path}/diego/diego-sql.yml"
 fi
 
-garden_flag=""
-if [ "$USE_GARDEN_RUNC" == "true" ]; then
-  garden_flag="-g"
-fi
-
 pushd cf-release
   ./scripts/generate_deployment_manifest \
     ${INFRASTRUCTURE} \
@@ -47,7 +42,6 @@ pushd diego-release
     -n ${stubs_path}/diego/instance-count-overrides.yml \
     -k ${stubs_path}/diego/persistent-disk-overrides.yml \
     -v ${stubs_path}/diego/release-versions.yml \
-    ${garden_flag} \
     ${sql_option} \
     > ../generated-manifest/diego-deployment.yml
 popd

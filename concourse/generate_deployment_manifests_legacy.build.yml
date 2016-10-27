@@ -17,7 +17,6 @@ params:
   ENVIRONMENT_NAME: ~
   INFRASTRUCTURE: ~
   USE_SQL: false
-  USE_GARDEN_RUNC: false
 
 run:
   path: diego-ci/concourse/generate_deployment_manifests_legacy
