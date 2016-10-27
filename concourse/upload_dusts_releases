@@ -22,7 +22,7 @@ upload_releases() {
 
   bosh upload release $CF_RELEASE_VPRIME
   bosh upload release $DIEGO_RELEASE_VPRIME
-  bosh upload release $GARDEN_LINUX_RELEASE_VPRIME
+  bosh upload release $GARDEN_RUNC_RELEASE_VPRIME
   bosh upload release $ETCD_RELEASE_VPRIME
   bosh upload release $ROOTFS_RELEASE_VPRIME
 
