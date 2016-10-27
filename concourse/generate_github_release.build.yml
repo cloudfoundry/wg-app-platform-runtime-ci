@@ -7,7 +7,6 @@ inputs:
 - name: diego-ci
 - name: diego-release-master
 - name: diego-final-releases
-- name: garden-linux-release-tarball
 - name: garden-runc-release-tarball
 - name: garden-windows-release-tarball
 - name: etcd-release-tarball
