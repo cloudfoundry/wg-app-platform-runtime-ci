@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -e -x -u
+
+pushd netman-release
+  bosh --parallel 4 -n create release --with-tarball --force
+
+  mv dev_releases/netman/*.tgz ../created-netman-dev-release
+popd

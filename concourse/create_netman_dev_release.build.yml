@@ -1,0 +1,14 @@
+---
+platform: linux
+
+image: docker:///cloudfoundry/diego-pipeline
+
+inputs:
+  - name: netman-release
+  - name: diego-ci
+
+outputs:
+  - name: created-netman-dev-release
+
+run:
+  path: diego-ci/concourse/create_netman_dev_release
