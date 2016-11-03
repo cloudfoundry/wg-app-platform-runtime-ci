@@ -31,7 +31,7 @@ pushd diego-release
 
   cp ../generated-manifest/cf-deployment.yml /tmp/cf.yml
 
-  ./${scripts_path}/generate-funky-cells-deployment-manifest \
+  ${scripts_path}/generate-funky-cells-deployment-manifest \
     -c /tmp/cf.yml \
     -i /tmp/iaas-settings.yml \
     -p ${stubs_path}/diego-funky-cells/property-overrides.yml \
