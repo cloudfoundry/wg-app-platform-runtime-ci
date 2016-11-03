@@ -1,0 +1,41 @@
+#!/bin/bash
+
+set -e -x -u
+
+if [ -z "$ENVIRONMENT_NAME" ]; then
+  environment_path="${PWD}/${DEPLOYMENTS_DIR}"
+else
+  environment_path="${PWD}/${DEPLOYMENTS_DIR}/${ENVIRONMENT_NAME}"
+fi
+
+stubs_path="${environment_path}/stubs"
+templates_path="${environment_path}/templates"
+scripts_path="${environment_path}/scripts"
+
+pushd cf-release
+  ./scripts/generate_deployment_manifest \
+    ${INFRASTRUCTURE} \
+    ${stubs_path}/director-uuid.yml \
+    ${stubs_path}/cf/*.yml \
+    ${stubs_path}/diego/property-overrides.yml \
+    > ../generated-manifest/cf-deployment.yml
+popd
+
+pushd diego-release
+  spiff merge \
+    ${templates_path}/diego-funky-cells/funky-iaas-settings.yml \
+    ${templates_path}/diego-funky-cells/iaas-settings-internal.yml \
+    ${stubs_path}/aws-resources.yml \
+    ../generated-manifest/cf-deployment.yml \
+    > /tmp/iaas-settings.yml
+
+  cp ../generated-manifest/cf-deployment.yml /tmp/cf.yml
+
+  ./${scripts_path}/generate-funky-cells-deployment-manifest \
+    -c /tmp/cf.yml \
+    -i /tmp/iaas-settings.yml \
+    -p ${stubs_path}/diego-funky-cells/property-overrides.yml \
+    -n ${stubs_path}/diego-funky-cells/instance-count-overrides.yml \
+    -v ${stubs_path}/diego-funky-cells/release-versions.yml \
+    > ../generated-manifest/diego-funky-cells-deployment.yml
+popd
