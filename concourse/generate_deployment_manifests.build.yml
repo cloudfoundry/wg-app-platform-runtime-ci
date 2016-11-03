@@ -18,6 +18,7 @@ params:
   INFRASTRUCTURE: ~
   USE_SQL: false
   USE_NETMAN: false
+  REMOVE_ETCD: false
 
 run:
   path: diego-ci/concourse/generate_deployment_manifests

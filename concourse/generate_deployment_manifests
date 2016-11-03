@@ -21,6 +21,11 @@ if [ "$USE_NETMAN" == "true" ]; then
   netman_flag="-N ${stubs_path}/netman/stub.yml"
 fi
 
+remove_etcd=""
+if [ "$REMOVE_ETCD" == "true" ]; then
+  remove_etcd="-x "
+fi
+
 pushd cf-release
   ./scripts/generate_deployment_manifest \
     ${INFRASTRUCTURE} \
@@ -38,6 +43,7 @@ pushd diego-release
     -n ${stubs_path}/diego/instance-count-overrides.yml \
     -v ${stubs_path}/diego/release-versions.yml \
     ${netman_flag} \
+    ${remove_etcd} \
     ${sql_option} \
     > ../generated-manifest/diego-deployment.yml
 popd
