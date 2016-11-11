@@ -1,0 +1,23 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: relintdockerhubpushbot/bosh-deploy
+
+inputs:
+- name: bosh-stemcell
+- name: diego-ci
+- name: cf-deployment
+- name: deployments-diego
+
+run:
+  path: diego-ci/concourse/deploy_cf_deployment
+
+PARAMS:
+  BOSH_ENVIRONMENT: ~
+  BOSH_USER: ~
+  BOSH_PASSWORD: ~
+  BOSH_DEPLOYMENT: ~
+  DEPLOYMENTS_DIR: ~
