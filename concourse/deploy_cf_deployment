@@ -2,34 +2,18 @@
 
 set -ex
 
-export BOSH_ENVIRONMENT=$BOSH_ENVIRONMENT
-export BOSH_USER=$BOSH_USER
-export BOSH_PASSWORD=$BOSH_PASSWORD
-export BOSH_DEPLOYMENT=$BOSH_DEPLOYMENT
-export DEPLOYMENTS_DIR=$DEPLOYMENTS_DIR
+export BOSH_ENVIRONMENT
+export BOSH_USER
+export BOSH_PASSWORD
+export BOSH_DEPLOYMENT
+export DEPLOYMENT_DIR
 
-BOSH_MANIFEST="{PWD}/cf-deployment/cf-deployment.yml"
-echo "$CA_CERT" > /tmp/certificate
-CA_CERT="${PWD}/${DEPLOYMENTS_DIR}/${BOSH_ENVIRONMENT}/deployments/bbl/ca-cert"
 
-deployments_var_file="${PWD}/${DEPLOYMENTS_DIR}/${BOSH_ENVIRONMENT}/cf-deployment-vars.yml"
-VAR_FILE_FLAG="--var-file=${deployments_var_file}"
+export BOSH_MANIFEST="${PWD}/cf-deployment/cf-deployment.yml"
+export BOSH_CA_CERT="${PWD}/deployments-diego/${DEPLOYMENT_DIR}/deployments/bbl/ca-cert"
 
-OPS_FILE_FLAGS=""
-ops_file_dir="${PWD}/${DEPLOYMENTS_DIR}/ops"
-for OPS_FILE in $ops_file_dir/*.yml; do
-  OPS_FILE_FLAGS="$OPS_FILE_FLAGS -o $OPS_FILE"
-done
+deployments_var_file="${PWD}/deployments-diego/${DEPLOYMENT_DIR}/cf-deployment-vars.yml"
 
-ls -l bosh-stemcell
-
-bosh -n -e $BOSH_TARGET --ca-cert=$CA_CERT \
-     upload-stemcell bosh-stemcell/*.tgz
-
-bosh \
-     -n \
-     --ca-cert=$CA_CERT \
-     deploy \
-     ${VAR_FILE_FLAG} \
-     ${OPS_FILE_FLAGS}
-     ${BOSH_MANIFEST}
+bosh log-in
+bosh -n upload-stemcell bosh-stemcell/*.tgz
+bosh -n deploy --var-files=${deployments_var_file} ${BOSH_MANIFEST}
