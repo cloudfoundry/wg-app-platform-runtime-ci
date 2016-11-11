@@ -8,6 +8,7 @@ export BOSH_PASSWORD=$BOSH_PASSWORD
 export BOSH_DEPLOYMENT=$BOSH_DEPLOYMENT
 export DEPLOYMENTS_DIR=$DEPLOYMENTS_DIR
 
+BOSH_MANIFEST="{PWD}/cf-deployment/cf-deployment.yml"
 echo "$CA_CERT" > /tmp/certificate
 CA_CERT="${PWD}/${DEPLOYMENTS_DIR}/${BOSH_ENVIRONMENT}/deployments/bbl/ca-cert"
 
