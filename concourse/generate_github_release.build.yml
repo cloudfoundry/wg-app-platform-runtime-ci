@@ -11,6 +11,7 @@ inputs:
 - name: garden-windows-release-tarball
 - name: etcd-release-tarball
 - name: cflinuxfs2-rootfs-release-tarball
+- name: cf-mysql-release-tarball
 
 outputs:
   - name: generated-release
