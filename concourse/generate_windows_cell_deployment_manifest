@@ -21,18 +21,11 @@ pushd cf-release
 popd
 
 pushd diego-release
-  spiff merge \
-    manifest-generation/misc-templates/windows-iaas-settings.yml \
-    ${templates_path}/diego-windows/iaas-settings-internal.yml \
-    ${stubs_path}/aws-resources.yml \
-    ../generated-manifest/cf-deployment.yml \
-    > /tmp/iaas-settings.yml
-
   cp ../generated-manifest/cf-deployment.yml /tmp/cf.yml
 
   ./scripts/generate-windows-cell-deployment-manifest \
     -c /tmp/cf.yml \
-    -i /tmp/iaas-settings.yml \
+    -p ${stubs_path}/diego-windows/iaas-settings.yml \
     -p ${stubs_path}/diego-windows/property-overrides.yml \
     -n ${stubs_path}/diego-windows/instance-count-overrides.yml \
     -v ${stubs_path}/diego-windows/release-versions.yml \
