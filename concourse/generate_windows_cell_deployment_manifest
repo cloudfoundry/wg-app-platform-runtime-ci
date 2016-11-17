@@ -25,7 +25,7 @@ pushd diego-release
 
   ./scripts/generate-windows-cell-deployment-manifest \
     -c /tmp/cf.yml \
-    -p ${stubs_path}/diego-windows/iaas-settings.yml \
+    -i ${stubs_path}/diego-windows/iaas-settings.yml \
     -p ${stubs_path}/diego-windows/property-overrides.yml \
     -n ${stubs_path}/diego-windows/instance-count-overrides.yml \
     -v ${stubs_path}/diego-windows/release-versions.yml \
