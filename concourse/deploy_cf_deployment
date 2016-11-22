@@ -10,10 +10,11 @@ export DEPLOYMENT_DIR
 
 
 export BOSH_MANIFEST="${PWD}/cf-deployment/cf-deployment.yml"
+export OPSFILE_DIR="${PWD}/cf-deployment/opsfiles"
 export BOSH_CA_CERT="${PWD}/deployments-diego/${DEPLOYMENT_DIR}/deployments/bbl/ca-cert"
 
 deployments_var_file="${PWD}/deployments-diego/${DEPLOYMENT_DIR}/cf-deployment-vars.yml"
 
 bosh log-in
 bosh -n upload-stemcell bosh-stemcell/*.tgz
-bosh -n deploy --var-files=${deployments_var_file} ${BOSH_MANIFEST}
+bosh -n deploy --var-files=${deployments_var_file} ${BOSH_MANIFEST} -o ${OPSFILE_DIR}/change-logging-port-for-aws-elb.yml
