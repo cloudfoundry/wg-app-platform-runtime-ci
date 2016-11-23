@@ -13,17 +13,12 @@ templates_path="${environment_path}/templates"
 
 sql_option=""
 if [ "$USE_SQL" == "true" ]; then
-  sql_option="-s ${stubs_path}/diego/diego-sql.yml"
+  sql_option="-s ${stubs_path}/diego/diego-sql.yml -x"
 fi
 
 netman_flag=""
 if [ "$USE_NETMAN" == "true" ]; then
   netman_flag="-N ${stubs_path}/netman/stub.yml"
-fi
-
-remove_etcd=""
-if [ "$REMOVE_ETCD" == "true" ]; then
-  remove_etcd="-x "
 fi
 
 pushd cf-release
