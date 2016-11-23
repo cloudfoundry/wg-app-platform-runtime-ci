@@ -38,7 +38,6 @@ pushd diego-release
     -n ${stubs_path}/diego/instance-count-overrides.yml \
     -v ${stubs_path}/diego/release-versions.yml \
     ${netman_flag} \
-    ${remove_etcd} \
     ${sql_option} \
     > ../generated-manifest/diego-deployment.yml
 popd
