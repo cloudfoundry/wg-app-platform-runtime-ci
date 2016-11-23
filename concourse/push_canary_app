@@ -12,12 +12,18 @@ cf target -o ${ORG}
 cf create-space ${SPACE}
 cf target -s ${SPACE}
 
+# If we don't have a papertrail syslog drain service, create one
+if ! cf services | grep -q ${PAPERTRAIL_SERVICE_NAME}; then
+  cf cups ${PAPERTRAIL_SERVICE_NAME} -l syslog-tls://${PAPERTRAIL_DEST}
+fi
+
 export APP_NAME=${APP_NAME}
 export DATADOG_API_KEY=${DATADOG_API_KEY}
 export DEPLOYMENT_NAME=${DEPLOYMENT_NAME}
 export DOMAIN=${APP_DOMAIN}
 export INSTANCE_COUNT=${INSTANCE_COUNT}
 export CF_STACK=${CF_STACK}
+export SERVICE_TO_BIND=${PAPERTRAIL_SERVICE_NAME}
 
 cd diegocanaryapp
 

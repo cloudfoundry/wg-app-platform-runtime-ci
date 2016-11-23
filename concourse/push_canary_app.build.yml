@@ -19,6 +19,8 @@ params:
   INSTANCE_COUNT: ~
   DATADOG_API_KEY: ~
   CF_STACK: ~
+  PAPERTRAIL_SERVICE_NAME: ~
+  PAPERTRAIL_DEST: ~
 
 run:
   path: diego-ci/concourse/push_canary_app
