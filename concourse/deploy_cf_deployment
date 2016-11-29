@@ -18,7 +18,7 @@ deployments_var_file="${PWD}/deployments-diego/${DEPLOYMENT_DIR}/cf-deployment-v
 bosh log-in
 bosh -n upload-stemcell bosh-stemcell/*.tgz
 bosh -n deploy \
-     --var-files=${deployments_var_file} \
+     --var-file=${deployments_var_file} \
      ${BOSH_MANIFEST} \
      -o ${OPSFILE_DIR}/change-logging-port-for-aws-elb.yml \
      -o <(cat <<EOF
