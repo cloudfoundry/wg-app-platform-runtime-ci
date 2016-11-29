@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -e -x
+
+GARDEN_SUBMODULE=src/code.cloudfoundry.org/garden
+
+pushd diego-release
+  DIEGO_GARDEN=`git ls-tree HEAD $GARDEN_SUBMODULE | awk '{print $3}'`
+popd
+
+pushd garden-runc-release
+  RELEASE_GARDEN=`git ls-tree HEAD $GARDEN_SUBMODULE | awk '{print $3}'`
+popd
+
+if [ "x$DIEGO_GARDEN" != "x$RELEASE_GARDEN" ]; then
+  echo "ERROR: Garden version in diego-release is out of date"
+  exit 1
+fi
