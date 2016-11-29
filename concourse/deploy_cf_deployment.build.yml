@@ -4,13 +4,14 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: relintdockerhubpushbot/bosh-deploy
+    repository: cfdiegodocker/deploy-cf-deployment
 
 inputs:
 - name: bosh-stemcell
 - name: diego-ci
 - name: cf-deployment
 - name: deployments-diego
+- name: diego-release
 
 run:
   path: diego-ci/concourse/deploy_cf_deployment
