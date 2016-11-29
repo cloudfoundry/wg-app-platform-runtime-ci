@@ -8,7 +8,7 @@ pushd diego-release
   DIEGO_GARDEN=`git ls-tree HEAD $GARDEN_SUBMODULE | awk '{print $3}'`
 popd
 
-pushd garden-runc-release
+pushd garden-runc-release-master
   RELEASE_GARDEN=`git ls-tree HEAD $GARDEN_SUBMODULE | awk '{print $3}'`
 popd
 
