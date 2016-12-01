@@ -16,7 +16,6 @@ params:
   DOMAIN: ~
   MAX_POLLING_ERRORS: 1
   USE_SQL_V0: "false"
-  USE_SQL_VPRIME: "false"
   DIEGO_RELEASE_V0_LEGACY: true
   DIRECTOR_IP: ~
 
