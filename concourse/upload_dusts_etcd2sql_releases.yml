@@ -8,6 +8,7 @@ inputs:
   - name: diego-release-tarball
   - name: cf-release-tarball
   - name: garden-runc-release-tarball
+  - name: etcd-release-tarball
   - name: cf-mysql-release-tarball
   - name: cflinuxfs2-rootfs-release-tarball
 
@@ -16,9 +17,11 @@ params:
   DIEGO_RELEASE_V0: ~
   GARDEN_LINUX_RELEASE_V0: ~
   ROOTFS_RELEASE_V0: ~
+  ETCD_RELEASE_V0: ~
   CF_RELEASE_VPRIME: ~
   DIEGO_RELEASE_VPRIME: ~
   GARDEN_RUNC_RELEASE_VPRIME: ~
+  ETCD_RELEASE_VPRIME: ~
   CF_MYSQL_RELEASE_VPRIME: ~
   ROOTFS_RELEASE_VPRIME: ~
   BOSH_STEMCELL: ~
