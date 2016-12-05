@@ -16,7 +16,6 @@ params:
   DEPLOYMENTS_DIR: ~
   ENVIRONMENT_NAME: ~
   INFRASTRUCTURE: ~
-  USE_SQL: false
   USE_NETMAN: false
   REMOVE_ETCD: false
 

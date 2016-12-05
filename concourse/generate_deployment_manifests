@@ -11,11 +11,6 @@ fi
 stubs_path="${environment_path}/stubs"
 templates_path="${environment_path}/templates"
 
-sql_option=""
-if [ "$USE_SQL" == "true" ]; then
-  sql_option="-s ${stubs_path}/diego/diego-sql.yml -x"
-fi
-
 netman_flag=""
 if [ "$USE_NETMAN" == "true" ]; then
   netman_flag="-N ${stubs_path}/netman/stub.yml"
@@ -37,7 +32,7 @@ pushd diego-release
     -p ${stubs_path}/diego/property-overrides.yml \
     -n ${stubs_path}/diego/instance-count-overrides.yml \
     -v ${stubs_path}/diego/release-versions.yml \
+    -s ${stubs_path}/diego/diego-sql.yml -x \
     ${netman_flag} \
-    ${sql_option} \
     > ../generated-manifest/diego-deployment.yml
 popd
