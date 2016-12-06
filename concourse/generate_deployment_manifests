@@ -11,11 +11,6 @@ fi
 stubs_path="${environment_path}/stubs"
 templates_path="${environment_path}/templates"
 
-netman_flag=""
-if [ "$USE_NETMAN" == "true" ]; then
-  netman_flag="-N ${stubs_path}/netman/stub.yml"
-fi
-
 pushd cf-release
   ./scripts/generate_deployment_manifest \
     ${INFRASTRUCTURE} \
@@ -33,6 +28,5 @@ pushd diego-release
     -n ${stubs_path}/diego/instance-count-overrides.yml \
     -v ${stubs_path}/diego/release-versions.yml \
     -s ${stubs_path}/diego/diego-sql.yml -x \
-    ${netman_flag} \
     > ../generated-manifest/diego-deployment.yml
 popd
