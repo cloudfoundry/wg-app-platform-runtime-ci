@@ -12,12 +12,17 @@ log_in_to_bosh_lite() {
 upload_releases() {
   bosh upload release $CF_RELEASE_V0
   bosh upload release $DIEGO_RELEASE_V0
-  bosh upload release $GARDEN_LINUX_RELEASE_V0
   if [ -n "$ETCD_RELEASE_V0" ]; then
     bosh upload release $ETCD_RELEASE_V0
   fi
   if [ -n "$ROOTFS_RELEASE_V0" ]; then
     bosh upload release $ROOTFS_RELEASE_V0
+  fi
+  if [ -n "$GARDEN_RUNC_RELEASE_V0" ]; then
+    bosh upload release $GARDEN_RUNC_RELEASE_V0
+  fi
+  if [ -n "$GARDEN_LINUX_RELEASE_V0" ]; then
+    bosh upload release $GARDEN_LINUX_RELEASE_V0
   fi
 
   bosh upload release $CF_RELEASE_VPRIME
