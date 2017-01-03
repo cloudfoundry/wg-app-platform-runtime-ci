@@ -12,6 +12,7 @@ log_in_to_bosh_lite() {
 upload_releases() {
   bosh upload release $CF_RELEASE_V0
   bosh upload release $DIEGO_RELEASE_V0
+
   if [ -n "$ETCD_RELEASE_V0" ]; then
     bosh upload release $ETCD_RELEASE_V0
   fi
@@ -29,10 +30,6 @@ upload_releases() {
   bosh upload release $DIEGO_RELEASE_VPRIME
   bosh upload release $GARDEN_RUNC_RELEASE_VPRIME
   bosh upload release $ROOTFS_RELEASE_VPRIME
-
-  if [ -n "$ETCD_RELEASE_V0" ]; then
-    bosh upload release $ETCD_RELEASE_VPRIME
-  fi
 
   if [ -n "$CF_MYSQL_RELEASE_VPRIME" ]; then
     bosh upload release $CF_MYSQL_RELEASE_VPRIME
