@@ -3,7 +3,7 @@
 set -ex
 
 export BOSH_ENVIRONMENT
-export BOSH_USER
+export BOSH_CLIENT
 export BOSH_PASSWORD
 export BOSH_DEPLOYMENT
 export DEPLOYMENT_DIR
