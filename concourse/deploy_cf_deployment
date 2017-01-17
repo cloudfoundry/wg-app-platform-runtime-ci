@@ -4,7 +4,7 @@ set -ex
 
 export BOSH_ENVIRONMENT
 export BOSH_CLIENT
-export BOSH_PASSWORD
+export BOSH_CLIENT_SECRET
 export BOSH_DEPLOYMENT
 export DEPLOYMENT_DIR
 
