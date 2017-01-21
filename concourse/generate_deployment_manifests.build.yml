@@ -16,7 +16,7 @@ params:
   DEPLOYMENTS_DIR: ~
   ENVIRONMENT_NAME: ~
   INFRASTRUCTURE: ~
-  REMOVE_ETCD: false
+  USE_LOCAL_ROUTE_EMITTERS: false
 
 run:
   path: diego-ci/concourse/generate_deployment_manifests

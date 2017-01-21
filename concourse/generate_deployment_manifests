@@ -7,6 +7,10 @@ if [ -z "$ENVIRONMENT_NAME" ]; then
 else
   environment_path="${PWD}/${DEPLOYMENTS_DIR}/${ENVIRONMENT_NAME}"
 fi
+local_route_emitters_flag=""
+if [ "$USE_LOCAL_ROUTE_EMITTERS" == "true" ]; then
+    local_route_emitters_flag="-R"
+fi
 
 stubs_path="${environment_path}/stubs"
 templates_path="${environment_path}/templates"
@@ -28,5 +32,6 @@ pushd diego-release
     -n ${stubs_path}/diego/instance-count-overrides.yml \
     -v ${stubs_path}/diego/release-versions.yml \
     -s ${stubs_path}/diego/diego-sql.yml -x \
+    ${local_route_emitters_flag} \
     > ../generated-manifest/diego-deployment.yml
 popd
