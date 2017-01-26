@@ -20,7 +20,7 @@ bosh -n upload-stemcell bosh-stemcell/*.tgz
 bosh -n deploy \
      --vars-file=${deployments_var_file} \
      ${BOSH_MANIFEST} \
-     -o ${OPSFILE_DIR}/change-logging-port-for-aws-elb.yml \
+     -o ${OPSFILE_DIR}/gcp.yml \
      -o <(cat <<EOF
 - type: replace
   path: /releases/name=diego
