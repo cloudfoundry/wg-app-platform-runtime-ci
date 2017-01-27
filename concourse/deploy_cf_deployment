@@ -6,21 +6,38 @@ export BOSH_ENVIRONMENT
 export BOSH_CLIENT
 export BOSH_CLIENT_SECRET
 export BOSH_DEPLOYMENT
-export DEPLOYMENT_DIR
-
 
 export BOSH_MANIFEST="${PWD}/patched-cf-deployment/cf-deployment.yml"
 export OPSFILE_DIR="${PWD}/patched-cf-deployment/operations"
-export BOSH_CA_CERT="${PWD}/deployments-diego/${DEPLOYMENT_DIR}/deployments/bbl/ca-cert"
 
-deployments_var_file="${PWD}/deployments-diego/${DEPLOYMENT_DIR}/cf-deployment-vars.yml"
+export DEPLOYMENT_DIR="${PWD}/deployments-diego/${DEPLOYMENT_DIR}"
+export BOSH_CA_CERT="${DEPLOYMENT_DIR}/deployments/bbl/ca-cert"
+
+deployments_var_file="${DEPLOYMENT_DIR}/cf-deployment-vars.yml"
+
+expand_ops_files () {
+
+  OPS_FILES="-o ${OPSFILE_DIR}/gcp.yml"
+
+  if [ -d "${DEPLOYMENT_DIR}/operations" ]
+  then
+    pushd ${DEPLOYMENT_DIR}/operations
+      for opsfile in *.yml;
+      do
+        OPS_FILES="${OPS_FILES} -o ${DEPLOYMENT_DIR}/${opsfile}"
+      done
+    popd
+  fi > /dev/null 2>&1
+
+  echo "${OPS_FILES}"
+}
 
 bosh log-in
 bosh -n upload-stemcell bosh-stemcell/*.tgz
 bosh -n deploy \
      --vars-file=${deployments_var_file} \
      ${BOSH_MANIFEST} \
-     -o ${OPSFILE_DIR}/gcp.yml \
+     $(expand_ops_files) \
      -o <(cat <<EOF
 - type: replace
   path: /releases/name=diego
