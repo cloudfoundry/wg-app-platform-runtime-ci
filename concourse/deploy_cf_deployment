@@ -24,7 +24,7 @@ expand_ops_files () {
     pushd ${DEPLOYMENT_DIR}/operations
       for opsfile in *.yml;
       do
-        OPS_FILES="${OPS_FILES} -o ${DEPLOYMENT_DIR}/${opsfile}"
+        OPS_FILES="${OPS_FILES} -o ${PWD}/${opsfile}"
       done
     popd
   fi > /dev/null 2>&1
