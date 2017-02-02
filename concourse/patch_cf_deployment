@@ -7,6 +7,8 @@ export OPSFILE_DIR="${PWD}/cf-deployment/operations"
 
 cp -R ${OPSFILE_DIR} ${PWD}/patched-cf-deployment
 pushd ${PWD}/cf-deployment
-  git apply ../diego-release/cf-deployment-patch-files/*
+  for i in $(ls ../diego-release/cf-deployment-patch-files/ | sort -n); do
+    git apply ../diego-release/cf-deployment-patch-files/$i
+  done
   cp cf-deployment.yml ${BOSH_MANIFEST}
 popd
