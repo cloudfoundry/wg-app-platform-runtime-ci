@@ -5,9 +5,15 @@ set -ex
 export MERGED_CF_DEPLOYMENT=$PWD/merged-cf-deployment
 
 pushd ${PWD}/cf-deployment
-  git fetch origin
-  for i in $(git branch | grep -e " diego-[0-9]*" | sort -t '-' -k 2 -g); do
-    git merge $i
+  echo "----- Set git identity"
+  git config user.email "cf-diego@pivotal.io"
+  git config user.name "CI (Automated)"
+
+  git fetch origin "+refs/heads/*:refs/remotes/origin/*"
+
+  for i in $(git branch -a | grep -e " diego-[0-9]*" | sort -t '-' -k 2 -g); do
+    echo "----- Merging cf-deployment branch ${i}"
+    git merge --no-edit $i
   done
 
   cp -r . $MERGED_CF_DEPLOYMENT
