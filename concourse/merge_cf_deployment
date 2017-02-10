@@ -2,9 +2,13 @@
 
 set -ex
 
+export MERGED_CF_DEPLOYMENT=$PWD/merged-cf-deployment
+
 pushd ${PWD}/cf-deployment
   git fetch origin
   for i in $(git branch | grep -e " diego-[0-9]*" | sort -t '-' -k 2 -g); do
     git merge $i
   done
+
+  cp -r . $MERGED_CF_DEPLOYMENT
 popd
