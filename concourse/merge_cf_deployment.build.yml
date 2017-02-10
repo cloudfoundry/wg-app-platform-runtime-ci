@@ -13,8 +13,7 @@ inputs:
 - name: diego-release
 
 outputs:
-- name: patched-cf-deployment
+- name: cf-deployment
 
 run:
-  path: diego-ci/concourse/patch_cf_deployment
-
+  path: diego-ci/concourse/merge_cf_deployment

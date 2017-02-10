@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -ex
+
+pushd ${PWD}/cf-deployment
+  git fetch origin
+  for i in $(git branch | grep -e " diego-[0-9]*" | sort -t '-' -k 2 -g); do
+    git merge $i
+  done
+popd
