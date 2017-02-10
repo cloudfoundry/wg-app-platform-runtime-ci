@@ -11,7 +11,7 @@ pushd ${PWD}/cf-deployment
 
   git fetch origin "+refs/heads/*:refs/remotes/origin/*"
 
-  for i in $(git branch -a | grep -e " diego-[0-9]*" | sort -t '-' -k 2 -g); do
+  for i in $(git branch -a | grep -e "remotes/origin/diego-[0-9]\+" | sort -t '-' -k 2 -g); do
     echo "----- Merging cf-deployment branch ${i}"
     git merge --no-edit $i
   done
