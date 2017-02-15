@@ -12,6 +12,11 @@ if [ "$USE_LOCAL_ROUTE_EMITTERS" == "true" ]; then
     local_route_emitters_flag="-R"
 fi
 
+sql_lock_flag=""
+if [ "$USE_LOCKET_SQL_LOCK_FOR_BBS" == "true" ]; then
+    sql_lock_flag="-Q ${stubs_path}/diego/sql-lock-overrides.yml"
+fi
+
 stubs_path="${environment_path}/stubs"
 templates_path="${environment_path}/templates"
 
@@ -33,5 +38,6 @@ pushd diego-release
     -v ${stubs_path}/diego/release-versions.yml \
     -s ${stubs_path}/diego/diego-sql.yml -x \
     ${local_route_emitters_flag} \
+    ${sql_lock_flag} \
     > ../generated-manifest/diego-deployment.yml
 popd

@@ -17,6 +17,7 @@ params:
   ENVIRONMENT_NAME: ~
   INFRASTRUCTURE: ~
   USE_LOCAL_ROUTE_EMITTERS: false
+  USE_LOCKET_SQL_LOCK_FOR_BBS: false
 
 run:
   path: diego-ci/concourse/generate_deployment_manifests
