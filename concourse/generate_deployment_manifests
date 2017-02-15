@@ -7,6 +7,10 @@ if [ -z "$ENVIRONMENT_NAME" ]; then
 else
   environment_path="${PWD}/${DEPLOYMENTS_DIR}/${ENVIRONMENT_NAME}"
 fi
+
+stubs_path="${environment_path}/stubs"
+templates_path="${environment_path}/templates"
+
 local_route_emitters_flag=""
 if [ "$USE_LOCAL_ROUTE_EMITTERS" == "true" ]; then
     local_route_emitters_flag="-R"
@@ -16,9 +20,6 @@ sql_lock_flag=""
 if [ "$USE_LOCKET_SQL_LOCK_FOR_BBS" == "true" ]; then
     sql_lock_flag="-Q ${stubs_path}/diego/sql-lock-overrides.yml"
 fi
-
-stubs_path="${environment_path}/stubs"
-templates_path="${environment_path}/templates"
 
 pushd cf-release
   ./scripts/generate_deployment_manifest \
