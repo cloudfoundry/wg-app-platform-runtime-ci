@@ -1,0 +1,19 @@
+---
+platform: linux
+
+image: docker:///cloudfoundry/diego-pipeline
+
+inputs:
+  - name: deployments-diego
+  - name: diego-ci
+
+params:
+  BOSH_PASSWORD: ~
+  BOSH_TARGET: ~
+  BOSH_USER: ~
+  DIEGO_DEPLOYMENT: ~
+  DEPLOYMENTS_DIR: ~
+  ENVIRONMENT: ~
+
+run:
+  path: diego-ci/concourse/check_instance_identity_permissions
