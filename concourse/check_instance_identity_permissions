@@ -27,6 +27,7 @@ permissions=$(echo $stats | cut -d' ' -f1)
 owner_user=$(echo $stats | cut -d' ' -f2)
 owner_group=$(echo $stats | cut -d' ' -f3)
 
+fail=false
 # assert that the instance_identity directory is owned by vcap and vcap is the
 # only user with read/write permissions
 if [ $permissions != 'drwx------' ]; then
