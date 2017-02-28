@@ -18,7 +18,7 @@ fi
 
 sql_lock_flag=""
 if [ "$USE_LOCKET_SQL_LOCK_FOR_BBS" == "true" ]; then
-    sql_lock_flag="-Q ${stubs_path}/diego/sql-lock-overrides.yml"
+    sql_lock_flag="-Q"
 fi
 
 pushd cf-release
