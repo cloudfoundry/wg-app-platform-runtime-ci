@@ -16,6 +16,7 @@ params:
   DEPLOYMENTS_DIR: ~
   ENVIRONMENT_NAME: ~
   INFRASTRUCTURE: ~
+  USE_LOCAL_ROUTE_EMITTERS: false
 
 run:
   path: diego-ci/concourse/generate_windows_cell_deployment_manifest

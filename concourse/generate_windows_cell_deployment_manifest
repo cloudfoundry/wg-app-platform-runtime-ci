@@ -8,6 +8,11 @@ else
   environment_path="${PWD}/${DEPLOYMENTS_DIR}/${ENVIRONMENT_NAME}"
 fi
 
+local_route_emitters_flag=""
+if [ "$USE_LOCAL_ROUTE_EMITTERS" == "true" ]; then
+    local_route_emitters_flag="-R"
+fi
+
 stubs_path="${environment_path}/stubs"
 templates_path="${environment_path}/templates"
 
@@ -29,5 +34,6 @@ pushd diego-release
     -p ${stubs_path}/diego-windows/property-overrides.yml \
     -n ${stubs_path}/diego-windows/instance-count-overrides.yml \
     -v ${stubs_path}/diego-windows/release-versions.yml \
+    ${local_route_emitters_flag} \
     > ../generated-manifest/diego-windows-deployment.yml
 popd
