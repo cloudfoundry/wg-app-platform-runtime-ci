@@ -7,7 +7,7 @@ setup_env() {
   export WORKSPACE_DIR="$(pwd)"
   export ENV_DIR="${WORKSPACE_DIR}/${DEPLOYMENTS_DIR}/${ENVIRONMENT}"
 
-  export BOSH_LITE_PRIVATE_KEY="${ENV_DIR}/keypair/id_rsa_bosh"
+  export BOSH_LITE_PRIVATE_KEY="${ENV_DIR}/keypair/dusts"
   export BOSH_LITE_KEYPAIR="${BOSH_LITE_KEYPAIR}"
 
   source $ENV_DIR/bootstrap_environment
