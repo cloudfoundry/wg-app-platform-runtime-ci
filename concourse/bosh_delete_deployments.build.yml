@@ -11,7 +11,7 @@ inputs:
 - name: deployments-diego
 
 run:
-  path: diego-ci/concourse/bosh_stop_all
+  path: diego-ci/concourse/bosh_delete_deployments
 
 PARAMS:
   BOSH_ENVIRONMENT: ~

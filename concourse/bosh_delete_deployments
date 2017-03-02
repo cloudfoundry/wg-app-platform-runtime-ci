@@ -12,6 +12,6 @@ export BOSH_CA_CERT="${DEPLOYMENT_DIR}/certs/bosh-ca.crt"
 bosh log-in
 
 for deployment in $DEPLOYMENTS; do
-  bosh -n -d $deployment stop --hard
+  bosh -n -d $deployment delete-deployment
 done
 
