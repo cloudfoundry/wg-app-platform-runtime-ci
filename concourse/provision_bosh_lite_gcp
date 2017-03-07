@@ -1,0 +1,44 @@
+
+#!/bin/bash
+set -e -x
+
+source ~/.bashrc
+
+setup_env() {
+  export WORKSPACE_DIR="$(pwd)"
+  export ENV_DIR="${WORKSPACE_DIR}/${DEPLOYMENTS_DIR}/${ENVIRONMENT}"
+  export BOSH_DEPLOYMENT_DIR="${WORKSPACE_DIR}/bosh-deployment"
+  export BOSH_LITE_PRIVATE_KEY="${ENV_DIR}/keypair/dusts"
+  export GCP_CREDENTIALS_PATH="${ENV_DIR}/gcp/cf-diego-creds.json"
+  export BOSH_STATE_DIR="${BOSH_DEPLOYMENT_DIR}"
+}
+
+provision_bosh_lite() {
+	bosh2 \
+		create-env ${BOSH_DEPLOYMENT_DIR}/bosh.yml \
+		--state ${BOSH_STATE_DIR}/state.json \
+		-o ${BOSH_DEPLOYMENT_DIR}/gcp/cpi.yml \
+		-o ${BOSH_DEPLOYMENT_DIR}/bosh-lite.yml \
+		-o ${BOSH_DEPLOYMENT_DIR}/bosh-lite-runc.yml \
+		--vars-store ${BOSH_STATE_DIR}/creds.yml \
+		-v director_name=${BOSH_LITE_NAME} \
+		-v internal_cidr=${BOSH_LITE_PRIVATE_CIDR} \
+		-v internal_gw=${BOSH_LITE_PRIVATE_GATEWAY}
+		-v internal_ip=${BOSH_LITE_PRIVATE_IP} \
+		-v zone=${GCP_ZONE} \
+		-v network=${GCP_NETWORK_ID} \
+		-v tags=["bosh-lite","${BOSH_LITE_NAME}"] \
+		-v project_id=${GCP_PROJECT_ID} \
+		-v subnetwork=${GCP_SUBNET_ID} \
+		--var-file gcp_credentials_json=${GCP_CREDENTIALS_PATH} \
+		--var-file private_key=${BOSH_LITE_PRIVATE_KEY}
+		-o ${BOSH_DEPLOYMENT}/external-ip-not-recommended.yml \
+		-v external_ip=${BOSH_LITE_EXTERNAL_IP}
+}
+
+main() {
+  setup_env
+  provision_bosh_lite
+}
+
+main

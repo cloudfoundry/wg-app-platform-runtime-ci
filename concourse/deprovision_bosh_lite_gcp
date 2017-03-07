@@ -1,0 +1,37 @@
+#!/bin/bash
+set -e -x
+
+source ~/.bashrc
+
+setup_env() {
+    export WORKSPACE_DIR="$(pwd)"
+    export ENV_DIR="${WORKSPACE_DIR}/${DEPLOYMENTS_DIR}/${ENVIRONMENT}"
+    export GCP_CREDENTIALS_PATH="${ENV_DIR}/gcp/cf-diego.json"
+
+    gcloud auth activate-service-account ${GCP_CREDENTIALS_PATH} --project-id=${GCP_PROJECT_ID} --zone ${GCP_ZONE}
+}
+
+deprovision_bosh_lite () {
+  instances=$(gcloud compute instances list --filter='tags.items~$BOSH_LITE_NAME' | tail -n +2)
+
+  echo "$instances" | awk '{print $1}' | tr '\n' ' ' > instances-to-delete
+
+  if [ -s instances-to-delete ]
+  then
+    instance_ids=$(cat instances-to-delete)
+
+    echo "Deleting instances: ${instance_ids}"
+
+    gcloud compute instances delete ${instance_ids} -q
+
+  else
+    echo "No instances to delete"
+  fi
+}
+
+main() {
+  setup_env
+  deprovision_bosh_lite
+}
+
+main

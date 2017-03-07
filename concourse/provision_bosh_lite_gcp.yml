@@ -1,0 +1,29 @@
+---
+platform: linux
+
+image: docker:///cloudfoundry/diego-pipeline
+
+inputs:
+  - name: diego-ci
+  - name: deployments-diego
+  - name: bosh-lite
+  - name: bosh-deployment
+
+outputs:
+  - name: provisioned-bosh-lite
+
+params:
+  ENVIRONMENT: ~
+  BOSH_LITE_KEYPAIR: ~
+  BOSH_LITE_NAME: ~
+  BOSH_LITE_PRIVATE_CIDR: ~
+  BOSH_LITE_PRIVATE_GATEWAY: ~
+  BOSH_LITE_PRIVATE_IP: ~
+  DEPLOYMENTS_DIR: ~
+  GCP_NETWORK: ~
+  GCP_PROJECT_ID: ~
+  GCP_SUBNET: ~
+  GCP_ZONE: ~
+
+run:
+  path: diego-ci/concourse/provision_bosh_lite_gcp

@@ -1,0 +1,19 @@
+---
+platform: linux
+
+image: docker:///cloudfoundry/diego-pipeline
+
+inputs:
+  - name: deployments-diego
+  - name: diego-ci
+
+params:
+  ENVIRONMENT: ~
+  BOSH_LITE_NAME: ~
+  DEPLOYMENTS_DIR: ~
+  GCP_PROJECT_ID: ~
+  GCP_ZONE: ~
+
+
+run:
+  path: diego-ci/concourse/deprovision_bosh_lite_gcp
