@@ -1,7 +1,6 @@
-#!/bin/bash
-set -e -x
+#!/bin/bash -l
 
-source ~/.bashrc
+set -e -x
 
 setup_env() {
     export WORKSPACE_DIR="$(pwd)"
