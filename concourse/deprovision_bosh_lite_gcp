@@ -1,13 +1,15 @@
-#!/bin/bash -l
-
+#!/bin/bash
 set -e -x
+
+source ~/.bashrc
 
 setup_env() {
     export WORKSPACE_DIR="$(pwd)"
     export ENV_DIR="${WORKSPACE_DIR}/${DEPLOYMENTS_DIR}/${ENVIRONMENT}"
     export GCP_CREDENTIALS_PATH="${ENV_DIR}/gcp/cf-diego.json"
+    export PATH=/root/google-cloud-sdk/bin:$PATH
 
-    gcloud auth activate-service-account --key-file=${GCP_CREDENTIALS_PATH} --project-id=${GCP_PROJECT_ID}
+    gcloud auth activate-service-account --key-file=${GCP_CREDENTIALS_PATH} --project=${GCP_PROJECT_ID}
 }
 
 deprovision_bosh_lite () {
