@@ -9,7 +9,7 @@ setup_env() {
   export ENV_DIR="${WORKSPACE_DIR}/${DEPLOYMENTS_DIR}/${ENVIRONMENT}"
   export BOSH_DEPLOYMENT_DIR="${WORKSPACE_DIR}/bosh-deployment"
   export BOSH_LITE_PRIVATE_KEY="${ENV_DIR}/keypair/dusts"
-  export GCP_CREDENTIALS_PATH="${ENV_DIR}/gcp/cf-diego-creds.json"
+  export GCP_CREDENTIALS_PATH="${ENV_DIR}/gcp/cf-diego.json"
   export BOSH_STATE_DIR="${BOSH_DEPLOYMENT_DIR}"
 }
 
