@@ -6,7 +6,6 @@ image: docker:///cloudfoundry/diego-pipeline
 inputs:
   - name: diego-ci
   - name: deployments-diego
-  - name: bosh-lite
   - name: bosh-deployment
 
 outputs:
@@ -21,6 +20,7 @@ params:
   BOSH_LITE_PRIVATE_GATEWAY: ~
   BOSH_LITE_PRIVATE_IP: ~
   DEPLOYMENTS_DIR: ~
+  DOMAIN: ~
   GCP_NETWORK_ID: ~
   GCP_PROJECT_ID: ~
   GCP_SUBNET_ID: ~
