@@ -23,7 +23,7 @@ provision_bosh_lite() {
 		--vars-store ${BOSH_STATE_DIR}/creds.yml \
 		-v director_name=${BOSH_LITE_NAME} \
 		-v internal_cidr=${BOSH_LITE_PRIVATE_CIDR} \
-		-v internal_gw=${BOSH_LITE_PRIVATE_GATEWAY}
+		-v internal_gw=${BOSH_LITE_PRIVATE_GATEWAY} \
 		-v internal_ip=${BOSH_LITE_PRIVATE_IP} \
 		-v zone=${GCP_ZONE} \
 		-v network=${GCP_NETWORK_ID} \
