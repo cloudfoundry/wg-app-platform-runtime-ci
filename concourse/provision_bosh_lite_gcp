@@ -11,7 +11,7 @@ setup_env() {
 }
 
 provision_bosh_lite() {
-	bosh \
+	bosh2 \
 		create-env ${BOSH_DEPLOYMENT_DIR}/bosh.yml \
 		--state ${ENV_DIR}/state.json \
 		-o ${BOSH_DEPLOYMENT_DIR}/gcp/cpi.yml \
