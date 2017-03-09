@@ -15,6 +15,7 @@ provision_bosh_lite() {
 		create-env ${BOSH_DEPLOYMENT_DIR}/bosh.yml \
 		--state ${ENV_DIR}/state.json \
 		-o ${BOSH_DEPLOYMENT_DIR}/gcp/cpi.yml \
+		-o ${ENV_DIR}/operations/increase-instance-size.yml \
 		-o ${BOSH_DEPLOYMENT_DIR}/bosh-lite.yml \
 		-o ${BOSH_DEPLOYMENT_DIR}/bosh-lite-runc.yml \
 		--vars-store ${ENV_DIR}/creds.yml \
