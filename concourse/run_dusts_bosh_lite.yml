@@ -13,11 +13,13 @@ inputs:
 - name: deployments-diego
 
 params:
+  BOSH_PASSWORD: admin
+  BOSH_USER: admin
+  DIEGO_RELEASE_V0_LEGACY: true
+  DIRECTOR_IP: ~
   DOMAIN: ~
   MAX_POLLING_ERRORS: 1
   USE_SQL_V0: "false"
-  DIEGO_RELEASE_V0_LEGACY: true
-  DIRECTOR_IP: ~
 
 run:
   path: diego-ci/concourse/run_dusts_bosh_lite

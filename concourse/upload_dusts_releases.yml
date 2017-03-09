@@ -12,18 +12,20 @@ inputs:
   - name: cflinuxfs2-rootfs-release-tarball
 
 params:
+  BOSH_USER: admin
+  BOSH_PASSWORD: admin
+  BOSH_STEMCELL: ~
+  CF_MYSQL_RELEASE_VPRIME: ~
   CF_RELEASE_V0: ~
+  CF_RELEASE_VPRIME: ~
   DIEGO_RELEASE_V0: ~
+  DIEGO_RELEASE_VPRIME: ~
+  DOMAIN: ~
   GARDEN_LINUX_RELEASE_V0: ~
   GARDEN_RUNC_RELEASE_V0: ~
-  ROOTFS_RELEASE_V0: ~
-  CF_RELEASE_VPRIME: ~
-  DIEGO_RELEASE_VPRIME: ~
   GARDEN_RUNC_RELEASE_VPRIME: ~
-  CF_MYSQL_RELEASE_VPRIME: ~
+  ROOTFS_RELEASE_V0: ~
   ROOTFS_RELEASE_VPRIME: ~
-  BOSH_STEMCELL: ~
-  DOMAIN: ~
 
 run:
   path: diego-ci/concourse/upload_dusts_releases

@@ -6,7 +6,7 @@ source ~/.bashrc
 
 log_in_to_bosh_lite() {
   export BOSH_TARGET=bosh.${DOMAIN}
-  BOSH_USER=admin BOSH_PASSWORD=admin $(dirname $0)/bosh_setup
+  $(dirname $0)/bosh_setup
 }
 
 upload_releases() {

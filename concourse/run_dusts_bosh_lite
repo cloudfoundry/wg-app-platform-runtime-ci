@@ -17,8 +17,8 @@ setup_config() {
   cat > dusts_config.json <<EOF
 {
   "bosh_director_url": "bosh.${DOMAIN}",
-  "bosh_admin_user": "admin",
-  "bosh_admin_password": "admin",
+  "bosh_admin_user": "${BOSH_USER}",
+  "bosh_admin_password": "${BOSH_PASSWORD}",
   "base_directory": "${PWD}",
   "v0_cf_release_path": "cf-stable-release",
   "v0_diego_release_path": "diego-stable-release",
