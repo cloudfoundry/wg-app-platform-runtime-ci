@@ -27,11 +27,13 @@ provision_bosh_lite() {
 }
 
 commit_state_json() {
-  git config user.email "cf-diego@pivotal.io"
-  git config user.name "CI (Automated)"
+  pushd $PWD/${DEPLOYMENTS_DIR}
+    git config user.email "cf-diego@pivotal.io"
+    git config user.name "CI (Automated)"
 
-  git add -A
-  git commit -m "Update dusts deployment ${BOSH_LITE_director_name}"
+    git add -A
+    git commit -m "Update dusts deployment ${BOSH_LITE_director_name}"
+  popd
 }
 
 main() {
