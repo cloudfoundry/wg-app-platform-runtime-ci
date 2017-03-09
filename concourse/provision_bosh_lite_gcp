@@ -3,7 +3,7 @@
 set -e -x
 
 setup_env() {
-  export ENV_DIR="$PWD/${DEPLOYMENTS_DIR}/${ENVIRONMENT}/${BOSH_LITE_director_name}"
+  export ENV_DIR="$PWD/${DEPLOYMENTS_DIR}/${ENVIRONMENT}/${BOSH_LITE_NAME}"
   export BOSH_DEPLOYMENT_DIR="$PWD/bosh-deployment"
   export GCP_CREDENTIALS_PATH="${ENV_DIR}/cf-diego.json"
   export BOSH_LITE_PRIVATE_KEY="$PWD/${DEPLOYMENTS_DIR}/${ENVIRONMENT}/keypair/dusts"
@@ -19,7 +19,7 @@ provision_bosh_lite() {
     --vars-store ${ENV_DIR}/creds.yml \
     --vars-env BOSH_LITE \
     --vars-env GCP \
-    -v tags=["bosh-lite","${BOSH_LITE_director_name}"] \
+    -v tags=["bosh-lite","${BOSH_LITE_NAME}"] \
     --var-file gcp_credentials_json=${GCP_CREDENTIALS_PATH} \
     -o ${BOSH_DEPLOYMENT_DIR}/external-ip-not-recommended.yml
 }
@@ -30,7 +30,7 @@ commit_state_json() {
     git config user.name "CI (Automated)"
 
     git add -A
-    git commit -m "Provision dusts deployment ${BOSH_LITE_director_name}"
+    git commit -m "Provision dusts deployment ${BOSH_LITE_NAME}"
   popd
 }
 

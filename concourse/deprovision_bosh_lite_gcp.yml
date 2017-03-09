@@ -12,7 +12,8 @@ outputs:
   - name: deprovisioned-bosh-lite
 
 params:
-  BOSH_LITE_director_name: ~
+  BOSH_LITE_NAME: ~
+  BOSH_LITE_director_name: "Bosh Lite Director"
   BOSH_LITE_external_ip: ~
   BOSH_LITE_internal_cidr: ~
   BOSH_LITE_internal_gw: ~
