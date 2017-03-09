@@ -4,28 +4,30 @@ platform: linux
 image: docker:///cloudfoundry/diego-pipeline
 
 inputs:
+  - name: cf-mysql-release-tarball
+  - name: cf-release-tarball
+  - name: cflinuxfs2-rootfs-release-tarball
   - name: diego-ci
   - name: diego-release-tarball
-  - name: cf-release-tarball
-  - name: garden-runc-release-tarball
   - name: etcd-release-tarball
-  - name: cf-mysql-release-tarball
-  - name: cflinuxfs2-rootfs-release-tarball
+  - name: garden-runc-release-tarball
 
 params:
-  CF_RELEASE_V0: ~
-  DIEGO_RELEASE_V0: ~
-  GARDEN_LINUX_RELEASE_V0: ~
-  ROOTFS_RELEASE_V0: ~
-  ETCD_RELEASE_V0: ~
-  CF_RELEASE_VPRIME: ~
-  DIEGO_RELEASE_VPRIME: ~
-  GARDEN_RUNC_RELEASE_VPRIME: ~
-  ETCD_RELEASE_VPRIME: ~
-  CF_MYSQL_RELEASE_VPRIME: ~
-  ROOTFS_RELEASE_VPRIME: ~
+  BOSH_PASSWORD: admin
   BOSH_STEMCELL: ~
+  BOSH_USER: admin
+  CF_MYSQL_RELEASE_VPRIME: ~
+  CF_RELEASE_V0: ~
+  CF_RELEASE_VPRIME: ~
+  DIEGO_RELEASE_V0: ~
+  DIEGO_RELEASE_VPRIME: ~
   DOMAIN: ~
+  ETCD_RELEASE_V0: ~
+  ETCD_RELEASE_VPRIME: ~
+  GARDEN_LINUX_RELEASE_V0: ~
+  GARDEN_RUNC_RELEASE_VPRIME: ~
+  ROOTFS_RELEASE_V0: ~
+  ROOTFS_RELEASE_VPRIME: ~
 
 run:
   path: diego-ci/concourse/upload_dusts_releases
