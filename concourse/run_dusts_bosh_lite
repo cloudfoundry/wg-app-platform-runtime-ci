@@ -33,6 +33,7 @@ setup_config() {
 EOF
 
   export CONFIG=${PWD}/dusts_config.json
+  export BOSH_LITE_PASSWORD=${BOSH_PASSWORD}
 }
 
 
