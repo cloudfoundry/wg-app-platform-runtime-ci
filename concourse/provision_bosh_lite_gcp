@@ -4,7 +4,7 @@ set -e -x
 source ~/.bashrc
 
 setup_env() {
-  export ENV_DIR="$PWD/${DEPLOYMENTS_DIR}/${ENVIRONMENT}/${BOSH_LITE_NAME}"
+  export ENV_DIR="$PWD/${DEPLOYMENTS_DIR}/${ENVIRONMENT}/${BOSH_LITE_director_name}"
   export BOSH_DEPLOYMENT_DIR="$PWD/bosh-deployment"
   export GCP_CREDENTIALS_PATH="${ENV_DIR}/cf-diego.json"
   export BOSH_LITE_PRIVATE_KEY="$PWD/${DEPLOYMENTS_DIR}/${ENVIRONMENT}/keypair/dusts"
@@ -19,19 +19,11 @@ provision_bosh_lite() {
 		-o ${BOSH_DEPLOYMENT_DIR}/bosh-lite.yml \
 		-o ${BOSH_DEPLOYMENT_DIR}/bosh-lite-runc.yml \
 		--vars-store ${ENV_DIR}/creds.yml \
-		-v director_name=${BOSH_LITE_NAME} \
-		-v internal_cidr=${BOSH_LITE_PRIVATE_CIDR} \
-		-v internal_gw=${BOSH_LITE_PRIVATE_GATEWAY} \
-		-v internal_ip=${BOSH_LITE_PRIVATE_IP} \
-		-v zone=${GCP_ZONE} \
-		-v network=${GCP_NETWORK_ID} \
-		-v tags=["bosh-lite","${BOSH_LITE_NAME}"] \
-		-v project_id=${GCP_PROJECT_ID} \
-		-v subnetwork=${GCP_SUBNET_ID} \
+		--vars-env BOSH_LITE \
+		--vars-env GCP \
+		-v tags=["bosh-lite","${BOSH_LITE_director_name}"] \
 		--var-file gcp_credentials_json=${GCP_CREDENTIALS_PATH} \
-		--var-file private_key=${BOSH_LITE_PRIVATE_KEY}
-		-o ${BOSH_DEPLOYMENT_DIR}/external-ip-not-recommended.yml \
-		-v external_ip=${BOSH_LITE_EXTERNAL_IP}
+		-o ${BOSH_DEPLOYMENT_DIR}/external-ip-not-recommended.yml
 }
 
 commit_state_json() {
@@ -39,7 +31,7 @@ commit_state_json() {
   git config user.name "CI (Automated)"
 
   git add -A
-  git commit -m "Update dusts deployment ${BOSH_LITE_NAME}"
+  git commit -m "Update dusts deployment ${BOSH_LITE_director_name}"
 }
 
 main() {

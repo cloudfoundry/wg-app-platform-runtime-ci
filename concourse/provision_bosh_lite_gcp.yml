@@ -12,19 +12,19 @@ outputs:
   - name: provisioned-bosh-lite
 
 params:
-  ENVIRONMENT: ~
-  BOSH_LITE_EXTERNAL_IP: ~
-  BOSH_LITE_KEYPAIR: ~
-  BOSH_LITE_NAME: ~
-  BOSH_LITE_PRIVATE_CIDR: ~
-  BOSH_LITE_PRIVATE_GATEWAY: ~
-  BOSH_LITE_PRIVATE_IP: ~
+  BOSH_LITE_director_name: ~
+  BOSH_LITE_external_ip: ~
+  BOSH_LITE_internal_cidr: ~
+  BOSH_LITE_internal_gw: ~
+  BOSH_LITE_internal_ip: ~
+  BOSH_LITE_private_key: ~
   DEPLOYMENTS_DIR: ~
   DOMAIN: ~
-  GCP_NETWORK_ID: ~
-  GCP_PROJECT_ID: ~
-  GCP_SUBNET_ID: ~
-  GCP_ZONE: ~
+  ENVIRONMENT: ~
+  GCP_network: ~
+  GCP_project_id: ~
+  GCP_subnetwork: ~
+  GCP_zone: ~
 
 run:
   path: diego-ci/concourse/provision_bosh_lite_gcp
