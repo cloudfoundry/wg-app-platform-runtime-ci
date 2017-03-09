@@ -1,38 +1,49 @@
 #!/bin/bash
+
 set -e -x
 
-source ~/.bashrc
-
 setup_env() {
-    export WORKSPACE_DIR="$(pwd)"
-    export ENV_DIR="${WORKSPACE_DIR}/${DEPLOYMENTS_DIR}/${ENVIRONMENT}"
-    export GCP_CREDENTIALS_PATH="${ENV_DIR}/gcp/cf-diego.json"
-    export PATH=/root/google-cloud-sdk/bin:$PATH
-
-    gcloud auth activate-service-account --key-file=${GCP_CREDENTIALS_PATH} --project=${GCP_PROJECT_ID}
+  export ENV_DIR="$PWD/${DEPLOYMENTS_DIR}/${ENVIRONMENT}/${BOSH_LITE_director_name}"
+  export BOSH_DEPLOYMENT_DIR="$PWD/bosh-deployment"
+  export GCP_CREDENTIALS_PATH="${ENV_DIR}/cf-diego.json"
+  export BOSH_LITE_PRIVATE_KEY="$PWD/${DEPLOYMENTS_DIR}/${ENVIRONMENT}/keypair/dusts"
 }
 
 deprovision_bosh_lite () {
-  instances=$(gcloud compute instances list --filter='tags.items~$BOSH_LITE_NAME' | tail -n +2)
+  bosh2 delete-env ${BOSH_DEPLOYMENT_DIR}/bosh.yml \
+    --state ${ENV_DIR}/state.json \
+    -o ${BOSH_DEPLOYMENT_DIR}/gcp/cpi.yml \
+    -o ${ENV_DIR}/operations/increase-instance-size.yml \
+    -o ${BOSH_DEPLOYMENT_DIR}/bosh-lite.yml \
+    -o ${BOSH_DEPLOYMENT_DIR}/bosh-lite-runc.yml \
+    --vars-file ${ENV_DIR}/creds.yml \
+    --vars-env BOSH_LITE \
+    --vars-env GCP \
+    -v tags=["bosh-lite","${BOSH_LITE_director_name}"] \
+    --var-file gcp_credentials_json=${GCP_CREDENTIALS_PATH} \
+    -o ${BOSH_DEPLOYMENT_DIR}/external-ip-not-recommended.yml
+}
 
-  echo -n "$instances" | awk '{print $1}' | tr '\n' ' ' > instances-to-delete
+commit_state_json() {
+  pushd $PWD/${DEPLOYMENTS_DIR}
+    git config user.email "cf-diego@pivotal.io"
+    git config user.name "CI (Automated)"
 
-  if [ -s instances-to-delete ]
-  then
-    instance_ids=$(cat instances-to-delete)
-
-    echo "Deleting instances: ${instance_ids}"
-
-    gcloud compute instances delete ${instance_ids} -q
-
-  else
-    echo "No instances to delete"
-  fi
+    git add -A
+    git commit -m "Deprovision dusts deployment ${BOSH_LITE_director_name}"
+  popd
 }
 
 main() {
   setup_env
-  deprovision_bosh_lite
+  if [ -f ${ENV_DIR}/state.json ]; then
+    deprovision_bosh_lite
+    commit_state_json
+  else
+    echo "No bosh-lite to deprovision"
+  fi
+
+  cp -a $PWD/${DEPLOYMENTS_DIR} deprovisioned-bosh-lite/
 }
 
 main

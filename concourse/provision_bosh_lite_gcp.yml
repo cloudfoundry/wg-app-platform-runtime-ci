@@ -4,9 +4,9 @@ platform: linux
 image: docker:///cloudfoundry/diego-pipeline
 
 inputs:
-  - name: diego-ci
-  - name: deployments-diego
   - name: bosh-deployment
+  - name: deployments-diego
+  - name: diego-ci
 
 outputs:
   - name: provisioned-bosh-lite
