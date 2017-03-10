@@ -20,7 +20,6 @@ params:
   BOSH_LITE_internal_ip: ~
   BOSH_LITE_private_key: ~
   DEPLOYMENTS_DIR: ~
-  DOMAIN: ~
   ENVIRONMENT: ~
   GCP_network: ~
   GCP_project_id: ~
