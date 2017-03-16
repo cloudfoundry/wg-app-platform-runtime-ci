@@ -25,6 +25,8 @@ params:
   GCP_project_id: ~
   GCP_subnetwork: ~
   GCP_zone: ~
+  BOSH_CLIENT: ~
+  BOSH_CLIENT_SECRET: ~
 
 run:
   path: diego-ci/concourse/deprovision_bosh_lite_gcp
