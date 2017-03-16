@@ -10,6 +10,7 @@ setup_env() {
 }
 
 deprovision_bosh_lite () {
+  bosh2 clean-up --all
   bosh2 delete-env ${BOSH_DEPLOYMENT_DIR}/bosh.yml \
     --state ${ENV_DIR}/state.json \
     -o ${BOSH_DEPLOYMENT_DIR}/gcp/cpi.yml \
