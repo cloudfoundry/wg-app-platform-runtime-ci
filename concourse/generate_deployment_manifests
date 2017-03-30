@@ -21,6 +21,11 @@ if [ "$USE_LOCKET_SQL_LOCK_FOR_BBS" == "true" ]; then
     sql_lock_flag="-Q"
 fi
 
+grootfs_flag=""
+if [ "$USE_GROOTFS" == "true" ]; then
+    grootfs_flag="-G"
+fi
+
 pushd cf-release
   ./scripts/generate_deployment_manifest \
     ${INFRASTRUCTURE} \
@@ -40,5 +45,6 @@ pushd diego-release
     -s ${stubs_path}/diego/diego-sql.yml -x \
     ${local_route_emitters_flag} \
     ${sql_lock_flag} \
+    ${grootfs_flag} \
     > ../generated-manifest/diego-deployment.yml
 popd
