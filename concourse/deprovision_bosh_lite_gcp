@@ -11,7 +11,6 @@ setup_env() {
 }
 
 deprovision_bosh_lite () {
-  bosh2 -n clean-up --all -e $BOSH_LITE_external_ip
   bosh2 delete-env ${BOSH_DEPLOYMENT_DIR}/bosh.yml \
     --state ${ENV_DIR}/state.json \
     -o ${BOSH_DEPLOYMENT_DIR}/gcp/cpi.yml \
