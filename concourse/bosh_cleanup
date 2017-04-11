@@ -4,4 +4,4 @@ set -e -x -u
 
 $(dirname $0)/bosh_setup
 
-bosh -n cleanup
+bosh -n cleanup --all
