@@ -22,4 +22,4 @@ params:
   USE_GROOTFS: false
 
 run:
-  path: diego-ci/concourse/generate_routing_deployment_manifests
+  path: diego-ci/concourse/generate_routing_deployment_manifest
