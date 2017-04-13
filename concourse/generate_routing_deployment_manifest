@@ -1,0 +1,29 @@
+#!/bin/bash
+
+set -e -x -u
+
+if [ -z "$ENVIRONMENT_NAME" ]; then
+  environment_path="${PWD}/${DEPLOYMENTS_DIR}"
+else
+  environment_path="${PWD}/${DEPLOYMENTS_DIR}/${ENVIRONMENT_NAME}"
+fi
+
+stubs_path="${environment_path}/stubs"
+templates_path="${environment_path}/templates"
+
+pushd diego-ci/concourse
+  ./generate_deployment_manifests
+popd
+
+stubs="${stubs_path}/routing/iaas-settings.yml"
+stubs="${stubs},${stubs_path}/routing/property-overrides.yml"
+stubs="${stubs},${stubs_path}/routing/instance-count-overrides.yml"
+stubs="${stubs},${stubs_path}/routing/persistent-disk-overrides.yml"
+
+pushd routing-release
+./scripts/generate-manifest \
+  -c ${manifest_path}/cf.yml \
+  -d ${manifest_path}/diego.yml \
+  -l ${stubs} \
+  > generated-manifest/routing-deployment.yml
+popd
