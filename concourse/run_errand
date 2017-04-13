@@ -10,6 +10,11 @@ $(dirname $0)/bosh_setup
 bosh deployments
 bosh releases
 
+if [ -z $MANIFEST ]; then
+    bosh download manifest $DEPLOYMENT_NAME > ${DEPLOYMENT_NAME}.yml
+    manifest=$PWD/${DEPLOYMENT_NAME}.yml
+fi
+
 bosh deployment ${manifest}
 
 set +e

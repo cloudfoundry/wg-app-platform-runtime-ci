@@ -4,7 +4,6 @@ platform: linux
 image: docker:///cloudfoundry/diego-pipeline
 
 inputs:
-  - name: deployments-diego
   - name: diego-ci
   - name: generated-manifest
 
@@ -16,6 +15,7 @@ params:
   BOSH_PASSWORD: ~
   BOSH_TARGET: ~
   MANIFEST: ~
+  DEPLOYMENT_NAME: ~
   ERRAND: ~
 
 run:
