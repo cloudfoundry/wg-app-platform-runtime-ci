@@ -16,7 +16,7 @@ inputs:
 run:
   path: diego-ci/concourse/deploy_cf_deployment
 
-PARAMS:
+params:
   BOSH_ENVIRONMENT: ~
   BOSH_CLIENT: ~
   BOSH_CLIENT_SECRET: ~

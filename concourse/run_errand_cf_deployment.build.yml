@@ -7,15 +7,15 @@ image_resource:
     repository: cfdiegodocker/deploy-cf-deployment
 
 inputs:
-- name: diego-ci
 - name: deployments-diego
 
 run:
-  path: diego-ci/concourse/bosh_delete_deployments
+  path: diego-ci/concourse/run_errand_cf_deployment
 
 params:
   BOSH_ENVIRONMENT: ~
   BOSH_CLIENT: ~
   BOSH_CLIENT_SECRET: ~
+  BOSH_DEPLOYMENT: ~
   DEPLOYMENT_DIR: ~
-  DEPLOYMENTS: ~
+  ERRAND_NAME: ~
