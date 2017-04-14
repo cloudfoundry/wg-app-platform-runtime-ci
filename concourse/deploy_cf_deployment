@@ -16,7 +16,6 @@ export BOSH_CA_CERT="${DEPLOYMENT_DIR}/deployments/bbl/ca-cert"
 deployments_var_file="${DEPLOYMENT_DIR}/cf-deployment-vars.yml"
 
 expand_ops_files () {
-
   OPS_FILES="-o ${OPSFILE_DIR}/gcp.yml"
 
   if [ -d "${DEPLOYMENT_DIR}/operations" ]
@@ -28,6 +27,16 @@ expand_ops_files () {
       done
     popd
   fi > /dev/null 2>&1
+
+  if [ -d "${PWD}/diego-release/operations" ]
+  then
+    pushd ${PWD}/diego-release/operations
+      for opsfile in *.yml;
+      do
+        OPS_FILES="${OPS_FILES} -o ${PWD}/${opsfile}"
+      done
+    popd
+  fi
 
   echo "${OPS_FILES}"
 }
