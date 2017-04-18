@@ -17,6 +17,8 @@ deployments_var_file="${DEPLOYMENT_DIR}/cf-deployment-vars.yml"
 
 expand_ops_files () {
   OPS_FILES="-o ${OPSFILE_DIR}/gcp.yml"
+  OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/windows-cell.yml"
+  OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/use-only-local-route-emitters-windows-cell.yml"
 
   if [ -d "${DEPLOYMENT_DIR}/operations" ]
   then
