@@ -44,6 +44,7 @@ expand_ops_files () {
 bosh log-in
 
 bosh -n upload-stemcell bosh-stemcell/*.tgz
+bosh -n upload-stemcell bosh-windows-stemcell/*.tgz
 
 bosh -n interpolate \
   --var-errs \

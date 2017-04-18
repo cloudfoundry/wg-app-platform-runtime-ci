@@ -8,6 +8,7 @@ image_resource:
 
 inputs:
 - name: bosh-stemcell
+- name: bosh-windows-stemcell
 - name: diego-ci
 - name: merged-cf-deployment
 - name: deployments-diego
