@@ -26,6 +26,11 @@ if [ "$USE_GROOTFS" == "true" ]; then
     grootfs_flag="-G"
 fi
 
+cflinux_flag=""
+if [ "USE_CFLINUX" == "true" ]; then
+    cflinux_flag="-r"
+fi
+
 pushd cf-release
   ./scripts/generate_deployment_manifest \
     ${INFRASTRUCTURE} \
@@ -46,5 +51,6 @@ pushd diego-release
     ${local_route_emitters_flag} \
     ${sql_lock_flag} \
     ${grootfs_flag} \
+    ${cflinux_flag} \
     > ../generated-manifest/diego-deployment.yml
 popd
