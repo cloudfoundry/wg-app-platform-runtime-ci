@@ -13,6 +13,12 @@ if [ "$USE_LOCAL_ROUTE_EMITTERS" == "true" ]; then
     local_route_emitters_flag="-R"
 fi
 
+sql_lock_flag=""
+if [ "USE_LOCKET_SQL_LOCK" == "true" ]; then
+    sql_lock_flag="-Q"
+fi
+
+
 stubs_path="${environment_path}/stubs"
 templates_path="${environment_path}/templates"
 
@@ -35,5 +41,6 @@ pushd diego-release
     -n ${stubs_path}/diego-windows/instance-count-overrides.yml \
     -v ${stubs_path}/diego-windows/release-versions.yml \
     ${local_route_emitters_flag} \
+    ${sql_lock_flag} \
     > ../generated-manifest/diego-windows-deployment.yml
 popd
