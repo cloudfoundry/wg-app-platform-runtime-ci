@@ -14,7 +14,7 @@ if [ "$USE_LOCAL_ROUTE_EMITTERS" == "true" ]; then
 fi
 
 sql_lock_flag=""
-if [ "USE_LOCKET_SQL_LOCK" == "true" ]; then
+if [ "$USE_LOCKET_SQL_LOCK" == "true" ]; then
     sql_lock_flag="-Q"
 fi
 
