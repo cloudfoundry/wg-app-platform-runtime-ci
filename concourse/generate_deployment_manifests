@@ -27,7 +27,7 @@ if [ "$USE_GROOTFS" == "true" ]; then
 fi
 
 cflinux_flag=""
-if [ "USE_CFLINUX" == "true" ]; then
+if [ "$USE_CFLINUX" == "true" ]; then
     cflinux_flag="-r"
 fi
 
