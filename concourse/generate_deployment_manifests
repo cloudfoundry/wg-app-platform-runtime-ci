@@ -31,10 +31,18 @@ if [ "$USE_CFLINUX" == "true" ]; then
     cflinux_flag="-r"
 fi
 
+sql_stub="${stubs_path}/diego/diego-mysql-sql.yml "
+postgres_depoy_stub=""
+if [ "$DEPLOY_POSTGRES" == "true" ]; then
+  postgres_depoy_stub="${stubs-path}/cf/postgres-deploy-stub.yml"
+  sql_stub="${stubs_path}/diego/diego-postgres-sql.yml "
+fi
+
 pushd cf-release
   ./scripts/generate_deployment_manifest \
     ${INFRASTRUCTURE} \
     ${stubs_path}/cf/*.yml \
+    ${postgres_depoy_stub} \
     > ../generated-manifest/cf-deployment.yml
 popd
 
@@ -47,7 +55,7 @@ pushd diego-release
     -p ${stubs_path}/diego/property-overrides.yml \
     -n ${stubs_path}/diego/instance-count-overrides.yml \
     -v ${stubs_path}/diego/release-versions.yml \
-    -s ${stubs_path}/diego/diego-sql.yml -x \
+    -s ${sql_stub} -x \
     ${local_route_emitters_flag} \
     ${sql_lock_flag} \
     ${grootfs_flag} \
