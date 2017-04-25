@@ -34,7 +34,7 @@ fi
 sql_stub="${stubs_path}/diego/diego-sql.yml "
 postgres_deploy_stub=""
 if [ "$USE_POSTGRES" == "true" ]; then
-  postgres_deploy_stub="${stubs_path}/cf/postgres-deploy-stub.yml"
+  postgres_deploy_stub="${stubs_path}/cf-extras/postgres-deploy-stub.yml"
   sql_stub="${stubs_path}/diego/diego-postgres-sql.yml "
 fi
 
