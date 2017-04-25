@@ -21,6 +21,7 @@ params:
   USE_LOCKET_SQL_LOCK_FOR_BBS: false
   USE_GROOTFS: false
   USE_CFLINUX: false
+  DEPLOY_POSTGRES: false
 
 run:
   path: diego-ci/concourse/generate_routing_deployment_manifest
