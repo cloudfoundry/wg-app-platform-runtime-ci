@@ -6,8 +6,14 @@ $(dirname $0)/bosh_setup
 
 bosh download manifest ${DIEGO_DEPLOYMENT} /tmp/diego.yml
 
+properties_stub="${DEPLOYMENTS_DIR}/${ENVIRONMENT}/stubs/benchmarks/benchmark_properties.yml"
+
+if [ "$USE_POSTGRES" == "true" ]; then
+  properties_stub="${DEPLOYMENTS_DIR}/${ENVIRONMENT}/stubs/benchmarks/benchmark_postgres_properties.yml"
+fi
+
 diego-release/scripts/generate-benchmarks-manifest \
   -c /tmp/diego.yml \
-  -p ${DEPLOYMENTS_DIR}/${ENVIRONMENT}/stubs/benchmarks/benchmark_properties.yml \
+  -p ${properties_stub} \
   -i ${DEPLOYMENTS_DIR}/${ENVIRONMENT}/stubs/diego/iaas-settings.yml \
   > generated-manifest/benchmarks.yml

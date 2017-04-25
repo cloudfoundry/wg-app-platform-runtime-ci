@@ -32,16 +32,17 @@ if [ "$USE_CFLINUX" == "true" ]; then
 fi
 
 sql_stub="${stubs_path}/diego/diego-sql.yml "
-postgres_depoy_stub=""
-if [ "$DEPLOY_POSTGRES" == "true" ]; then
-  postgres_depoy_stub="${stubs-path}/cf/postgres-deploy-stub.yml"
+postgres_deploy_stub=""
+if [ "$USE_POSTGRES" == "true" ]; then
+  postgres_deploy_stub="${stubs-path}/cf/postgres-deploy-stub.yml"
+  sql_stub="${stubs_path}/diego/diego-postgres-sql.yml "
 fi
 
 pushd cf-release
   ./scripts/generate_deployment_manifest \
     ${INFRASTRUCTURE} \
     ${stubs_path}/cf/*.yml \
-    ${postgres_depoy_stub} \
+    ${postgres_deploy_stub} \
     > ../generated-manifest/cf-deployment.yml
 popd
 
