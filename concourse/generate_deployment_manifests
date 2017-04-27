@@ -2,6 +2,13 @@
 
 set -e -x -u
 
+function add_postgres_disk_pool() {
+  local manifest_path=$PWD/generated-manifest/cf-deployment.yml
+  pushd diego-ci/concourse
+    ./add_postgres_disk_pool.rb $manifest_path
+  popd
+}
+
 if [ -z "$ENVIRONMENT_NAME" ]; then
   environment_path="${PWD}/${DEPLOYMENTS_DIR}"
 else
@@ -45,6 +52,10 @@ pushd cf-release
     ${postgres_deploy_stub} \
     > ../generated-manifest/cf-deployment.yml
 popd
+
+if [ "$USE_POSTGRES" == "true" ]; then
+  add_postgres_disk_pool
+fi
 
 pushd diego-release
   cp ../generated-manifest/cf-deployment.yml /tmp/cf.yml
