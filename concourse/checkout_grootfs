@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -e -x
+
+WORKDIR=$PWD
+
+TAG=v$(cat grootfs-release-tarball/version)
+
+# switch release repo to tag determined by tarball version
+pushd grootfs-release-master
+  git fetch --tags
+  git checkout $TAG
+  git submodule update --init --recursive
+popd
+
+cp -r grootfs-release-master/. grootfs-release

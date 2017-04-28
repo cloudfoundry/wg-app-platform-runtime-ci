@@ -1,0 +1,15 @@
+---
+platform: linux
+
+image: docker:///cloudfoundry/diego-pipeline
+
+inputs:
+  - name: grootfs-release-tarball
+  - name: grootfs-release-master
+  - name: diego-ci
+
+outputs:
+  - name: grootfs-release
+
+run:
+  path: diego-ci/concourse/checkout_grootfs
