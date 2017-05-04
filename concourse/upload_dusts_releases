@@ -30,10 +30,8 @@ upload_releases() {
   bosh upload release $DIEGO_RELEASE_VPRIME
   bosh upload release $GARDEN_RUNC_RELEASE_VPRIME
   bosh upload release $ROOTFS_RELEASE_VPRIME
-
-  if [ -n "$CF_MYSQL_RELEASE_VPRIME" ]; then
-    bosh upload release $CF_MYSQL_RELEASE_VPRIME
-  fi
+  bosh upload release $CF_MYSQL_RELEASE_VPRIME
+  bosh upload release $ROUTING_RELEASE_VPRIME
 }
 
 upload_stemcell() {

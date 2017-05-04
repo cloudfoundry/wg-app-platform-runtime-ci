@@ -26,6 +26,7 @@ params:
   GARDEN_RUNC_RELEASE_VPRIME: ~
   ROOTFS_RELEASE_V0: ~
   ROOTFS_RELEASE_VPRIME: ~
+  ROUTING_RELEASE_VPRIME: ~
 
 run:
   path: diego-ci/concourse/upload_dusts_releases
