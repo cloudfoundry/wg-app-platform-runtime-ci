@@ -9,6 +9,7 @@ inputs:
   - name: cf-release-tarball
   - name: garden-runc-release-tarball
   - name: cf-mysql-release-tarball
+  - name: routing-release-tarball
   - name: cflinuxfs2-rootfs-release-tarball
 
 params:
