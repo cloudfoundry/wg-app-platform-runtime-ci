@@ -46,7 +46,7 @@ expand_ops_files () {
     fi
   fi
 
-  if [ "${USE_LOGGREGATOR_V@}" == "true" ]; then
+  if [ "${USE_LOGGREGATOR_V2}" == "true" ]; then
     OPS_FILES="-o ${OPSFILE_DIR}/experimental/enable-loggregator-v2-diego-cell.yml"
 
     if [ "${DEPLOY_WINDOWS_CELL}" == "true" ]; then
