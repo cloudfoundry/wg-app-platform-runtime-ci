@@ -38,7 +38,7 @@ expand_ops_files () {
     OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/tcp-routing-gcp.yml"
 
     if [ "${USE_LOCAL_ROUTE_EMITTERS}" == "true" ]; then
-      OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/experimental/enable-local-route-emitter-tcp.yml"
+      OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-local-route-emitter-tcp.yml"
 
       if [ "${DEPLOY_WINDOWS_CELL}" == "true" ]; then
         OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-local-route-emitter-tcp-windows.yml"
