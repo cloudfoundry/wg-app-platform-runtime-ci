@@ -4,4 +4,7 @@ set -e -x -u
 
 $(dirname $0)/bosh_setup
 
-bosh -n cleanup --all
+bosh -n cleanup
+
+# delete orphaned disks
+bosh disks --orphaned | grep disk | cut -d' ' -f2 | xargs -n1 bosh -n delete disk
