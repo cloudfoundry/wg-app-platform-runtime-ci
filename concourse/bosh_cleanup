@@ -7,4 +7,4 @@ $(dirname $0)/bosh_setup
 bosh -n cleanup
 
 # delete orphaned disks
-bosh disks --orphaned | grep disk | cut -d' ' -f2 | xargs -n1 bosh -n delete disk
+bosh disks --orphaned | grep disk | cut -d' ' -f2 | xargs -r -n1 bosh -n delete disk
