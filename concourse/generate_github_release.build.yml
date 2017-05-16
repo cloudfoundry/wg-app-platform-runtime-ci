@@ -1,7 +1,7 @@
 ---
 platform: linux
 
-image: docker:///concourse/git-resource
+rootfs_uri: docker:///concourse/git-resource
 
 inputs:
 - name: diego-ci
