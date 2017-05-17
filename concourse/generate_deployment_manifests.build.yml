@@ -21,6 +21,7 @@ params:
   USE_GROOTFS: false
   USE_CFLINUX: false
   USE_POSTGRES: false
+  ADD_POSTGRES_DISK_POOL: false
 
 run:
   path: diego-ci/concourse/generate_deployment_manifests

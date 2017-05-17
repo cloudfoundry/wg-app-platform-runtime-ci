@@ -53,7 +53,7 @@ pushd cf-release
     > ../generated-manifest/cf-deployment.yml
 popd
 
-if [ "$USE_POSTGRES" == "true" ]; then
+if [ "$ADD_POSTGRES_DISK_POOL" == "true" ]; then
   add_postgres_disk_pool
 fi
 
