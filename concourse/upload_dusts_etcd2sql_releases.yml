@@ -6,7 +6,7 @@ rootfs_uri: docker:///cloudfoundry/diego-pipeline
 inputs:
   - name: cf-mysql-release-tarball
   - name: cf-release-tarball
-  - name: cflinuxfs2-rootfs-release-tarball
+  - name: cflinuxfs2-release-tarball
   - name: diego-ci
   - name: diego-release-tarball
   - name: etcd-release-tarball
