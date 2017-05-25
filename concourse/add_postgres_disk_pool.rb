@@ -11,7 +11,7 @@ resource_pool =
 {
   "cloud_properties" =>
    {
-     "instance_type" =>  "m3.large",
+     "instance_type" =>  "c3.4xlarge",
      "ephemeral_disk" =>  {
       "size" =>  102400,
       "type" =>  "gp2"
