@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e -x -u
 
-for release in "windows-choco concourse-windows-worker"; do
+for release in windows-choco concourse-windows-worker; do
   pushd $release
     echo "----- Create dev release"
     version=$(date "+%s")
