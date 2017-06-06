@@ -1,0 +1,15 @@
+---
+platform: linux
+
+image: docker:///cloudfoundry/diego-pipeline
+
+inputs:
+  - name: windows-choco
+  - name: concourse-windows-worker
+  - name: diego-ci
+
+outputs:
+  - name: created-windows-releases
+
+run:
+  path: diego-ci/concourse/create_concourse_windows_dev_releases
