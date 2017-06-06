@@ -5,6 +5,6 @@ for release in windows-choco concourse-windows-worker; do
   pushd $release
     echo "----- Create dev release"
     version=$(date "+%s")
-    bosh2 -n create-release --version ${version} --tarball=../created-windows-release/${release}-dev-release-${version}.tgz
+    bosh2 -n create-release --version ${version} --tarball=../created-windows-releases/${release}-dev-release-${version}.tgz
   popd
 done
