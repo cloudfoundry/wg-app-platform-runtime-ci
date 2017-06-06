@@ -1,20 +1,10 @@
 #!/bin/bash
 set -e -x -u
 
-export GEM_HOME="${HOME}/.gem"
-mkdir -p "${GEM_HOME}"
-
 for release in "windows-choco concourse-windows-worker"; do
   pushd $release
-    for i in {1..5}; do
-      echo "Syncing blobs, attempt $i"
-      bosh -n --parallel 10 sync blobs && break
-    done
-
     echo "----- Create dev release"
     version=$(date "+%s")
-    bosh --parallel 4 -n create release --version ${version} --with-tarball
-
-    mv dev_releases/${release}/*.tgz ../created-windows-release/${release}-dev-release-${version}.tgz
+    bosh2 -n create-release --version ${version} --tarball=../created-windows-release/${release}-dev-release-${version}.tgz
   popd
 done
