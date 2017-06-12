@@ -62,6 +62,10 @@ expand_ops_files () {
     fi
   fi
 
+  if [ "${USE_BRIDGE_CONSOLIDATION}" == "true" ]; then
+    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/bypass-cc-bridge.yml"
+  fi
+
   if [ -d "${DEPLOYMENT_DIR}/operations" ]; then
     pushd ${DEPLOYMENT_DIR}/operations
       for opsfile in *.yml;

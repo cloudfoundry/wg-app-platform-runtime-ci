@@ -29,3 +29,4 @@ params:
   DEPLOY_ROUTING: false
   USE_LOGGREGATOR_V2: false
   USE_POSTGRES: false
+  USE_BRIDGE_CONSOLIDATION: false
