@@ -16,7 +16,7 @@ deprovision_bosh_lite () {
     -o ${BOSH_DEPLOYMENT_DIR}/gcp/cpi.yml \
     -o ${ENV_DIR}/operations/increase-instance-size.yml \
     -o ${BOSH_DEPLOYMENT_DIR}/bosh-lite.yml \
-    --vars-file ${ENV_DIR}/creds.yml \
+    --vars-store ${ENV_DIR}/creds.yml \
     --vars-env BOSH_LITE \
     --vars-env GCP \
     -v tags=["bosh-lite","${BOSH_LITE_NAME}"] \
