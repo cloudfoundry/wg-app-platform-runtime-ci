@@ -9,7 +9,7 @@ export BOSH_DEPLOYMENT
 
 export BOSH_MANIFEST="${PWD}/merged-cf-deployment/cf-deployment.yml"
 export OPSFILE_DIR="${PWD}/merged-cf-deployment/operations"
-
+export DIEGO_OPSFILE_DIR="${PWD}/diego-release/operations"
 export DEPLOYMENT_DIR="${PWD}/deployments-diego/${DEPLOYMENT_DIR}"
 export BOSH_CA_CERT="${DEPLOYMENT_DIR}/deployments/bbl/ca-cert"
 
@@ -17,6 +17,8 @@ deployments_var_file="${DEPLOYMENT_DIR}/cf-deployment-vars.yml"
 
 expand_ops_files () {
   OPS_FILES="-o ${OPSFILE_DIR}/gcp.yml"
+
+  OPS_FILES="${OPS_FILES} -o ${DIEGO_OPSFILE_DIR}/add-vizzini-errand.yml"
 
   if [ "${DEPLOY_WINDOWS_CELL}" == "true" ]; then
     OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/windows-cell.yml"
@@ -56,6 +58,7 @@ expand_ops_files () {
 
   if [ "${ENABLE_DECLARATIVE_HEALTHCHECKS}" == "true" ]; then
     OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-prefer-declarative-healthchecks.yml"
+    OPS_FILES="${OPS_FILES} -o ${DIEGO_OPSFILE_DIR}/enable-vizzini-delcarative-healthcheck-tests.yml"
 
     # Disabling this until garden-windows bump their pid limit from 10 to
     # something higher. The current pid limit combined with the fact that CC's
@@ -72,18 +75,7 @@ expand_ops_files () {
 
   if [ -d "${DEPLOYMENT_DIR}/operations" ]; then
     pushd ${DEPLOYMENT_DIR}/operations
-      for opsfile in *.yml;
-      do
-        OPS_FILES="${OPS_FILES} -o ${PWD}/${opsfile}"
-      done
-    popd
-  fi > /dev/null 2>&1
-
-  if [ -d "${PWD}/diego-release/operations" ]
-  then
-    pushd ${PWD}/diego-release/operations
-      for opsfile in *.yml;
-      do
+      for opsfile in *.yml; do
         OPS_FILES="${OPS_FILES} -o ${PWD}/${opsfile}"
       done
     popd
