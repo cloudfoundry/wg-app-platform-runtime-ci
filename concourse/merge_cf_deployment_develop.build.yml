@@ -8,7 +8,7 @@ image_resource:
 
 inputs:
 - name: diego-ci
-- name: cf-deployment-test-branch
+- name: cf-deployment-develop
 
 outputs:
 - name: merged-cf-deployment
