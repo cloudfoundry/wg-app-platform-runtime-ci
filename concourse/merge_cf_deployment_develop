@@ -2,7 +2,7 @@
 
 set -ex
 
-if [["x${PRIVATE_KEY}" = "x" ]]; then
+if [["x${PRIVATE_KEY}" = "x" ]] &> /dev/null; then
   echo "You must supply an SSH key!"
   exit 1
 fi
@@ -15,7 +15,7 @@ pushd ${PWD}/cf-deployment-test-branch
   git config user.name "CI (Automated)"
 
   git fetch origin "+refs/heads/*:refs/remotes/origin/*"
-  ssh-add ${PRIVATE_KEY}
+  ssh-add ${PRIVATE_KEY} &> /dev/null
 
   for i in $(git branch -a | grep -e "remotes/origin/diego-[0-9]\+" | sort -t '-' -k 2 -g); do
 
