@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+set -ex
+
+if [["x${PRIVATE_KEY}" = "x" ]]; then
+  echo "You must supply an SSH key!"
+  exit 1
+fi
+
+export MERGED_CF_DEPLOYMENT=$PWD/merged-develop
+
+pushd ${PWD}/cf-deployment-test-branch
+  echo "----- Set git identity"
+  git config user.email "cf-diego@pivotal.io"
+  git config user.name "CI (Automated)"
+
+  git fetch origin "+refs/heads/*:refs/remotes/origin/*"
+  ssh-add ${PRIVATE_KEY}
+
+  for i in $(git branch -a | grep -e "remotes/origin/diego-[0-9]\+" | sort -t '-' -k 2 -g); do
+
+    merged_rc=`git branch release-candidate --contains $i | wc -l`
+    merged_develop=`git branch diego-test-branch --contains $i | wc -l`
+    if [[ $merged_rc -eq 1 ]]; then
+      echo "Delete this branch"
+     # git branch -D $i
+    elif [[ $merged_develop -ne 1 ]]; then
+     echo "----- Merging cf-deployment branch ${i}"
+     git merge --no-edit $i
+    fi
+  done
+
+  cp -r . $MERGED_CF_DEPLOYMENT
+popd
+
