@@ -7,10 +7,8 @@ image_resource:
     repository: cfdiegodocker/deploy-cf-deployment
 
 inputs:
-- name: bosh-stemcell
 - name: diego-ci
-- name: cf-deployment
-- name: diego-release
+- name: cf-deployment-test-branch
 
 outputs:
 - name: merged-cf-deployment
