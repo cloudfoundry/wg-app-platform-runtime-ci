@@ -15,7 +15,7 @@ pushd ${PWD}/cf-deployment-test-branch
   git config user.name "CI (Automated)"
 
   git fetch origin "+refs/heads/*:refs/remotes/origin/*"
-  ssh-add <(${PRIVATE_KEY}) > /dev/null 2>&1
+  ssh-add <("${PRIVATE_KEY}") > /dev/null 2>&1
 
   for i in $(git branch -a | grep -e "remotes/origin/diego-[0-9]\+" | sort -t '-' -k 2 -g); do
 
