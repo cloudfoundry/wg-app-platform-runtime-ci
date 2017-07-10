@@ -7,7 +7,7 @@ if [["x${PRIVATE_KEY}" = "x" ]] > /dev/null 2>&1; then
   exit 1
 fi
 
-export MERGED_CF_DEPLOYMENT=$PWD/merged-develop
+export MERGED_CF_DEPLOYMENT=$PWD/merged-cf-deployment
 
 pushd ${PWD}/cf-deployment-test-branch
   echo "----- Set git identity"
