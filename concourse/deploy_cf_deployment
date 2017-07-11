@@ -19,6 +19,7 @@ expand_ops_files () {
   OPS_FILES="-o ${OPSFILE_DIR}/gcp.yml"
 
   OPS_FILES="${OPS_FILES} -o ${DIEGO_OPSFILE_DIR}/add-vizzini-errand.yml"
+  OPS_FILES="${OPS_FILES} -o $OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml"
 
   if [ "${DEPLOY_WINDOWS_CELL}" == "true" ]; then
     OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/windows-cell.yml"
