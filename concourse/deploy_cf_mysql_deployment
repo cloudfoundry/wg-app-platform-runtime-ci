@@ -1,0 +1,41 @@
+#!/bin/bash
+
+set -ex
+
+bosh --version
+
+pushd $DEPLOYMENTS_DIR/$ENVIRONMENT_NAME
+  source .envrc
+popd
+
+cf_deployment=cf-${ENVIRONMENT_NAME}
+environment_dir=$DEPLOYMENTS_DIR/$ENVIRONMENT_NAME
+stubs_dir=${environment_dir}/stubs
+deployments_dir=${environment_dir}/deployments
+certs_dir=${environment_dir}/certs
+
+encrypt_keys=$(bosh interpolate --path /properties/consul/encrypt_keys <(bosh -d $cf_deployment manifest))
+diego_database_password=$(bosh interpolate --path=/sql_overrides/bbs/db_password ${stubs_dir}/diego/diego-sql.yml)
+instance_types_ops_file=${deployments_dir}/cf-mysql-instance-types-ops.yml
+
+if [ -e $instance_types_ops_file ]; then
+    cloud_config_flags="-o $instance_types_ops_file"
+fi
+bosh -n update-cloud-config ${stubs_dir}/cloud-config.yml ${cloud_config_flags}
+bosh interpolate cf-mysql-deployment/cf-mysql-deployment.yml \
+     --var-errs \
+     --vars-file ${deployments_dir}/cf-mysql-vars.yml \
+     --var-file=consul_agent_cert=${certs_dir}/consul-certs/agent.crt \
+     --var-file=consul_agent_key=${certs_dir}/consul-certs/agent.key \
+     --var-file=consul_ca_cert=${certs_dir}/consul-certs/server-ca.crt \
+     --var-file=consul_server_cert=${certs_dir}/consul-certs/server.crt \
+     --var-file=consul_server_key=${certs_dir}/consul-certs/server.key \
+     --var=diego_database_password=$diego_database_password \
+     --var=consul_encrypt_keys="$encrypt_keys" \
+     --var=deployment-name=cf-${ENVIRONMENT_NAME}-mysql \
+     --var=consul_agent_servers_lan="- 10.10.2.37" \
+     -o diego-ci/concourse/cf-mysql-ops.yml \
+     -o cf-mysql-deployment/operations/proxy-consul.yml > manifest.yml
+
+bosh -n -d cf-${ENVIRONMENT_NAME}-mysql deploy --no-redact manifest.yml
+
