@@ -28,7 +28,7 @@ pushd ${PWD}/cf-deployment-develop
     if [[ $merged_rc -eq 1 ]]; then
       branch_name=${i#remotes/origin}
       echo "Deleting branch ${branch_name}"
-      git push origin --delete branch_name
+      echo yes | git push origin --delete branch_name
     elif [[ $merged_develop -ne 1 ]]; then
       echo "----- Merging cf-deployment branch ${i}"
       git merge --no-edit $i
