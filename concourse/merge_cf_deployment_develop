@@ -10,6 +10,10 @@ fi
 export MERGED_CF_DEPLOYMENT=$PWD/merged-cf-deployment
 
 pushd ${PWD}/cf-deployment-develop
+  echo "---Add ssh key"
+  eval `ssh-agent -s`
+  ssh-add <(echo "${PRIVATE_KEY}") > /dev/null 2>&1
+
   echo "----- Set git identity"
   git config user.email "cf-diego@pivotal.io"
   git config user.name "CI (Automated)"
@@ -18,9 +22,6 @@ pushd ${PWD}/cf-deployment-develop
 
   git fetch origin "+refs/heads/*:refs/remotes/origin/*"
   git checkout -b release-candidate remotes/origin/release-candidate
-
-  eval `ssh-agent -s`
-  ssh-add <(echo "${PRIVATE_KEY}") > /dev/null 2>&1
 
   for i in $(git branch -a | grep -e "remotes/origin/diego-[0-9]\+" | sort -t '-' -k 2 -g); do
 
