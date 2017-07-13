@@ -14,7 +14,7 @@ pushd ${PWD}/cf-deployment-develop
   git config user.email "cf-diego@pivotal.io"
   git config user.name "CI (Automated)"
 
-  echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> /etc/.ssh/ssh_config
+  echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> /etc/ssh/ssh_config
 
   git fetch origin "+refs/heads/*:refs/remotes/origin/*"
   git checkout -b release-candidate remotes/origin/release-candidate
