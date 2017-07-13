@@ -13,6 +13,7 @@ pushd ${PWD}/cf-deployment-develop
   echo "----- Set git identity"
   git config user.email "cf-diego@pivotal.io"
   git config user.name "CI (Automated)"
+  git remote set-url --push origin git@github.com:cloudfoundry/cf-deployment
 
   git fetch origin "+refs/heads/*:refs/remotes/origin/*"
   git checkout -b release-candidate remotes/origin/release-candidate
@@ -29,8 +30,8 @@ pushd ${PWD}/cf-deployment-develop
       echo "Deleting branch ${branch_name}"
       git push origin --delete branch_name
     elif [[ $merged_develop -ne 1 ]]; then
-     echo "----- Merging cf-deployment branch ${i}"
-     git merge --no-edit $i
+      echo "----- Merging cf-deployment branch ${i}"
+      git merge --no-edit $i
     fi
   done
 
