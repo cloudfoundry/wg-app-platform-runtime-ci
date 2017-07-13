@@ -13,5 +13,8 @@ inputs:
 outputs:
 - name: merged-cf-deployment
 
+params:
+  PRIVATE_KEY: ~
+
 run:
   path: diego-ci/concourse/merge_cf_deployment_develop
