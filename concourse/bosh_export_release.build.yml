@@ -1,0 +1,27 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: cfdiegodocker/deploy-cf-deployment
+
+inputs:
+- name: diego-ci
+- name: deployments-diego
+- name: diego-release-tarball
+- name: aws-stemcell
+
+outputs:
+- name: exported-release
+
+run:
+  path: diego-ci/concourse/bosh_export_release
+
+params:
+  BOSH_ENVIRONMENT: ~
+  BOSH_CLIENT: ~
+  BOSH_CLIENT_SECRET: ~
+  BOSH_DEPLOYMENT: ~
+  DEPLOYMENT_DIR: ~
+  RELEASE_NAME: ~
