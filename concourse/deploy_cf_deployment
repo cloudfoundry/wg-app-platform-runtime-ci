@@ -61,17 +61,9 @@ expand_ops_files () {
     OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-prefer-declarative-healthchecks.yml"
     OPS_FILES="${OPS_FILES} -o ${DIEGO_OPSFILE_DIR}/enable-vizzini-delcarative-healthcheck-tests.yml"
 
-    # Disabling this until garden-windows bump their pid limit from 10 to
-    # something higher. The current pid limit combined with the fact that CC's
-    # lrp definition has a healthcheck for ssh and another healthcheck for the
-    # app. This is causing windows containers to run 10 processes. On the first
-    # web request to the app hwc buildpack will spin up the compiler which will
-    # fail because the container pid limit is exceeded and causes a 500
-    # response to be returned.
-
-    # if [ "${DEPLOY_WINDOWS_CELL}" == "true" ]; then
-    #   OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-prefer-declarative-healthchecks-windows.yml"
-    # fi
+    if [ "${DEPLOY_WINDOWS_CELL}" == "true" ]; then
+      OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-prefer-declarative-healthchecks-windows.yml"
+    fi
   fi
 
   if [ -d "${DEPLOYMENT_DIR}/operations" ]; then
