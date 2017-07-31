@@ -17,6 +17,7 @@ deployments_var_file="${DEPLOYMENT_DIR}/cf-deployment-vars.yml"
 
 expand_ops_files () {
   OPS_FILES="-o ${OPSFILE_DIR}/gcp.yml"
+  OPS_FILES="-o ${OPSFILE_DIR}/use-latest-stemcell.yml"
 
   OPS_FILES="${OPS_FILES} -o ${DIEGO_OPSFILE_DIR}/add-vizzini-errand.yml"
   OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml"
