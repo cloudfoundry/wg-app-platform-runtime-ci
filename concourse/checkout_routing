@@ -4,7 +4,7 @@ set -e -x
 
 WORKDIR=$PWD
 
-TAG=v$(cat routing-release-tarball/version)
+TAG=$(cat routing-release-tarball/version)
 
 # switch release repo to tag determined by tarball version
 pushd routing-release-master
