@@ -1,0 +1,25 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: cfdiegodocker/deploy-cf-deployment
+
+inputs:
+- name: bosh-stemcell
+- name: diego-ci
+- name: merged-cf-deployment
+- name: deployments-diego
+- name: diego-release
+
+run:
+  path: diego-ci/concourse/deploy_cf_deployment
+
+params:
+  BOSH_ENVIRONMENT: ~
+  BOSH_CLIENT: ~
+  BOSH_CLIENT_SECRET: ~
+  BOSH_DEPLOYMENT: ~
+  DEPLOYMENT_DIR: ~
+  USE_POSTGRES: false
