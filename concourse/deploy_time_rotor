@@ -18,7 +18,6 @@ deployments_var_file="${DEPLOYMENT_DIR}/cf-deployment-vars.yml"
 bosh log-in
 
 bosh -n upload-stemcell bosh-stemcell/*.tgz
-bosh -n upload-stemcell bosh-windows-stemcell/*.tgz
 
 bosh -n interpolate \
   --var-errs \
