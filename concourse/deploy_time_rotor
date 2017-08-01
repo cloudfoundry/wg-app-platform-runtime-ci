@@ -39,7 +39,7 @@ if [ "${USE_POSTGRES}" == "true" ]; then
     version: create
     url: file://$(pwd)/diego-release
 EOF
-  )
+)
 else
   bosh  -d cf -n deploy --no-redact \
         --vars-file=${deployments_var_file} \
@@ -48,7 +48,7 @@ else
         -o ${OPSFILE_DIR}/experimental/locket.yml \
         -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
         -o ${DEPLOYMENT_DIR}/operations/overrides.yml \
-        -o ${DEPLOYMENT_DIR}/operations/mysql.yml
+        -o ${DEPLOYMENT_DIR}/operations/mysql.yml \
         -o <(cat <<EOF
 - type: replace
   path: /releases/name=diego
@@ -57,5 +57,5 @@ else
     version: create
     url: file://$(pwd)/diego-release
 EOF
-  )
+)
 fi
