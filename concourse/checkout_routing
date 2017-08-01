@@ -7,8 +7,10 @@ WORKDIR=$PWD
 TAG=v$(cat routing-release-tarball/version)
 
 # switch release repo to tag determined by tarball version
-pushd routing-release
+pushd routing-release-master
   git fetch --tags
   git checkout $TAG
   git submodule update --init --recursive
 popd
+
+cp routing-release-master/. routing-release

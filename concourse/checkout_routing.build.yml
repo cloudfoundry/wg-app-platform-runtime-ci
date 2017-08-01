@@ -4,7 +4,7 @@ platform: linux
 rootfs_uri: docker:///cloudfoundry/diego-pipeline
 
 inputs:
-  - name: routing-release
+  - name: routing-release-master
   - name: routing-release-tarball
   - name: diego-ci
 
