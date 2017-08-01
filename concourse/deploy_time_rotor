@@ -19,20 +19,6 @@ bosh log-in
 
 bosh -n upload-stemcell bosh-stemcell/*.tgz
 
-bosh -n interpolate \
-  --var-errs \
-  --vars-file=${deployments_var_file} ${BOSH_MANIFEST} \
-  $(expand_ops_files) \
-  -o <(cat <<EOF
-- type: replace
-  path: /releases/name=diego
-  value:
-    name: diego
-    version: create
-    url: file://$(pwd)/diego-release
-EOF
-)
-
 if [ "${USE_POSTGRES}" == "true" ]; then
   bosh  -d cf deploy --no-redact \
         --vars-file=${deployments_var_file} \
