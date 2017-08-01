@@ -1,0 +1,15 @@
+---
+platform: linux
+
+rootfs_uri: docker:///cloudfoundry/diego-pipeline
+
+inputs:
+  - name: routing-release
+  - name: routing-release-tarball
+  - name: diego-ci
+
+outputs:
+  - name: routing-release
+
+run:
+  path: diego-ci/concourse/checkout_routing
