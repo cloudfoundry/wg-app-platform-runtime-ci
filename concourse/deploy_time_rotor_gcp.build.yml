@@ -14,7 +14,7 @@ inputs:
 - name: diego-release
 
 run:
-  path: diego-ci/concourse/deploy_cf_deployment
+  path: diego-ci/concourse/deploy_time_rotor
 
 params:
   BOSH_ENVIRONMENT: ~
