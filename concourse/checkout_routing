@@ -13,4 +13,4 @@ pushd routing-release-master
   git submodule update --init --recursive
 popd
 
-cp routing-release-master/. routing-release
+cp -r routing-release-master/. routing-release
