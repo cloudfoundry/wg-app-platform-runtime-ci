@@ -10,6 +10,9 @@ inputs:
 - name: deployments-diego
 - name: diego-ci
 
+outputs:
+  - name: errand-results
+
 run:
   path: diego-ci/concourse/run_errand_cf_deployment
 
