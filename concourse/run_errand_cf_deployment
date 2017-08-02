@@ -14,7 +14,7 @@ errand_result=$?
 set -e
 
 original_name=$(ls ${ERRAND_NAME}-*.tgz)
-new_name=$(echo $original_name | sed 's/\.0\./\.0.0.0./')
+new_name=$(echo $original_name | sed 's/-\([0-9]*-\)/.0.0.0.\1/')
 mv $original_name errand-results/$new_name
 exit $errand_result
 
