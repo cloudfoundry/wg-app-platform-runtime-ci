@@ -27,10 +27,10 @@ expand_ops_files () {
   fi
 
   if [ "${USE_LOCKET}" == "true" ]; then
-    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/locket.yml"
+    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-locket.yml"
 
     if [ "${DEPLOY_WINDOWS_CELL}" == "true" ]; then
-        OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/locket-windows.yml"
+        OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-locket-windows.yml"
     fi
   fi
 
@@ -50,7 +50,7 @@ expand_ops_files () {
     OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/use-postgres.yml"
 
     if [ "${USE_LOCKET}" == "true" ]; then
-      OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/locket-postgres.yml"
+      OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-locket-postgres.yml"
     fi
   fi
 
