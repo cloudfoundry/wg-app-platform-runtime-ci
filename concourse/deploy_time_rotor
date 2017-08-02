@@ -25,8 +25,8 @@ if [ "${USE_POSTGRES}" == "true" ]; then
        ${BOSH_MANIFEST} \
         -o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml \
         -o ${OPSFILE_DIR}/experimental/locket.yml \
-        -o ${OPSFILE_DIR}/operations/use-postgres.yml \
-        -o ${OPSFILE_DIR}/operations/experimental/locket-postgres.yml \
+        -o ${OPSFILE_DIR}/use-postgres.yml \
+        -o ${OPSFILE_DIR}/experimental/locket-postgres.yml \
         -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
         -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark-postgres.yml \
         -o ${DEPLOYMENT_DIR}/operations/overrides.yml \
