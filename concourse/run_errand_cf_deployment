@@ -13,7 +13,7 @@ bosh run-errand ${ERRAND_NAME} --keep-alive --download-logs
 errand_result=$?
 set -e
 
-original_name=$(ls ${ERRAND_NAME}.0.*.tgz)
+original_name=$(ls ${ERRAND_NAME}-*.tgz)
 new_name=$(echo $original_name | sed 's/\.0\./\.0.0.0./')
 mv $original_name errand-results/$new_name
 exit $errand_result
