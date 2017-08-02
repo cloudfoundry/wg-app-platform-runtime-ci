@@ -71,6 +71,10 @@ expand_ops_files () {
     OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/use-grootfs.yml"
   fi
 
+  if [ "${DETECT_CONSUL_CELL_REGISTRATIONS}" == "false" ]; then
+    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/skip-consul-cell-registrations.yml" 
+  fi
+
   if [ -d "${DEPLOYMENT_DIR}/operations" ]; then
     pushd ${DEPLOYMENT_DIR}/operations
       for opsfile in *.yml; do
