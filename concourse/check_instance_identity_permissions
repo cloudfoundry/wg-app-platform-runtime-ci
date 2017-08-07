@@ -22,7 +22,7 @@ function get_directory_stats {
   directory=$1
   run_command_on_cell "ls -dl $directory" 2>&1 | grep instance_identity | grep -v ls\ -dl | awk '{print $1,$3,$4}'
 }
-stats=$(get_directory_stats /var/vcap/data/executor/instance_identity)
+stats=$(get_directory_stats /var/vcap/data/rep/instance_identity)
 permissions=$(echo $stats | cut -d' ' -f1)
 owner_user=$(echo $stats | cut -d' ' -f2)
 owner_group=$(echo $stats | cut -d' ' -f3)
