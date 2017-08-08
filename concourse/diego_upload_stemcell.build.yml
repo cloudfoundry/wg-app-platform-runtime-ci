@@ -1,0 +1,13 @@
+---
+platform: linux
+
+rootfs_uri: docker:///cloudfoundry/diego-pipeline
+
+inputs:
+  - name: bosh-stemcell
+
+params:
+  DIRECTORY: ~
+
+run:
+  path: diego-ci/concourse/diego_upload_stemcell

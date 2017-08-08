@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -e -x -u
+
+for entry in "$DIRECTORY"/*
+do
+  bosh upload-stemcell $entry
+done
