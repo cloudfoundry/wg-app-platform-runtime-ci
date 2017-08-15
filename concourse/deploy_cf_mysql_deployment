@@ -18,6 +18,7 @@ bosh interpolate cf-mysql-deployment/cf-mysql-deployment.yml \
      --vars-file ${deployments_dir}/cf-mysql-vars.yml \
      --vars-file ${stubs_dir}/cf-mysql/consul-secrets.yml \
      -o cf-mysql-deployment/operations/proxy-consul.yml \
-     -o ${stubs_dir}/cf-mysql/mysql-overrides-ops.yml > manifest.yml
+     -o ${stubs_dir}/cf-mysql/mysql-overrides-ops.yml \
+     -o ${stubs_dir}/cf-mysql/revert-consul-release-to-cf.yml > manifest.yml
 
 bosh -n -d cf-${ENVIRONMENT_NAME}-mysql deploy --no-redact manifest.yml
