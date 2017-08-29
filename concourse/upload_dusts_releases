@@ -32,6 +32,7 @@ upload_releases() {
   bosh upload release $ROOTFS_RELEASE_VPRIME
   bosh upload release $CF_MYSQL_RELEASE_VPRIME
   bosh upload release $ROUTING_RELEASE_VPRIME
+  bosh upload release $POSTGRES_RELEASE_VPRIME
 }
 
 upload_stemcell() {
