@@ -75,10 +75,6 @@ expand_ops_files () {
     OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/skip-consul-cell-registrations.yml" 
   fi
 
-  if [ "${USE_ETCD}" == "false" ]; then
-    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/disable-etcd.yml"
-  fi
-
   if [ -d "${DEPLOYMENT_DIR}/operations" ]; then
     pushd ${DEPLOYMENT_DIR}/operations
       for opsfile in *.yml; do
