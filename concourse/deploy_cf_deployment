@@ -89,17 +89,17 @@ expand_ops_files () {
   fi > /dev/null 2>&1
 
   if [ "${USE_BPM}" == "true" ]; then
-    OPS_FILES="${OPS_FILES} -o ${DIEGO_OPSFILE_DIR}/enable-bpm.yml" \
-                        -o <(cat <<EOF
+    OPS_FILES="${OPS_FILES} -o ${DIEGO_OPSFILE_DIR}/enable-bpm.yml"
+    cat > ${DIEGO_OPSFILE_DIR}/add_bpm_release.yml<<BPM
                         - type: replace
                           path: /releases/-
                           value:
                             name: bpm
                             version: create
                             url: file://${BPM_RELEASE_DIR}
-EOF
-)
-  fi
+BPM
+    OPS_FILES="${OPS_FILES} -o ${DIEGO_OPSFILE_DIR}/add_bpm_release.yml"
+ fi
 
   echo "${OPS_FILES}"
 }
