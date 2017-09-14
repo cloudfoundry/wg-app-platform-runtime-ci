@@ -73,7 +73,19 @@ expand_ops_files () {
   fi
 
   if [ "${DETECT_CONSUL_CELL_REGISTRATIONS}" == "false" ]; then
-    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/skip-consul-cell-registrations.yml" 
+    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/skip-consul-cell-registrations.yml"
+  fi
+
+  if [ "${DISABLE_CONSUL_SERVICE_REGISTRATION}" == "true" ]; then
+    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/disable-consul-service-registrations.yml"
+
+    if [ "${DEPLOY_WINDOWS_CELL}" == "true" ]; then
+      OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/disable-consul-service-registrations-windows.yml"
+    fi
+
+    if [ "${USE_LOCKET}" == "true" ]; then
+      OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/disable-consul-service-registrations-locket.yml"
+    fi
   fi
 
   if [ "${USE_ETCD}" == "false" ]; then
