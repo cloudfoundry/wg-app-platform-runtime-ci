@@ -35,3 +35,4 @@ params:
   USE_ETCD: true
   USE_BPM: false
   ENABLE_INSTANCE_IDENTITY: false
+  ENABLE_CONTAINER_PROXY: false

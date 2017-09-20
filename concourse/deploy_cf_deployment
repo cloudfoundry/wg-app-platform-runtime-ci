@@ -68,6 +68,11 @@ expand_ops_files () {
     fi
   fi
 
+  if [ "${ENABLE_CONTAINER_PROXY}" == "true" ]; then
+    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-container-proxy.yml"
+    OPS_FILES="${OPS_FILES} -o ${DIEGO_OPSFILE_DIR}/enable-vizzini-container-proxy-tests.yml"
+  fi
+
   if [ "${USE_GROOTFS}" == "true" ]; then
     OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/use-grootfs.yml"
   fi
