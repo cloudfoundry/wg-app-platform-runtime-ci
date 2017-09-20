@@ -10,8 +10,7 @@ inputs:
 - name: bosh-stemcell
 - name: bosh-windows-stemcell
 - name: diego-ci
-- name: cf-deployment
-  path: merged-cf-deployment
+- name: merged-cf-deployment
 - name: deployments-diego
 - name: diego-release
 
@@ -35,5 +34,3 @@ params:
   DISABLE_CONSUL_SERVICE_REGISTRATION: false
   USE_ETCD: true
   USE_BPM: false
-  ENABLE_INSTANCE_IDENTITY: false
-  ENABLE_CONTAINER_PROXY: false

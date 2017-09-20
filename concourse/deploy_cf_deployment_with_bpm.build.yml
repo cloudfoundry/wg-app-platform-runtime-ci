@@ -11,7 +11,8 @@ inputs:
 - name: bosh-windows-stemcell
 - name: bpm-release
 - name: diego-ci
-- name: merged-cf-deployment
+- name: cf-deployment
+  path: merged-cf-deployment
 - name: deployments-diego
 - name: diego-release
 
