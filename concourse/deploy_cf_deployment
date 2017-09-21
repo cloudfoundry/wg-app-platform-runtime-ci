@@ -7,7 +7,7 @@ export BOSH_CLIENT
 export BOSH_CLIENT_SECRET
 export BOSH_DEPLOYMENT
 
-export CF_DEPLOYMENT=${PWD}/merged-cf-deployment
+export CF_DEPLOYMENT=${PWD}/cf-deployment
 export BOSH_MANIFEST="$CF_DEPLOYMENT/cf-deployment.yml"
 export BPM_RELEASE_DIR="${PWD}/bpm-release"
 export DEPLOYMENT_DIR="${PWD}/deployments-diego/${DEPLOYMENT_DIR}"
