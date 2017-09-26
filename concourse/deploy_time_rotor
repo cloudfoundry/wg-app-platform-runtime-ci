@@ -14,24 +14,29 @@ export DEPLOYMENT_DIR="${PWD}/deployments-diego/${DEPLOYMENT_DIR}"
 export BOSH_CA_CERT="${DEPLOYMENT_DIR}/deployments/bbl/ca-cert"
 
 deployments_var_file="${DEPLOYMENT_DIR}/cf-deployment-vars.yml"
+deployment_file="${DEPLOYMENT_DIR}/cf.yml"
 
 bosh log-in
 
 bosh -n upload-stemcell bosh-stemcell/*.tgz
+ops_files="-o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml \
+  -o ${OPSFILE_DIR}/experimental/locket.yml \
+  -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
+  -o ${DEPLOYMENT_DIR}/operations/overrides.yml"
+
 
 if [ "${USE_POSTGRES}" == "true" ]; then
-  bosh  -d cf -n deploy --no-redact \
-        --vars-file=${deployments_var_file} \
-       ${BOSH_MANIFEST} \
-        -o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml \
-        -o ${OPSFILE_DIR}/experimental/locket.yml \
-        -o ${OPSFILE_DIR}/use-postgres.yml \
-        -o ${OPSFILE_DIR}/experimental/locket-postgres.yml \
-        -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
-        -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark-postgres.yml \
-        -o ${DEPLOYMENT_DIR}/operations/overrides.yml \
-        -o ${DEPLOYMENT_DIR}/operations/postgres.yml  \
-        -o <(cat <<EOF
+  postgres_ops_files="-o ${OPSFILE_DIR}/use-postgres.yml \
+      -o ${OPSFILE_DIR}/experimental/locket-postgres.yml \
+      -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark-postgres.yml \
+      -o ${DEPLOYMENT_DIR}/operations/postgres.yml"
+
+  bosh -n interpolate \
+    --var-errs \
+    --vars-file=${deployments_var_file} ${BOSH_MANIFEST} \
+    ${ops_files} \
+    ${postgres_ops_files} \
+    -o <(cat <<EOF
 - type: replace
   path: /releases/name=diego
   value:
@@ -39,17 +44,16 @@ if [ "${USE_POSTGRES}" == "true" ]; then
     version: create
     url: file://$(pwd)/diego-release
 EOF
-)
+) > ${deployment_file}
+
+  bosh  -d cf -n deploy --no-redact ${deployment_file}
 else
-  bosh  -d cf -n deploy --no-redact \
-        --vars-file=${deployments_var_file} \
-       ${BOSH_MANIFEST} \
-        -o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml \
-        -o ${OPSFILE_DIR}/experimental/locket.yml \
-        -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
-        -o ${DEPLOYMENT_DIR}/operations/overrides.yml \
-        -o ${DEPLOYMENT_DIR}/operations/mysql.yml \
-        -o <(cat <<EOF
+  bosh -n interpolate \
+    --var-errs \
+    --vars-file=${deployments_var_file} ${BOSH_MANIFEST} \
+    ${ops_files} \
+    -o ${DEPLOYMENT_DIR}/operations/mysql.yml \
+    -o <(cat <<EOF
 - type: replace
   path: /releases/name=diego
   value:
@@ -57,5 +61,7 @@ else
     version: create
     url: file://$(pwd)/diego-release
 EOF
-)
+) > ${deployment_file}
+
+  bosh  -d cf -n deploy --no-redact ${deployment_file}
 fi
