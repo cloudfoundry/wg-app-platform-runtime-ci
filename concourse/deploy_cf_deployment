@@ -94,10 +94,6 @@ expand_ops_files () {
     fi
   fi
 
-  if [ "${USE_ETCD}" == "false" ]; then
-    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/disable-etcd.yml"
-  fi
-
   if [ "${ENABLE_INSTANCE_IDENTITY}" == "true" ]; then
     OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-instance-identity-credentials.yml"
   fi
