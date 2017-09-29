@@ -113,8 +113,9 @@ expand_ops_files () {
                           path: /releases/-
                           value:
                             name: bpm
-                            version: create
-                            url: file://${BPM_RELEASE_DIR}
+                            sha1: a4b793b631a53ed5bc7966772222292938c0ca5f
+                            url: http://bosh.io/d/github.com/cloudfoundry-incubator/bpm-release?v=0.1.0
+                            version: 0.1.0
 BPM
     OPS_FILES="${OPS_FILES} -o ${DIEGO_OPSFILE_DIR}/add_bpm_release.yml"
  fi
