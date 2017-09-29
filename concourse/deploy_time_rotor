@@ -24,6 +24,7 @@ if [ "${USE_POSTGRES}" == "true" ]; then
     -o ${OPSFILE_DIR}/experimental/locket.yml \
     -o ${OPSFILE_DIR}/use-postgres.yml \
     -o ${OPSFILE_DIR}/experimental/locket-postgres.yml \
+    -o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml \
     -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
     -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark-postgres.yml \
     -o ${DEPLOYMENT_DIR}/operations/overrides.yml
@@ -47,6 +48,7 @@ EOF
 else
   ops_files="-o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml \
     -o ${OPSFILE_DIR}/experimental/locket.yml \
+    -o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml \
     -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
     -o ${DEPLOYMENT_DIR}/operations/overrides.yml \
     -o ${DEPLOYMENT_DIR}/operations/mysql.yml"
