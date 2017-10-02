@@ -18,7 +18,6 @@ export OPSFILE_DIR="$CF_DEPLOYMENT/operations"
 deployments_var_file="${DEPLOYMENT_DIR}/cf-deployment-vars.yml"
 
 expand_ops_files () {
-  OPS_FILES="-o ${OPSFILE_DIR}/gcp.yml"
   OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/use-latest-stemcell.yml"
 
   OPS_FILES="${OPS_FILES} -o ${DIEGO_OPSFILE_DIR}/add-vizzini-errand.yml"
@@ -36,28 +35,12 @@ expand_ops_files () {
     fi
   fi
 
-  if [ "${DEPLOY_ROUTING}" == "true" ]; then
-    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/tcp-routing-gcp.yml"
-  fi
-
-  if [ "${USE_LOGGREGATOR_V2}" == "true" ]; then
-    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-loggregator-v2-diego.yml"
-
-    if [ "${DEPLOY_WINDOWS_CELL}" == "true" ]; then
-      OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-loggregator-v2-windows-cell.yml"
-    fi
-  fi
-
   if [ "${USE_POSTGRES}" == "true" ]; then
     OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/use-postgres.yml"
 
     if [ "${USE_LOCKET}" == "true" ]; then
       OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-locket-postgres.yml"
     fi
-  fi
-
-  if [ "${USE_BRIDGE_CONSOLIDATION}" == "true" ]; then
-    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/bypass-cc-bridge.yml"
   fi
 
   if [ "${ENABLE_DECLARATIVE_HEALTHCHECKS}" == "true" ]; then
