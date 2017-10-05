@@ -23,6 +23,7 @@ if [ "${USE_POSTGRES}" == "true" ]; then
   postgres_ops_files="-o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml \
     -o ${OPSFILE_DIR}/use-postgres.yml \
     -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
+    -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark-postgres.yml \
     -o ${DEPLOYMENT_DIR}/operations/overrides.yml
     -o ${DEPLOYMENT_DIR}/operations/postgres.yml"
 
