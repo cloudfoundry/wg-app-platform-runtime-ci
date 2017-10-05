@@ -21,11 +21,9 @@ bosh -n upload-stemcell bosh-stemcell/*.tgz
 
 if [ "${USE_POSTGRES}" == "true" ]; then
   postgres_ops_files="-o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml \
-    -o ${OPSFILE_DIR}/experimental/locket.yml \
     -o ${OPSFILE_DIR}/use-postgres.yml \
     -o ${OPSFILE_DIR}/experimental/locket-postgres.yml \
     -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
-    -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark-postgres.yml \
     -o ${DEPLOYMENT_DIR}/operations/overrides.yml
     -o ${DEPLOYMENT_DIR}/operations/postgres.yml"
 
@@ -46,7 +44,6 @@ EOF
   bosh  -d cf -n deploy --no-redact ${deployment_file}
 else
   ops_files="-o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml \
-    -o ${OPSFILE_DIR}/experimental/locket.yml \
     -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
     -o ${DEPLOYMENT_DIR}/operations/overrides.yml \
     -o ${DEPLOYMENT_DIR}/operations/mysql.yml"

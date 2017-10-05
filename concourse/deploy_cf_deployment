@@ -27,20 +27,8 @@ expand_ops_files () {
     OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/windows-cell.yml"
   fi
 
-  if [ "${USE_LOCKET}" == "true" ]; then
-    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-locket.yml"
-
-    if [ "${DEPLOY_WINDOWS_CELL}" == "true" ]; then
-        OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-locket-windows.yml"
-    fi
-  fi
-
   if [ "${USE_POSTGRES}" == "true" ]; then
     OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/use-postgres.yml"
-
-    if [ "${USE_LOCKET}" == "true" ]; then
-      OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-locket-postgres.yml"
-    fi
   fi
 
   if [ "${ENABLE_DECLARATIVE_HEALTHCHECKS}" == "true" ]; then
@@ -67,13 +55,10 @@ expand_ops_files () {
 
   if [ "${DISABLE_CONSUL_SERVICE_REGISTRATION}" == "true" ]; then
     OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/disable-consul-service-registrations.yml"
+    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/disable-consul-service-registrations-locket.yml"
 
     if [ "${DEPLOY_WINDOWS_CELL}" == "true" ]; then
       OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/disable-consul-service-registrations-windows.yml"
-    fi
-
-    if [ "${USE_LOCKET}" == "true" ]; then
-      OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/disable-consul-service-registrations-locket.yml"
     fi
   fi
 
