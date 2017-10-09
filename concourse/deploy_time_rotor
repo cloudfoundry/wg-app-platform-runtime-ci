@@ -41,7 +41,7 @@ if [ "${USE_POSTGRES}" == "true" ]; then
 EOF
 ) > ${deployment_file}
 
-  bosh  -d cf -n deploy --no-redact ${deployment_file}
+  bosh  -d time_rotor_gcp_postgres -n deploy --no-redact ${deployment_file}
 else
   ops_files="-o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml \
     -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
@@ -63,5 +63,5 @@ else
 EOF
 ) > ${deployment_file}
 
-  bosh  -d cf -n deploy --no-redact ${deployment_file}
+  bosh  -d time_rotor_gcp -n deploy --no-redact ${deployment_file}
 fi
