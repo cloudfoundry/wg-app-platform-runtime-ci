@@ -64,6 +64,10 @@ expand_ops_files () {
 
   if [ "${ENABLE_INSTANCE_IDENTITY}" == "true" ]; then
     OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-instance-identity-credentials.yml"
+
+    if [ "${DEPLOY_WINDOWS_CELL}" == "true" ]; then
+      OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-instance-identity-credentials-windows.yml"
+    fi
   fi
 
   if [ -d "${DEPLOYMENT_DIR}/operations" ]; then
