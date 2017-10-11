@@ -35,9 +35,9 @@ expand_ops_files () {
     OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-prefer-declarative-healthchecks.yml"
     OPS_FILES="${OPS_FILES} -o ${DIEGO_OPSFILE_DIR}/enable-vizzini-delcarative-healthcheck-tests.yml"
 
-    if [ "${DEPLOY_WINDOWS_CELL}" == "true" ]; then
-      OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-prefer-declarative-healthchecks-windows.yml"
-    fi
+    # if [ "${DEPLOY_WINDOWS_CELL}" == "true" ]; then
+    #   OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-prefer-declarative-healthchecks-windows.yml"
+    # fi
   fi
 
   if [ "${ENABLE_CONTAINER_PROXY}" == "true" ]; then
