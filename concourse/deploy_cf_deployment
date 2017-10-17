@@ -64,6 +64,8 @@ expand_ops_files () {
 
   if [ "${ENABLE_INSTANCE_IDENTITY}" == "true" ]; then
     OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-instance-identity-credentials.yml"
+    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/use-bosh-dns-for-containers.yml"
+    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/secure-service-credentials.yml"
 
     if [ "${DEPLOY_WINDOWS_CELL}" == "true" ]; then
       OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/enable-instance-identity-credentials-windows.yml"
