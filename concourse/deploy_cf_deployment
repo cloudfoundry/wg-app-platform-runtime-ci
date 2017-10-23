@@ -49,16 +49,13 @@ expand_ops_files () {
     OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/use-grootfs.yml"
   fi
 
-  if [ "${DETECT_CONSUL_CELL_REGISTRATIONS}" == "false" ]; then
+  if [ "${DISABLE_CONSUL}" == "true" ]; then
+    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/disable-consul.yml"
+    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/skip-consul-locks.yml"
     OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/skip-consul-cell-registrations.yml"
-  fi
-
-  if [ "${DISABLE_CONSUL_SERVICE_REGISTRATION}" == "true" ]; then
-    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/disable-consul-service-registrations.yml"
-    OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/disable-consul-service-registrations-locket.yml"
 
     if [ "${DEPLOY_WINDOWS_CELL}" == "true" ]; then
-      OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/disable-consul-service-registrations-windows.yml"
+      OPS_FILES="${OPS_FILES} -o ${OPSFILE_DIR}/experimental/disable-consul-windows.yml"
     fi
   fi
 
