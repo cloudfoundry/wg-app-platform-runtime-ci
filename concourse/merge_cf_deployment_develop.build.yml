@@ -7,14 +7,11 @@ image_resource:
     repository: cfdiegodocker/deploy-cf-deployment
 
 inputs:
-- name: diego-ci
 - name: cf-deployment-develop
+- name: cf-deployment-diego
 
 outputs:
 - name: merged-cf-deployment
-
-params:
-  PRIVATE_KEY: ~
 
 run:
   path: diego-ci/concourse/merge_cf_deployment_develop

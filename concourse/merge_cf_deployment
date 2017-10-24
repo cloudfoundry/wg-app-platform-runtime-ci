@@ -9,12 +9,14 @@ pushd ${PWD}/cf-deployment
   git config user.email "cf-diego@pivotal.io"
   git config user.name "CI (Automated)"
 
-  git fetch origin "+refs/heads/*:refs/remotes/origin/*"
+  echo "----- Adding cloned cf-deployment as remote"
+  git remote add local-cf-deployment-diego ../cf-deployment-diego
+  git fetch local-cf-deployment-diego
 
-  for i in $(git branch -a | grep -e "remotes/origin/diego-[0-9]\+" | sort -t '-' -k 2 -g); do
-    echo "----- Merging cf-deployment branch ${i}"
-    git merge --no-edit $i
-  done
+  echo "----- Merging cf-deployment branch diego"
+  git merge --no-edit local-cf-deployment-diego/diego
+
+  ./scripts/test
 
   cp -r . $MERGED_CF_DEPLOYMENT
 popd
