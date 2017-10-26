@@ -4,7 +4,16 @@ set -e
 
 export MERGED_CF_DEPLOYMENT=$PWD/merged-cf-deployment
 
+if [["x${PRIVATE_KEY}" = "x" ]] > /dev/null 2>&1; then
+  echo "You must supply an SSH key!"
+  exit 1
+fi
+
 pushd ${PWD}/cf-deployment-develop
+  echo "---Add ssh key"
+  eval `ssh-agent -s`
+  ssh-add <(echo "${PRIVATE_KEY}") > /dev/null 2>&1
+
   echo "----- Set git identity"
   git config user.email "cf-diego@pivotal.io"
   git config user.name "CI (Automated)"
