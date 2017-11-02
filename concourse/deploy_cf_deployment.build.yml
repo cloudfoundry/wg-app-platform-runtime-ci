@@ -9,6 +9,7 @@ image_resource:
 inputs:
 - name: bosh-stemcell
 - name: bosh-windows-stemcell
+- name: bosh-windows2016-stemcell
 - name: diego-ci
 - name: cf-deployment
 - name: deployments-diego
@@ -18,15 +19,4 @@ run:
   path: diego-ci/concourse/deploy_cf_deployment
 
 params:
-  BOSH_ENVIRONMENT: ~
-  BOSH_CLIENT: ~
-  BOSH_CLIENT_SECRET: ~
-  BOSH_DEPLOYMENT: ~
   DEPLOYMENT_DIR: ~
-  DEPLOY_WINDOWS_CELL: false
-  USE_POSTGRES: false
-  USE_GROOTFS: false
-  DISABLE_CONSUL: false
-  USE_BPM: false
-  ENABLE_INSTANCE_IDENTITY: false
-  ENABLE_CONTAINER_PROXY: false
