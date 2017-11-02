@@ -2,6 +2,6 @@
 
 set -ex
 
-cd $DEPLOYMENT_DIR/
+cd deployments-diego/${DEPLOYMENT_DIR}/
 source .envrc
 ./deploy.sh
