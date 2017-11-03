@@ -16,7 +16,5 @@ pushd ${PWD}/cf-deployment
   echo "----- Merging cf-deployment branch diego"
   git merge --no-edit local-cf-deployment-diego/diego
 
-  ./scripts/test
-
   cp -r . $MERGED_CF_DEPLOYMENT
 popd
