@@ -25,12 +25,11 @@ pushd ${PWD}/cf-deployment-develop
   git remote add local-cf-deployment-diego ../cf-deployment-diego
   git fetch local-cf-deployment-diego
 
-  echo "----- Merging cf-deployment branch diego"
-  git merge --no-edit local-cf-deployment-diego/diego
+  echo "----- Switching to develop branch"
+  git checkout develop
 
-  echo "----- Merging cf-deployment develop branch into diego branch"
-  git checkout diego
-  git merge --no-edit develop
+  echo "----- Merging cf-deployment diego branch into develop branch"
+  git merge --no-edit diego
 
   cp -r . $MERGED_CF_DEPLOYMENT
 popd
