@@ -29,7 +29,7 @@ pushd ${PWD}/cf-deployment-develop
   git checkout develop
 
   echo "----- Merging cf-deployment diego branch into develop branch"
-  git merge --no-edit diego
+  git merge --no-edit local-cf-deployment-diego/diego
 
   cp -r . $MERGED_CF_DEPLOYMENT
 popd
