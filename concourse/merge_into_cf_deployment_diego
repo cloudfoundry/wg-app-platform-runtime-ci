@@ -18,7 +18,7 @@ pushd ${PWD}/cf-deployment-develop
   git fetch origin "+refs/heads/*:refs/remotes/origin/*"
 
   echo "----- Switching to develop branch"
-  git checkout diego
+  git checkout -b diego origin/diego
   git merge --ff-only origin/develop
 
   cp -r . $MERGED_CF_DEPLOYMENT
