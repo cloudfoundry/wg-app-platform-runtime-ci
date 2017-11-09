@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -e
+
+export MERGED_CF_DEPLOYMENT=$PWD/merged-cf-deployment
+
+if [["x${PRIVATE_KEY}" = "x" ]] > /dev/null 2>&1; then
+  echo "You must supply an SSH key!"
+  exit 1
+fi
+
+pushd ${PWD}/cf-deployment-develop
+  echo "---Add ssh key"
+  eval `ssh-agent -s`
+  ssh-add <(echo "${PRIVATE_KEY}") > /dev/null 2>&1
+
+  echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> /etc/ssh/ssh_config
+  git fetch origin "+refs/heads/*:refs/remotes/origin/*"
+
+  echo "----- Switching to develop branch"
+  git checkout diego
+  git merge --ff-only origin/develop
+
+  cp -r . $MERGED_CF_DEPLOYMENT
+popd
