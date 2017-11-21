@@ -6,3 +6,6 @@ cp /usr/local/bin/envoy envoy-binary
 pushd envoy-binary
   tar -czf envoy.tgz envoy
 popd
+
+cp -r diego-release-old-blob/* diego-release
+cp envoy-binary/envoy.tgz diego-release/blobs/proxy
