@@ -13,4 +13,4 @@ image_resource:
     repository: envoyproxy/envoy
 
 run:
-  path: diego-ci/concourse/copy_envoy_binary
+  path: diego-ci/concourse/create_envoy_blob

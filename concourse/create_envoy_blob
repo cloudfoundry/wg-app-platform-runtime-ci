@@ -2,7 +2,7 @@
 
 set -e -x
 
-cp /usr/local/bin/envoy envoy-binary
+cp /usr/local/bin/envoy $PWD/envoy-binary/
 pushd envoy-binary
   tar -czf envoy.tgz envoy
 popd

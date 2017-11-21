@@ -1,0 +1,21 @@
+---
+platform: linux
+
+inputs:
+- name: diego-ci
+- name: diego-release
+- name: envoy-binary
+outputs:
+- name: updated-diego-release
+
+image_resource:
+  type: docker-image
+  source:
+    repository: cloudfoundry/diego-pipeline
+
+params:
+  secret_access_key: ~
+  access_key_id: ~
+
+run:
+  path: diego-ci/concourse/update_envoy_blob
