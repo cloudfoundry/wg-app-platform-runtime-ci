@@ -3,9 +3,11 @@ platform: linux
 
 inputs:
 - name: diego-ci
+- name: diego-release-old-envoy
 
 outputs:
 - name: envoy-binary
+- name: diego-release
 
 image_resource:
   type: docker-image

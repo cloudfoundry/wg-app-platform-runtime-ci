@@ -7,5 +7,5 @@ pushd envoy-binary
   tar -czf envoy.tgz envoy
 popd
 
-cp -r diego-release-old-blob/* diego-release
+cp -r diego-release-old-envoy/* diego-release
 cp envoy-binary/envoy.tgz diego-release/blobs/proxy
