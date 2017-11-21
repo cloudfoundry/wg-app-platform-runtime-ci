@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -e -x
+
+cp /usr/local/bin/envoy envoy-binary
+pushd envoy-binary
+  tar -czf envoy.tgz envoy
+popd
