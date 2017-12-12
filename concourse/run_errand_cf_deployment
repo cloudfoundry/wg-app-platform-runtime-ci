@@ -2,11 +2,8 @@
 
 set -ex
 
-export BOSH_ENVIRONMENT
-export BOSH_CLIENT
-export BOSH_CLIENT_SECRET
 export BOSH_DEPLOYMENT
-export BOSH_CA_CERT="${PWD}/deployments-diego/${DEPLOYMENT_DIR}/deployments/bbl/ca-cert"
+source ${PWD}/deployments-diego/${DEPLOYMENT_DIR}/.envrc
 
 set +e
 bosh run-errand ${ERRAND_NAME} --keep-alive --download-logs
