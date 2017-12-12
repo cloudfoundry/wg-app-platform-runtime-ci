@@ -3,7 +3,9 @@
 set -ex
 
 export BOSH_DEPLOYMENT
-source ${PWD}/deployments-diego/${DEPLOYMENT_DIR}/.envrc
+pushd ${PWD}/deployments-diego/${DEPLOYMENT_DIR}
+source .envrc
+popd
 
 set +e
 bosh run-errand ${ERRAND_NAME} --keep-alive --download-logs
