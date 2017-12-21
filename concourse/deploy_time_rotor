@@ -25,6 +25,7 @@ if [ "${USE_POSTGRES}" == "true" ]; then
     -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
     -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark-postgres.yml \
     -o ${DEPLOYMENT_DIR}/operations/overrides.yml \
+    -o ${DEPLOYMENT_DIR}/operations/set-metron-deployment.yml \
     -o ${DEPLOYMENT_DIR}/operations/postgres.yml \
     -o ${DEPLOYMENT_DIR}/operations/rename-deployment-postgres.yml"
   bosh -n interpolate \
@@ -47,6 +48,7 @@ else
     -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
     -o ${DEPLOYMENT_DIR}/operations/overrides.yml \
     -o ${DEPLOYMENT_DIR}/operations/mysql.yml \
+    -o ${DEPLOYMENT_DIR}/operations/set-metron-deployment.yml \
     -o ${DEPLOYMENT_DIR}/operations/rename-deployment.yml"
 
   bosh -n interpolate \
