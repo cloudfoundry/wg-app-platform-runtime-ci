@@ -2,9 +2,9 @@
 
 set -ex
 
-export BOSH_ENVIRONMENT
-export BOSH_CLIENT
-export BOSH_CLIENT_SECRET
+pushd deployments-diego/${DEPLOYMENT_DIR}/
+  source .envrc
+popd
 export BOSH_DEPLOYMENT
 
 export BOSH_MANIFEST="${PWD}/merged-cf-deployment/cf-deployment.yml"
