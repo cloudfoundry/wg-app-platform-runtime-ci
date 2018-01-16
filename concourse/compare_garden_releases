@@ -3,16 +3,24 @@
 set -e -x
 
 GARDEN_SUBMODULE=src/code.cloudfoundry.org/garden
+GUARDIAN_SUBMODULE=src/code.cloudfoundry.org/guardian
 
 pushd diego-release
   DIEGO_GARDEN=`git ls-tree HEAD $GARDEN_SUBMODULE | awk '{print $3}'`
+  DIEGO_GUARDIAN=`git ls-tree HEAD $GUARDIAN_SUBMODULE | awk '{print $3}'`
 popd
 
 pushd garden-runc-release-master
   RELEASE_GARDEN=`git ls-tree HEAD $GARDEN_SUBMODULE | awk '{print $3}'`
+  RELEASE_GUARDIAN=`git ls-tree HEAD $GUARDIAN_SUBMODULE | awk '{print $3}'`
 popd
 
 if [ "x$DIEGO_GARDEN" != "x$RELEASE_GARDEN" ]; then
   echo "ERROR: Garden version in diego-release is out of date"
+  exit 1
+fi
+
+if [ "x$DIEGO_GUARDIAN" != "x$RELEASE_GUARDIAN" ]; then
+  echo "ERROR: Guardian version in diego-release is out of date"
   exit 1
 fi
