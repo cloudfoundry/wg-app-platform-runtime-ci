@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -ex
+
+pushd ${PWD}/diego-release
+  GOPATH=$PWD ./scripts/sync-package-specs
+
+  if ! git diff-files --exit-code --ignore-submodules; then
+    echo >&2 "There are unstaged changes in the index! Be sure to run 'sync-package-specs' and commit those changes."
+    exit 1
+  fi
+
+  if ! git diff-index --cached --exit-code HEAD --ignore-submodules; then
+    echo >&2 "There are uncommitted changes in the index! Be sure to run 'sync-package-specs' and commit those changes."
+    exit 1
+  fi
+popd
