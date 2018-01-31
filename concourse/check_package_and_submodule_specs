@@ -18,3 +18,18 @@ pushd ${GOPATH}
     exit 1
   fi
 popd
+
+
+pushd ${GOPATH}
+  ./scripts/sync-submodule-config
+
+  if ! git diff-files --exit-code --ignore-submodules; then
+    echo >&2 "There are unstaged changes in the index! Be sure to run 'sync-submodule-config' and commit those changes."
+    exit 1
+  fi
+
+  if ! git diff-index --cached --exit-code HEAD --ignore-submodules; then
+    echo >&2 "There are uncommitted changes in the index! Be sure to run 'sync-submodule-config' and commit those changes."
+    exit 1
+  fi
+popd
