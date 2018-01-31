@@ -2,8 +2,11 @@
 
 set -ex
 
-pushd ${PWD}/diego-release
-  GOPATH=$PWD ./scripts/sync-package-specs
+export GOPATH=${PWD}/diego-release
+export PATH=${PATH}:${GOPATH}/bin
+
+pushd ${GOPATH}
+  ./scripts/sync-package-specs
 
   if ! git diff-files --exit-code --ignore-submodules; then
     echo >&2 "There are unstaged changes in the index! Be sure to run 'sync-package-specs' and commit those changes."
