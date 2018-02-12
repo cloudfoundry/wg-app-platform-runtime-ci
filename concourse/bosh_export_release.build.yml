@@ -19,9 +19,5 @@ run:
   path: diego-ci/concourse/bosh_export_release
 
 params:
-  BOSH_ENVIRONMENT: ~
-  BOSH_CLIENT: ~
-  BOSH_CLIENT_SECRET: ~
-  BOSH_DEPLOYMENT: ~
   DEPLOYMENT_DIR: ~
   RELEASE_NAME: ~
