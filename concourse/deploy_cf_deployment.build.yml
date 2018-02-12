@@ -14,6 +14,7 @@ inputs:
 - name: cf-deployment
 - name: deployments-diego
 - name: diego-release
+- name: diego-dev-release
 
 run:
   path: diego-ci/concourse/deploy_cf_deployment

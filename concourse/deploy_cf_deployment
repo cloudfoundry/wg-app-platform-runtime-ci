@@ -2,6 +2,7 @@
 
 set -ex
 
+export DIEGO_RELEASE_TARBALL="${PWD}/diego-dev-release/*.tgz"
 cd deployments-diego/${DEPLOYMENT_DIR}/
 source .envrc
 ./deploy.sh
