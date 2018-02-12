@@ -10,7 +10,7 @@ export BOSH_DEPLOYMENT
 export DEPLOYMENT_DIR="${PWD}/deployments-diego/${DEPLOYMENT_DIR}"
 export BOSH_CA_CERT="${DEPLOYMENT_DIR}/certs/bosh-ca.crt"
 
-STEMCELL_VERSION=$(cat aws-stemcell/version)
+STEMCELL_VERSION=$(cat gcp-stemcell/version)
 RELEASE_VERSION=$(cat diego-release-tarball/version)
 
 bosh log-in

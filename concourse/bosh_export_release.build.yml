@@ -10,7 +10,7 @@ inputs:
 - name: diego-ci
 - name: deployments-diego
 - name: diego-release-tarball
-- name: aws-stemcell
+- name: gcp-stemcell
 
 outputs:
 - name: exported-release
