@@ -4,6 +4,10 @@ set -ex
 
 export MERGED_CF_DEPLOYMENT=$PWD/merged-cf-deployment
 
+pushd  ${PWD}/cf-deployment-diego
+  sha=$(git rev-list --max-count=1 HEAD)
+popd
+
 pushd ${PWD}/cf-deployment
   echo "----- Set git identity"
   git config user.email "cf-diego@pivotal.io"
@@ -14,7 +18,7 @@ pushd ${PWD}/cf-deployment
   git fetch local-cf-deployment-diego
 
   echo "----- Merging cf-deployment branch diego"
-  git merge --no-edit local-cf-deployment-diego/diego
+  git merge --no-edit $sha
 
   cp -r . $MERGED_CF_DEPLOYMENT
 popd
