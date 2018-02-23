@@ -13,4 +13,3 @@ echo "v$version" > generated-release/version
 mv garden-runc-release-tarball/*.tgz generated-release/garden-runc-$(cat garden-runc-release-tarball/version).tgz
 mv garden-windows-release-tarball/*.tgz generated-release/garden-windows-$(cat garden-windows-release-tarball/version).tgz
 mv cflinuxfs2-release-tarball/*.tgz generated-release/cflinuxfs2-$(cat cflinuxfs2-release-tarball/version).tgz
-mv cf-mysql-release-tarball/*.tgz generated-release/cf-mysql-release-$(cat cf-mysql-release-tarball/version).tgz
