@@ -11,11 +11,14 @@ inputs:
   - name: diego-release
   - name: diego-dev-release
   - name: diego-ci
-  - name: runtime-credentials
   - name: version
 
 outputs:
   - name: finalized-release
+
+params:
+  secret_access_key: ~
+  access_key_id: ~
 
 run:
   path: diego-ci/concourse/finalize_release

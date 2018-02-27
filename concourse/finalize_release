@@ -3,7 +3,15 @@
 set -e -x -u
 
 echo "----- Copy private blobstore credentials into diego-release"
-cp runtime-credentials/diego-ci/private.yml diego-release/config/private.yml
+
+cat > $PWD/diego-release/config/private.yml <<EOF
+---
+blobstore:
+  provider: s3
+  options:
+    secret_access_key: $secret_access_key
+    access_key_id: $access_key_id
+EOF
 
 FINAL_RELEASE_VERSION=$(cat version/number)
 DEV_RELEASE_TARBALL=$(ls $PWD/diego-dev-release/*.tgz)
