@@ -4,9 +4,14 @@ set -e
 
 ( cd diego-release-master && git rev-parse HEAD ) > generated-release/commitish
 
+cf_dep_sha=$( cd cf-deployment-rc && git rev-parse HEAD )
+
 version=$(cat diego-final-releases/version)
 echo "Diego v$version" > generated-release/name
 echo "v$version" > generated-release/version
+cat > generated-release/body <<EOF
+Verified against cf-deployment: [cloudfoundry/cf-deployment@\`$cf_dep_sha\`](https://github.com/cloudfoundry/cf-deployment/commit/$cf_dep_sha)
+EOF
 
 # rename garden-linux release file so it's easier to identify in
 # the release, otherwise it's just "release.tgz"
