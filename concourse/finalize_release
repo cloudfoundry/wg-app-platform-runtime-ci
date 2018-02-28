@@ -7,10 +7,14 @@ echo "----- Copy private blobstore credentials into diego-release"
 cat > $PWD/diego-release/config/private.yml <<EOF
 ---
 blobstore:
-  provider: s3
-  options:
+  s3:
+    # For diego-release-blobs s3 bucket
     secret_access_key: $secret_access_key
     access_key_id: $access_key_id
+  provider: s3
+    options:
+      secret_access_key: $secret_access_key
+      access_key_id: $access_key_id
 EOF
 
 FINAL_RELEASE_VERSION=$(cat version/number)
