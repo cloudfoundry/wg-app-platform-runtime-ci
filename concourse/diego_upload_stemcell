@@ -1,8 +1,0 @@
-#!/bin/bash
-
-set -e -x -u
-
-for entry in "$DIRECTORY"/*.tgz
-do
-  bosh upload-stemcell $entry
-done
