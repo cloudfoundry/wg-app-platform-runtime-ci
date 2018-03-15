@@ -27,14 +27,14 @@ pushd diego-release
   # idempotently create tarball in case later parts of shipit fail
   if [ -e "${RELEASE_YML}" ]; then
     echo "----- Release already created; making tarball..."
-    bosh2 -n create-release --tarball ${RELEASE_TGZ} ${RELEASE_YML}
+    bosh -n create-release --tarball ${RELEASE_TGZ} ${RELEASE_YML}
   else
     echo "----- Set git identity"
     git config user.email "cf-diego@pivotal.io"
     git config user.name "CI (Automated)"
 
     echo "----- Create final release"
-    bosh2 -n finalize-release --version $FINAL_RELEASE_VERSION $DEV_RELEASE_TARBALL
+    bosh -n finalize-release --version $FINAL_RELEASE_VERSION $DEV_RELEASE_TARBALL
 
     echo "----- Adding master cloned release as remote"
     git remote add local-diego-release-master ../diego-release-master

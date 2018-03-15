@@ -13,16 +13,16 @@ EOF
 
 cd diego-release
 
-bosh2 sync-blobs
+bosh sync-blobs
 old_envoy_version=$(ls -1 blobs/proxy/envoy*.tgz | xargs basename | sed 's/envoy-\(.*\).tgz/\1/g')
 new_envoy_version=$(../envoy-binary/envoy --version | grep -vE '^$' | awk '{print $3}' | cut -d/ -f1)
 
-bosh2 remove-blob proxy/envoy-${old_envoy_version}.tgz
-bosh2 add-blob ../envoy-binary/envoy.tgz proxy/envoy-${new_envoy_version}.tgz
+bosh remove-blob proxy/envoy-${old_envoy_version}.tgz
+bosh add-blob ../envoy-binary/envoy.tgz proxy/envoy-${new_envoy_version}.tgz
 sed -i "s/envoy.*\.tgz/envoy-${new_envoy_version}\.tgz/g" packages/proxy/*
-bosh2 blobs
-bosh2 upload-blobs
-bosh2 blobs
+bosh blobs
+bosh upload-blobs
+bosh blobs
 git --no-pager diff config/ packages/
 
 git config user.email "cf-diego@pivotal.io"
