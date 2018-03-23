@@ -45,6 +45,8 @@ pushd diego-release
     git add -A
     git commit -m "Create final release ${FINAL_RELEASE_VERSION}"
 
+    bosh create-release --tarball $RELEASE_TGZ $RELEASE_YML
+
     echo "----- DEBUG: show the commit we just created"
     git --no-pager show HEAD
   fi
