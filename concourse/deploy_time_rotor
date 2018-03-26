@@ -7,6 +7,7 @@ pushd deployments-diego/${DEPLOYMENT_DIR}/
 popd
 export BOSH_DEPLOYMENT
 
+export DIEGO_RELEASE="${PWD}/diego-release"
 export BOSH_MANIFEST="${PWD}/merged-cf-deployment/cf-deployment.yml"
 export OPSFILE_DIR="${PWD}/merged-cf-deployment/operations"
 
@@ -23,11 +24,11 @@ if [ "${USE_POSTGRES}" == "true" ]; then
   postgres_ops_files="-o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml \
     -o ${OPSFILE_DIR}/use-postgres.yml \
     -o ${OPSFILE_DIR}/use-latest-stemcell.yml \
-    -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
-    -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark-postgres.yml \
-    -o ${DEPLOYMENT_DIR}/operations/overrides.yml \
-    -o ${DEPLOYMENT_DIR}/operations/postgres.yml \
-    -o ${DEPLOYMENT_DIR}/operations/rename-deployment-postgres.yml"
+    -o ${DIEGO_RELEASE}/operations/benchmark-gcp/bbs-benchmark.yml \
+    -o ${DIEGO_RELEASE}/operations/benchmark-gcp/bbs-benchmark-postgres.yml \
+    -o ${DIEGO_RELEASE}/operations/benchmark-gcp/overrides.yml \
+    -o ${DIEGO_RELEASE}/operations/benchmark-gcp/postgres.yml \
+    -o ${DIEGO_RELEASE}/operations/benchmark-gcp/rename-deployment-postgres.yml"
   bosh -n interpolate \
     --var-errs \
     --vars-file=${deployments_var_file} ${BOSH_MANIFEST} \
@@ -38,7 +39,7 @@ if [ "${USE_POSTGRES}" == "true" ]; then
   value:
     name: diego
     version: create
-    url: file://$(pwd)/diego-release
+    url: file://${DIEGO_RELEASE}
 EOF
 ) > ${deployment_file}
 
@@ -46,10 +47,10 @@ EOF
 else
   ops_files="-o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml \
     -o ${OPSFILE_DIR}/use-latest-stemcell.yml \
-    -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
-    -o ${DEPLOYMENT_DIR}/operations/overrides.yml \
-    -o ${DEPLOYMENT_DIR}/operations/mysql.yml \
-    -o ${DEPLOYMENT_DIR}/operations/rename-deployment.yml"
+    -o ${DIEGO_RELEASE}/operations/benchmark-gcp/bbs-benchmark.yml \
+    -o ${DIEGO_RELEASE}/operations/benchmark-gcp/overrides.yml \
+    -o ${DIEGO_RELEASE}/operations/benchmark-gcp/mysql.yml \
+    -o ${DIEGO_RELEASE}/operations/benchmark-gcp/rename-deployment.yml"
 
   bosh -n interpolate \
     --var-errs \
@@ -61,7 +62,7 @@ else
   value:
     name: diego
     version: create
-    url: file://$(pwd)/diego-release
+    url: file://${DIEGO_RELEASE}
 EOF
 ) > ${deployment_file}
 
