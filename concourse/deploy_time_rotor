@@ -24,11 +24,11 @@ if [ "${USE_POSTGRES}" == "true" ]; then
   postgres_ops_files="-o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml \
     -o ${OPSFILE_DIR}/use-postgres.yml \
     -o ${OPSFILE_DIR}/use-latest-stemcell.yml \
-    -o ${DIEGO_RELEASE}/operations/benchmark-gcp/bbs-benchmark.yml \
-    -o ${DIEGO_RELEASE}/operations/benchmark-gcp/bbs-benchmark-postgres.yml \
-    -o ${DIEGO_RELEASE}/operations/benchmark-gcp/overrides.yml \
-    -o ${DIEGO_RELEASE}/operations/benchmark-gcp/postgres.yml \
-    -o ${DIEGO_RELEASE}/operations/benchmark-gcp/rename-deployment-postgres.yml"
+    -o ${DIEGO_RELEASE}/operations/benchmarks/postgres.yml \
+    -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
+    -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark-postgres.yml \
+    -o ${DEPLOYMENT_DIR}/operations/overrides.yml \
+    -o ${DEPLOYMENT_DIR}/operations/rename-deployment-postgres.yml"
   bosh -n interpolate \
     --var-errs \
     --vars-file=${deployments_var_file} ${BOSH_MANIFEST} \
@@ -47,10 +47,10 @@ EOF
 else
   ops_files="-o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml \
     -o ${OPSFILE_DIR}/use-latest-stemcell.yml \
-    -o ${DIEGO_RELEASE}/operations/benchmark-gcp/bbs-benchmark.yml \
-    -o ${DIEGO_RELEASE}/operations/benchmark-gcp/overrides.yml \
-    -o ${DIEGO_RELEASE}/operations/benchmark-gcp/mysql.yml \
-    -o ${DIEGO_RELEASE}/operations/benchmark-gcp/rename-deployment.yml"
+    -o ${DIEGO_RELEASE}/operations/benchmarks/mysql.yml \
+    -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
+    -o ${DEPLOYMENT_DIR}/operations/overrides.yml \
+    -o ${DEPLOYMENT_DIR}/operations/rename-deployment.yml"
 
   bosh -n interpolate \
     --var-errs \
