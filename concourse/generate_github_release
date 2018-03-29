@@ -10,7 +10,7 @@ version=$(cat diego-final-releases/version)
 echo "Diego v$version" > generated-release/name
 echo "v$version" > generated-release/version
 cat > generated-release/body <<EOF
-Verified against cf-deployment: [cloudfoundry/cf-deployment@\`$cf_dep_sha\`](https://github.com/cloudfoundry/cf-deployment/commit/$cf_dep_sha)
+Verified with [cloudfoundry/cf-deployment @ \`$cf_dep_sha\`](https://github.com/cloudfoundry/cf-deployment/commit/$cf_dep_sha)
 EOF
 
 # rename garden-linux release file so it's easier to identify in
