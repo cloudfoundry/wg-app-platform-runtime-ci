@@ -47,6 +47,7 @@ EOF
   bosh  -d time_rotor_gcp_postgres -n deploy --no-redact ${deployment_file}
 else
   ops_files="-o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml \
+    -o ${OPSFILE_DIR}/experimental/use-pxc.yml \
     -o ${OPSFILE_DIR}/use-latest-stemcell.yml \
     -o ${DIEGO_RELEASE}/operations/benchmarks/mysql.yml \
     -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
