@@ -52,6 +52,7 @@ else
     -o ${DIEGO_RELEASE}/operations/benchmarks/mysql.yml \
     -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
     -o ${DEPLOYMENT_DIR}/operations/overrides.yml \
+    -o ${DEPLOYMENT_DIR}/operations/disable-pxc-tls.yml \
     -o ${DEPLOYMENT_DIR}/operations/rename-deployment.yml"
 
   bosh -n interpolate \
