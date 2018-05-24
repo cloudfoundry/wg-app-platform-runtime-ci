@@ -18,9 +18,6 @@ run:
   path: diego-ci/concourse/deploy_time_rotor
 
 params:
-  BOSH_ENVIRONMENT: ~
-  BOSH_CLIENT: ~
-  BOSH_CLIENT_SECRET: ~
   BOSH_DEPLOYMENT: ~
   DEPLOYMENT_DIR: ~
   USE_POSTGRES: false
