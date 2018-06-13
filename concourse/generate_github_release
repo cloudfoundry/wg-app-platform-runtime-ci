@@ -10,11 +10,6 @@ version=$(cat diego-final-releases/version)
 echo "Diego v$version" > generated-release/name
 echo "v$version" > generated-release/version
 cat > generated-release/body <<EOF
+(Download release v$version from bosh.io)[http://bosh.io/releases/github.com/cloudfoundry/diego-release?version=$version]
 Verified with [cloudfoundry/cf-deployment @ \`$cf_dep_sha\`](https://github.com/cloudfoundry/cf-deployment/commit/$cf_dep_sha).
 EOF
-
-# rename garden-linux release file so it's easier to identify in
-# the release, otherwise it's just "release.tgz"
-mv garden-runc-release-tarball/*.tgz generated-release/garden-runc-$(cat garden-runc-release-tarball/version).tgz
-mv garden-windows-release-tarball/*.tgz generated-release/garden-windows-$(cat garden-windows-release-tarball/version).tgz
-mv cflinuxfs2-release-tarball/*.tgz generated-release/cflinuxfs2-$(cat cflinuxfs2-release-tarball/version).tgz

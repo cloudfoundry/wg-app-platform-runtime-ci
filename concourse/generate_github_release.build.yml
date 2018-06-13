@@ -11,9 +11,6 @@ inputs:
 - name: cf-deployment-rc
 - name: diego-release-master
 - name: diego-final-releases
-- name: garden-runc-release-tarball
-- name: garden-windows-release-tarball
-- name: cflinuxfs2-release-tarball
 
 outputs:
   - name: generated-release
