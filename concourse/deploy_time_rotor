@@ -32,7 +32,7 @@ if [ "${USE_POSTGRES}" == "true" ]; then
   bosh -n interpolate \
     --var-errs \
     --vars-file=${deployments_var_file} ${BOSH_MANIFEST} \
-    -v metron_agent_deployment=time-rotor-gcp-postgres \
+    -v loggregator_agent_deployment=time-rotor-gcp-postgres \
     ${postgres_ops_files} \
     -o <(cat <<EOF
 - type: replace
@@ -58,7 +58,7 @@ else
   bosh -n interpolate \
     --var-errs \
     --vars-file=${deployments_var_file} ${BOSH_MANIFEST} \
-    -v metron_agent_deployment=time-rotor-gcp \
+    -v loggregator_agent_deployment=time-rotor-gcp \
     ${ops_files} \
     -o <(cat <<EOF
 - type: replace
