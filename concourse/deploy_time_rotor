@@ -30,7 +30,6 @@ if [ "${USE_POSTGRES}" == "true" ]; then
     -o ${DEPLOYMENT_DIR}/operations/rename-deployment-postgres.yml"
   bosh -n interpolate \
     --var-errs \
-    --var-errs-unused \
     --vars-file=${deployments_var_file} ${BOSH_MANIFEST} \
     ${postgres_ops_files} \
     -o <(cat <<EOF
@@ -56,7 +55,6 @@ else
 
   bosh -n interpolate \
     --var-errs \
-    --var-errs-unused \
     --vars-file=${deployments_var_file} ${BOSH_MANIFEST} \
     ${ops_files} \
     -o <(cat <<EOF
