@@ -11,6 +11,7 @@ inputs:
 - name: bosh-windows-stemcell
 - name: bosh-windows2016-stemcell
 - name: diego-ci
+- name: bosh-deployment
 - name: cf-deployment
 - name: deployments-diego
 - name: diego-release
