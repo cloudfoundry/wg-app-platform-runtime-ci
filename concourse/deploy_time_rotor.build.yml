@@ -9,6 +9,7 @@ image_resource:
 inputs:
 - name: bosh-stemcell
 - name: diego-ci
+- name: bosh-deployment
 - name: cf-deployment
   path: merged-cf-deployment
 - name: deployments-diego
