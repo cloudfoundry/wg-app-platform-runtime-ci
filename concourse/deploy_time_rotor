@@ -7,17 +7,29 @@ pushd deployments-diego/${DEPLOYMENT_DIR}/
 popd
 export BOSH_DEPLOYMENT
 
+export BOSH_DNS_RUNTIME_CONFIG="${PWD}/bosh-deployment/runtime-configs/dns.yml"
 export DIEGO_RELEASE="${PWD}/diego-release"
-export BOSH_MANIFEST="${PWD}/merged-cf-deployment/cf-deployment.yml"
+export CF_MANIFEST="${PWD}/merged-cf-deployment/cf-deployment.yml"
 export OPSFILE_DIR="${PWD}/merged-cf-deployment/operations"
 
 export DEPLOYMENT_DIR="${PWD}/deployments-diego/${DEPLOYMENT_DIR}"
 
-deployments_var_file="${DEPLOYMENT_DIR}/cf-deployment-vars.yml"
-deployment_file="${DEPLOYMENT_DIR}/cf.yml"
+bosh_dns_var_file="${DEPLOYMENT_DIR}/bosh-dns-vars.yml"
+cf_deployment_var_file="${DEPLOYMENT_DIR}/cf-deployment-vars.yml"
+interpolated_manifest="${DEPLOYMENT_DIR}/cf.yml"
 
 bosh log-in
+
 bosh -n upload-stemcell bosh-stemcell/*.tgz
+
+bosh -n interpolate \
+  --var-errs \
+  --var-errs-unused \
+  --vars-file=${bosh_dns_var_file} ${BOSH_DNS_RUNTIME_CONFIG}
+
+bosh -n update-runtime-config \
+  --name=dns \
+  --vars-file=${bosh_dns_var_file} ${BOSH_DNS_RUNTIME_CONFIG}
 
 if [ "${USE_POSTGRES}" == "true" ]; then
   postgres_ops_files="-o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml \
@@ -30,7 +42,7 @@ if [ "${USE_POSTGRES}" == "true" ]; then
     -o ${DEPLOYMENT_DIR}/operations/rename-deployment-postgres.yml"
   bosh -n interpolate \
     --var-errs \
-    --vars-file=${deployments_var_file} ${BOSH_MANIFEST} \
+    --vars-file=${cf_deployment_var_file} ${CF_MANIFEST} \
     ${postgres_ops_files} \
     -o <(cat <<EOF
 - type: replace
@@ -40,9 +52,9 @@ if [ "${USE_POSTGRES}" == "true" ]; then
     version: create
     url: file://${DIEGO_RELEASE}
 EOF
-) > ${deployment_file}
+) > ${interpolated_manifest}
 
-  bosh  -d time_rotor_gcp_postgres -n deploy --no-redact ${deployment_file}
+  bosh  -d time_rotor_gcp_postgres -n deploy --no-redact ${interpolated_manifest}
 else
   ops_files="-o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml \
     -o ${OPSFILE_DIR}/experimental/use-pxc.yml \
@@ -55,7 +67,7 @@ else
 
   bosh -n interpolate \
     --var-errs \
-    --vars-file=${deployments_var_file} ${BOSH_MANIFEST} \
+    --vars-file=${cf_deployment_var_file} ${CF_MANIFEST} \
     ${ops_files} \
     -o <(cat <<EOF
 - type: replace
@@ -65,7 +77,7 @@ else
     version: create
     url: file://${DIEGO_RELEASE}
 EOF
-) > ${deployment_file}
+) > ${interpolated_manifest}
 
-  bosh  -d time_rotor_gcp -n deploy --no-redact ${deployment_file}
+  bosh  -d time_rotor_gcp -n deploy --no-redact ${interpolated_manifest}
 fi
