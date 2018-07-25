@@ -41,7 +41,7 @@ if [ "${USE_POSTGRES}" == "true" ]; then
     -o ${DEPLOYMENT_DIR}/operations/overrides.yml \
     -o ${DEPLOYMENT_DIR}/operations/remove-log-cache.yml \
     -o ${DEPLOYMENT_DIR}/operations/rename-deployment-postgres.yml
-    -o ${DEPLOYMENT_DIR}/operations/fix-bosh-dns-aliases.yml"
+    -o ${DEPLOYMENT_DIR}/operations/fix-bosh-dns-aliases-postgres.yml"
   bosh -n interpolate \
     --var-errs \
     --vars-file=${cf_deployment_var_file} ${CF_MANIFEST} \
@@ -67,7 +67,7 @@ else
     -o ${DEPLOYMENT_DIR}/operations/remove-log-cache.yml \
     -o ${DEPLOYMENT_DIR}/operations/disable-pxc-tls.yml \
     -o ${DEPLOYMENT_DIR}/operations/rename-deployment.yml
-    -o ${DEPLOYMENT_DIR}/operations/fix-bosh-dns-aliases-postgres.yml"
+    -o ${DEPLOYMENT_DIR}/operations/fix-bosh-dns-aliases.yml"
 
   bosh -n interpolate \
     --var-errs \
