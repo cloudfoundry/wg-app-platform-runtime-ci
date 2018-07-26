@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -ex
+
+cd deployments-diego/${DEPLOYMENT_DIR}/
+source .envrc
+bosh log-in
+bosh -n upload-stemcell bosh-stemcell/*.tgz
+bosh -n upload-stemcell bosh-windows-stemcell/*.tgz
