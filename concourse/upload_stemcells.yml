@@ -4,8 +4,7 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: cloudfoundry/diego-pipeline
-    tag: latest
+    repository: cfdiegodocker/deploy-cf-deployment
 
 inputs:
   - name: deployments-diego
