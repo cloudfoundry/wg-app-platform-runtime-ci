@@ -2,8 +2,9 @@
 
 set -ex
 
-cd deployments-diego/${DEPLOYMENT_DIR}/
-source .envrc
+pushd deployments-diego/${DEPLOYMENT_DIR}/
+  source .envrc
+popd
 bosh log-in
 bosh -n upload-stemcell bosh-stemcell/*.tgz
 bosh -n upload-stemcell bosh-windows-stemcell/*.tgz
