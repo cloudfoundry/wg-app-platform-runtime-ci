@@ -6,5 +6,8 @@ pushd deployments-diego/${DEPLOYMENT_DIR}/
   source .envrc
 popd
 bosh log-in
-bosh -n upload-stemcell bosh-stemcell/*.tgz
-bosh -n upload-stemcell bosh-windows-stemcell/*.tgz
+
+for stemcell_dir in $STEMCELL_DIRS; do
+  bosh -n upload-stemcell $stemcell_dir/*.tgz
+done
+

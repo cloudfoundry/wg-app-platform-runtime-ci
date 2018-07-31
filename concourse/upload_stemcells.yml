@@ -15,3 +15,7 @@ inputs:
 
 run:
   path: diego-ci/concourse/upload_stemcells
+
+params:
+  DEPLOYMENT_DIR:
+  STEMCELL_DIRS:
