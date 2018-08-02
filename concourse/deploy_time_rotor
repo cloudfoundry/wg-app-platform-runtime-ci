@@ -34,13 +34,14 @@ bosh -n update-runtime-config \
 if [ "${USE_POSTGRES}" == "true" ]; then
   postgres_ops_files="-o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml \
     -o ${OPSFILE_DIR}/use-postgres.yml \
+    -o ${OPSFILE_DIR}/experimental/use-xenial-stemcell.yml \
     -o ${OPSFILE_DIR}/use-latest-stemcell.yml \
     -o ${DIEGO_RELEASE}/operations/benchmarks/postgres.yml \
     -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
     -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark-postgres.yml \
     -o ${DEPLOYMENT_DIR}/operations/overrides.yml \
     -o ${DEPLOYMENT_DIR}/operations/remove-log-cache.yml \
-    -o ${DEPLOYMENT_DIR}/operations/rename-deployment-postgres.yml
+    -o ${DEPLOYMENT_DIR}/operations/rename-deployment-postgres.yml \
     -o ${DEPLOYMENT_DIR}/operations/fix-bosh-dns-aliases-postgres.yml"
   bosh -n interpolate \
     --var-errs \
@@ -60,13 +61,14 @@ EOF
 else
   ops_files="-o ${OPSFILE_DIR}/test/add-datadog-firehose-nozzle.yml \
     -o ${OPSFILE_DIR}/experimental/use-pxc.yml \
+    -o ${OPSFILE_DIR}/experimental/use-xenial-stemcell.yml \
     -o ${OPSFILE_DIR}/use-latest-stemcell.yml \
     -o ${DIEGO_RELEASE}/operations/benchmarks/mysql.yml \
     -o ${DEPLOYMENT_DIR}/operations/bbs-benchmark.yml \
     -o ${DEPLOYMENT_DIR}/operations/overrides.yml \
     -o ${DEPLOYMENT_DIR}/operations/remove-log-cache.yml \
     -o ${DEPLOYMENT_DIR}/operations/disable-pxc-tls.yml \
-    -o ${DEPLOYMENT_DIR}/operations/rename-deployment.yml
+    -o ${DEPLOYMENT_DIR}/operations/rename-deployment.yml \
     -o ${DEPLOYMENT_DIR}/operations/fix-bosh-dns-aliases.yml"
 
   bosh -n interpolate \
