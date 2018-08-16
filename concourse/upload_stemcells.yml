@@ -11,8 +11,9 @@ inputs:
   - name: diego-ci
   - name: bosh-stemcell
   - name: bosh-windows-stemcell
+    optional: true
   - name: bosh-windows2016-stemcell
-
+    optional: true
 run:
   path: diego-ci/concourse/upload_stemcells
 
