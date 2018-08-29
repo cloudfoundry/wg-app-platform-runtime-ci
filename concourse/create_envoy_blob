@@ -3,6 +3,10 @@
 set -e -x
 
 cp /usr/local/bin/envoy $PWD/envoy-binary/
+
+repository_version=$(envoy --version | tr -d '\n' | awk '{print $3}' | cut -d/ -f1)
+wget -O $PWD/envoy-binary/LICENSE https://raw.githubusercontent.com/envoyproxy/envoy/${repository_version}/LICENSE
+
 pushd envoy-binary
-  tar -czf envoy.tgz envoy
+  tar -czf envoy.tgz envoy LICENSE
 popd
