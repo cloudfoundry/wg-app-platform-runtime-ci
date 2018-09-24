@@ -52,7 +52,7 @@ pushd diego-release
   fi
 
   # make tarball easier to reach by upstream things
-  mv $RELEASE_TGZ ../finalized-release/diego-$FINAL_RELEASE_VERSION.tgz
+  mv $RELEASE_TGZ ../final-release/diego-$FINAL_RELEASE_VERSION.tgz
 popd
 
-cp -a diego-release finalized-release/
+cp -a diego-release final-release/

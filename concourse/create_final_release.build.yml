@@ -15,11 +15,11 @@ inputs:
   - name: version
 
 outputs:
-  - name: finalized-release
+  - name: final-release
 
 params:
   secret_access_key: ~
   access_key_id: ~
 
 run:
-  path: diego-ci/concourse/finalize_release
+  path: diego-ci/concourse/create_final_release
