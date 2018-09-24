@@ -18,7 +18,6 @@ blobstore:
 EOF
 
 FINAL_RELEASE_VERSION=$(cat version/number)
-DEV_RELEASE_TARBALL=$(ls $PWD/diego-dev-release/*.tgz)
 
 pushd diego-release
   RELEASE_YML=$PWD/releases/diego/diego-${FINAL_RELEASE_VERSION}.yml
@@ -34,7 +33,7 @@ pushd diego-release
     git config user.name "CI (Automated)"
 
     echo "----- Create final release"
-    bosh -n finalize-release --version $FINAL_RELEASE_VERSION $DEV_RELEASE_TARBALL
+    bosh -n create-release --final --version $FINAL_RELEASE_VERSION --tarball $RELEASE_TGZ
 
     echo "----- Adding master cloned release as remote"
     git remote add local-diego-release-master ../diego-release-master
@@ -44,8 +43,6 @@ pushd diego-release
     echo "----- Update master and develop branches on origin"
     git add -A
     git commit -m "Create final release ${FINAL_RELEASE_VERSION}"
-
-    bosh create-release --tarball $RELEASE_TGZ $RELEASE_YML
 
     echo "----- DEBUG: show the commit we just created"
     git --no-pager show HEAD

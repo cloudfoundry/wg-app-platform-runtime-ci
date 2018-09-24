@@ -10,7 +10,6 @@ image_resource:
 inputs:
   - name: diego-release-master
   - name: diego-release
-  - name: diego-dev-release
   - name: diego-ci
   - name: version
 
