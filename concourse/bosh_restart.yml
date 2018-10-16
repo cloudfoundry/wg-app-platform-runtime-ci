@@ -16,6 +16,7 @@ inputs:
 - name: vars-files  # - Variable files to be made available
 - name: cf-deployment-concourse-tasks
 - name: diego-ci # - This repo
+- name: release
 
 run:
   path: diego-ci/concourse/bosh_restart
