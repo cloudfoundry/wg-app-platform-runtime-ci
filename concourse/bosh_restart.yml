@@ -18,7 +18,7 @@ inputs:
 - name: diego-ci # - This repo
 
 run:
-  path: diego-ci/concourse/test_evacuation_using_bosh_restart
+  path: diego-ci/concourse/bosh_restart
 
 params:
   BBL_STATE_DIR: bbl-state
