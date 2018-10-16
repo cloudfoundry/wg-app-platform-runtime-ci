@@ -40,8 +40,8 @@ write_uptimer_deploy_config() {
     --arg app_syslog_availability ${APP_SYSLOG_AVAILABILITY_THRESHOLD} \
     '{
       "while": [{
-        "command":"echo",
-        "command_args":(["bosh", "--tty", "-n", "-d", $deployment_name, "restart"] + ($args | split(" ")))
+        "command":"bosh",
+        "command_args":(["--tty", "-n", "-d", $deployment_name, "restart"] + ($args | split(" ")))
       }],
       "cf": {
         "api": $cf_api,
