@@ -66,4 +66,20 @@ write_uptimer_deploy_config() {
   set -x
 }
 
+function bosh_restart() {
+  local deployment_name
+  deployment_name=$(bosh interpolate "${INTERPOLATED_MANIFEST}" --path /name)
+
+  uptimer_bosh_deploy
+}
+
+
+function main() {
+  check_input_params
+  setup_bosh_env_vars
+  bosh_interpolate
+  # shellcheck disable=SC2086
+  bosh_restart
+}
+
 main "${PWD}"
