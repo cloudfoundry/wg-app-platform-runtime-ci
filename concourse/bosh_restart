@@ -41,7 +41,7 @@ write_uptimer_deploy_config() {
     '{
       "while": [{
         "command":"echo",
-        "command_args":(["bosh" "--tty", "-n", "-d", $deployment_name, "restart"] + ($args | split(" ")))
+        "command_args":(["bosh", "--tty", "-n", "-d", $deployment_name, "restart"] + ($args | split(" ")))
       }],
       "cf": {
         "api": $cf_api,
