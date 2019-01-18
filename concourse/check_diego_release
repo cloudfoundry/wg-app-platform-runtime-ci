@@ -33,3 +33,7 @@ pushd ${GOPATH}
     exit 1
   fi
 popd
+
+pushd ${GOPATH}
+  ./scripts/staticcheck
+popd
