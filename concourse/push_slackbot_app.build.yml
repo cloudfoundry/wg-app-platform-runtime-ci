@@ -1,0 +1,32 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: cloudfoundry/diego-pipeline
+
+inputs:
+  - name: diego-ci
+  - name: slackbot
+
+params:
+  API: ~
+  ORG: ~
+  PASSWORD: ~
+  SPACE: ~
+  USER: ~
+  APP_DOMAIN: ~
+  APP_NAME: ~
+  DEPLOYMENT_NAME: ~
+  INSTANCE_COUNT: ~
+  DATADOG_API_KEY: ~
+  CF_STACK: ~
+  PAPERTRAIL_SERVICE_NAME: ~
+  PAPERTRAIL_DEST: ~
+  PIVOTAL_SLACK_TOKEN: ~
+  CLOUDFOUNDRY_SLACK_TOKEN: ~
+
+run:
+  path: diego-ci/concourse/push_slackbot_app
+

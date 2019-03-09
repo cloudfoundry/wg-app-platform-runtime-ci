@@ -1,0 +1,23 @@
+#!/bin/bash
+
+set -exu
+
+cf api ${API} --skip-ssl-validation
+
+cf auth ${USER} ${PASSWORD}
+
+cf create-org ${ORG}
+cf target -o ${ORG}
+
+cf create-space ${SPACE}
+cf target -s ${SPACE}
+
+export APP_NAME=${APP_NAME}
+export DEPLOYMENT_NAME=${DEPLOYMENT_NAME}
+export DOMAIN=${APP_DOMAIN}
+export INSTANCE_COUNT=${INSTANCE_COUNT}
+export CF_STACK=${CF_STACK}
+
+cd slackbot/slackbot
+
+./deploy.sh
