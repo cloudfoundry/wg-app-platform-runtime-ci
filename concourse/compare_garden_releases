@@ -2,8 +2,8 @@
 
 set -e -x
 
-GARDEN_SUBMODULE=src/code.cloudfoundry.org/garden
-GUARDIAN_SUBMODULE=src/code.cloudfoundry.org/guardian
+GARDEN_SUBMODULE=src/gopath/src/code.cloudfoundry.org/garden
+GUARDIAN_SUBMODULE=src/guardian
 
 pushd diego-release
   DIEGO_GARDEN=`git ls-tree HEAD $GARDEN_SUBMODULE | awk '{print $3}'`
