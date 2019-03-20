@@ -2,17 +2,19 @@
 
 set -e -x
 
-GARDEN_SUBMODULE=src/gopath/src/code.cloudfoundry.org/garden
-GUARDIAN_SUBMODULE=src/guardian
+DIEGO_GARDEN_SUBMODULE=src/code.cloudfoundry.org/garden
+DIEGO_GUARDIAN_SUBMODULE=src/code.cloudfoundry.org/guardian
+GARDEN_RUNC_GARDEN_SUBMODULE=src/gopath/src/code.cloudfoundry.org/garden
+GARDEN_RUNC_GUARDIAN_SUBMODULE=src/guardian
 
 pushd diego-release
-  DIEGO_GARDEN=`git ls-tree HEAD $GARDEN_SUBMODULE | awk '{print $3}'`
-  DIEGO_GUARDIAN=`git ls-tree HEAD $GUARDIAN_SUBMODULE | awk '{print $3}'`
+  DIEGO_GARDEN=`git ls-tree HEAD $DIEGO_GARDEN_SUBMODULE | awk '{print $3}'`
+  DIEGO_GUARDIAN=`git ls-tree HEAD $DIEGO_GUARDIAN_SUBMODULE | awk '{print $3}'`
 popd
 
 pushd garden-runc-release-master
-  RELEASE_GARDEN=`git ls-tree HEAD $GARDEN_SUBMODULE | awk '{print $3}'`
-  RELEASE_GUARDIAN=`git ls-tree HEAD $GUARDIAN_SUBMODULE | awk '{print $3}'`
+  RELEASE_GARDEN=`git ls-tree HEAD $GARDEN_RUNC_GARDEN_SUBMODULE | awk '{print $3}'`
+  RELEASE_GUARDIAN=`git ls-tree HEAD $GARDEN_RUNC_GUARDIAN_SUBMODULE | awk '{print $3}'`
 popd
 
 if [ "x$DIEGO_GARDEN" != "x$RELEASE_GARDEN" ]; then
