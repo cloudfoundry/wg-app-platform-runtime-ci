@@ -4,7 +4,7 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: cfdiegodocker/deploy-cf-deployment
+    repository: relintdockerhubpushbot/cf-deployment-concourse-tasks
 
 inputs:
   - name: deployments-diego
