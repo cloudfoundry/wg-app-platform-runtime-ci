@@ -4,7 +4,7 @@ set -e -x
 
 DIEGO_GARDEN_SUBMODULE=src/code.cloudfoundry.org/garden
 DIEGO_GUARDIAN_SUBMODULE=src/code.cloudfoundry.org/guardian
-GARDEN_RUNC_GARDEN_SUBMODULE=src/gopath/src/code.cloudfoundry.org/garden
+GARDEN_RUNC_GARDEN_SUBMODULE=src/garden
 GARDEN_RUNC_GUARDIAN_SUBMODULE=src/guardian
 
 pushd diego-release
