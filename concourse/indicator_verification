@@ -6,4 +6,5 @@ cf api --skip-ssl-validation "https://api.$SYSTEM_DOMAIN"
 cf auth admin $CF_ADMIN_PASSWORD
 OAUTH_TOKEN="$(cf oauth-token)"
 INDICATOR_VERIFICATION=$(ls ./indicator-verification-linux/indicator-verification-linux*)
+chmod +x $INDICATOR_VERIFICATION
 find ./release/jobs -name "indicators.yml.erb" | xargs -n 1 -I{} $INDICATOR_VERIFICATION -indicators {} -metadata deployment=$DEPLOYMENT_NAME   -authorization "$OAUTH_TOKEN" -query-endpoint "https://log-cache.$SYSTEM_DOMAIN" -k
