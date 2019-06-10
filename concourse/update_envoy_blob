@@ -29,5 +29,5 @@ git config user.email "cf-diego@pivotal.io"
 git config user.name "CI (Automated)"
 
 git add -A config packages
-git commit -n -m "Bumping envoy from ${old_envoy_version} to ${new_envoy_version}"
+git commit -n -m "Bumping envoy from ${old_envoy_version} to ${new_envoy_version} using istio/proxyv2:1.1.3 docker image"
 rsync -av $PWD/ ../updated-diego-release
