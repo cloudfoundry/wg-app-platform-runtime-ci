@@ -11,7 +11,7 @@ apt-get install -y wget
 
 wget -O WORKSPACE https://raw.githubusercontent.com/istio/proxy/${repository_version}/WORKSPACE
 
-envoy_version=$(grep "ENVOY_SHA =" WORKSPACE | tr -d '\n' | awk '{print $3}')
+envoy_version=$(grep "ENVOY_SHA =" WORKSPACE | tr -d '\n' | awk '{print $3}' | sed -e 's/^"//' -e 's/"$//')
 
 wget -O $PWD/envoy-binary/LICENSE https://raw.githubusercontent.com/istio/envoy/${envoy_version}/LICENSE
 wget -O $PWD/envoy-binary/NOTICE https://raw.githubusercontent.com/istio/envoy/${envoy_version}/NOTICE
