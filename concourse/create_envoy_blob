@@ -9,12 +9,8 @@ repository_version=$(envoy --version | tr -d '\n' | awk '{print $3}' | cut -d/ -
 apt-get update
 apt-get install -y wget
 
-wget -O WORKSPACE https://raw.githubusercontent.com/istio/proxy/${repository_version}/WORKSPACE
-
-envoy_version=$(grep "ENVOY_SHA =" WORKSPACE | tr -d '\n' | awk '{print $3}' | sed -e 's/^"//' -e 's/"$//')
-
-wget -O $PWD/envoy-binary/LICENSE https://raw.githubusercontent.com/istio/envoy/${envoy_version}/LICENSE
-wget -O $PWD/envoy-binary/NOTICE https://raw.githubusercontent.com/istio/envoy/${envoy_version}/NOTICE
+wget -O $PWD/envoy-binary/LICENSE https://raw.githubusercontent.com/envoyproxy/envoy/${repository_version}/LICENSE
+wget -O $PWD/envoy-binary/NOTICE https://raw.githubusercontent.com/envoyproxy/envoy/${repository_version}/NOTICE
 
 pushd envoy-binary
   tar -czf envoy.tgz envoy LICENSE NOTICE

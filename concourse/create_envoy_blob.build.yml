@@ -10,8 +10,7 @@ outputs:
 image_resource:
   type: docker-image
   source:
-    repository: istio/proxyv2
-    tag: 1.1.3
+    repository: envoyproxy/envoy-dev
 
 run:
   path: diego-ci/concourse/create_envoy_blob
