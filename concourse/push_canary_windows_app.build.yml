@@ -18,6 +18,7 @@ params:
   USER: ~
   APP_NAME: ~
   INSTANCE_COUNT: ~
+  STACK_NAME: ~
 
 run:
   path: diego-ci/concourse/push_canary_windows_app
