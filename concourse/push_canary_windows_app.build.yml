@@ -1,0 +1,24 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: cloudfoundry/diego-pipeline
+
+inputs:
+  - name: diego-ci
+  - name: diegocanarywindowsapp
+
+params:
+  API: ~
+  ORG: ~
+  PASSWORD: ~
+  SPACE: ~
+  USER: ~
+  APP_NAME: ~
+  INSTANCE_COUNT: ~
+
+run:
+  path: diego-ci/concourse/push_canary_windows_app
+

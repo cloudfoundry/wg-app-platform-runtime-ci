@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -e -x -u
+
+cf api ${API} --skip-ssl-validation
+
+cf auth ${USER} ${PASSWORD}
+
+cf create-org ${ORG}
+cf target -o ${ORG}
+
+cf create-space ${SPACE}
+cf target -s ${SPACE}
+
+cf push -p ${PATH_TO_APP} -s windows ${APP_NAME}
+cf scale ${APP_NAME} -i ${INSTANCE_COUNT}
+
