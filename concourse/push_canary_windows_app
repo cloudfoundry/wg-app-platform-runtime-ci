@@ -2,6 +2,8 @@
 
 set -e -x -u
 
+cd diegocanarywindowsapp
+
 cf api ${API} --skip-ssl-validation
 
 cf auth ${USER} ${PASSWORD}
@@ -12,6 +14,6 @@ cf target -o ${ORG}
 cf create-space ${SPACE}
 cf target -s ${SPACE}
 
-cf push -p ${PATH_TO_APP} -s windows ${APP_NAME} -b hwc_buildpack
+cf push -s windows ${APP_NAME} -b hwc_buildpack
 cf scale ${APP_NAME} -i ${INSTANCE_COUNT}
 
