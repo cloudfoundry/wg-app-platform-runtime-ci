@@ -17,6 +17,7 @@ params:
   SPACE: ~
   USER: ~
   APP_NAME: ~
+  APP_PATH: ~
   INSTANCE_COUNT: ~
   STACK_NAME: ~
 

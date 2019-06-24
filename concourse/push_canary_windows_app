@@ -14,6 +14,6 @@ cf target -o ${ORG}
 cf create-space ${SPACE}
 cf target -s ${SPACE}
 
-cf push -s ${STACK_NAME} ${APP_NAME} -b hwc_buildpack
+cf push -s ${STACK_NAME} ${APP_NAME} -b hwc_buildpack -p ./${APP_PATH}
 cf scale ${APP_NAME} -i ${INSTANCE_COUNT}
 
