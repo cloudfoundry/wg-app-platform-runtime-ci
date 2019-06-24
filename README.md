@@ -1,6 +1,6 @@
 # Diego CI
 
-Scripts and tools to run Diego's CI builds on [Concourse CI](http://concourse.ci).
+Scripts and tools to run Diego's CI builds on [Concourse CI](https://concourse-ci.org).
 
 ## What's in here
 This repo contains only the Concourse scripts and build task definitions.
