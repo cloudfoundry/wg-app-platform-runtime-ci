@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -ex
+
+export GOPATH=${PWD}/diego-release
+export PATH=${PATH}:${GOPATH}/bin
+
+pushd deployments-diego
+find . -name "*vars-store.yml" | xargs -I{} -n 1 ./scripts/find-expired-certs-from-yaml.rb {} 60
