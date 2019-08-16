@@ -10,4 +10,4 @@ inputs:
   - name: diego-ci
 
 run:
-  path: diego-ci/concourse/check_diego_release
+  path: diego-ci/tasks/check_diego_release

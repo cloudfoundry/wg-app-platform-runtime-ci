@@ -15,4 +15,4 @@ outputs:
 - name: merged-cf-deployment
 
 run:
-  path: diego-ci/concourse/cf_deployment_tests
+  path: diego-ci/tasks/cf_deployment_tests

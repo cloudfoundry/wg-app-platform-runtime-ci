@@ -11,7 +11,7 @@ inputs:
 - name: deployments-diego
 
 run:
-  path: diego-ci/concourse/bosh_export_release
+  path: diego-ci/tasks/bosh_export_release
 
 params:
   DEPLOYMENT_DIR: ~

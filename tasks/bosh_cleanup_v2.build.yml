@@ -14,4 +14,4 @@ params:
   DEPLOYMENT_DIR: ~
 
 run:
-  path: diego-ci/concourse/bosh_cleanup_v2
+  path: diego-ci/tasks/bosh_cleanup_v2

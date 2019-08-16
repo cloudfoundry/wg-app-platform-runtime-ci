@@ -21,4 +21,4 @@ params:
   access_key_id: ~
 
 run:
-  path: diego-ci/concourse/create_final_release
+  path: diego-ci/tasks/create_final_release

@@ -18,4 +18,4 @@ params:
   access_key_id: ~
 
 run:
-  path: diego-ci/concourse/update_golang_packages
+  path: diego-ci/tasks/update_golang_packages

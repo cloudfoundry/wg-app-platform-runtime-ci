@@ -15,4 +15,4 @@ outputs:
   - name: routing-release
 
 run:
-  path: diego-ci/concourse/checkout_routing
+  path: diego-ci/tasks/checkout_routing

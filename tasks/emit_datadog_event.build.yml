@@ -20,4 +20,4 @@ run:
   args:
     - -c
     - |
-      diego-ci/concourse/emit-datadog-deploy-event $STATE $ENVIRONMENT $DEPLOYMENT
+      diego-ci/tasks/emit-datadog-deploy-event $STATE $ENVIRONMENT $DEPLOYMENT

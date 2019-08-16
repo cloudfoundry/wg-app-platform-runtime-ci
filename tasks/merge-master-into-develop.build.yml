@@ -14,4 +14,4 @@ outputs:
   - name: merged-master
 
 run:
-  path: diego-ci/concourse/merge-master-into-develop
+  path: diego-ci/tasks/merge-master-into-develop

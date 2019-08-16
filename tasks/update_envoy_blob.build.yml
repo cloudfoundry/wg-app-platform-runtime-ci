@@ -18,4 +18,4 @@ params:
   access_key_id: ~
 
 run:
-  path: diego-ci/concourse/update_envoy_blob
+  path: diego-ci/tasks/update_envoy_blob

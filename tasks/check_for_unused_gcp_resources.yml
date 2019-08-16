@@ -11,7 +11,7 @@ inputs:
 - name: deployments-diego
 
 run:
-  path: diego-ci/concourse/check_for_unused_gcp_resources
+  path: diego-ci/tasks/check_for_unused_gcp_resources
 
 params:
   SLACK_URL: ~

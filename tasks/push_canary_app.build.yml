@@ -26,5 +26,5 @@ params:
   PAPERTRAIL_DEST: ~
 
 run:
-  path: diego-ci/concourse/push_canary_app
+  path: diego-ci/tasks/push_canary_app
 

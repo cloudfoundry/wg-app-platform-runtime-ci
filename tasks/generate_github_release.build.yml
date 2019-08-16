@@ -16,4 +16,4 @@ outputs:
   - name: generated-release
 
 run:
-  path: diego-ci/concourse/generate_github_release
+  path: diego-ci/tasks/generate_github_release

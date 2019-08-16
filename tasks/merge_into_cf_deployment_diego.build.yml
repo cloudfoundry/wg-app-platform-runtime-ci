@@ -17,4 +17,4 @@ params:
   PRIVATE_KEY:
 
 run:
-  path: diego-ci/concourse/merge_into_cf_deployment_diego
+  path: diego-ci/tasks/merge_into_cf_deployment_diego

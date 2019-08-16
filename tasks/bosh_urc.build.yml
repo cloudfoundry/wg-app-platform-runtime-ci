@@ -15,4 +15,4 @@ params:
   NAME: EMPTY
 
 run:
-  path: diego-ci/concourse/bosh_urc
+  path: diego-ci/tasks/bosh_urc

@@ -18,4 +18,4 @@ params:
   SYSTEM_DOMAIN: ~
 
 run:
-  path: diego-ci/concourse/indicator_verification
+  path: diego-ci/tasks/indicator_verification
