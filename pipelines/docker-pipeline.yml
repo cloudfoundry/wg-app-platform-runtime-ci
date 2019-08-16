@@ -1,0 +1,289 @@
+---
+jobs:
+- name: build-golang-ci
+  serial: true
+  plan:
+  - aggregate:
+    - get: daily
+      trigger: true
+    - get: git-golang-ci
+      trigger: true
+  - put: golang-ci
+    params:
+      build: git-golang-ci/golang-ci
+
+- name: build-inigo-ci-rootfs
+  serial: true
+  plan:
+  - aggregate:
+    - get: daily
+      trigger: true
+    - get: git-inigo-ci-rootfs
+      trigger: true
+  - put: inigo-ci-rootfs
+    params:
+      build: git-inigo-ci-rootfs/inigo-ci/test-rootfs
+
+- name: build-inigo-ci
+  serial: true
+  plan:
+  - aggregate:
+    - get: daily
+      trigger: true
+    - get: diego-dockerfiles-ci
+    - get: golang-ci
+      passed: [build-golang-ci]
+      trigger: true
+    - get: inigo-ci-rootfs
+      passed: [build-inigo-ci-rootfs]
+      trigger: true
+      params:
+        rootfs: true
+    - get: git-inigo-ci
+      trigger: true
+  - task: add-rootfs
+    file: diego-dockerfiles-ci/ci/make-inigo-ci.yml
+  - put: inigo-ci
+    params:
+      build: inigo-ci-with-rootfs
+
+- name: build-diego-pipeline-image
+  serial: true
+  plan:
+  - aggregate:
+    - get: daily
+      trigger: true
+    - get: golang-ci
+      passed: [build-golang-ci]
+      trigger: true
+    - get: git-diego-pipeline-image
+      trigger: true
+  - put: diego-pipeline-image
+    params:
+      build: git-diego-pipeline-image/diego-pipeline-image
+
+- name: build-diego-docker-app-custom
+  serial: true
+  plan:
+  - aggregate:
+    - get: daily
+      trigger: true
+    - get: diego-dockerfiles-ci
+    - get: git-diego-docker-app-custom
+      trigger: true
+    - get: golang-ci
+      passed: [build-golang-ci]
+      trigger: true
+  - task: compile-app
+    file: diego-dockerfiles-ci/ci/make-diego-docker-app-custom.yml
+  - put: diego-docker-app-custom
+    params:
+      build: docker-app-custom
+
+- name: build-diego-docker-app
+  serial: true
+  plan:
+  - aggregate:
+    - get: daily
+      trigger: true
+    - get: diego-dockerfiles-ci
+    - get: git-diego-docker-app
+      trigger: true
+    - get: golang-ci
+      passed: [build-golang-ci]
+      trigger: true
+  - task: compile-app
+    file: diego-dockerfiles-ci/ci/make-diego-docker-app.yml
+  - put: diego-docker-app
+    params:
+      build: docker-app
+
+- name: build-diego-units-ci
+  serial: true
+  plan:
+  - aggregate:
+    - get: daily
+      trigger: true
+    - get: git-diego-units-ci
+      trigger: true
+    - get: golang-ci
+      passed: [build-golang-ci]
+      trigger: true
+  - put: diego-units-ci
+    params:
+      build: git-diego-units-ci/diego-units-ci
+
+- name: build-cloudfoundry-grace-image
+  serial: true
+  plan:
+  - aggregate:                  # do not trigger this build, otherwise the shasum will keep changing which requires a vizzini change
+    - get: git-cloudfoundry-grace
+    - get: golang-ci
+      passed: [build-golang-ci]
+  - task: build-grace-binary
+    file: git-cloudfoundry-grace/ci/build-grace-binary.yml
+    params:
+      GO_SRC_DIR: src/github.com/cloudfoundry/grace
+  - put: cloudfoundry-grace-docker
+    params:
+      build: grace-docker
+  - put: cloudfoundry-grace-gcs
+    params:
+      file: grace-tarball/grace.tar.gz
+      predefined_acl: publicRead
+
+resources:
+- name: diego-dockerfiles-ci
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry/diego-dockerfiles.git
+    branch: master
+
+- name: git-golang-ci
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry/diego-dockerfiles.git
+    branch: master
+    paths:
+    - golang-ci/Dockerfile
+
+- name: git-inigo-ci-rootfs
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry/diego-dockerfiles.git
+    branch: master
+    paths:
+    - inigo-ci/test-rootfs/Dockerfile
+
+- name: git-inigo-ci
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry/diego-dockerfiles.git
+    branch: master
+    paths:
+    - inigo-ci/Dockerfile
+    - inigo-ci/.bashrc
+
+- name: git-diego-pipeline-image
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry/diego-dockerfiles.git
+    branch: master
+    paths:
+    - diego-pipeline-image/Dockerfile
+
+- name: git-diego-units-ci
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry/diego-dockerfiles.git
+    branch: master
+    paths:
+    - diego-units-ci/Dockerfile
+
+- name: git-diego-docker-app
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry/diego-dockerfiles.git
+    branch: master
+    paths:
+    - diego-docker-app/Dockerfile
+    - diego-docker-app/dockerapp.go
+
+- name: git-diego-docker-app-custom
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry/diego-dockerfiles.git
+    branch: master
+    paths:
+    - diego-docker-app-custom/Dockerfile
+    - diego-docker-app/dockerapp.go
+
+- name: git-cloudfoundry-grace
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry/grace.git
+    branch: master
+
+- name: diego-units-ci
+  type: docker-image
+  source:
+    email: cf-diego+docker@pivotal.io
+    username: cfdiegodocker
+    password: {{cfdiegodocker-password}}
+    repository: cloudfoundry/diego-units-ci
+
+- name: diego-pipeline-image
+  type: docker-image
+  source:
+    email: cf-diego+docker@pivotal.io
+    username: cfdiegodocker
+    password: {{cfdiegodocker-password}}
+    repository: cloudfoundry/diego-pipeline
+
+- name: golang-ci
+  type: docker-image
+  source:
+    email: cf-diego+docker@pivotal.io
+    username: cfdiegodocker
+    password: {{cfdiegodocker-password}}
+    repository: cloudfoundry/golang-ci
+
+- name: diego-docker-app
+  type: docker-image
+  source:
+    email: cf-diego+docker@pivotal.io
+    username: cfdiegodocker
+    password: {{cfdiegodocker-password}}
+    repository: cloudfoundry/diego-docker-app
+
+
+- name: diego-docker-app-custom
+  type: docker-image
+  source:
+    email: cf-diego+docker@pivotal.io
+    username: cfdiegodocker
+    password: {{cfdiegodocker-password}}
+    repository: cloudfoundry/diego-docker-app-custom
+
+- name: inigo-ci-rootfs
+  type: docker-image
+  source:
+    email: cf-diego+docker@pivotal.io
+    username: cfdiegodocker
+    password: {{cfdiegodocker-password}}
+    repository: cloudfoundry/inigo-ci-rootfs
+
+- name: inigo-ci
+  type: docker-image
+  source:
+    email: cf-diego+docker@pivotal.io
+    username: cfdiegodocker
+    password: {{cfdiegodocker-password}}
+    repository: cloudfoundry/inigo-ci
+
+- name: cloudfoundry-grace-docker
+  type: docker-image
+  source:
+    email: cf-diego+docker@pivotal.io
+    username: cfdiegodocker
+    password: {{cfdiegodocker-password}}
+    repository: cfdiegodocker/grace
+
+- name: daily
+  type: time
+  source:
+    start: "1230 -0400"
+    stop: "1530 -0400"
+
+- name: cloudfoundry-grace-gcs
+  type: google-cloud-storage
+  source:
+    bucket: diego-assets-bucket
+    regexp: grace.tar.gz
+    json_key: {{gcs-asset-manager}}
+
+resource_types:
+- name: google-cloud-storage
+  type: docker-image
+  source:
+    repository: frodenas/gcs-resource
