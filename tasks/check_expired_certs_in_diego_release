@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# set -e
-
 echo "Checking expired certs in $CERT_DIRECTORY"
 
 expired_certs=$(find $CERT_DIRECTORY -name *.crt | xargs -n1 -I{} ./diego-ci/tasks/check_cert_expired.rb {} 60)
