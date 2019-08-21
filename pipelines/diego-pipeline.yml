@@ -90,7 +90,8 @@ groups:
   - warp-drive-vizzini-periodic
   - warp-drive-bosh-cleanup
   - check-for-unused-gcp-resources
-  - check-expired-certs
+  - check-expired-bosh-certs
+  - check-expired-test-fixture-certs
 - name: time-rotor
   jobs:
   - bbl-up-time-rotor-gcp
@@ -276,7 +277,7 @@ jobs:
     params:
       SLACK_URL: {{slack_notifications_url}}
 
-- name: check-expired-certs
+- name: check-expired-bosh-certs
   plan:
   - in_parallel:
     - get: every-30-days
@@ -289,10 +290,30 @@ jobs:
       put: create-tracker-story
       params:
         story_labels: ["ci"]
-        story_name: "Failing check-expired-certs CI job"
+        story_name: "Failing check-expired-bosh-certs CI job"
         story_state: "started"
         story_type: "chore"
-        story_description: "check-expired-certs has failed. See the linked build."
+        story_description: "check-expired-bosh-certs has failed. See the linked build."
+
+- name: check-expired-test-fixture-certs
+  plan:
+  - in_parallel:
+    - get: every-30-days
+      trigger: true
+    - get: diego-release
+    - get: diego-ci
+  - task: check
+    file: diego-ci/tasks/check_expired_certs_in_diego_release.build.yml
+    params:
+      CERT_DIRECTORY: ./diego-release/src/code.cloudfoundry.org
+    on_failure:
+      put: create-tracker-story
+      params:
+        story_labels: ["ci"]
+        story_name: "Failing check-expired-test-fixture-certs CI job"
+        story_state: "started"
+        story_type: "chore"
+        story_description: "check-expired-test-fixture-certs has failed. See the linked build."
 
 - name: simulate-auctions
   public: true
