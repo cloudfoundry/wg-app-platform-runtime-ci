@@ -1351,6 +1351,7 @@ jobs:
         ../cf-deployment/operations/use-external-blobstore.yml
         ../cf-deployment/operations/use-gcs-blobstore-service-account.yml
         ../cf-deployment/operations/windows2012R2-cell.yml
+        ../cf-deployment/operations/experimental/enable-containerd-for-processes.yml
         electron-cannon/operations/disable-vizzini-privileged-containers-tests.yml
         electron-cannon/operations/instance-types.yml
         electron-cannon/operations/set-rep-max-idle-conns.yml
