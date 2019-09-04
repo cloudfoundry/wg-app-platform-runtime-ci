@@ -17,6 +17,11 @@ pushd garden-runc-release-master
   RELEASE_GUARDIAN=`git ls-tree HEAD $GARDEN_RUNC_GUARDIAN_SUBMODULE | awk '{print $3}'`
 popd
 
+if [ "x$DIEGO_GARDEN" != "x$RELEASE_GARDEN" ] && [ "x$DIEGO_GUARDIAN" != "x$RELEASE_GUARDIAN" ]; then
+  echo "ERROR: Garden and Guardian versions in diego-release are out of date"
+  exit 1
+fi
+
 if [ "x$DIEGO_GARDEN" != "x$RELEASE_GARDEN" ]; then
   echo "ERROR: Garden version in diego-release is out of date"
   exit 1
