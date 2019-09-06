@@ -797,7 +797,6 @@ jobs:
         warp-drive/operations/set-windows2019-cell-to-2-instances.yml
         warp-drive/operations/scale-up-diego-cells.yml
         ../release/operations/enable-vizzini-delcarative-healthcheck-tests.yml
-        ../cf-deployment/operations/use-pxc.yml
         ../release/operations/enable-vizzini-container-proxy-tests.yml
         ../release/operations/enable-vizzini-container-proxy-tests-mutual-tls.yml
         ../cf-deployment/operations/experimental/enable-oci-phase-1.yml
@@ -1741,7 +1740,6 @@ jobs:
         ../cf-deployment/operations/experimental/enable-suspect-actual-lrp-generation.yml
         ../cf-deployment/operations/rename-network-and-deployment.yml
         ../cf-deployment/operations/test/add-datadog-firehose-nozzle.yml
-        ../cf-deployment/operations/use-pxc.yml
         ../release/operations/benchmarks/mysql.yml
         time-rotor-gcp/operations/bbs-benchmark.yml
         time-rotor-gcp/operations/disable-log-cache.yml
