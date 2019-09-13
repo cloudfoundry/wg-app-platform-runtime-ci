@@ -97,6 +97,9 @@ jobs:
   - put: diego-docker-app
     params:
       build: docker-app
+  - put: aws-ecr-docker-app
+    params:
+      build: docker-app
 
 - name: build-diego-units-ci
   serial: true
@@ -236,6 +239,12 @@ resources:
     password: {{cfdiegodocker-password}}
     repository: cloudfoundry/diego-docker-app
 
+- name: aws-ecr-docker-app
+  type: docker-image
+  source:
+    aws_access_key_id: {{aws-ecr-access-key-id}}
+    aws_secret_access_key: {{aws-ecr-secret-access-key}}
+    repository: {{aws-ecr-repo-uri}}
 
 - name: diego-docker-app-custom
   type: docker-image
