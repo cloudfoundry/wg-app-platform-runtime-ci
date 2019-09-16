@@ -893,11 +893,11 @@ jobs:
 - name: warp-drive-verify-indicators-protocol
   plan:
   - get: candidate-lock
-    passed: [warp-drive-deploy-cf-deployment]
+    passed: [warp-drive-cf-acceptance-tests]
     trigger: true
   - in_parallel:
     - get: diego-release
-      passed: [warp-drive-deploy-cf-deployment]
+      passed: [warp-drive-cf-acceptance-tests]
       params: {submodules: none}
     - get: diego-ci
     - get: indicator-verification-linux
