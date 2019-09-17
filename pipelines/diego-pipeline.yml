@@ -1761,6 +1761,7 @@ jobs:
         time-rotor-gcp/operations/disable-pxc-tls.yml
         time-rotor-gcp/operations/fix-bosh-dns-aliases.yml
         time-rotor-gcp/operations/disable-credhub.yml
+        time-rotor-gcp/operations/turn-on-debug-mode.yml
   - task: emit-datadog-finished
     file: diego-ci/tasks/emit_datadog_event.build.yml
     params:
@@ -1856,6 +1857,7 @@ jobs:
         time-rotor-gcp/operations/disable-pxc-tls.yml
         time-rotor-gcp/operations/fix-bosh-dns-aliases-postgres.yml
         time-rotor-gcp/operations/disable-credhub.yml
+        time-rotor-gcp/operations/turn-on-debug-mode.yml
   - task: emit-datadog-finished
     file: diego-ci/tasks/emit_datadog_event.build.yml
     params:
