@@ -3,9 +3,9 @@
 Scripts and tools to run Diego's CI builds on [Concourse CI](https://concourse-ci.org).
 
 ## What's in here
-This repo contains only the Concourse scripts and build task definitions.
+This repo contains only Concourse scripts, build task definitions, and pipeline definitions.
 
-For pipeline definitions, build plans and environment configuration, see the [deployments-diego](https://github.com/cloudfoundry/deployments-diego) repo. Descriptions of the differences between environments can also be found there.
+For environment configuration, see the [deployments-diego](https://github.com/cloudfoundry/deployments-diego) repo. Descriptions of the differences between environments can also be found there.
 
 ## What do these tests do?
 The tests for several sections of the pipeline, along with brief descriptions of what they test can be found in the following places. Some of these are submoduled into diego-release and others are not. 
@@ -15,4 +15,3 @@ The tests for several sections of the pipeline, along with brief descriptions of
 - [smoke-tests](https://github.com/cloudfoundry/cf-smoke-tests)
 - [inigo](https://github.com/cloudfoundry/inigo) - submoduled into diego-release
 - [vizzini](https://github.com/cloudfoundry/vizzini) - submoduled into diego-release
-- [wats](https://github.com/cloudfoundry/wats) (Windows Acceptance Tests)
