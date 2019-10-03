@@ -5,7 +5,6 @@ groups:
   - check-for-windows-drift
   - check-proto-files
   - check-diego-release
-  - cf-deployment-tests
   - units-common
   - units-mysql
   - units-postgres
@@ -38,7 +37,6 @@ groups:
   - warp-drive-run-wats
   - warp-drive-run-wats2016
   - warp-drive-vizzini
-  - merge-into-cf-deployment-develop
   - deliver
   - shipit
   - github-release
@@ -84,7 +82,6 @@ groups:
   - patch-bump
 - name: diego-periodic
   jobs:
-  - merge-into-cf-deployment-diego
   - electron-cannon-bosh-cleanup
   - electron-cannon-vizzini-periodic
   - warp-drive-vizzini-periodic
@@ -428,24 +425,6 @@ jobs:
       SCRIPT: run-unit-tests-with-backing-store
       SQL_FLAVOR: postgres
 
-- name: cf-deployment-tests
-  public: true
-  plan:
-  - in_parallel:
-      - get: cf-deployment-develop
-        trigger: true
-      - get: cf-deployment-diego
-        trigger: true
-      - get: diego-ci
-  - task: merge-cf-deployment
-    file: diego-ci/tasks/merge_cf_deployment.build.yml
-    input_mapping:
-      cf-deployment: cf-deployment-develop
-  - task: test
-    file: diego-ci/tasks/cf_deployment_tests.build.yml
-    input_mapping:
-      cf-deployment: merged-cf-deployment
-
 - name: units-windows
   public: true
   serial_groups: [units-windows]
@@ -756,8 +735,6 @@ jobs:
     - get: diego-ci
     - get: cf-deployment-develop
       passed: [candidate]
-    - get: cf-deployment-diego
-      passed: [candidate]
     - get: cf-deployment-concourse-tasks
     - get: runtime-ci
     - get: warp-drive-cats-config
@@ -927,8 +904,6 @@ jobs:
     - get: diego-ci
     - get: cf-deployment-develop
       passed: [candidate]
-    - get: cf-deployment-diego
-      passed: [candidate]
     - get: cf-deployment-concourse-tasks
     - get: runtime-ci
     - get: warp-drive-cats-config
@@ -1025,8 +1000,6 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: deployments-diego
       resource: warp-drive-config
-    - get: cf-deployment-diego
-      passed: [warp-drive-deploy-cf-deployment]
   - task: run-vizzini-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
@@ -1050,8 +1023,6 @@ jobs:
     - get: warp-drive-cats-config
     - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests
-    - get: cf-deployment-diego
-      passed: [warp-drive-deploy-cf-deployment]
   - task: run-cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     input_mapping:
@@ -1074,8 +1045,6 @@ jobs:
     - get: warp-drive-cats-config
     - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests
-    - get: cf-deployment-diego
-      passed: [warp-drive-deploy-cf-deployment]
   - task: run-cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     input_mapping:
@@ -1098,8 +1067,6 @@ jobs:
     - get: warp-drive-cats-config
     - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests
-    - get: cf-deployment-diego
-      passed: [warp-drive-deploy-cf-deployment]
   - task: run-cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     input_mapping:
@@ -1108,39 +1075,6 @@ jobs:
       CONFIG_FILE_PATH: warp-drive/wats_integration_config.json
       SKIP_REGEXP: "Syslog drain"
       NODES: 4
-
-- name: merge-into-cf-deployment-diego
-  plan:
-    - in_parallel:
-      - get: diego-ci
-      - get: cf-deployment-develop
-      - get: 30min
-        trigger: true
-    - task: merge-into-cf-deployment-diego
-      file: diego-ci/tasks/merge_into_cf_deployment_diego.build.yml
-      params:
-        PRIVATE_KEY: {{cf-diego-private-key}}
-    - put: cf-deployment-diego
-      params:
-        repository: merged-cf-deployment
-
-- name: merge-into-cf-deployment-develop
-  plan:
-    - in_parallel:
-      - get: diego-ci
-      - get: cf-deployment-diego
-        passed: [deliver]
-        trigger: true
-      - get: cf-deployment-develop
-    - task: merge-into-cf-deployment-develop
-      file: diego-ci/tasks/merge_into_cf_deployment_develop.build.yml
-      params:
-        PRIVATE_KEY: {{cf-diego-private-key}}
-    - put: cf-deployment-develop
-      params:
-        repository: merged-cf-deployment
-    - put: tracker
-      params: {repos: [cf-deployment-develop]}
 
 - name: warp-drive-vizzini-periodic
   serial_groups: [warp-drive-cf-deployment]
@@ -1286,12 +1220,8 @@ jobs:
       trigger: true
     - get: bosh-deployment
     - get: cf-deployment-develop
-      passed: [cf-deployment-tests]
     - get: cf-deployment-rc
       trigger: true
-    - get: cf-deployment-diego
-      trigger: true
-      passed: [cf-deployment-tests]
     - get: diego-ci
 
 - name: release-candidate-lock
@@ -1593,12 +1523,6 @@ jobs:
     - get: diego-release
       passed: [candidate]
       params: {submodules: none}
-    - get: cf-deployment-diego
-      passed:
-      - warp-drive-vizzini
-      - warp-drive-cf-acceptance-tests
-      - warp-drive-run-wats
-      - warp-drive-run-wats2016
     - get: cf-deployment-rc
       passed:
       - electron-cannon-vizzini
@@ -1716,8 +1640,7 @@ jobs:
       trigger: true
     - get: diego-ci
     - get: create-tracker-story
-    - get: cf-deployment-diego
-      passed: [deliver]
+    - get: cf-deployment-develop
     - get: cf-deployment-concourse-tasks
   - task: upload-stemcells
     file: cf-deployment-concourse-tasks/bosh-upload-stemcells/task.yml
@@ -1726,7 +1649,7 @@ jobs:
       ops-files: deployments-diego
       vars-files: deployments-diego
       bbl-state: deployments-diego
-      cf-deployment: cf-deployment-diego
+      cf-deployment: cf-deployment-develop
     params:
       BBL_STATE_DIR: time-rotor-gcp/deployments/bbl
   - task: emit-cf-datadog-start
@@ -1809,7 +1732,7 @@ jobs:
       passed: [time-rotor-gcp-benchmark-bbs-tests]
       trigger: true
     - get: diego-ci
-    - get: cf-deployment-diego
+    - get: cf-deployment-develop
       passed: [time-rotor-gcp-benchmark-bbs-tests]
     - get: cf-deployment-concourse-tasks
   - task: upload-stemcells
@@ -1819,7 +1742,7 @@ jobs:
       ops-files: deployments-diego
       vars-files: deployments-diego
       bbl-state: deployments-diego
-      cf-deployment: cf-deployment-diego
+      cf-deployment: cf-deployment-develop
     params:
       BBL_STATE_DIR: time-rotor-gcp/deployments/bbl
   - task: emit-cf-datadog-start
@@ -2016,13 +1939,6 @@ resources:
   type: git
   source:
     branch: release-candidate
-    uri: git@github.com:cloudfoundry/cf-deployment.git
-    private_key: {{cf-diego-private-key}}
-
-- name: cf-deployment-diego
-  type: git
-  source:
-    branch: diego
     uri: git@github.com:cloudfoundry/cf-deployment.git
     private_key: {{cf-diego-private-key}}
 
