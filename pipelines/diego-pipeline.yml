@@ -814,7 +814,7 @@ jobs:
         ../release/operations/enable-vizzini-container-proxy-tests-mutual-tls.yml
         ../cf-deployment/operations/experimental/enable-oci-phase-1.yml
         ../cf-deployment/operations/experimental/enable-suspect-actual-lrp-generation.yml
-        ../cf-deployment/operations/experimental/rootless-containers.yml
+        ../cf-deployment/operations/experimental/enable-containerd-for-processes.yml
         ../cf-deployment/operations/experimental/set-cpu-weight.yml
         ../cf-deployment/operations/experimental/set-cpu-weight-windows2019.yml
         ../cf-deployment/operations/experimental/enable-nginx-routing-integrity-windows2019.yml
@@ -1364,7 +1364,6 @@ jobs:
         ../cf-deployment/operations/use-external-blobstore.yml
         ../cf-deployment/operations/use-gcs-blobstore-service-account.yml
         ../cf-deployment/operations/windows2012R2-cell.yml
-        ../cf-deployment/operations/experimental/enable-containerd-for-processes.yml
         electron-cannon/operations/disable-vizzini-privileged-containers-tests.yml
         electron-cannon/operations/instance-types.yml
         electron-cannon/operations/set-rep-max-idle-conns.yml
