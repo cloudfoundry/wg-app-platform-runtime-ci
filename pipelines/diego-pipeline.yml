@@ -745,7 +745,7 @@ jobs:
       ops-files: deployments-diego
       vars-files: deployments-diego
       bbl-state: deployments-diego
-      cf-deployment: merged-cf-deployment
+      cf-deployment: cf-deployment-develop
     params:
       BBL_STATE_DIR: envs/warp-drive/deployments/bbl
       OPS_FILES: |
