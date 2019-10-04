@@ -11,3 +11,6 @@ inputs:
 
 run:
   path: diego-ci/tasks/check_diego_release
+
+params:
+  FORCE_SUBMODULE_HTTPS: true
