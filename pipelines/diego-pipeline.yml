@@ -738,10 +738,6 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: runtime-ci
     - get: warp-drive-cats-config
-  - task: merge-cf-deployment
-    file: diego-ci/tasks/merge_cf_deployment.build.yml
-    input_mapping:
-      cf-deployment: cf-deployment-develop
   - task: upload-stemcells
     file: cf-deployment-concourse-tasks/bosh-upload-stemcells/task.yml
     input_mapping: &warp_drive_deployment_input_mappings
