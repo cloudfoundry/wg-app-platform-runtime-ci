@@ -1019,7 +1019,7 @@ jobs:
   - task: run-cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     input_mapping:
-      integration-config: envs/warp-drive-cats-config
+      integration-config: warp-drive-cats-config
     params:
       CONFIG_FILE_PATH: envs/warp-drive/integration_config.json
       SKIP_REGEXP: "Syslog drain"
@@ -1041,7 +1041,7 @@ jobs:
   - task: run-cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     input_mapping:
-      integration-config: envs/warp-drive-cats-config
+      integration-config: warp-drive-cats-config
     params:
       CONFIG_FILE_PATH: envs/warp-drive/wats_2016_integration_config.json
       SKIP_REGEXP: "Syslog drain"
@@ -1063,7 +1063,7 @@ jobs:
   - task: run-cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     input_mapping:
-      integration-config: envs/warp-drive-cats-config
+      integration-config: warp-drive-cats-config
     params:
       CONFIG_FILE_PATH: envs/warp-drive/wats_integration_config.json
       SKIP_REGEXP: "Syslog drain"
