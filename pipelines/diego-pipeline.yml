@@ -797,6 +797,7 @@ jobs:
         operations/routing-acceptance-tests.yml
         operations/routing-smoke-tests.yml
         operations/set-rep-max-idle-conns.yml
+        operations/set-windows2019-cell-max-idle-conns.yml
         operations/disable-vizzini-privileged-containers-tests.yml
         operations/stream-vizzini-output.yml
         operations/disable-health-check-server.yml
