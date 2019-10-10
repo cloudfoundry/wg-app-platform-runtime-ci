@@ -1892,7 +1892,8 @@ resources:
 - name: diego-ci
   type: git
   source:
-    uri: https://github.com/cloudfoundry/diego-ci
+    uri: git@github.com:cloudfoundry/diego-ci
+    private_key: {{cf-diego-private-key}}
 
 - name: deployments-diego
   type: git

@@ -8,9 +8,17 @@ jobs:
       trigger: true
     - get: git-golang-ci
       trigger: true
+    - get: diego-ci
+  - task: print-go-version-tag
+    file: diego-ci/tasks/generate_go_version_tag.build.yml
+    params:
+      GO_VERSION: 1.13.1
   - put: golang-ci
     params:
       build: git-golang-ci/golang-ci
+      build_args_file: tag/build-args
+      tag_file: tag/tag
+      tag_as_latest: true
 
 - name: build-inigo-ci-rootfs
   serial: true
@@ -20,9 +28,17 @@ jobs:
       trigger: true
     - get: git-inigo-ci-rootfs
       trigger: true
+    - get: diego-ci
+  - task: print-go-version-tag
+    file: diego-ci/tasks/generate_go_version_tag.build.yml
+    params:
+      GO_VERSION: 1.13.1
   - put: inigo-ci-rootfs
     params:
       build: git-inigo-ci-rootfs/inigo-ci/test-rootfs
+      build_args_file: tag/build-args
+      tag_file: tag/tag
+      tag_as_latest: true
 
 - name: build-inigo-ci
   serial: true
@@ -41,11 +57,19 @@ jobs:
         rootfs: true
     - get: git-inigo-ci
       trigger: true
+    - get: diego-ci
   - task: add-rootfs
     file: diego-dockerfiles-ci/ci/make-inigo-ci.yml
+  - task: print-go-version-tag
+    file: diego-ci/tasks/generate_go_version_tag.build.yml
+    params:
+      GO_VERSION: 1.13.1
   - put: inigo-ci
     params:
       build: inigo-ci-with-rootfs
+      build_args_file: tag/build-args
+      tag_file: tag/tag
+      tag_as_latest: true
 
 - name: build-diego-pipeline-image
   serial: true
@@ -58,9 +82,17 @@ jobs:
       trigger: true
     - get: git-diego-pipeline-image
       trigger: true
+    - get: diego-ci
+  - task: print-go-version-tag
+    file: diego-ci/tasks/generate_go_version_tag.build.yml
+    params:
+      GO_VERSION: 1.13.1
   - put: diego-pipeline-image
     params:
       build: git-diego-pipeline-image/diego-pipeline-image
+      build_args_file: tag/build-args
+      tag_file: tag/tag
+      tag_as_latest: true
 
 - name: build-diego-docker-app-custom
   serial: true
@@ -74,11 +106,19 @@ jobs:
     - get: golang-ci
       passed: [build-golang-ci]
       trigger: true
+    - get: diego-ci
   - task: compile-app
     file: diego-dockerfiles-ci/ci/make-diego-docker-app-custom.yml
+  - task: print-go-version-tag
+    file: diego-ci/tasks/generate_go_version_tag.build.yml
+    params:
+      GO_VERSION: 1.13.1
   - put: diego-docker-app-custom
     params:
       build: docker-app-custom
+      build_args_file: tag/build-args
+      tag_file: tag/tag
+      tag_as_latest: true
 
 - name: build-diego-docker-app
   serial: true
@@ -92,14 +132,25 @@ jobs:
     - get: golang-ci
       passed: [build-golang-ci]
       trigger: true
+    - get: diego-ci
   - task: compile-app
     file: diego-dockerfiles-ci/ci/make-diego-docker-app.yml
+  - task: print-go-version-tag
+    file: diego-ci/tasks/generate_go_version_tag.build.yml
+    params:
+      GO_VERSION: 1.13.1
   - put: diego-docker-app
     params:
       build: docker-app
+      build_args_file: tag/build-args
+      tag_file: tag/tag
+      tag_as_latest: true
   - put: aws-ecr-docker-app
     params:
       build: docker-app
+      build_args_file: tag/build-args
+      tag_file: tag/tag
+      tag_as_latest: true
 
 - name: build-diego-units-ci
   serial: true
@@ -112,9 +163,17 @@ jobs:
     - get: golang-ci
       passed: [build-golang-ci]
       trigger: true
+    - get: diego-ci
+  - task: print-go-version-tag
+    file: diego-ci/tasks/generate_go_version_tag.build.yml
+    params:
+      GO_VERSION: 1.13.1
   - put: diego-units-ci
     params:
       build: git-diego-units-ci/diego-units-ci
+      build_args_file: tag/build-args
+      tag_file: tag/tag
+      tag_as_latest: true
 
 - name: build-cloudfoundry-grace-image
   serial: true
@@ -123,13 +182,21 @@ jobs:
     - get: git-cloudfoundry-grace
     - get: golang-ci
       passed: [build-golang-ci]
+    - get: diego-ci
   - task: build-grace-binary
     file: git-cloudfoundry-grace/ci/build-grace-binary.yml
     params:
       GO_SRC_DIR: src/github.com/cloudfoundry/grace
+  - task: print-go-version-tag
+    file: diego-ci/tasks/generate_go_version_tag.build.yml
+    params:
+      GO_VERSION: 1.13.1
   - put: cloudfoundry-grace-docker
     params:
       build: grace-docker
+      build_args_file: tag/build-args
+      tag_file: tag/tag
+      tag_as_latest: true
   - put: cloudfoundry-grace-gcs
     params:
       file: grace-tarball/grace.tar.gz
@@ -290,6 +357,12 @@ resources:
     bucket: diego-assets-bucket
     regexp: grace.tar.gz
     json_key: {{gcs-asset-manager}}
+
+- name: diego-ci
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/diego-ci
+    private_key: {{cf-diego-private-key}}
 
 resource_types:
 - name: google-cloud-storage
