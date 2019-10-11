@@ -2068,13 +2068,13 @@ resources:
   type: git
   source:
     uri: https://github.com/cloudfoundry/diego-release.git
-    branch: v1.0.0-patch-7
+    branch: v1.0.0-patch-8
 
 - name: diego-release-v1.25.2
   type: git
   source:
     uri: https://github.com/cloudfoundry/diego-release.git
-    branch: v1.25.2-patch-6
+    branch: v1.25.2-patch-7
 
 - name: diegocanaryapp
   type: git
