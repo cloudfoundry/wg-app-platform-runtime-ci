@@ -25,3 +25,14 @@ run:
     cat <<HERE > updated-diego-ci/diego-ci/vars/grace-config-vars.yml
     grace_tarball_checksum: "${checksum}"
     HERE
+
+    echo "----- Set git identity"
+    git config user.email "cf-diego@pivotal.io"
+    git config user.name "CI (Automated)"
+
+    echo "----- Update grace checksum"
+    git add -A
+    git commit -m "Update grace checksum"
+
+    echo "----- DEBUG: show the commit we just created"
+    git --no-pager show HEAD

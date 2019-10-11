@@ -367,6 +367,7 @@ resources:
   type: git
   source:
     uri: git@github.com:cloudfoundry/diego-ci
+    branch: master
     private_key: {{cf-diego-private-key}}
 
 resource_types:
