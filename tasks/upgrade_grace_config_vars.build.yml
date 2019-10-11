@@ -23,7 +23,7 @@ run:
     cp -a diego-ci updated-diego-ci
 
     cat <<HERE > updated-diego-ci/diego-ci/vars/grace-config-vars.yml
-    grace_tarball_checksum: "${checksum}"
+    grace_tarball_checksum: ${checksum}
     HERE
 
     cd updated-diego-ci/diego-ci/
