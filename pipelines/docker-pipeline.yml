@@ -3,7 +3,7 @@ jobs:
 - name: build-golang-ci
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: daily
       trigger: true
     - get: git-golang-ci
@@ -23,7 +23,7 @@ jobs:
 - name: build-inigo-ci-rootfs
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: daily
       trigger: true
     - get: git-inigo-ci-rootfs
@@ -43,7 +43,7 @@ jobs:
 - name: build-inigo-ci
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: daily
       trigger: true
     - get: diego-dockerfiles-ci
@@ -74,7 +74,7 @@ jobs:
 - name: build-diego-pipeline-image
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: daily
       trigger: true
     - get: golang-ci
@@ -97,7 +97,7 @@ jobs:
 - name: build-diego-docker-app-custom
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: daily
       trigger: true
     - get: diego-dockerfiles-ci
@@ -123,7 +123,7 @@ jobs:
 - name: build-diego-docker-app
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: daily
       trigger: true
     - get: diego-dockerfiles-ci
@@ -155,7 +155,7 @@ jobs:
 - name: build-diego-units-ci
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: daily
       trigger: true
     - get: git-diego-units-ci
@@ -178,7 +178,7 @@ jobs:
 - name: build-cloudfoundry-grace-image
   serial: true
   plan:
-  - aggregate:                  # do not trigger this build, otherwise the shasum will keep changing which requires a vizzini change
+  - in_parallel:                  # do not trigger this build, otherwise the shasum will keep changing which requires a vizzini change
     - get: git-cloudfoundry-grace
     - get: golang-ci
       passed: [build-golang-ci]
