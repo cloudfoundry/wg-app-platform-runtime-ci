@@ -26,6 +26,8 @@ run:
     grace_tarball_checksum: "${checksum}"
     HERE
 
+    cd updated-diego-ci/diego-ci/
+
     echo "----- Set git identity"
     git config user.email "cf-diego@pivotal.io"
     git config user.name "CI (Automated)"
