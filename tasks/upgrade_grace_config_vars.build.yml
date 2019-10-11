@@ -1,0 +1,27 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: cloudfoundry/golang-ci
+
+inputs:
+- name: diego-ci
+- name: grace-config
+
+outputs:
+- name: updated-diego-ci
+
+run:
+  path: sh
+  args:
+  - -c
+  - |
+checksum=$(jq .grace_tarball_checksum ./grace-config/grace-config.json)
+
+cp -a diego-ci updated-diego-ci
+
+cat <<HERE > updated-diego-ci/diego-ci/vars/grace-config-vars.yml
+grace_tarball_checksum: "${checksum}"
+HERE

@@ -201,6 +201,11 @@ jobs:
     params:
       file: grace-tarball/grace.tar.gz
       predefined_acl: publicRead
+  - task: upgrade-grace-config-vars
+    file: diego-ci/tasks/upgrade_grace_config_vars.build.yml
+  - put: diego-ci
+    params:
+      repository: updated-diego-ci/diego-ci
 
 resources:
 - name: diego-dockerfiles-ci

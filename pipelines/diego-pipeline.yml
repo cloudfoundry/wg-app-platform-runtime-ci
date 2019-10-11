@@ -757,7 +757,9 @@ jobs:
     params:
       BBL_STATE_DIR: envs/warp-drive/deployments/bbl
       SYSTEM_DOMAIN: warp-drive.cf-app.com
-      VARS_FILES: envs/warp-drive/cf-deployment-vars.yml
+      VARS_FILES:
+      - envs/warp-drive/cf-deployment-vars.yml
+      - ../diego-ci/vars/grace-config-vars.yml
       DEPLOY_WITH_UPTIME_MEASUREMENTS: true
       FAIL_ON_DOWNTIME: true
       MEASURE_SYSLOG_AVAILABILITY: false
@@ -1262,7 +1264,9 @@ jobs:
     params:
       BBL_STATE_DIR: envs/electron-cannon/deployments/bbl
       SYSTEM_DOMAIN: electron-cannon.cf-app.com
-      VARS_FILES: envs/electron-cannon/cf-deployment-vars.yml
+      VARS_FILES:
+      - envs/electron-cannon/cf-deployment-vars.yml
+      - ../diego-ci/vars/grace-config-vars.yml
       DEPLOY_WITH_UPTIME_MEASUREMENTS: true
       FAIL_ON_DOWNTIME: true
       CF_ADMIN_PASSWORD: {{electron-cannon-cf-admin-password}}
