@@ -18,10 +18,10 @@ run:
   args:
   - -c
   - |
-checksum=$(jq .grace_tarball_checksum ./grace-config/grace-config.json)
+    checksum=$(jq .grace_tarball_checksum ./grace-config/grace-config.json)
 
-cp -a diego-ci updated-diego-ci
+    cp -a diego-ci updated-diego-ci
 
-cat <<HERE > updated-diego-ci/diego-ci/vars/grace-config-vars.yml
-grace_tarball_checksum: "${checksum}"
-HERE
+    cat <<HERE > updated-diego-ci/diego-ci/vars/grace-config-vars.yml
+    grace_tarball_checksum: "${checksum}"
+    HERE
