@@ -642,6 +642,7 @@ jobs:
       params: { submodules: none }
     - get: routing-release-tarball
     - get: diego-ci
+    - get: deployments-diego
   - task: garden-runc-release
     file: diego-ci/tasks/checkout_garden.build.yml
   - task: routing-release
@@ -654,6 +655,7 @@ jobs:
     tags: ["dusts-v1.0.0"]
     input_mapping:
       diego-release-v0: diego-release-v1.0.0
+      grace-vars: deployments-diego
     params:
       DIEGO_VERSION_V0: v1.0.0
     ensure:
@@ -679,6 +681,7 @@ jobs:
       params: { submodules: none }
     - get: routing-release-tarball
     - get: diego-ci
+    - get: deployments-diego
   - task: garden-runc-release
     file: diego-ci/tasks/checkout_garden.build.yml
   - task: routing-release
@@ -691,6 +694,7 @@ jobs:
     tags: ["dusts-v1.25.2"]
     input_mapping:
       diego-release-v0: diego-release-v1.25.2
+      grace-vars: deployments-diego
     params:
       DIEGO_VERSION_V0: v1.25.2
     ensure:
