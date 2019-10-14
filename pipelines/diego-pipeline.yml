@@ -1860,8 +1860,6 @@ resources:
 - name: electron-cannon-config
   type: git
   source:
-    paths:
-    - envs/electron-cannon
     uri: git@github.com:cloudfoundry/deployments-diego.git
     private_key: {{cf-diego-private-key}}
 
@@ -1876,8 +1874,6 @@ resources:
 - name: warp-drive-config
   type: git
   source:
-    paths:
-    - envs/warp-drive
     uri: git@github.com:cloudfoundry/deployments-diego.git
     private_key: {{cf-diego-private-key}}
 
