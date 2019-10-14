@@ -564,6 +564,7 @@ jobs:
       params: { submodules: none }
     - get: routing-release-tarball
     - get: diego-ci
+    - get: deployments-diego
   - task: garden-runc-release
     file: diego-ci/tasks/checkout_garden.build.yml
   - task: routing-release
@@ -576,6 +577,7 @@ jobs:
     tags: ["dusts-v1.0.0"]
     input_mapping:
       diego-release-v0: diego-release-v1.0.0
+      grace-vars: deployments-diego
     params:
       DIEGO_VERSION_V0: v1.0.0
     ensure:
@@ -601,6 +603,7 @@ jobs:
       params: { submodules: none }
     - get: routing-release-tarball
     - get: diego-ci
+    - get: deployments-diego
   - task: garden-runc-release
     file: diego-ci/tasks/checkout_garden.build.yml
   - task: routing-release
@@ -613,6 +616,7 @@ jobs:
     tags: ["dusts-v1.25.2"]
     input_mapping:
       diego-release-v0: diego-release-v1.25.2
+      grace-vars: deployments-diego
     params:
       DIEGO_VERSION_V0: v1.25.2
     ensure:
@@ -912,7 +916,9 @@ jobs:
     params:
       BBL_STATE_DIR: envs/warp-drive/deployments/bbl
       SYSTEM_DOMAIN: warp-drive.cf-app.com
-      VARS_FILES: envs/warp-drive/cf-deployment-vars.yml
+      VARS_FILES:
+      - envs/warp-drive/cf-deployment-vars.yml
+      - vars/grace-config-vars.yml
       DEPLOY_WITH_UPTIME_MEASUREMENTS: true
       FAIL_ON_DOWNTIME: true
       MEASURE_SYSLOG_AVAILABILITY: false
@@ -1325,7 +1331,9 @@ jobs:
     params:
       BBL_STATE_DIR: envs/electron-cannon/deployments/bbl
       SYSTEM_DOMAIN: electron-cannon.cf-app.com
-      VARS_FILES: envs/electron-cannon/cf-deployment-vars.yml
+      VARS_FILES:
+      - envs/electron-cannon/cf-deployment-vars.yml
+      - vars/grace-config-vars.yml
       DEPLOY_WITH_UPTIME_MEASUREMENTS: true
       FAIL_ON_DOWNTIME: true
       CF_ADMIN_PASSWORD: {{electron-cannon-cf-admin-password}}
