@@ -7,11 +7,11 @@ image_resource:
     repository: relintdockerhubpushbot/cf-deployment-concourse-tasks
 
 inputs:
-- name: diego-ci
+- name: deployments-diego
 - name: grace-config
 
 outputs:
-- name: updated-diego-ci
+- name: updated-deployments-diego
 
 run:
   path: sh
@@ -20,13 +20,13 @@ run:
   - |
     checksum=$(jq .grace_tarball_checksum ./grace-config/grace-config.json)
 
-    cp -a diego-ci updated-diego-ci
+    cp -a deployments-diego updated-deployments-diego
 
-    cat <<HERE > updated-diego-ci/diego-ci/vars/grace-config-vars.yml
+    cat <<HERE > updated-deployments-diego/deployments-diego/vars/grace-config-vars.yml
     grace_tarball_checksum: ${checksum}
     HERE
 
-    cd updated-diego-ci/diego-ci/
+    cd updated-deployments-diego/deployments-diego/
 
     echo "----- Set git identity"
     git config user.email "cf-diego@pivotal.io"
