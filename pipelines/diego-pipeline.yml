@@ -812,7 +812,6 @@ jobs:
         operations/stream-vizzini-output.yml
         operations/disable-health-check-server.yml
         operations/change-loggregator-agent-deployment.yml
-        operations/route-integrity-with-correct-backend-ca.yml
   - task: enable-docker
     file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
     input_mapping:
