@@ -879,6 +879,8 @@ jobs:
     passed: [warp-drive-cf-acceptance-tests]
     trigger: true
   - in_parallel:
+    - get: deployments-diego
+      resource: warp-drive-config
     - get: diego-release
       passed: [warp-drive-cf-acceptance-tests]
       params: {submodules: none}
