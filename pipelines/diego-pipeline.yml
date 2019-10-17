@@ -1224,6 +1224,7 @@ jobs:
       trigger: true
     - get: bosh-deployment
     - get: cf-deployment-develop
+      trigger: true
     - get: cf-deployment-rc
       trigger: true
     - get: diego-ci
