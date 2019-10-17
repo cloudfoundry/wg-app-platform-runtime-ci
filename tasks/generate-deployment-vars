@@ -12,7 +12,7 @@ cat > deployment-vars/vars.yml <<EOF
 ---
 deployment: ${DEPLOYMENT_NAME}
 system_domain: ${SYSTEM_DOMAIN}
-cf_admin_password: ${cf_admin_password}"
+cf_admin_password: ${cf_admin_password}
 EOF
 
 cat deployment-vars/vars.yml
