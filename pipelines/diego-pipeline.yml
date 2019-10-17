@@ -887,15 +887,16 @@ jobs:
       params:
         globs:
         - indicator-verification-linux64*
+  - task: generate-vars
+    file: diego-ci/tasks/generate-deployment-vars.build.yml
+    params:
+      DEPLOYMENT_NAME: warp-drive
+      SYSTEM_DOMAIN: warp-drive.cf-app.com
+      ENV_NAME: warp-drive
   - task: indicator-verification
     file: diego-ci/tasks/indicator_verification.build.yml
     input_mapping:
       release: diego-release
-    params:
-      DEPLOYMENT_NAME: warp-drive
-      SYSTEM_DOMAIN: warp-drive.cf-app.com
-      CF_ADMIN_PASSWORD: {{warp-drive-cf-admin-password}}
-
 - name: warp-drive-test-evacuation
   serial_groups: [warp-drive-cf-deployment]
   plan:
