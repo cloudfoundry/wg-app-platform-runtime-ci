@@ -21,9 +21,9 @@ for env in ${envs[@]}; do
     # expiration day + 30 days
     expire_day=$(echo "$today + 30 * 24 * 60 * 60" | bc)
 
-    credhub export -f creds.json
+    credhub export -f creds.yml
 
-    yq '.credentials[] | select(.type == "certificate")' creds.json | jq '[.name,.value.certificate] | @sh' | tr -d '"' | tr -d "'" |
+    yq '.credentials[] | select(.type == "certificate")' creds.yml | jq '[.name,.value.certificate] | @sh' | tr -d '"' | tr -d "'" |
       while IFS=" " read -r name certificate; do
         cert_expire_day=$(openssl x509 -noout -dates -in <(echo -e "$certificate") | grep notAfter | cut -d"=" -f2 | xargs -I {} -n 1 date -d {} +%s)
         if (( $cert_expire_day < $expire_day )); then
