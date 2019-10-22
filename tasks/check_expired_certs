@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -ex
+set -o pipefail
 
 export GOPATH=${PWD}/diego-release
 export PATH=${PATH}:${GOPATH}/bin
