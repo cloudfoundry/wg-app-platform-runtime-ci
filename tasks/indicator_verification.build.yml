@@ -13,5 +13,10 @@ inputs:
   - name: indicator-verification-linux
   - name: deployment-vars
 
+params:
+  ORG: INDICATORS-TEST
+  SPACE: INDICATORS-TEST
+  RUNAWAY_QUOTA: runaway
+
 run:
   path: diego-ci/tasks/indicator_verification
