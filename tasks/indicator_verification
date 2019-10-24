@@ -24,10 +24,10 @@ cf target -o ${ORG}
 cf create-space ${SPACE}
 cf target -s ${SPACE}
 
-cf create-quota ${RUNAWAY_QUOTA} -m ${RUNAWAY_MEMORY}
+cf create-quota ${RUNAWAY_QUOTA} -m ${RUNAWAY_MEMORY} -i 10 -r 10
 cf set-quota ${ORG} ${RUNAWAY_QUOTA}
 
-cf push grace --docker-image cfdiegodocker/grace -m ${RUNAWAY_MEMORY} || true # expected to fail with insufficient resources
+cf push ${APP_NAME} --docker-image cfdiegodocker/grace -m ${RUNAWAY_MEMORY} || true # expected to fail with insufficient resources
 
 OAUTH_TOKEN="$(cf oauth-token)"
 INDICATOR_VERIFICATION=$(ls ./indicator-verification-linux/indicator-verification-linux*)
