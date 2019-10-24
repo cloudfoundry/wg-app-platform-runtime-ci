@@ -10,6 +10,13 @@ DEPLOYMENT_NAME=$(bosh int --path="/deployment" $VARS_FILE)
 cf api --skip-ssl-validation "https://api.$SYSTEM_DOMAIN"
 cf auth admin $CF_ADMIN_PASSWORD
 
+cleanup() {
+  cf delete-org ${ORG} -f
+  cf delete-quota ${RUNAWAY_QUOTA} -f
+}
+
+trap cleanup EXIT
+
 # push a failing app for auctioneer metrics
 cf create-org ${ORG}
 cf target -o ${ORG}
@@ -17,9 +24,10 @@ cf target -o ${ORG}
 cf create-space ${SPACE}
 cf target -s ${SPACE}
 
+cf create-quota ${RUNAWAY_QUOTA} -m ${RUNAWAY_MEMORY}
 cf set-quota ${ORG} ${RUNAWAY_QUOTA}
 
-cf push grace --docker-image cfdiegodocker/grace -m 100G || true # expected to fail with insufficient resources
+cf push grace --docker-image cfdiegodocker/grace -m ${RUNAWAY_MEMORY} || true # expected to fail with insufficient resources
 
 OAUTH_TOKEN="$(cf oauth-token)"
 INDICATOR_VERIFICATION=$(ls ./indicator-verification-linux/indicator-verification-linux*)

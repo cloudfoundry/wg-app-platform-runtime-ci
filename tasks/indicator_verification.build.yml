@@ -16,7 +16,8 @@ inputs:
 params:
   ORG: INDICATORS-TEST
   SPACE: INDICATORS-TEST
-  RUNAWAY_QUOTA: runaway
+  RUNAWAY_QUOTA: INDICATORS-TEST-RUNAWAY
+  RUNAWAY_MEMORY: 100G
 
 run:
   path: diego-ci/tasks/indicator_verification
