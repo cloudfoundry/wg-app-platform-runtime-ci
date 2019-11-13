@@ -812,6 +812,8 @@ jobs:
         operations/stream-vizzini-output.yml
         operations/disable-health-check-server.yml
         operations/change-loggregator-agent-deployment.yml
+        operations/enable-nats-tls.yml
+        operations/enable-nats-tls-windows.yml
   - task: enable-docker
     file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
     input_mapping:
