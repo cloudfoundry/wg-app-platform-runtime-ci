@@ -902,6 +902,8 @@ jobs:
     file: diego-ci/tasks/indicator_verification.build.yml
     input_mapping:
       release: diego-release
+    params:
+      QUERY_ENDPOINT: metric-store
 - name: warp-drive-test-evacuation
   serial_groups: [warp-drive-cf-deployment]
   plan:

@@ -19,6 +19,7 @@ params:
   APP_NAME: INDICATORS-TEST-APP
   RUNAWAY_QUOTA: INDICATORS-TEST-QUOTA-RUNAWAY
   RUNAWAY_MEMORY: 100G
+  QUERY_ENDPOINT: log-cache
 
 run:
   path: diego-ci/tasks/indicator_verification
