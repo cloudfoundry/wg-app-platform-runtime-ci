@@ -786,6 +786,7 @@ jobs:
         ../cf-deployment/operations/test/add-datadog-firehose-nozzle.yml
         ../cf-deployment/operations/scale-database-cluster.yml
         ../cf-deployment/operations/use-external-blobstore.yml
+        ../cf-deployment/operations/use-metric-store.yml
         ../cf-deployment/operations/use-gcs-blobstore-service-account.yml
         ../cf-deployment/operations/windows2012R2-cell.yml
         ../cf-deployment/operations/windows2019-cell.yml
