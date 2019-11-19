@@ -783,7 +783,7 @@ jobs:
         ../cf-deployment/operations/use-compiled-releases.yml
         ../cf-deployment/operations/experimental/use-compiled-releases-windows.yml
         ../release/operations/add-vizzini-errand.yml
-        ../cf-deployment/operations/test/add-datadog-firehose-nozzle.yml
+        operations/add-datadog-firehose-nozzle.yml
         ../cf-deployment/operations/scale-database-cluster.yml
         ../cf-deployment/operations/use-external-blobstore.yml
         ../cf-deployment/operations/use-metric-store.yml
@@ -1304,7 +1304,7 @@ jobs:
         ../release/operations/enable-vizzini-delcarative-healthcheck-tests.yml
         ../release/operations/enable-vizzini-container-proxy-tests.yml
         ../release/operations/enable-vizzini-container-proxy-tests-mutual-tls.yml
-        ../cf-deployment/operations/test/add-datadog-firehose-nozzle.yml
+        operations/add-datadog-firehose-nozzle.yml
         ../cf-deployment/operations/scale-database-cluster.yml
         ../cf-deployment/operations/use-external-blobstore.yml
         ../cf-deployment/operations/use-gcs-blobstore-service-account.yml
@@ -1690,7 +1690,7 @@ jobs:
         ../cf-deployment/operations/use-compiled-releases.yml
         ../cf-deployment/operations/experimental/enable-suspect-actual-lrp-generation.yml
         ../cf-deployment/operations/rename-network-and-deployment.yml
-        ../cf-deployment/operations/test/add-datadog-firehose-nozzle.yml
+        operations/add-datadog-firehose-nozzle.yml
         ../release/operations/benchmarks/mysql.yml
         operations/bbs-benchmark.yml
         operations/disable-log-cache.yml
@@ -1784,7 +1784,7 @@ jobs:
         ../cf-deployment/operations/experimental/enable-suspect-actual-lrp-generation.yml
         ../cf-deployment/operations/rename-network-and-deployment.yml
         ../cf-deployment/operations/use-postgres.yml
-        ../cf-deployment/operations/test/add-datadog-firehose-nozzle.yml
+        operations/add-datadog-firehose-nozzle.yml
         ../release/operations/benchmarks/postgres.yml
         operations/bbs-benchmark.yml
         operations/bbs-benchmark-postgres.yml
