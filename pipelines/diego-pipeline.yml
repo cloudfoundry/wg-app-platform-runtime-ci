@@ -1879,7 +1879,9 @@ resources:
   type: git
   source:
     paths:
-    - time-rotor-gcp
+    - envs/time-rotor-gcp
+    - operations
+    - vars
     uri: git@github.com:cloudfoundry/deployments-diego.git
     private_key: {{cf-diego-private-key}}
 
