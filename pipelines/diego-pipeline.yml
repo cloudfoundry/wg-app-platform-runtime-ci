@@ -889,6 +889,9 @@ jobs:
       params: {submodules: none}
     - get: diego-ci
     - get: runtime-ci
+    - get: cf-deployment-develop
+      passed: [candidate]
+    - get: cf-deployment-concourse-tasks
     - get: indicator-verification-linux
       params:
         globs:
