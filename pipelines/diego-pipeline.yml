@@ -786,7 +786,6 @@ jobs:
         operations/add-datadog-firehose-nozzle.yml
         ../cf-deployment/operations/scale-database-cluster.yml
         ../cf-deployment/operations/use-external-blobstore.yml
-        ../cf-deployment/operations/use-metric-store.yml
         ../cf-deployment/operations/use-gcs-blobstore-service-account.yml
         ../cf-deployment/operations/windows2012R2-cell.yml
         ../cf-deployment/operations/windows2019-cell.yml
@@ -877,6 +876,7 @@ jobs:
         SECURITY_GROUP_NAME: uaa-cats-asg
 
 - name: warp-drive-verify-indicators-protocol
+  serial_groups: [warp-drive-cf-deployment]
   plan:
   - get: candidate-lock
     passed: [warp-drive-cf-acceptance-tests]
@@ -888,6 +888,7 @@ jobs:
       passed: [warp-drive-cf-acceptance-tests]
       params: {submodules: none}
     - get: diego-ci
+    - get: runtime-ci
     - get: indicator-verification-linux
       params:
         globs:
@@ -898,12 +899,23 @@ jobs:
       DEPLOYMENT_NAME: warp-drive
       SYSTEM_DOMAIN: warp-drive.cf-app.com
       ENV_NAME: warp-drive
+  - task: restart-diego-api
+    file: diego-ci/tasks/bosh_restart.yml
+    input_mapping: *warp_drive_deployment_input_mappings
+    params:
+      BBL_STATE_DIR: envs/warp-drive/deployments/bbl
+      SYSTEM_DOMAIN: warp-drive.cf-app.com
+      VARS_FILES: |
+        envs/warp-drive/cf-deployment-vars.yml
+        vars/grace-config-vars.yml
+      DEPLOY_WITH_UPTIME_MEASUREMENTS: false
+      OPS_FILES: *warp_drive_ops_files
+      BOSH_RESTART_ARGS: diego-api
   - task: indicator-verification
     file: diego-ci/tasks/indicator_verification.build.yml
     input_mapping:
       release: diego-release
-    params:
-      QUERY_ENDPOINT: metric-store
+
 - name: warp-drive-test-evacuation
   serial_groups: [warp-drive-cf-deployment]
   plan:
