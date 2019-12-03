@@ -29,6 +29,7 @@ for env in ${envs[@]}; do
         if (( $cert_expire_day < $expire_day )); then
           echo "$name certificate has/will expire in the next 30 days, in credhub"
           credhub regenerate -n $name
+          credhub bulk-regenerate --signed-by $name
         fi
       done
 
