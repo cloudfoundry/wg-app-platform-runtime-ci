@@ -815,6 +815,7 @@ jobs:
         operations/enable-nats-tls.yml
         operations/enable-nats-tls-windows.yml
         operations/turn-on-debug-mode-on-route-emitter.yml
+        operations/app-log-with-rate-limit.yml
   - task: enable-docker
     file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
     input_mapping:
