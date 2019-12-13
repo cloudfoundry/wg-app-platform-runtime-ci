@@ -803,10 +803,6 @@ jobs:
         ../cf-deployment/operations/experimental/enable-nginx-routing-integrity-windows2019.yml
         ../cf-deployment/operations/enable-tls-on-file-server.yml
         ../cf-deployment/operations/experimental/disable-uaa-client-redirect-uri-legacy-matching-mode.yml
-        ../cf-deployment/operations/addons/enable-component-syslog.yml
-        ../cf-deployment/operations/addons/component-syslog-custom-ca.yml
-        ../cf-deployment/operations/experimental/windows-enable-component-syslog.yml
-        ../cf-deployment/operations/experimental/windows-component-syslog-ca.yml
         operations/open-files-limit.yml
         operations/routing-acceptance-tests.yml
         operations/routing-smoke-tests.yml
@@ -1330,10 +1326,6 @@ jobs:
         ../cf-deployment/operations/use-external-blobstore.yml
         ../cf-deployment/operations/use-gcs-blobstore-service-account.yml
         ../cf-deployment/operations/windows2012R2-cell.yml
-        ../cf-deployment/operations/addons/enable-component-syslog.yml
-        ../cf-deployment/operations/addons/component-syslog-custom-ca.yml
-        ../cf-deployment/operations/experimental/windows-enable-component-syslog.yml
-        ../cf-deployment/operations/experimental/windows-component-syslog-ca.yml
         operations/disable-vizzini-privileged-containers-tests.yml
         operations/instance-types.yml
         operations/set-rep-max-idle-conns.yml
