@@ -35,7 +35,6 @@ groups:
   - warp-drive-smoke-tests
   - warp-drive-cf-acceptance-tests
   - warp-drive-run-wats
-  - warp-drive-run-wats2016
   - warp-drive-vizzini
   - deliver
   - shipit
@@ -74,7 +73,6 @@ groups:
   - warp-drive-bosh-cleanup
   - warp-drive-vizzini
   - warp-drive-run-wats
-  - warp-drive-run-wats2016
 - name: version
   jobs:
   - major-bump
@@ -840,22 +838,6 @@ jobs:
         params:
           repository: updated-integration-configs
           rebase: true
-    - task: update-integration-configs
-      file: cf-deployment-concourse-tasks/update-integration-configs/task.yml
-      input_mapping:
-        bbl-state: deployments-diego
-        integration-configs: warp-drive-cats-config
-      params:
-        BBL_STATE_DIR: envs/warp-drive/deployments/bbl
-        WATS_INTEGRATION_CONFIG_FILE: envs/warp-drive/wats_2016_integration_config.json
-        SYSTEM_DOMAIN: warp-drive.cf-app.com
-        GIT_COMMIT_EMAIL: "cf-diego@pivotal.io"
-        GIT_COMMIT_USERNAME: "Diego CI Bot"
-      ensure:
-        put: warp-drive-cats-config
-        params:
-          repository: updated-integration-configs
-          rebase: true
     - task: open-asgs-for-credhub
       file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
       input_mapping:
@@ -1058,28 +1040,6 @@ jobs:
       CONFIG_FILE_PATH: envs/warp-drive/integration_config.json
       SKIP_REGEXP: "Syslog drain"
 
-
-- name: warp-drive-run-wats2016
-  serial_groups: [warp-drive-vizzini]
-  plan:
-  - get: candidate-lock
-    passed: [warp-drive-deploy-cf-deployment,warp-drive-smoke-tests]
-    trigger: true
-  - in_parallel:
-    - get: diego-release
-      params: {submodules: none}
-      passed: [warp-drive-deploy-cf-deployment]
-    - get: warp-drive-cats-config
-    - get: cf-deployment-concourse-tasks
-    - get: cf-acceptance-tests
-  - task: run-cats
-    file: cf-deployment-concourse-tasks/run-cats/task.yml
-    input_mapping:
-      integration-config: warp-drive-cats-config
-    params:
-      CONFIG_FILE_PATH: envs/warp-drive/wats_2016_integration_config.json
-      SKIP_REGEXP: "Syslog drain"
-      NODES: 4
 
 - name: warp-drive-run-wats
   serial_groups: [warp-drive-vizzini]
@@ -1548,7 +1508,6 @@ jobs:
     - warp-drive-verify-indicators-protocol
     - warp-drive-routing-acceptance-tests
     - warp-drive-run-wats
-    - warp-drive-run-wats2016
     - export-diego-release
     trigger: true
   - in_parallel:
@@ -1915,7 +1874,6 @@ resources:
     paths:
     - envs/warp-drive/integration_config.json
     - envs/warp-drive/wats_integration_config.json
-    - envs/warp-drive/wats_2016_integration_config.json
     uri: git@github.com:cloudfoundry/deployments-diego.git
     private_key: {{cf-diego-private-key}}
 
