@@ -757,7 +757,6 @@ jobs:
     params:
       BBL_STATE_DIR: envs/warp-drive/deployments/bbl
       OPS_FILES: |
-        ../cf-deployment/operations/windows2012R2-cell.yml
         ../cf-deployment/operations/windows2019-cell.yml
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
@@ -787,7 +786,6 @@ jobs:
         ../cf-deployment/operations/scale-database-cluster.yml
         ../cf-deployment/operations/use-external-blobstore.yml
         ../cf-deployment/operations/use-gcs-blobstore-service-account.yml
-        ../cf-deployment/operations/windows2012R2-cell.yml
         ../cf-deployment/operations/windows2019-cell.yml
         ../cf-deployment/operations/use-online-windows2019fs.yml
         operations/set-windows2019-cell-to-2-instances.yml
@@ -1292,7 +1290,7 @@ jobs:
     params:
       BBL_STATE_DIR: envs/electron-cannon/deployments/bbl
       OPS_FILES: |
-        ../cf-deployment/operations/windows2012R2-cell.yml
+        ../cf-deployment/operations/windows2019-cell.yml
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping: *electron_cannon_deployment_input_mappings
@@ -1325,7 +1323,7 @@ jobs:
         ../cf-deployment/operations/scale-database-cluster.yml
         ../cf-deployment/operations/use-external-blobstore.yml
         ../cf-deployment/operations/use-gcs-blobstore-service-account.yml
-        ../cf-deployment/operations/windows2012R2-cell.yml
+        ../cf-deployment/operations/windows2019-cell.yml
         operations/disable-vizzini-privileged-containers-tests.yml
         operations/instance-types.yml
         operations/set-rep-max-idle-conns.yml
@@ -1518,7 +1516,7 @@ jobs:
         APP_NAME: diego-canary-windows-app
         APP_PATH: ViewEnvironment
         INSTANCE_COUNT: 1
-        STACK_NAME: windows2012R2
+        STACK_NAME: windows
 
 - name: export-diego-release
   serial_groups: [electron-cannon-cf-deployment]
