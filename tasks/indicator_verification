@@ -13,6 +13,7 @@ cf auth admin $CF_ADMIN_PASSWORD
 cleanup() {
   cf delete-org ${ORG} -f
   cf delete-quota ${RUNAWAY_QUOTA} -f
+  rm -rf "$tmp_dir"
 }
 
 trap cleanup EXIT
@@ -28,6 +29,11 @@ cf create-quota ${RUNAWAY_QUOTA} -m ${RUNAWAY_MEMORY} -i -1 -r 10
 cf set-quota ${ORG} ${RUNAWAY_QUOTA}
 
 cf push ${APP_NAME} --docker-image cfdiegodocker/grace -m ${RUNAWAY_MEMORY} || true # expected to fail with insufficient resources
+
+#for emitting app_instance_exceeded_log_rate_limit_count
+tmp_dir=$(mktemp -d)
+touch "$tmp_dir/file"
+cf push yes -p "$tmp_dir" -b binary_buildpack -c yes -u none && sleep 10 && cf delete -f -r yes
 
 OAUTH_TOKEN="$(cf oauth-token)"
 INDICATOR_VERIFICATION=$(ls ./indicator-verification-linux/indicator-verification-linux*)
