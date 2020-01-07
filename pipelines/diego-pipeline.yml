@@ -1284,6 +1284,7 @@ jobs:
         ../cf-deployment/operations/use-external-blobstore.yml
         ../cf-deployment/operations/use-gcs-blobstore-service-account.yml
         ../cf-deployment/operations/windows2019-cell.yml
+        ../cf-deployment/operations/use-online-windows2019fs.yml
         operations/disable-vizzini-privileged-containers-tests.yml
         operations/instance-types.yml
         operations/set-rep-max-idle-conns.yml
@@ -1291,6 +1292,7 @@ jobs:
         operations/stream-vizzini-output.yml
         operations/change-loggregator-agent-deployment.yml
         operations/turn-on-debug-mode-on-route-emitter.yml
+        operations/set-windows2019-cell-max-idle-conns.yml
   - task: enable-docker
     file: diego-ci/tasks/enable_diego_docker_feature_flag.build.yml
     params:
