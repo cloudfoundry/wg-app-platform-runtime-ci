@@ -33,7 +33,10 @@ cf push ${APP_NAME} --docker-image cfdiegodocker/grace -m ${RUNAWAY_MEMORY} || t
 #for emitting app_instance_exceeded_log_rate_limit_count
 tmp_dir=$(mktemp -d)
 touch "$tmp_dir/file"
-cf push yes -p "$tmp_dir" -b binary_buildpack -c yes -u none && sleep 10 && cf delete -f -r yes
+cf push yes -p "$tmp_dir" -b binary_buildpack -c yes -u none
+cf scale yes -i 2
+sleep 10
+cf delete -f -r yes
 
 OAUTH_TOKEN="$(cf oauth-token)"
 INDICATOR_VERIFICATION=$(ls ./indicator-verification-linux/indicator-verification-linux*)
