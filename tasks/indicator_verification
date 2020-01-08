@@ -34,6 +34,7 @@ cf push ${APP_NAME} --docker-image cfdiegodocker/grace -m ${RUNAWAY_MEMORY} || t
 tmp_dir=$(mktemp -d)
 touch "$tmp_dir/file"
 cf push yes -p "$tmp_dir" -b binary_buildpack -c yes -u none
+sleep 10
 cf scale yes -i 2
 sleep 10
 cf delete -f -r yes
