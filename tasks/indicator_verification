@@ -9,4 +9,5 @@ DEPLOYMENT_NAME=$(bosh int --path="/deployment" $VARS_FILE)
 OAUTH_TOKEN="$(cf oauth-token)"
 INDICATOR_VERIFICATION=$(ls ./indicator-verification-linux/indicator-verification-linux*)
 chmod +x $INDICATOR_VERIFICATION
+sleep 10
 find ./release/jobs -name "indicators.yml.erb" | xargs -n 1 -I{} $INDICATOR_VERIFICATION -indicators {} -metadata deployment=$DEPLOYMENT_NAME   -authorization "$OAUTH_TOKEN" -query-endpoint "https://$QUERY_ENDPOINT.$SYSTEM_DOMAIN" -k

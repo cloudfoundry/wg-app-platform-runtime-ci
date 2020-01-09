@@ -884,22 +884,28 @@ jobs:
       DEPLOYMENT_NAME: warp-drive
       SYSTEM_DOMAIN: warp-drive.cf-app.com
       ENV_NAME: warp-drive
-  - task: restart-diego-api
-    file: diego-ci/tasks/bosh_restart.yml
-    input_mapping: *warp_drive_deployment_input_mappings
-    params:
-      BBL_STATE_DIR: envs/warp-drive/deployments/bbl
-      SYSTEM_DOMAIN: warp-drive.cf-app.com
-      VARS_FILES: |
-        envs/warp-drive/cf-deployment-vars.yml
-        vars/grace-config-vars.yml
-      DEPLOY_WITH_UPTIME_MEASUREMENTS: false
-      OPS_FILES: *warp_drive_ops_files
-      BOSH_RESTART_ARGS: diego-api
-  - task: indicator-verification
-    file: diego-ci/tasks/indicator_verification.build.yml
-    input_mapping:
-      release: diego-release
+  - in_parallel:
+    - task: restart-diego-api
+      file: diego-ci/tasks/bosh_restart.yml
+      input_mapping: *warp_drive_deployment_input_mappings
+      attempts: 3
+      params:
+        BBL_STATE_DIR: envs/warp-drive/deployments/bbl
+        SYSTEM_DOMAIN: warp-drive.cf-app.com
+        VARS_FILES: |
+          envs/warp-drive/cf-deployment-vars.yml
+          vars/grace-config-vars.yml
+        DEPLOY_WITH_UPTIME_MEASUREMENTS: false
+        OPS_FILES: *warp_drive_ops_files
+        BOSH_RESTART_ARGS: diego-api
+    - task: prepare-indicator-verification
+      file: diego-ci/tasks/prepare_indicator_verification.build.yml
+      attempts: 3
+    - task: indicator-verification
+      file: diego-ci/tasks/indicator_verification.build.yml
+      attempts: 10
+      input_mapping:
+        release: diego-release
 
 - name: warp-drive-test-evacuation
   serial_groups: [warp-drive-cf-deployment]
