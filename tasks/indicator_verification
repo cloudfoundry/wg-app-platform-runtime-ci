@@ -4,7 +4,11 @@ set -eu
 
 VARS_FILE=$(ls deployment-vars/*.yml)
 SYSTEM_DOMAIN=$(bosh int --path="/system_domain" $VARS_FILE)
+CF_ADMIN_PASSWORD=$(bosh int --path="/cf_admin_password" $VARS_FILE)
 DEPLOYMENT_NAME=$(bosh int --path="/deployment" $VARS_FILE)
+
+cf api --skip-ssl-validation "https://api.$SYSTEM_DOMAIN"
+cf auth admin $CF_ADMIN_PASSWORD
 
 OAUTH_TOKEN="$(cf oauth-token)"
 INDICATOR_VERIFICATION=$(ls ./indicator-verification-linux/indicator-verification-linux*)
