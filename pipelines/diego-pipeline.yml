@@ -1676,7 +1676,6 @@ jobs:
         operations/add-datadog-firehose-nozzle.yml
         ../release/operations/benchmarks/mysql.yml
         operations/bbs-benchmark.yml
-        operations/turn-on-debug-mode-on-bbs.yml
         operations/disable-log-cache.yml
         operations/overrides.yml
         operations/remove-reverse-log-proxy-gateway.yml
