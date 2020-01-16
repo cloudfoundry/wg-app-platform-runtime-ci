@@ -10,7 +10,7 @@ outputs:
 image_resource:
   type: docker-image
   source:
-    repository: envoyproxy/envoy-dev
+    repository: envoyproxy/envoy
 
 run:
   path: diego-ci/tasks/create_envoy_blob
