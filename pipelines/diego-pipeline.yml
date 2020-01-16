@@ -30,7 +30,6 @@ groups:
   - warp-drive-routing-smoke-tests
   - warp-drive-routing-acceptance-tests
   - warp-drive-deploy-cf-deployment
-  - warp-drive-verify-indicators-protocol
   - warp-drive-test-evacuation
   - warp-drive-smoke-tests
   - warp-drive-cf-acceptance-tests
@@ -63,7 +62,6 @@ groups:
   jobs:
   - bbl-up-warp-drive
   - warp-drive-deploy-cf-deployment
-  - warp-drive-verify-indicators-protocol
   - warp-drive-test-evacuation
   - warp-drive-smoke-tests
   - warp-drive-routing-smoke-tests
@@ -856,56 +854,6 @@ jobs:
         SYSTEM_DOMAIN: warp-drive.cf-app.com
         SECURITY_GROUP_NAME: uaa-cats-asg
 
-- name: warp-drive-verify-indicators-protocol
-  serial_groups: [warp-drive-cf-deployment]
-  plan:
-  - get: candidate-lock
-    passed: [warp-drive-cf-acceptance-tests]
-    trigger: true
-  - in_parallel:
-    - get: deployments-diego
-      resource: warp-drive-config
-    - get: diego-release
-      passed: [warp-drive-cf-acceptance-tests]
-      params: {submodules: none}
-    - get: diego-ci
-    - get: runtime-ci
-    - get: cf-deployment
-      passed: [candidate]
-    - get: cf-deployment-concourse-tasks
-    - get: indicator-verification-linux
-      params:
-        globs:
-        - indicator-verification-linux64*
-  - task: generate-vars
-    file: diego-ci/tasks/generate-deployment-vars.build.yml
-    params:
-      DEPLOYMENT_NAME: warp-drive
-      SYSTEM_DOMAIN: warp-drive.cf-app.com
-      ENV_NAME: warp-drive
-  - in_parallel:
-    - task: restart-diego-api
-      file: diego-ci/tasks/bosh_restart.yml
-      input_mapping: *warp_drive_deployment_input_mappings
-      attempts: 3
-      params:
-        BBL_STATE_DIR: envs/warp-drive/deployments/bbl
-        SYSTEM_DOMAIN: warp-drive.cf-app.com
-        VARS_FILES: |
-          envs/warp-drive/cf-deployment-vars.yml
-          vars/grace-config-vars.yml
-        DEPLOY_WITH_UPTIME_MEASUREMENTS: false
-        OPS_FILES: *warp_drive_ops_files
-        BOSH_RESTART_ARGS: diego-api
-    - task: prepare-indicator-verification
-      file: diego-ci/tasks/prepare_indicator_verification.build.yml
-      attempts: 3
-    - task: indicator-verification
-      file: diego-ci/tasks/indicator_verification.build.yml
-      attempts: 10
-      input_mapping:
-        release: diego-release
-
 - name: warp-drive-test-evacuation
   serial_groups: [warp-drive-cf-deployment]
   plan:
@@ -1509,7 +1457,6 @@ jobs:
     - warp-drive-vizzini
     - warp-drive-test-evacuation
     - warp-drive-cf-acceptance-tests
-    - warp-drive-verify-indicators-protocol
     - warp-drive-routing-acceptance-tests
     - warp-drive-run-wats
     - export-diego-release
@@ -2095,12 +2042,6 @@ resources:
     branch: master
     uri: https://github.com/bosh-packages/golang-release
     tag_filter: v*
-
-- name: indicator-verification-linux
-  type: github-release
-  source:
-    owner: pivotal
-    repository: monitoring-indicator-protocol
 
 resource_types:
 - name: create-tracker-story-resource
