@@ -739,7 +739,7 @@ jobs:
     - get: diego-release
       passed: [candidate]
     - get: diego-ci
-    - get: cf-deployment-develop
+    - get: cf-deployment
       passed: [candidate]
     - get: cf-deployment-concourse-tasks
     - get: runtime-ci
@@ -751,7 +751,6 @@ jobs:
       ops-files: deployments-diego
       vars-files: deployments-diego
       bbl-state: deployments-diego
-      cf-deployment: cf-deployment-develop
     params:
       BBL_STATE_DIR: envs/warp-drive/deployments/bbl
       OPS_FILES: |
@@ -871,7 +870,7 @@ jobs:
       params: {submodules: none}
     - get: diego-ci
     - get: runtime-ci
-    - get: cf-deployment-develop
+    - get: cf-deployment
       passed: [candidate]
     - get: cf-deployment-concourse-tasks
     - get: indicator-verification-linux
@@ -919,7 +918,7 @@ jobs:
     - get: diego-release
       passed: [candidate]
     - get: diego-ci
-    - get: cf-deployment-develop
+    - get: cf-deployment
       passed: [candidate]
     - get: cf-deployment-concourse-tasks
     - get: runtime-ci
@@ -1212,9 +1211,7 @@ jobs:
       params: {submodules: none}
       trigger: true
     - get: bosh-deployment
-    - get: cf-deployment-develop
-      trigger: true
-    - get: cf-deployment-rc
+    - get: cf-deployment
       trigger: true
     - get: diego-ci
 
@@ -1242,7 +1239,7 @@ jobs:
     - get: diego-release
       passed: [candidate]
     - get: diego-ci
-    - get: cf-deployment-rc
+    - get: cf-deployment
       passed: [candidate]
     - get: cf-deployment-concourse-tasks
   - task: upload-stemcells
@@ -1252,7 +1249,6 @@ jobs:
       ops-files: deployments-diego
       vars-files: deployments-diego
       bbl-state: deployments-diego
-      cf-deployment: cf-deployment-rc
     params:
       BBL_STATE_DIR: envs/electron-cannon/deployments/bbl
       OPS_FILES: |
@@ -1318,7 +1314,7 @@ jobs:
     - get: diego-release
       passed: [candidate]
     - get: diego-ci
-    - get: cf-deployment-rc
+    - get: cf-deployment
       passed: [candidate]
     - get: cf-deployment-concourse-tasks
   - task: restart-diego-cells
@@ -1374,7 +1370,7 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: deployments-diego
       resource: electron-cannon-config
-    - get: cf-deployment-rc
+    - get: cf-deployment
       passed: [electron-cannon-deploy-cf-deployment]
   - task: run-vizzini-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
@@ -1399,7 +1395,7 @@ jobs:
     - get: electron-cannon-cats-config
     - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests
-    - get: cf-deployment-rc
+    - get: cf-deployment
       passed: [electron-cannon-deploy-cf-deployment]
   - task: run-cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
@@ -1420,7 +1416,7 @@ jobs:
     - get: electron-cannon-cats-config
     - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests
-    - get: cf-deployment-rc
+    - get: cf-deployment
       passed: [electron-cannon-deploy-cf-deployment]
   - task: run-cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
@@ -1522,7 +1518,7 @@ jobs:
     - get: diego-release
       passed: [candidate]
       params: {submodules: none}
-    - get: cf-deployment-rc
+    - get: cf-deployment
       passed:
       - electron-cannon-vizzini
       - electron-cannon-cf-acceptance-tests
@@ -1540,7 +1536,7 @@ jobs:
   plan:
   - in_parallel:
     - get: diego-ci
-    - get: cf-deployment-rc
+    - get: cf-deployment
       passed: [deliver]
     - get: diego-release
       passed: [deliver]
@@ -1568,7 +1564,7 @@ jobs:
   plan:
   - in_parallel:
     - get: diego-ci
-    - get: cf-deployment-rc
+    - get: cf-deployment
       passed: [shipit]
       trigger: true
     - get: diego-final-releases
@@ -1639,7 +1635,7 @@ jobs:
       trigger: true
     - get: diego-ci
     - get: create-tracker-story
-    - get: cf-deployment-develop
+    - get: cf-deployment
     - get: cf-deployment-concourse-tasks
   - task: upload-stemcells
     file: cf-deployment-concourse-tasks/bosh-upload-stemcells/task.yml
@@ -1648,7 +1644,6 @@ jobs:
       ops-files: deployments-diego
       vars-files: deployments-diego
       bbl-state: deployments-diego
-      cf-deployment: cf-deployment-develop
     params:
       BBL_STATE_DIR: envs/time-rotor-gcp/deployments/bbl
   - task: emit-cf-datadog-start
@@ -1731,7 +1726,7 @@ jobs:
       passed: [time-rotor-gcp-benchmark-bbs-tests]
       trigger: true
     - get: diego-ci
-    - get: cf-deployment-develop
+    - get: cf-deployment
       passed: [time-rotor-gcp-benchmark-bbs-tests]
     - get: cf-deployment-concourse-tasks
   - task: upload-stemcells
@@ -1741,7 +1736,6 @@ jobs:
       ops-files: deployments-diego
       vars-files: deployments-diego
       bbl-state: deployments-diego
-      cf-deployment: cf-deployment-develop
     params:
       BBL_STATE_DIR: envs/time-rotor-gcp/deployments/bbl
   - task: emit-cf-datadog-start
@@ -1922,20 +1916,6 @@ resources:
   type: git
   source:
     branch: master
-    uri: git@github.com:cloudfoundry/cf-deployment.git
-    private_key: {{cf-diego-private-key}}
-
-- name: cf-deployment-develop
-  type: git
-  source:
-    branch: develop
-    uri: git@github.com:cloudfoundry/cf-deployment.git
-    private_key: {{cf-diego-private-key}}
-
-- name: cf-deployment-rc
-  type: git
-  source:
-    branch: release-candidate
     uri: git@github.com:cloudfoundry/cf-deployment.git
     private_key: {{cf-diego-private-key}}
 
