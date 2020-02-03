@@ -8,7 +8,7 @@ image_resource:
 
 inputs:
 - name: diego-ci
-- name: cf-deployment-rc
+- name: cf-deployment
 - name: diego-release-master
 - name: diego-final-releases
 

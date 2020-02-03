@@ -4,7 +4,7 @@ set -e
 
 ( cd diego-release-master && git rev-parse HEAD ) > generated-release/commitish
 
-cf_dep_sha=$( cd cf-deployment-rc && git rev-parse HEAD )
+cf_dep_sha=$( cd cf-deployment && git rev-parse HEAD )
 
 version=$(cat diego-final-releases/version)
 echo "Diego v$version" > generated-release/name
