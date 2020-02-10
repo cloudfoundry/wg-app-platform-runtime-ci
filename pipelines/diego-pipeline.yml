@@ -279,14 +279,6 @@ jobs:
     - get: diego-ci
   - task: check
     file: diego-ci/tasks/check_expired_certs.build.yml
-    on_failure:
-      put: create-tracker-story
-      params:
-        story_labels: ["ci"]
-        story_name: "Failing check-expired-bosh-certs CI job"
-        story_state: "started"
-        story_type: "chore"
-        story_description: "check-expired-bosh-certs has failed. See the linked build."
 
 - name: check-expired-test-fixture-certs
   plan:
@@ -299,14 +291,6 @@ jobs:
     file: diego-ci/tasks/check_expired_certs_in_diego_release.build.yml
     params:
       CERT_DIRECTORY: ./diego-release/src/code.cloudfoundry.org
-    on_failure:
-      put: create-tracker-story
-      params:
-        story_labels: ["ci"]
-        story_name: "Failing check-expired-test-fixture-certs CI job"
-        story_state: "started"
-        story_type: "chore"
-        story_description: "check-expired-test-fixture-certs has failed. See the linked build."
 
 - name: simulate-auctions
   public: true
@@ -1579,7 +1563,6 @@ jobs:
     - get: 12hours
       trigger: true
     - get: diego-ci
-    - get: create-tracker-story
     - get: cf-deployment
     - get: cf-deployment-concourse-tasks
   - task: upload-stemcells
@@ -1637,14 +1620,6 @@ jobs:
       DEPLOYMENT_NAME: time_rotor_gcp
       ERRAND_NAME: diego-benchmarks
       KEEP_ALIVE: true
-    on_failure:
-      put: create-tracker-story
-      params:
-        story_labels: ["ci"]
-        story_name: "Failing Benchmark BBS Build"
-        story_state: "started"
-        story_type: "chore"
-        story_description: "Build failed"
     on_success:
       in_parallel:
       - task: delete-deployment
@@ -1730,14 +1705,6 @@ jobs:
       DEPLOYMENT_NAME: time_rotor_gcp_postgres
       ERRAND_NAME: diego-benchmarks
       KEEP_ALIVE: true
-    on_failure:
-      put: create-tracker-story
-      params:
-        story_labels: ["ci"]
-        story_name: "Failing Benchmark BBS Postgres Build"
-        story_state: "started"
-        story_type: "chore"
-        story_description: "Build failed"
     on_success:
       in_parallel:
       - task: delete-deployment
@@ -2026,12 +1993,6 @@ resources:
     branch: master
     uri: https://github.com/cloudfoundry/runtime-ci
 
-- name: create-tracker-story
-  type: create-tracker-story-resource
-  source:
-    project_id: "1003146"
-    api_token: {{tracker-token}}
-
 - name: golang-release
   type: git
   source:
@@ -2039,9 +2000,3 @@ resources:
     uri: https://github.com/bosh-packages/golang-release
     tag_filter: v*
 
-resource_types:
-- name: create-tracker-story-resource
-  type: docker-image
-  source:
-    repository: cfdiegodocker/create-tracker-story-concourse-resource
-    tag: latest
