@@ -27,8 +27,6 @@ groups:
   - upgrade-acceptance-tests-from-v1.25.2
   - time-rotor-gcp-benchmark-bbs-tests
   - time-rotor-gcp-benchmark-bbs-with-postgres-tests
-  - warp-drive-routing-smoke-tests
-  - warp-drive-routing-acceptance-tests
   - warp-drive-deploy-cf-deployment
   - warp-drive-test-evacuation
   - warp-drive-smoke-tests
@@ -64,8 +62,6 @@ groups:
   - warp-drive-deploy-cf-deployment
   - warp-drive-test-evacuation
   - warp-drive-smoke-tests
-  - warp-drive-routing-smoke-tests
-  - warp-drive-routing-acceptance-tests
   - warp-drive-cf-acceptance-tests
   - warp-drive-vizzini-periodic
   - warp-drive-bosh-cleanup
@@ -780,8 +776,6 @@ jobs:
         ../cf-deployment/operations/enable-tls-on-file-server.yml
         ../cf-deployment/operations/experimental/disable-uaa-client-redirect-uri-legacy-matching-mode.yml
         operations/open-files-limit.yml
-        operations/routing-acceptance-tests.yml
-        operations/routing-smoke-tests.yml
         operations/set-rep-max-idle-conns.yml
         operations/set-windows2019-cell-max-idle-conns.yml
         operations/disable-vizzini-privileged-containers-tests.yml
@@ -895,45 +889,6 @@ jobs:
       BBL_STATE_DIR: envs/warp-drive/deployments/bbl
       DEPLOYMENT_NAME: cf
       ERRAND_NAME: smoke-tests
-
-- name: warp-drive-routing-smoke-tests
-  serial_groups: [warp-drive-cf-deployment]
-  plan:
-  - get: candidate-lock
-    passed: [warp-drive-deploy-cf-deployment]
-    trigger: true
-  - in_parallel:
-    - get: cf-deployment-concourse-tasks
-    - get: deployments-diego
-      resource: warp-drive-config
-  - task: run-routing-smoke-tests-errand
-    file: cf-deployment-concourse-tasks/run-errand/task.yml
-    input_mapping:
-      bbl-state: deployments-diego
-    params:
-      BBL_STATE_DIR: envs/warp-drive/deployments/bbl
-      DEPLOYMENT_NAME: cf
-      ERRAND_NAME: routing-smoke-tests
-
-- name: warp-drive-routing-acceptance-tests
-  serial_groups: [warp-drive-cf-deployment]
-  plan:
-  - get: candidate-lock
-    passed: [warp-drive-routing-smoke-tests]
-    trigger: true
-  - in_parallel:
-    - get: cf-deployment-concourse-tasks
-    - get: deployments-diego
-      resource: warp-drive-config
-  - task: run-routing-acceptance-tests-errand
-    file: cf-deployment-concourse-tasks/run-errand/task.yml
-    input_mapping:
-      bbl-state: deployments-diego
-    params:
-      BBL_STATE_DIR: envs/warp-drive/deployments/bbl
-      DEPLOYMENT_NAME: cf
-      ERRAND_NAME: routing-acceptance-tests
-
 
 - name: warp-drive-vizzini
   serial_groups: [warp-drive-cf-deployment]
@@ -1439,7 +1394,6 @@ jobs:
     - warp-drive-vizzini
     - warp-drive-test-evacuation
     - warp-drive-cf-acceptance-tests
-    - warp-drive-routing-acceptance-tests
     - warp-drive-run-wats
     - export-diego-release
     trigger: true
