@@ -775,6 +775,8 @@ jobs:
         ../cf-deployment/operations/experimental/enable-nginx-routing-integrity-windows2019.yml
         ../cf-deployment/operations/enable-tls-on-file-server.yml
         ../cf-deployment/operations/experimental/disable-uaa-client-redirect-uri-legacy-matching-mode.yml
+        ../cf-deployment/operations/experimental/enable-cpu-throttling.yml
+        ../cf-deployment/operations/experimental/set-cpu-weight.yml
         operations/open-files-limit.yml
         operations/set-rep-max-idle-conns.yml
         operations/set-windows2019-cell-max-idle-conns.yml
