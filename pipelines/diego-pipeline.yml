@@ -1520,6 +1520,7 @@ jobs:
       trigger: true
     - get: diego-ci
     - get: cf-deployment
+      passed: [deliver]
     - get: cf-deployment-concourse-tasks
   - task: upload-stemcells
     file: cf-deployment-concourse-tasks/bosh-upload-stemcells/task.yml
