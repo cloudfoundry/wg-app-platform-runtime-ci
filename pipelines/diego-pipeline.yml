@@ -1,6 +1,7 @@
 groups:
 - name: diego
   jobs:
+  - bump-garden
   - simulate-auctions
   - check-for-windows-drift
   - check-proto-files
@@ -694,6 +695,30 @@ jobs:
     - get: diego-ci
   - task: compare-garden-releases
     file: diego-ci/tasks/compare_garden_releases.build.yml
+
+# Trigger on releases to garden-runc-release. We could use concourse resource for that.
+# Bump garden-runc-release
+# Bump guardian to match the version used in gardenc-runc-release
+# Update the package specs
+# Commit the changes
+- name: bump-garden
+  public: true
+  plan:
+  - in_parallel:
+    - get: diego-release
+    - get: garden-runc-release-master
+    - get: garden-runc-release-github-release
+      trigger: true
+      params:
+        include_source_tarball: true
+  - task: bump-submodule
+    file: diego-ci/tasks/bump_garden_submodules.build.yml
+  - put: diego-release
+    params:
+      repository: bumped-diego-release
+      rebase: true
+    get_params:
+      submodules: none
 
 - name: validate-envoy-version
   public: true
@@ -1894,6 +1919,12 @@ resources:
   source:
     uri: https://github.com/cloudfoundry/garden-runc-release
     branch: master
+
+- name: garden-runc-release-github-release
+  type: github-release
+  source:
+    user: cloudfoundry
+    repository: garden-runc-release
 
 - name: winc-release
   type: git

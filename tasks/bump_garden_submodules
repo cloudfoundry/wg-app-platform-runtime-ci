@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+DIEGO_GARDEN_SUBMODULE=src/code.cloudfoundry.org/garden
+DIEGO_GUARDIAN_SUBMODULE=src/code.cloudfoundry.org/guardian
+GARDEN_RUNC_GARDEN_SUBMODULE=src/garden
+GARDEN_RUNC_GUARDIAN_SUBMODULE=src/guardian
+
+sha="$(cat garden-runc-release-github-release/commit_sha)"
+git -C garden-runc-release-master checkout "$sha"
+git -C garden-runc-release-master submodule update --init --recursive
+
+GARDEN_SHA=`git -C garden-runc-release-master ls-tree HEAD $GARDEN_RUNC_GARDEN_SUBMODULE | awk '{print $3}'`
+GUARDIAN_SHA=`git -C garden-runc-release-master ls-tree HEAD $GARDEN_RUNC_GUARDIAN_SUBMODULE | awk '{print $3}'`
+
+git -C "diego-release/$DIEGO_GARDEN_SUBMODULE" fetch --all
+git -C "diego-release/$DIEGO_GARDEN_SUBMODULE" reset --hard $GARDEN_SHA
+
+git -C "diego-release/$DIEGO_GUARDIAN_SUBMODULE" fetch --all
+git -C "diego-release/$DIEGO_GUARDIAN_SUBMODULE" reset --hard $GUARDIAN_SHA
+
+pushd diego-release
+  ./scripts/sync-package-specs
+  ./scripts/sync-submodule-config
+
+  if [ -n "$(git status --porcelain)" ]; then
+    git config user.email "cf-diego@pivotal.io"
+    git config user.name "CI (Automated)"
+    git add -A .
+    git commit -m "Update garden and guardian submodules"
+  fi
+popd
