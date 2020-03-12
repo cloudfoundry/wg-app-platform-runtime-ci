@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
-
+GOPATH=$PWD/diego-release
+mkdir -p $GOPATH/bin
+PATH=$PATH:$GOPATH/bin
 DIEGO_GARDEN_SUBMODULE=src/code.cloudfoundry.org/garden
 DIEGO_GUARDIAN_SUBMODULE=src/code.cloudfoundry.org/guardian
 GARDEN_RUNC_GARDEN_SUBMODULE=src/garden
