@@ -31,3 +31,5 @@ pushd diego-release
     git commit -m "Update garden and guardian submodules"
   fi
 popd
+
+cp -r diego-release/. bumped-diego-release

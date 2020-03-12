@@ -706,6 +706,7 @@ jobs:
   plan:
   - in_parallel:
     - get: diego-release
+    - get: diego-ci
     - get: garden-runc-release-master
     - get: garden-runc-release-github-release
       trigger: true
