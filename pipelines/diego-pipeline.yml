@@ -869,10 +869,10 @@ jobs:
     - get: deployments-diego
       resource: warp-drive-config
     - get: diego-release
-      passed: [warp-drive-deploy-cf-deployment]
+      passed: [candidate]
     - get: diego-ci
     - get: cf-deployment
-      passed: [warp-drive-deploy-cf-deployment]
+      passed: [candidate]
     - get: cf-deployment-concourse-tasks
     - get: runtime-ci
     - get: warp-drive-cats-config
@@ -1225,10 +1225,10 @@ jobs:
     - get: deployments-diego
       resource: electron-cannon-config
     - get: diego-release
-      passed: [electron-cannon-deploy-cf-deployment]
+      passed: [candidate]
     - get: diego-ci
     - get: cf-deployment
-      passed: [electron-cannon-deploy-cf-deployment]
+      passed: [candidate]
     - get: cf-deployment-concourse-tasks
   - task: restart-diego-cells
     file: diego-ci/tasks/bosh_restart.yml
@@ -1808,7 +1808,7 @@ resources:
 - name: cf-deployment
   type: git
   source:
-    branch: release-candidate
+    branch: master
     uri: git@github.com:cloudfoundry/cf-deployment.git
     private_key: {{cf-diego-private-key}}
 
