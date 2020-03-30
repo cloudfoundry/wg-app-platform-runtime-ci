@@ -523,6 +523,7 @@ jobs:
       GARDEN_ROOTFS: "docker:///cloudfoundry/windows2016fs:2019"
       SKIP_PACKAGES: "volman,executor,certauthority"
       GINKGO_PARALLEL: "false"
+      FLAKE_ATTEMPTS: 2
 
 - name: upgrade-acceptance-tests-from-v1.0.0
   serial_groups: [dusts-v1.0.0]
