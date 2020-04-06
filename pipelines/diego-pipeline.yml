@@ -93,7 +93,6 @@ groups:
   - warp-drive-push-canary
   - electron-cannon-push-canary
   - release-candidate-lock
-  - release-benchmark-bbs-lock
   - update-golang-packages
   - bbl-up-diego-1
   - bbl-up-diego-2
@@ -1136,12 +1135,6 @@ jobs:
   - put: candidate-lock
     params: {release: candidate-lock}
 
-- name: release-benchmark-bbs-lock
-  plan:
-  - get: benchmark-bbs-lock
-  - put: benchmark-bbs-lock
-    params: {release: benchmark-bbs-lock}
-
 - name: electron-cannon-deploy-cf-deployment
   serial_groups: [electron-cannon-cf-deployment]
   plan:
@@ -1535,8 +1528,6 @@ jobs:
 - name: time-rotor-gcp-benchmark-bbs-tests
   serial_groups: [time-rotor-gcp-benchmark]
   plan:
-  - put: benchmark-bbs-lock
-    params: {acquire: true}
   - in_parallel:
     - get: deployments-diego
       resource: time-rotor-gcp-config
@@ -1611,14 +1602,10 @@ jobs:
         params:
           DEPLOYMENTS: time_rotor_gcp
           DEPLOYMENT_DIR: envs/time-rotor-gcp
-      - put: benchmark-bbs-lock
-        params: {release: benchmark-bbs-lock}
 
 - name: time-rotor-gcp-benchmark-bbs-with-postgres-tests
   serial_groups: [time-rotor-gcp-benchmark]
   plan:
-  - put: benchmark-bbs-lock
-    params: {acquire: true}
   - in_parallel:
     - get: deployments-diego
       resource: time-rotor-gcp-config
@@ -1696,8 +1683,6 @@ jobs:
         params:
           DEPLOYMENTS: time_rotor_gcp_postgres
           DEPLOYMENT_DIR: envs/time-rotor-gcp
-      - put: benchmark-bbs-lock
-        params: {release: benchmark-bbs-lock}
 
 resource_types:
 - name: bosh2-deployment
@@ -1889,14 +1874,6 @@ resources:
     uri: git@github.com:cloudfoundry/diego-ci-pools.git
     branch: master
     pool: candidate-lock
-    private_key: {{cf-diego-private-key}}
-
-- name: benchmark-bbs-lock
-  type: pool
-  source:
-    uri: git@github.com:cloudfoundry/diego-ci-pools.git
-    branch: master
-    pool: benchmark-bbs-lock
     private_key: {{cf-diego-private-key}}
 
 - name: tracker
