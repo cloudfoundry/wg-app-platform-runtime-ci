@@ -814,6 +814,7 @@ jobs:
         operations/enable-nats-tls-windows.yml
         operations/turn-on-debug-mode-on-route-emitter.yml
         operations/app-log-with-rate-limit.yml
+        operations/separate-pxc-and-proxy-different-vms.yml
   - task: enable-docker
     file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
     input_mapping:
@@ -1202,6 +1203,7 @@ jobs:
         operations/change-loggregator-agent-deployment.yml
         operations/turn-on-debug-mode-on-route-emitter.yml
         operations/set-windows2019-cell-max-idle-conns.yml
+        operations/separate-pxc-and-proxy-different-vms.yml
   - task: enable-docker
     file: diego-ci/tasks/enable_diego_docker_feature_flag.build.yml
     params:
