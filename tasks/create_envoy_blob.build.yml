@@ -11,6 +11,7 @@ image_resource:
   type: docker-image
   source:
     repository: envoyproxy/envoy
+    tag: v1.14.1
 
 run:
   path: diego-ci/tasks/create_envoy_blob
