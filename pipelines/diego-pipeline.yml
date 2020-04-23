@@ -350,6 +350,13 @@ jobs:
     - get: diego-release
   - task: create-envoy-blob
     file: diego-ci/tasks/create_envoy_blob.build.yml
+  - task: create-diego-issue
+    file: diego-ci/tasks/create_diego_issue.yml
+    params:
+      GITHUB_TOKEN: {{cf-diego-user-github-access-token}}
+      TITLE: "Update envoy dependency"
+      DESCRIPTION: "Bumping the envoy blob"
+      LABEL: "enhancement,dependencies"
   - task: update-envoy-blob
     file: diego-ci/tasks/update_envoy_blob.build.yml
     params:

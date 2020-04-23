@@ -29,5 +29,11 @@ git config user.email "cf-diego@pivotal.io"
 git config user.name "CI (Automated)"
 
 git add -A config packages
-git commit -n -m "Bumping envoy from ${old_envoy_version} to ${new_envoy_version}"
+msg_file=$(mktemp)
+cat > ${msg_file} <<EOF
+Bumping envoy from ${old_envoy_version} to ${new_envoy_version}
+
+$(cat ../issue-file/link)
+EOF
+git commit -n -F ${msg_file}
 rsync -av $PWD/ ../updated-diego-release

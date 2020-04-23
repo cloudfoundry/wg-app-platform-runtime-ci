@@ -4,10 +4,8 @@ platform: linux
 inputs:
 - name: diego-ci
 - name: diego-release
-- name: envoy-binary
-- name: issue-file
 outputs:
-- name: updated-diego-release
+- name: issue-file
 
 image_resource:
   type: docker-image
@@ -15,8 +13,10 @@ image_resource:
     repository: cloudfoundry/diego-pipeline
 
 params:
-  secret_access_key: ~
-  access_key_id: ~
+  GITHUB_TOKEN: ~
+  LABEL: ~
+  TITLE: ~
+  DESCRIPTION: ~
 
 run:
-  path: diego-ci/tasks/update_envoy_blob
+  path: diego-ci/tasks/create_diego_issue
