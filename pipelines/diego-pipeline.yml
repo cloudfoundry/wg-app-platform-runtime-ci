@@ -211,13 +211,13 @@ jobs:
     file: cf-deployment-concourse-tasks/bbl-up/task.yml
     params:
       BBL_IAAS: gcp
-      BBL_GCP_SERVICE_ACCOUNT_KEY: diego-1/keys/gcp-service-account-key.json
+      BBL_GCP_SERVICE_ACCOUNT_KEY: envs/diego-1/keys/gcp-service-account-key.json
       BBL_GCP_REGION: us-central1
       BBL_LB_CERT: ../../certs/diego1-cfrouter.crt
       BBL_LB_KEY: ../../certs/diego1-cfrouter.key
       BBL_ENV_NAME: diego-1
       LB_DOMAIN: diego-1.cf-app.com
-      BBL_STATE_DIR: diego-1/deployments/bbl
+      BBL_STATE_DIR: envs/diego-1/deployments/bbl
     input_mapping:
       bbl-state: deployments-diego
       bbl-config: deployments-diego
@@ -238,13 +238,13 @@ jobs:
     file: cf-deployment-concourse-tasks/bbl-up/task.yml
     params:
       BBL_IAAS: gcp
-      BBL_GCP_SERVICE_ACCOUNT_KEY: diego-2/keys/gcp-service-account-key.json
+      BBL_GCP_SERVICE_ACCOUNT_KEY: envs/diego-2/keys/gcp-service-account-key.json
       BBL_GCP_REGION: us-central1
       BBL_LB_CERT: ../../certs/diego2-cfrouter.crt
       BBL_LB_KEY: ../../certs/diego2-cfrouter.key
       BBL_ENV_NAME: diego-2
       LB_DOMAIN: diego-2.cf-app.com
-      BBL_STATE_DIR: diego-2/deployments/bbl
+      BBL_STATE_DIR: envs/diego-2/deployments/bbl
     input_mapping:
       bbl-state: deployments-diego
       bbl-config: deployments-diego
