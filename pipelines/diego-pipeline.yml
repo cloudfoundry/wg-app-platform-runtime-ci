@@ -801,6 +801,7 @@ jobs:
         ../release/operations/add-vizzini-errand.yml
         ../cf-deployment/operations/scale-database-cluster.yml
         ../cf-deployment/operations/use-external-blobstore.yml
+        ../cf-deployment/operations/experimental/enable-direct-io-grootfs.yml
         ../cf-deployment/operations/use-gcs-blobstore-service-account.yml
         ../cf-deployment/operations/windows2019-cell.yml
         ../cf-deployment/operations/use-online-windows2019fs.yml
