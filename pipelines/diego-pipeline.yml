@@ -101,7 +101,6 @@ jobs:
 - name: bbl-up-warp-drive
   serial_groups:
   - warp-drive-cf-deployment
-  - warp-drive-vizzini
   - warp-drive-cf-acceptance-tests
   public: true
   plan:
@@ -987,9 +986,8 @@ jobs:
       CONFIG_FILE_PATH: envs/warp-drive/integration_config.json
       SKIP_REGEXP: "Syslog drain"
 
-
 - name: warp-drive-run-wats
-  serial_groups: [warp-drive-vizzini]
+  serial_groups: [warp-drive-cf-deployment]
   plan:
   - get: candidate-lock
     passed: [warp-drive-deploy-cf-deployment,warp-drive-smoke-tests]
