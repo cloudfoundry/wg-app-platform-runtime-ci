@@ -1604,7 +1604,6 @@ jobs:
         operations/overrides.yml
         operations/remove-reverse-log-proxy-gateway.yml
         operations/disable-pxc-tls.yml
-        operations/fix-bosh-dns-aliases.yml
         operations/disable-credhub.yml
   - task: emit-datadog-finished
     file: diego-ci/tasks/emit_datadog_event.build.yml
@@ -1685,7 +1684,6 @@ jobs:
         operations/overrides.yml
         operations/remove-reverse-log-proxy-gateway.yml
         operations/disable-pxc-tls.yml
-        operations/fix-bosh-dns-aliases-postgres.yml
         operations/disable-credhub.yml
   - task: emit-datadog-finished
     file: diego-ci/tasks/emit_datadog_event.build.yml
