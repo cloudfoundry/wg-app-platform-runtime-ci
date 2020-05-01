@@ -755,11 +755,20 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: runtime-ci
     - get: warp-drive-cats-config
+    - get: nats-release
+  - task: aggregate-ops-files
+    file: cf-deployment-concourse-tasks/collect-ops-files/task.yml
+    input_mapping:
+      base-ops-files: deployments-diego
+      new-ops-files: nats-release
+    params:
+      BASE_OPS_FILE_DIR: operations
+      NEW_OPS_FILES: example-manifests/ops-files/enable_nats_tls_for_cf.yml
   - task: upload-stemcells
     file: cf-deployment-concourse-tasks/bosh-upload-stemcells/task.yml
     input_mapping: &warp_drive_deployment_input_mappings
       release: diego-release
-      ops-files: deployments-diego
+      ops-files: collected-ops-files
       vars-files: deployments-diego
       bbl-state: deployments-diego
     params:
@@ -810,6 +819,7 @@ jobs:
         ../cf-deployment/operations/experimental/disable-uaa-client-redirect-uri-legacy-matching-mode.yml
         ../cf-deployment/operations/experimental/enable-cpu-throttling.yml
         ../cf-deployment/operations/experimental/set-cpu-weight.yml
+        operations/enable_nats_tls_for_cf.yml
         operations/open-files-limit.yml
         operations/set-rep-max-idle-conns.yml
         operations/set-windows2019-cell-max-idle-conns.yml
@@ -1818,6 +1828,12 @@ resources:
   source:
     branch: master
     uri: https://github.com/cloudfoundry-incubator/routing-release.git
+
+- name: nats-release
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/cloudfoundry/nats-release.git
 
 - name: diego-release
   type: git
