@@ -894,6 +894,15 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: runtime-ci
     - get: warp-drive-cats-config
+    - get: nats-release
+  - task: aggregate-ops-files
+    file: cf-deployment-concourse-tasks/collect-ops-files/task.yml
+    input_mapping:
+      base-ops-files: deployments-diego
+      new-ops-files: nats-release
+    params:
+      BASE_OPS_FILE_DIR: operations
+      NEW_OPS_FILES: example-manifests/ops-files/enable_nats_tls_for_cf.yml
   - task: restart-diego-cells
     file: diego-ci/tasks/bosh_restart.yml
     input_mapping: *warp_drive_deployment_input_mappings
