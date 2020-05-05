@@ -29,7 +29,7 @@ pushd diego-release
     bosh -n create-release --tarball ${RELEASE_TGZ} ${RELEASE_YML}
   else
     echo "----- Set git identity"
-    git config user.email "cf-diego@pivotal.io"
+    git config user.email "cf-diego+github@pivotal.io"
     git config user.name "CI (Automated)"
 
     echo "----- Create final release"

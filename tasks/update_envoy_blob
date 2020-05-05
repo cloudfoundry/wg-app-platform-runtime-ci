@@ -25,7 +25,7 @@ bosh upload-blobs
 bosh blobs
 git --no-pager diff config/ packages/
 
-git config user.email "cf-diego@pivotal.io"
+git config user.email "cf-diego+github@pivotal.io"
 git config user.name "CI (Automated)"
 
 git add -A config packages

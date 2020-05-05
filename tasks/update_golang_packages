@@ -22,7 +22,7 @@ bosh vendor-package golang-1-windows ../golang-release
 
 git --no-pager diff packages .final_builds
 
-git config user.email "cf-diego@pivotal.io"
+git config user.email "cf-diego+github@pivotal.io"
 git config user.name "CI (Automated)"
 
 git checkout -b bump-golang
