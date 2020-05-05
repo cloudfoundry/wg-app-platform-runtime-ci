@@ -822,7 +822,6 @@ jobs:
         ../release/operations/enable-vizzini-container-proxy-tests.yml
         ../release/operations/enable-vizzini-container-proxy-tests-mutual-tls.yml
         ../cf-deployment/operations/experimental/enable-oci-phase-1.yml
-        ../cf-deployment/operations/experimental/enable-suspect-actual-lrp-generation.yml
         ../cf-deployment/operations/experimental/enable-containerd-for-processes.yml
         ../cf-deployment/operations/experimental/set-cpu-weight.yml
         ../cf-deployment/operations/experimental/set-cpu-weight-windows2019.yml
