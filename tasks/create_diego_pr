@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -e -x -u
+
+cd diego-release
+
+git config user.email "cf-diego@pivotal.io"
+git config user.name "CI (Automated)"
+git remote set-url origin git@github.com:cloudfoundry/diego-release
+export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no"
+
+pr_file=$(mktemp)
+
+cat > ${pr_file} <<EOF
+${TITLE}
+
+${DESCRIPTION}
+EOF
+
+hub pull-request -F ${pr_file} -l ${LABEL} --base develop --head ${BRANCH}

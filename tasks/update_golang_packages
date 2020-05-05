@@ -25,6 +25,7 @@ git --no-pager diff packages .final_builds
 git config user.email "cf-diego@pivotal.io"
 git config user.name "CI (Automated)"
 
+git co -b bump-golang
 git add -A packages .final_builds
 git commit -n -m "Bump Golang to $new_go_version"
 rsync -av $PWD/ ../updated-diego-release
