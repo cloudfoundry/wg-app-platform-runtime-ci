@@ -25,15 +25,11 @@ bosh upload-blobs
 bosh blobs
 git --no-pager diff config/ packages/
 
+git checkout -b bump-envoy
+
 git config user.email "cf-diego+github@pivotal.io"
 git config user.name "CI (Automated)"
 
 git add -A config packages
-msg_file=$(mktemp)
-cat > ${msg_file} <<EOF
-Bumping envoy from ${old_envoy_version} to ${new_envoy_version}
-
-$(cat ../issue-file/link)
-EOF
-git commit -n -F ${msg_file}
+git commit -n -m "Bumping envoy from ${old_envoy_version} to ${new_envoy_version}"
 rsync -av $PWD/ ../updated-diego-release
