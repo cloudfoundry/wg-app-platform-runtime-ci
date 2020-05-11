@@ -1610,7 +1610,6 @@ jobs:
       DEPLOYMENT: time_rotor_gcp
       OPS_FILES: |
         ../cf-deployment/operations/use-compiled-releases.yml
-        ../cf-deployment/operations/experimental/enable-suspect-actual-lrp-generation.yml
         ../cf-deployment/operations/rename-network-and-deployment.yml
         ../release/operations/benchmarks/mysql.yml
         operations/bbs-benchmark.yml
@@ -1688,7 +1687,6 @@ jobs:
       DEPLOYMENT: time_rotor_gcp
       OPS_FILES: |
         ../cf-deployment/operations/use-compiled-releases.yml
-        ../cf-deployment/operations/experimental/enable-suspect-actual-lrp-generation.yml
         ../cf-deployment/operations/rename-network-and-deployment.yml
         ../cf-deployment/operations/use-postgres.yml
         ../release/operations/benchmarks/postgres.yml
