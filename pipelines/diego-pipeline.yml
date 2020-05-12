@@ -1061,7 +1061,6 @@ jobs:
         APP_NAME: diego-canary-app
         DEPLOYMENT_NAME: warp-drive
         INSTANCE_COUNT: 20
-        DATADOG_API_KEY: {{datadog-api-key}}
         CF_STACK: cflinuxfs3
     - task: push-diego-canary-windows
       file: diego-ci/tasks/push_canary_windows_app.build.yml
@@ -1415,7 +1414,6 @@ jobs:
         APP_NAME: diego-canary-app
         DEPLOYMENT_NAME: electron-cannon
         INSTANCE_COUNT: 20
-        DATADOG_API_KEY: {{datadog-api-key}}
         CF_STACK: cflinuxfs3
     - task: push-diego-canary-windows
       file: diego-ci/tasks/push_canary_windows_app.build.yml
@@ -1590,13 +1588,6 @@ jobs:
       bbl-state: deployments-diego
     params:
       BBL_STATE_DIR: envs/time-rotor-gcp/deployments/bbl
-  - task: emit-cf-datadog-start
-    file: diego-ci/tasks/emit_datadog_event.build.yml
-    params:
-      ENVIRONMENT: time-rotor-gcp
-      DATADOG_API_KEY: {{datadog-api-key}}
-      STATE: started
-      DEPLOYMENT: cf
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping: *time_rotor_deployment_input_mappings
@@ -1618,13 +1609,6 @@ jobs:
         operations/remove-reverse-log-proxy-gateway.yml
         operations/disable-pxc-tls.yml
         operations/disable-credhub.yml
-  - task: emit-datadog-finished
-    file: diego-ci/tasks/emit_datadog_event.build.yml
-    params:
-      ENVIRONMENT: time-rotor-gcp
-      DATADOG_API_KEY: {{datadog-api-key}}
-      STATE: finished
-      DEPLOYMENT: cf
   - task: run
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
@@ -1667,13 +1651,6 @@ jobs:
       bbl-state: deployments-diego
     params:
       BBL_STATE_DIR: envs/time-rotor-gcp/deployments/bbl
-  - task: emit-cf-datadog-start
-    file: diego-ci/tasks/emit_datadog_event.build.yml
-    params:
-      ENVIRONMENT: time-rotor-gcp
-      DATADOG_API_KEY: {{datadog-api-key}}
-      STATE: started
-      DEPLOYMENT: cf
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping: *time_rotor_deployment_input_mappings
@@ -1697,13 +1674,6 @@ jobs:
         operations/remove-reverse-log-proxy-gateway.yml
         operations/disable-pxc-tls.yml
         operations/disable-credhub.yml
-  - task: emit-datadog-finished
-    file: diego-ci/tasks/emit_datadog_event.build.yml
-    params:
-      ENVIRONMENT: time-rotor-gcp
-      DATADOG_API_KEY: {{datadog-api-key}}
-      STATE: finished
-      DEPLOYMENT: cf
   - task: run
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
