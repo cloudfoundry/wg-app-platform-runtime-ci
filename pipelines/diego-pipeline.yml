@@ -362,8 +362,6 @@ jobs:
     file: diego-ci/tasks/create_diego_pr.build.yml
     params:
       GITHUB_TOKEN: {{cf-diego-user-github-access-token}}
-      TITLE: "Bump envoy"
-      DESCRIPTION: "Bumping the envoy blob"
       LABEL: "dependencies"
       BRANCH: "bump-envoy"
     input_mapping:
@@ -390,7 +388,6 @@ jobs:
     file: diego-ci/tasks/create_diego_pr.build.yml
     params:
       GITHUB_TOKEN: {{cf-diego-user-github-access-token}}
-      TITLE: "Bump golang"
       DESCRIPTION: "Bumping the golang blob"
       LABEL: "dependencies"
       BRANCH: "bump-golang"

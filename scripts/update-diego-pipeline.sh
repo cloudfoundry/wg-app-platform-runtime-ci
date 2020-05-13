@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-local FLY_EXE=$(which fly)
+FLY_EXE=$(which fly)
 if type -p "fly-diego-ci" > /dev/null; then
   FLY_EXE=$(which fly-diego-ci)
 fi

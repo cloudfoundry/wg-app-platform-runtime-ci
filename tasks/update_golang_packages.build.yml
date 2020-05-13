@@ -7,6 +7,7 @@ inputs:
 - name: golang-release
 outputs:
 - name: updated-diego-release
+- name: pr-message
 
 image_resource:
   type: docker-image

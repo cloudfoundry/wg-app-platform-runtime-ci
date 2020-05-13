@@ -23,6 +23,14 @@ sed -i "s/envoy.*\.tgz/envoy-${new_envoy_version}\.tgz/g" packages/proxy/*
 bosh blobs
 bosh upload-blobs
 bosh blobs
+
+pushd ../pr-message
+  cat > description.md <<EOF
+Bump envoy from [${old_envoy_version}]("https://github.com/envoyproxy/envoy/commit/${old_envoy_version}") to [${new_envoy_version}]("https://github.com/envoyproxy/envoy/commit/${new_envoy_version}")
+EOF
+  echo "Bump envoy to $(echo ${new_envoy_version} |  head -c 10)" > title.txt
+popd
+
 git --no-pager diff config/ packages/
 
 git checkout -b bump-envoy
@@ -31,5 +39,5 @@ git config user.email "cf-diego+github@pivotal.io"
 git config user.name "CI (Automated)"
 
 git add -A config packages
-git commit -n -m "Bumping envoy from ${old_envoy_version} to ${new_envoy_version}"
+git commit -n -F ../pr-message/title.txt
 rsync -av $PWD/ ../updated-diego-release

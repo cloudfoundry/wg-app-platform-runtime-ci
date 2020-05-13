@@ -4,6 +4,7 @@ platform: linux
 inputs:
 - name: diego-ci
 - name: diego-release
+- name: pr-message
 
 image_resource:
   type: docker-image

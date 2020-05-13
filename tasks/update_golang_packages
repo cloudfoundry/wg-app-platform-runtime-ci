@@ -15,6 +15,8 @@ pushd golang-release
 	new_go_version=$(bosh blobs | grep linux | grep go1. | cut -d . -f 1-3 | sort | tail -1)
 popd
 
+echo "Bump Golang to $new_go_version" > pr-message/title.txt
+
 cd diego-release
 
 bosh vendor-package golang-1-linux ../golang-release
@@ -27,5 +29,5 @@ git config user.name "CI (Automated)"
 
 git checkout -b bump-golang
 git add -A packages .final_builds
-git commit -n -m "Bump Golang to $new_go_version"
+git commit -n -F "../pr-message/title.txt"
 rsync -av $PWD/ ../updated-diego-release
