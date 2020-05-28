@@ -2,16 +2,17 @@
 
 set -e -x
 
-cd diego-release
 
+${TITLE:="$(cat pr-message/title.txt)"}
+${DESCRIPTION:="$(cat pr-message/description.md)"}
+
+cd diego-release
 git config user.email "cf-diego+github@pivotal.io"
 git config user.name "CI (Automated)"
 git remote set-url origin git@github.com:cloudfoundry/diego-release
 export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no"
 
 pr_file=$(mktemp)
-${TITLE:="$(cat pr-message/title.txt)"}
-${DESCRIPTION:="$(cat pr-message/description.md)"}
 
 cat > ${pr_file} <<EOF
 ${TITLE}
