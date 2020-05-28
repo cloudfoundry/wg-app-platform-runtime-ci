@@ -3,8 +3,8 @@
 set -e -x
 
 
-${TITLE:="$(cat pr-message/title.txt)"}
-${DESCRIPTION:="$(cat pr-message/description.md)"}
+TITLE=${TITLE:="$(cat pr-message/title.txt)"}
+DESCRIPTION=${DESCRIPTION:="$(cat pr-message/description.md)"}
 
 cd diego-release
 git config user.email "cf-diego+github@pivotal.io"
