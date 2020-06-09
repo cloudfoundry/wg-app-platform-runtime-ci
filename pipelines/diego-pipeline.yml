@@ -39,7 +39,6 @@ groups:
   - github-release
   - merge-master-into-develop
   - validate-envoy-version
-  - update-envoy-blob
 - name: dusts
   jobs:
   - upgrade-routability-tests-from-v1.0.0
@@ -83,6 +82,7 @@ groups:
   - check-expired-bosh-certs
   - check-expired-test-fixture-certs
   - update-golang-packages
+  - update-envoy-blob
 - name: time-rotor
   jobs:
   - bbl-up-time-rotor-gcp
@@ -340,13 +340,10 @@ jobs:
   serial: true
   plan:
   - in_parallel:
-    - get: diego-release-master
-      passed: [merge-master-into-develop]
-      trigger: true
-      params:
-        submodules: none
     - get: diego-ci
     - get: diego-release
+    - get: envoyproxy-image
+      trigger: true
   - task: create-envoy-blob
     file: diego-ci/tasks/create_envoy_blob.build.yml
   - task: update-envoy-blob
@@ -1868,6 +1865,12 @@ resources:
     uri: git@github.com:cloudfoundry/diego-release.git
     branch: bump-golang
     private_key: {{cf-diego-private-key}}
+
+- name: envoyproxy-image
+  type: docker-image
+  source:
+    repository: envoyproxy/envoy
+    tag: v1.14-latest
 
 - name: diego-release-envoy-bump
   type: git
