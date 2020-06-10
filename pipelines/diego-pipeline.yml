@@ -535,7 +535,7 @@ jobs:
     params:
       DEFAULT_EVENTUALLY_TIMEOUT: 5m
       SQL_FLAVOR: mysql
-      GARDEN_ROOTFS: "docker:///cloudfoundry/windows2016fs:2019"
+      GARDEN_ROOTFS: "docker:///cloudfoundry/windows2016fs:2019.0.54"
       SKIP_PACKAGES: "volman,executor,certauthority"
       GINKGO_PARALLEL: "false"
       FLAKE_ATTEMPTS: 2
