@@ -94,32 +94,6 @@ jobs:
       tag_file: tag/tag
       tag_as_latest: true
 
-- name: build-diego-docker-app-custom
-  serial: true
-  plan:
-  - in_parallel:
-    - get: daily
-      trigger: true
-    - get: diego-dockerfiles-ci
-    - get: git-diego-docker-app-custom
-      trigger: true
-    - get: golang-ci
-      passed: [build-golang-ci]
-      trigger: true
-    - get: diego-ci
-  - task: compile-app
-    file: diego-dockerfiles-ci/ci/make-diego-docker-app-custom.yml
-  - task: print-go-version-tag
-    file: diego-ci/tasks/generate_go_version_tag.build.yml
-    params:
-      GO_VERSION: go1.14.4
-  - put: diego-docker-app-custom
-    params:
-      build: docker-app-custom
-      build_args_file: tag/build-args
-      tag_file: tag/tag
-      tag_as_latest: true
-
 - name: build-diego-docker-app
   serial: true
   plan:
