@@ -12,7 +12,7 @@ jobs:
   - task: print-go-version-tag
     file: diego-ci/tasks/generate_go_version_tag.build.yml
     params:
-      GO_VERSION: go1.13.3
+      GO_VERSION: go1.14.4
   - put: golang-ci
     params:
       build: git-golang-ci/golang-ci
@@ -32,7 +32,7 @@ jobs:
   - task: print-go-version-tag
     file: diego-ci/tasks/generate_go_version_tag.build.yml
     params:
-      GO_VERSION: go1.13.3
+      GO_VERSION: go1.14.4
   - put: inigo-ci-rootfs
     params:
       build: git-inigo-ci-rootfs/inigo-ci/test-rootfs
@@ -63,7 +63,7 @@ jobs:
   - task: print-go-version-tag
     file: diego-ci/tasks/generate_go_version_tag.build.yml
     params:
-      GO_VERSION: go1.13.3
+      GO_VERSION: go1.14.4
   - put: inigo-ci
     params:
       build: inigo-ci-with-rootfs
@@ -86,7 +86,7 @@ jobs:
   - task: print-go-version-tag
     file: diego-ci/tasks/generate_go_version_tag.build.yml
     params:
-      GO_VERSION: go1.13.3
+      GO_VERSION: go1.14.4
   - put: diego-pipeline-image
     params:
       build: git-diego-pipeline-image/diego-pipeline-image
@@ -112,7 +112,7 @@ jobs:
   - task: print-go-version-tag
     file: diego-ci/tasks/generate_go_version_tag.build.yml
     params:
-      GO_VERSION: go1.13.3
+      GO_VERSION: go1.14.4
   - put: diego-docker-app-custom
     params:
       build: docker-app-custom
@@ -138,7 +138,7 @@ jobs:
   - task: print-go-version-tag
     file: diego-ci/tasks/generate_go_version_tag.build.yml
     params:
-      GO_VERSION: go1.13.3
+      GO_VERSION: go1.14.4
   - put: diego-docker-app
     params:
       build: docker-app
@@ -167,7 +167,7 @@ jobs:
   - task: print-go-version-tag
     file: diego-ci/tasks/generate_go_version_tag.build.yml
     params:
-      GO_VERSION: go1.13.3
+      GO_VERSION: go1.14.4
   - put: diego-units-ci
     params:
       build: git-diego-units-ci/diego-units-ci
@@ -191,7 +191,7 @@ jobs:
   - task: print-go-version-tag
     file: diego-ci/tasks/generate_go_version_tag.build.yml
     params:
-      GO_VERSION: go1.13.3
+      GO_VERSION: go1.14.4
   - put: cloudfoundry-grace-docker
     params:
       build: grace-docker
