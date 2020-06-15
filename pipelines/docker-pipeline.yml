@@ -239,15 +239,6 @@ resources:
     - diego-docker-app/Dockerfile
     - diego-docker-app/dockerapp.go
 
-- name: git-diego-docker-app-custom
-  type: git
-  source:
-    uri: https://github.com/cloudfoundry/diego-dockerfiles.git
-    branch: master
-    paths:
-    - diego-docker-app-custom/Dockerfile
-    - diego-docker-app/dockerapp.go
-
 - name: git-cloudfoundry-grace
   type: git
   source:
@@ -292,14 +283,6 @@ resources:
     aws_access_key_id: {{aws-ecr-access-key-id}}
     aws_secret_access_key: {{aws-ecr-secret-access-key}}
     repository: {{aws-ecr-repo-uri}}
-
-- name: diego-docker-app-custom
-  type: docker-image
-  source:
-    email: cf-diego+docker@pivotal.io
-    username: cfdiegodocker
-    password: {{cfdiegodocker-password}}
-    repository: cloudfoundry/diego-docker-app-custom
 
 - name: inigo-ci-rootfs
   type: docker-image
