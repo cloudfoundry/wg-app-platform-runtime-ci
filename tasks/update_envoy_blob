@@ -19,6 +19,7 @@ new_envoy_version=$(../envoy-binary/envoy --version | grep -vE '^$' | awk '{prin
 
 if [[ "$old_envoy_version" == "$new_envoy_version" ]]; then
   echo "$new_envoy_version is currently the latest version."
+  rsync -av $PWD/ ../updated-diego-release
   exit 0
 fi
 
