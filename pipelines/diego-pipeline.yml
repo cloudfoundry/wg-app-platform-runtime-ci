@@ -1954,7 +1954,7 @@ resources:
   type: git
   source:
     uri: https://github.com/cloudfoundry/diego-release.git
-    branch: v1.0.0-patch-9
+    branch: v1.0.0-patch-10
 
 - name: diego-release-v1.25.2
   type: git
