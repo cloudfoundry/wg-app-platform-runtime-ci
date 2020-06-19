@@ -3,6 +3,11 @@
 set -e -x
 
 
+if [ ! -f pr-message/title.txt ]; then
+    echo "The PR title file does not exist.  Will assume nothing has changed."
+    exit 0
+fi
+
 TITLE=${TITLE:="$(cat pr-message/title.txt)"}
 DESCRIPTION=${DESCRIPTION:="$(cat pr-message/description.md)"}
 
