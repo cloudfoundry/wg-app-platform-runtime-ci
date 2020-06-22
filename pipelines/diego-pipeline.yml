@@ -768,7 +768,7 @@ jobs:
     file: cf-deployment-concourse-tasks/bosh-upload-stemcells/task.yml
     input_mapping: &warp_drive_deployment_input_mappings
       release: diego-release
-      ops-files: collected-ops-files
+      ops-files: deployments-diego
       vars-files: deployments-diego
       bbl-state: deployments-diego
     params:
