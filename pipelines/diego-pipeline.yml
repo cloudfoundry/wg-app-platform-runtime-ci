@@ -39,6 +39,7 @@ groups:
   - github-release
   - merge-master-into-develop
   - validate-envoy-version
+  - oslo-scan-status
 - name: dusts
   jobs:
   - upgrade-routability-tests-from-v1.0.0
@@ -1662,6 +1663,36 @@ jobs:
           DEPLOYMENTS: time_rotor_gcp_postgres
           DEPLOYMENT_DIR: envs/time-rotor-gcp
 
+- name: oslo-scan-status
+  plan:
+  - get: oslo-scan-status
+    trigger: true
+  - task: check-status-file
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: { repository: ubuntu }
+      inputs:
+      - name: oslo-scan-status
+      run:
+        path: sh
+        args:
+        - -c
+        - |
+          status_file=oslo-scan-status/diego-release/status.json
+          cat "$status_file"
+          num_failures="$(grep -c '"status": "failed"' $status_file)"
+          echo ""
+          if [ "$num_failures" -eq 0 ]; then
+            echo "No failures found"
+            exit 0
+          else
+            echo "$num_failures failures found! Please check your norsk-viewers pipelines specified in the status.json and resolve the errors. Contact the OSL team if you need help."
+            exit 1
+          fi
+
+
 resource_types:
 - name: bosh2-deployment
   type: docker-image
@@ -1965,3 +1996,9 @@ resources:
     uri: https://github.com/bosh-packages/golang-release
     tag_filter: v*
 
+- name: oslo-scan-status
+  type: git
+  source:
+    private_key: {{norsk-deploy-key}}
+    uri: git@github.com:pivotal/oslo-scan-status.git
+    paths: [ diego-release/* ]
