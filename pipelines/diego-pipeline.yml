@@ -1816,7 +1816,7 @@ resources:
 - name: routing-release
   type: git
   source:
-    branch: master
+    branch: release
     uri: https://github.com/cloudfoundry-incubator/routing-release.git
 
 - name: diego-release
