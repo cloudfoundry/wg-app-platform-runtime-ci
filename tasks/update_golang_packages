@@ -15,7 +15,20 @@ pushd golang-release
 	new_go_version=$(bosh blobs | grep linux | grep go1. | cut -d . -f 1-3 | sort | tail -1)
 popd
 
-echo "Bump Golang to $new_go_version" > pr-message/title.txt
+pushd pr-message
+  cat > description.md <<EOF
+Remember to also bump the following submodules:
+- [ ] golang.org/x/crypto
+- [ ] golang.org/x/net
+- [ ] golang.org/x/sys
+- [ ] golang.org/x/text
+- [ ] golang.org/x/time
+- [ ] golang.org/x/tools
+EOF
+
+echo "Bump Golang to $new_go_version" > title.txt
+
+popd
 
 cd diego-release
 

@@ -386,7 +386,6 @@ jobs:
     file: diego-ci/tasks/create_diego_pr.build.yml
     params:
       GITHUB_TOKEN: {{cf-diego-user-github-access-token}}
-      DESCRIPTION: "Bumping the golang blob"
       LABEL: "dependencies"
       BRANCH: "bump-golang"
     input_mapping:
