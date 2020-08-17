@@ -331,6 +331,7 @@ jobs:
   - task: build
     file: diego-release/scripts/ci/run_unit.build.yml
     privileged: true
+    tags: [units]
     params:
       SCRIPT: run-unit-tests-no-backing-store
       ECR_TEST_AWS_ACCESS_KEY_ID: {{aws-ecr-access-key-id}}
@@ -400,6 +401,7 @@ jobs:
   - task: build
     file: diego-release/scripts/ci/run_unit.build.yml
     privileged: true
+    tags: [units]
     params:
       SCRIPT: run-unit-tests-with-backing-store
       SQL_FLAVOR: mysql
@@ -413,6 +415,7 @@ jobs:
   - task: build
     file: diego-release/scripts/ci/run_unit.build.yml
     privileged: true
+    tags: [units]
     params:
       SCRIPT: run-unit-tests-with-backing-store
       SQL_FLAVOR: postgres
