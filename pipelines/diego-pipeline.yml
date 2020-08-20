@@ -778,7 +778,43 @@ jobs:
       BBL_STATE_DIR: envs/warp-drive/deployments/bbl
       OPS_FILES: |
         ../cf-deployment/operations/windows2019-cell.yml
-  - task: deploy-cf-deployment
+  - task: bosh-deploy-cf-deployment
+    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    input_mapping: *warp_drive_deployment_input_mappings
+    params:
+      BBL_STATE_DIR: envs/warp-drive/deployments/bbl
+      SYSTEM_DOMAIN: warp-drive.cf-app.com
+      VARS_FILES: |
+        envs/warp-drive/cf-deployment-vars.yml
+        vars/grace-config-vars.yml
+      OPS_FILES: |
+        ../cf-deployment/operations/use-compiled-releases.yml
+        ../cf-deployment/operations/experimental/use-compiled-releases-windows.yml
+        ../cf-deployment/operations/scale-database-cluster.yml
+        ../cf-deployment/operations/use-external-blobstore.yml
+        ../cf-deployment/operations/experimental/enable-direct-io-grootfs.yml
+        ../cf-deployment/operations/use-gcs-blobstore-service-account.yml
+        ../cf-deployment/operations/windows2019-cell.yml
+        ../cf-deployment/operations/use-online-windows2019fs.yml
+        operations/set-windows2019-cell-to-2-instances.yml
+        operations/scale-up-diego-cells.yml
+        ../cf-deployment/operations/experimental/enable-oci-phase-1.yml
+        ../cf-deployment/operations/experimental/enable-containerd-for-processes.yml
+        ../cf-deployment/operations/experimental/set-cpu-weight.yml
+        ../cf-deployment/operations/experimental/set-cpu-weight-windows2019.yml
+        ../cf-deployment/operations/experimental/enable-nginx-routing-integrity-windows2019.yml
+        ../cf-deployment/operations/enable-tls-on-file-server.yml
+        ../cf-deployment/operations/experimental/enable-cpu-throttling.yml
+        ../cf-deployment/operations/experimental/set-cpu-weight.yml
+        operations/open-files-limit.yml
+        operations/set-rep-max-idle-conns.yml
+        operations/set-windows2019-cell-max-idle-conns.yml
+        operations/disable-health-check-server.yml
+        operations/change-loggregator-agent-deployment.yml
+        operations/turn-on-debug-mode-on-route-emitter.yml
+        operations/app-log-with-rate-limit.yml
+        operations/separate-pxc-and-proxy-different-vms.yml
+  - task: deploy-cf-deployment-with-uptimer
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping: *warp_drive_deployment_input_mappings
     params:
@@ -1176,6 +1212,32 @@ jobs:
       BBL_STATE_DIR: envs/electron-cannon/deployments/bbl
       OPS_FILES: |
         ../cf-deployment/operations/windows2019-cell.yml
+  - task: bosh-deploy-cf-deployment
+    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    input_mapping: *electron_cannon_deployment_input_mappings
+    params:
+      BBL_STATE_DIR: envs/electron-cannon/deployments/bbl
+      SYSTEM_DOMAIN: electron-cannon.cf-app.com
+      VARS_FILES: |
+        envs/electron-cannon/cf-deployment-vars.yml
+        vars/grace-config-vars.yml
+      OPS_FILES: |
+        ../cf-deployment/operations/use-compiled-releases.yml
+        ../cf-deployment/operations/experimental/use-compiled-releases-windows.yml
+        ../cf-deployment/operations/scale-database-cluster.yml
+        ../cf-deployment/operations/use-external-blobstore.yml
+        ../cf-deployment/operations/use-gcs-blobstore-service-account.yml
+        ../cf-deployment/operations/windows2019-cell.yml
+        ../cf-deployment/operations/use-online-windows2019fs.yml
+        operations/disable-vizzini-privileged-containers-tests.yml
+        operations/instance-types.yml
+        operations/set-rep-max-idle-conns.yml
+        operations/resize-grootfs-store.yml
+        operations/stream-vizzini-output.yml
+        operations/change-loggregator-agent-deployment.yml
+        operations/turn-on-debug-mode-on-route-emitter.yml
+        operations/set-windows2019-cell-max-idle-conns.yml
+        operations/separate-pxc-and-proxy-different-vms.yml
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping: *electron_cannon_deployment_input_mappings
