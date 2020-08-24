@@ -1213,7 +1213,7 @@ jobs:
       OPS_FILES: |
         ../cf-deployment/operations/windows2019-cell.yml
   - task: bosh-deploy-cf-deployment
-    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping: *electron_cannon_deployment_input_mappings
     params:
       BBL_STATE_DIR: envs/electron-cannon/deployments/bbl
@@ -1221,9 +1221,13 @@ jobs:
       VARS_FILES: |
         envs/electron-cannon/cf-deployment-vars.yml
         vars/grace-config-vars.yml
-      OPS_FILES: |
+      OPS_FILES: &electron_cannon_ops_files |
         ../cf-deployment/operations/use-compiled-releases.yml
         ../cf-deployment/operations/experimental/use-compiled-releases-windows.yml
+        ../release/operations/add-vizzini-errand.yml
+        ../release/operations/enable-vizzini-delcarative-healthcheck-tests.yml
+        ../release/operations/enable-vizzini-container-proxy-tests.yml
+        ../release/operations/enable-vizzini-container-proxy-tests-mutual-tls.yml
         ../cf-deployment/operations/scale-database-cluster.yml
         ../cf-deployment/operations/use-external-blobstore.yml
         ../cf-deployment/operations/use-gcs-blobstore-service-account.yml
@@ -1259,27 +1263,7 @@ jobs:
       STREAMING_LOGS_THRESHOLD: 100
       APP_SYSLOG_AVAILABILITY_THRESHOLD: 0
       USE_SINGLE_APP_INSTANCE: true
-      OPS_FILES: &electron_cannon_ops_files |
-        ../cf-deployment/operations/use-compiled-releases.yml
-        ../cf-deployment/operations/experimental/use-compiled-releases-windows.yml
-        ../release/operations/add-vizzini-errand.yml
-        ../release/operations/enable-vizzini-delcarative-healthcheck-tests.yml
-        ../release/operations/enable-vizzini-container-proxy-tests.yml
-        ../release/operations/enable-vizzini-container-proxy-tests-mutual-tls.yml
-        ../cf-deployment/operations/scale-database-cluster.yml
-        ../cf-deployment/operations/use-external-blobstore.yml
-        ../cf-deployment/operations/use-gcs-blobstore-service-account.yml
-        ../cf-deployment/operations/windows2019-cell.yml
-        ../cf-deployment/operations/use-online-windows2019fs.yml
-        operations/disable-vizzini-privileged-containers-tests.yml
-        operations/instance-types.yml
-        operations/set-rep-max-idle-conns.yml
-        operations/resize-grootfs-store.yml
-        operations/stream-vizzini-output.yml
-        operations/change-loggregator-agent-deployment.yml
-        operations/turn-on-debug-mode-on-route-emitter.yml
-        operations/set-windows2019-cell-max-idle-conns.yml
-        operations/separate-pxc-and-proxy-different-vms.yml
+      OPS_FILES: *electron_cannon_ops_files
   - task: enable-docker
     file: diego-ci/tasks/enable_diego_docker_feature_flag.build.yml
     params:
