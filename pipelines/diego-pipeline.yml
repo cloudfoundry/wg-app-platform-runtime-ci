@@ -2029,6 +2029,7 @@ resources:
   source:
     branch: master
     uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks
+    tag_filter: v*
 
 # There's a task to open up ASGs in here that we'd like to use. RelInt is planning to eventually add that task to cf-d-c-t
 - name: runtime-ci
