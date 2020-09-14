@@ -1679,13 +1679,6 @@ resource_types:
     repository: cloudfoundry/bosh-deployment-resource
 
 resources:
-- name: daily-standup-trigger
-  type: time
-  source:
-    start: 9:00 AM
-    stop: 10:00 AM
-    location: America/Los_Angeles
-
 - name: 30min
   type: time
   source:
