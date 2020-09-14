@@ -1143,7 +1143,7 @@ jobs:
       BBL_STATE_DIR: envs/electron-cannon/deployments/bbl
       OPS_FILES: |
         ../cf-deployment/operations/windows2019-cell.yml
-  - task: deploy-cf-deployment-with-uptimer
+  - task: bosh-deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping: *electron_cannon_deployment_input_mappings
     params:
@@ -1173,7 +1173,7 @@ jobs:
         operations/turn-on-debug-mode-on-route-emitter.yml
         operations/set-windows2019-cell-max-idle-conns.yml
         operations/separate-pxc-and-proxy-different-vms.yml
-  - task: deploy-cf-deployment
+  - task: deploy-cf-deployment-with-uptimer
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping: *electron_cannon_deployment_input_mappings
     params:
