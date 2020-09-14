@@ -79,7 +79,6 @@ groups:
   - electron-cannon-vizzini-periodic
   - warp-drive-vizzini-periodic
   - warp-drive-bosh-cleanup
-  - check-for-unused-gcp-resources
   - check-expired-bosh-certs
   - check-expired-test-fixture-certs
   - update-golang-packages
@@ -95,8 +94,6 @@ groups:
   - warp-drive-push-canary
   - electron-cannon-push-canary
   - release-candidate-lock
-  - bbl-up-diego-1
-  - bbl-up-diego-2
 
 jobs:
 - name: bbl-up-warp-drive
@@ -199,72 +196,6 @@ jobs:
       params:
         repository: updated-bbl-state
         rebase: true
-
-- name: bbl-up-diego-1
-  public: true
-  plan:
-  - in_parallel:
-    - get: cf-deployment-concourse-tasks
-    - get: deployments-diego
-    - get: cf-deployment
-  - task: setup-infrastructure
-    file: cf-deployment-concourse-tasks/bbl-up/task.yml
-    params:
-      BBL_IAAS: gcp
-      BBL_GCP_SERVICE_ACCOUNT_KEY: envs/diego-1/keys/gcp-service-account-key.json
-      BBL_GCP_REGION: us-central1
-      BBL_LB_CERT: ../../certs/diego1-cfrouter.crt
-      BBL_LB_KEY: ../../certs/diego1-cfrouter.key
-      BBL_ENV_NAME: diego-1
-      LB_DOMAIN: diego-1.cf-app.com
-      BBL_STATE_DIR: envs/diego-1/deployments/bbl
-    input_mapping:
-      bbl-state: deployments-diego
-      bbl-config: deployments-diego
-    ensure:
-      put: deployments-diego
-      params:
-        repository: updated-bbl-state
-        rebase: true
-
-- name: bbl-up-diego-2
-  public: true
-  plan:
-  - in_parallel:
-    - get: cf-deployment-concourse-tasks
-    - get: deployments-diego
-    - get: cf-deployment
-  - task: setup-infrastructure
-    file: cf-deployment-concourse-tasks/bbl-up/task.yml
-    params:
-      BBL_IAAS: gcp
-      BBL_GCP_SERVICE_ACCOUNT_KEY: envs/diego-2/keys/gcp-service-account-key.json
-      BBL_GCP_REGION: us-central1
-      BBL_LB_CERT: ../../certs/diego2-cfrouter.crt
-      BBL_LB_KEY: ../../certs/diego2-cfrouter.key
-      BBL_ENV_NAME: diego-2
-      LB_DOMAIN: diego-2.cf-app.com
-      BBL_STATE_DIR: envs/diego-2/deployments/bbl
-    input_mapping:
-      bbl-state: deployments-diego
-      bbl-config: deployments-diego
-    ensure:
-      put: deployments-diego
-      params:
-        repository: updated-bbl-state
-        rebase: true
-
-- name: check-for-unused-gcp-resources
-  plan:
-  - in_parallel:
-    - get: deployments-diego
-    - get: diego-ci
-    - get: daily-standup-trigger
-      trigger: true
-  - task: check
-    file: diego-ci/tasks/check_for_unused_gcp_resources.yml
-    params:
-      SLACK_URL: {{slack_notifications_url}}
 
 - name: check-expired-bosh-certs
   plan:
