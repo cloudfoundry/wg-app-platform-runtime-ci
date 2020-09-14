@@ -1143,7 +1143,7 @@ jobs:
       BBL_STATE_DIR: envs/electron-cannon/deployments/bbl
       OPS_FILES: |
         ../cf-deployment/operations/windows2019-cell.yml
-  - task: bosh-deploy-cf-deployment
+  - task: deploy-cf-deployment-with-uptimer
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping: *electron_cannon_deployment_input_mappings
     params:
