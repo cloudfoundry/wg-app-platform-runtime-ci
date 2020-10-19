@@ -15,7 +15,7 @@ cd diego-release
 
 bosh sync-blobs
 old_envoy_version=$(ls -1 blobs/proxy/envoy*.tgz | xargs basename | sed 's/envoy-\(.*\).tgz/\1/g')
-new_envoy_version=$(../envoy-binary/envoy --version | grep -vE '^$' | awk '{print $3}' | cut -d/ -f1)
+new_envoy_version=$(../envoy-binary/envoy --version | grep -vE '^$' | awk '{print $3}' | cut -d/ -f1,2 | tr / -)
 
 if [[ "$old_envoy_version" == "$new_envoy_version" ]]; then
   echo "$new_envoy_version is currently the latest version."
