@@ -27,7 +27,6 @@ groups:
   - upgrade-acceptance-tests-from-v1.0.0
   - upgrade-acceptance-tests-from-v1.25.2
   - time-rotor-gcp-benchmark-bbs-tests
-  - time-rotor-gcp-benchmark-bbs-with-postgres-tests
   - warp-drive-deploy-cf-deployment
   - warp-drive-test-evacuation
   - warp-drive-smoke-tests
@@ -87,7 +86,6 @@ groups:
   jobs:
   - bbl-up-time-rotor-gcp
   - time-rotor-gcp-benchmark-bbs-tests
-  - time-rotor-gcp-benchmark-bbs-with-postgres-tests
   - time-rotor-gcp-bosh-cleanup
 - name: manual
   jobs:
@@ -1576,70 +1574,6 @@ jobs:
         file: diego-ci/tasks/bosh_delete_deployments.build.yml
         params:
           DEPLOYMENTS: time_rotor_gcp
-          DEPLOYMENT_DIR: envs/time-rotor-gcp
-
-- name: time-rotor-gcp-benchmark-bbs-with-postgres-tests
-  serial_groups: [time-rotor-gcp-benchmark]
-  plan:
-  - in_parallel:
-    - get: deployments-diego
-      resource: time-rotor-gcp-config
-    - get: 12hours
-      passed: [time-rotor-gcp-benchmark-bbs-tests]
-      trigger: true
-    - get: diego-release
-      passed: [time-rotor-gcp-benchmark-bbs-tests]
-      trigger: true
-    - get: diego-ci
-    - get: cf-deployment
-      passed: [time-rotor-gcp-benchmark-bbs-tests]
-    - get: cf-deployment-concourse-tasks
-  - task: upload-stemcells
-    file: cf-deployment-concourse-tasks/bosh-upload-stemcells/task.yml
-    input_mapping: &time_rotor_deployment_input_mappings
-      release: diego-release
-      ops-files: deployments-diego
-      vars-files: deployments-diego
-      bbl-state: deployments-diego
-    params:
-      BBL_STATE_DIR: envs/time-rotor-gcp/deployments/bbl
-  - task: deploy-cf-deployment
-    file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
-    input_mapping: *time_rotor_deployment_input_mappings
-    params:
-      SYSTEM_DOMAIN: time-rotor-gcp.cf-app.com
-      BBL_STATE_DIR: envs/time-rotor-gcp/deployments/bbl
-      VARS_FILES: |
-        envs/time-rotor-gcp/vars/cf-deployment-vars.yml
-        envs/time-rotor-gcp/vars/deployment-network-name-postgres-vars.yml
-      DEPLOY_WITH_UPTIME_MEASUREMENTS: false
-      DEPLOYMENT: time_rotor_gcp
-      OPS_FILES: |
-        ../cf-deployment/operations/use-compiled-releases.yml
-        ../cf-deployment/operations/rename-network-and-deployment.yml
-        ../cf-deployment/operations/use-postgres.yml
-        ../release/operations/benchmarks/postgres.yml
-        operations/bbs-benchmark.yml
-        operations/bbs-benchmark-postgres.yml
-        operations/overrides.yml
-        operations/remove-reverse-log-proxy-gateway.yml
-        operations/disable-pxc-tls.yml
-        operations/disable-credhub.yml
-  - task: run
-    file: cf-deployment-concourse-tasks/run-errand/task.yml
-    input_mapping:
-      bbl-state: deployments-diego
-    params:
-      BBL_STATE_DIR: envs/time-rotor-gcp/deployments/bbl
-      DEPLOYMENT_NAME: time_rotor_gcp_postgres
-      ERRAND_NAME: diego-benchmarks
-      KEEP_ALIVE: true
-    on_success:
-      in_parallel:
-      - task: delete-deployment
-        file: diego-ci/tasks/bosh_delete_deployments.build.yml
-        params:
-          DEPLOYMENTS: time_rotor_gcp_postgres
           DEPLOYMENT_DIR: envs/time-rotor-gcp
 
 - name: oslo-scan-status
