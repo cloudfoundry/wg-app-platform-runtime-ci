@@ -1780,7 +1780,7 @@ resources:
   type: docker-image
   source:
     repository: envoyproxy/envoy
-    tag: v1.14-latest
+    tag: v1.16-latest
 
 - name: diego-release-envoy-bump
   type: git
