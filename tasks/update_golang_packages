@@ -24,6 +24,8 @@ Remember to also bump the following submodules:
 - [ ] golang.org/x/text
 - [ ] golang.org/x/time
 - [ ] golang.org/x/tools
+- [ ] golang.org/x/mod
+- [ ] golang.org/x/xerrors
 EOF
 
 echo "Bump Golang to $new_go_version" > title.txt
