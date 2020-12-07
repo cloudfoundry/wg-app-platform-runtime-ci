@@ -26,6 +26,14 @@ Remember to also bump the following submodules:
 - [ ] golang.org/x/tools
 - [ ] golang.org/x/mod
 - [ ] golang.org/x/xerrors
+
+Bump Dockerfile golang version
+- [ ] [Example bump for previous go version](https://github.com/cloudfoundry/diego-ci/blob/master/pipelines/docker-pipeline.yml#L15)
+- [ ] Sync pipelines
+
+Acceptance
+- [ ] Check the progress of the bump in [diego-ci](https://diego.ci.cf-app.com/teams/main/pipelines/main). Confirm all jobs have passed and [release-candidate branch](https://github.com/cloudfoundry/diego-release/tree/release-candidate) has been bumped
+
 EOF
 
 echo "Bump Golang to $new_go_version" > title.txt
