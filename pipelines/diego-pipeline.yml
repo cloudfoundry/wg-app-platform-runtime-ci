@@ -967,7 +967,7 @@ jobs:
   serial_groups: [warp-drive-cf-deployment]
   plan:
   - in_parallel:
-    - get: 30min
+    - get: thirty-min
       trigger: true
     - get: cf-deployment-concourse-tasks
     - get: deployments-diego
@@ -1329,7 +1329,7 @@ jobs:
   serial_groups: [electron-cannon-cf-deployment]
   plan:
   - in_parallel:
-    - get: 30min
+    - get: thirty-min
       trigger: true
     - get: cf-deployment-concourse-tasks
     - get: deployments-diego
@@ -1524,7 +1524,7 @@ jobs:
     - get: diego-release
       passed: [deliver]
       trigger: true
-    - get: 12hours
+    - get: tweleve-hours
       trigger: true
     - get: diego-ci
     - get: cf-deployment
@@ -1582,6 +1582,7 @@ jobs:
     trigger: true
   - task: check-status-file
     config:
+      container_limits: {}
       platform: linux
       image_resource:
         type: docker-image
@@ -1613,12 +1614,12 @@ resource_types:
     repository: cloudfoundry/bosh-deployment-resource
 
 resources:
-- name: 30min
+- name: thirty-min
   type: time
   source:
     interval: 30m
 
-- name: 12hours
+- name: tweleve-hours
   type: time
   source:
     interval: 12h
@@ -1709,7 +1710,7 @@ resources:
 - name: cf-deployment
   type: git
   source:
-    branch: master
+    branch: main
     uri: git@github.com:cloudfoundry/cf-deployment.git
     private_key: {{cf-diego-private-key}}
 
@@ -1885,7 +1886,7 @@ resources:
 - name: cf-deployment-concourse-tasks
   type: git
   source:
-    branch: master
+    branch: main
     uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks
     tag_filter: v*
 
@@ -1893,7 +1894,7 @@ resources:
 - name: runtime-ci
   type: git
   source:
-    branch: master
+    branch: main
     uri: https://github.com/cloudfoundry/runtime-ci
 
 - name: golang-release
@@ -1906,6 +1907,7 @@ resources:
 - name: oslo-scan-status
   type: git
   source:
+    paths:
+    - diego-release/*
     private_key: {{norsk-deploy-key}}
     uri: git@github.com:pivotal/oslo-scan-status.git
-    paths: [ diego-release/* ]
