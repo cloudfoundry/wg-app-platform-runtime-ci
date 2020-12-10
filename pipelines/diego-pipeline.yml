@@ -1871,7 +1871,7 @@ resources:
   type: git
   source:
     uri: https://github.com/cloudfoundry/diego-release.git
-    branch: v1.25.2-patch-8
+    branch: v1.25.2-patch-9
 
 - name: diegocanaryapp
   type: git
