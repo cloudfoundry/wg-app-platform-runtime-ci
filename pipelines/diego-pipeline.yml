@@ -1703,7 +1703,7 @@ resources:
 - name: bosh-bootloader
   type: git
   source:
-    branch: master
+    branch: main
     uri: git@github.com:cloudfoundry/bosh-bootloader.git
     private_key: {{cf-diego-private-key}}
 
