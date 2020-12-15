@@ -11,6 +11,19 @@ find . -name "*vars-store.yml" | xargs -I{} -n 1 ./scripts/find-expired-certs-fr
 
 envs=(warp-drive electron-cannon time-rotor-gcp)
 
+echo '
+********HOW TO GET THIS JOB GREEN*************
+This job goes red when one of the diego environments has certs that need to be rotated.
+In the output...
+1. See the location of the file that has a variable that needs to be rotated (ie: ./envs/ENVIRONMENT-NAME/deployments/bbl/vars/director-vars-store.yml)
+2. See the name of the variable printed (if any).
+3. Go to the file.
+4. Delete the variable (key and value).
+5. Commit your changes.
+6. Bbl up the environment again. There is a concourse job for this named bbl-up-ENVIRONMENT-NAME.
+***********************************************
+'
+
 for env in ${envs[@]}; do
   pushd envs/$env
     echo "Checking certificates for ${env}"

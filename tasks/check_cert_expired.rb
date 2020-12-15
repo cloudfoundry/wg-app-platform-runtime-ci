@@ -22,7 +22,7 @@ end
 expiration=output.split("=")[1]
 expired = Date.parse(expiration) < ( Date.today + expires_in_days)
 if expired
-  puts cert_file
+  puts cert_file + " - #{Date.parse(expiration)}"
 end
 tmp_cert_file.close
 tmp_cert_file.unlink
