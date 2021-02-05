@@ -742,7 +742,6 @@ jobs:
         operations/change-loggregator-agent-deployment.yml
         operations/turn-on-debug-mode-on-route-emitter.yml
         operations/app-log-with-rate-limit.yml
-        operations/separate-pxc-and-proxy-different-vms.yml
   - task: deploy-cf-deployment-with-uptimer
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping: *warp_drive_deployment_input_mappings
@@ -795,7 +794,6 @@ jobs:
         operations/change-loggregator-agent-deployment.yml
         operations/turn-on-debug-mode-on-route-emitter.yml
         operations/app-log-with-rate-limit.yml
-        operations/separate-pxc-and-proxy-different-vms.yml
   - task: enable-docker
     file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
     input_mapping:
@@ -1170,7 +1168,6 @@ jobs:
         operations/change-loggregator-agent-deployment.yml
         operations/turn-on-debug-mode-on-route-emitter.yml
         operations/set-windows2019-cell-max-idle-conns.yml
-        operations/separate-pxc-and-proxy-different-vms.yml
   - task: deploy-cf-deployment-with-uptimer
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping: *electron_cannon_deployment_input_mappings
