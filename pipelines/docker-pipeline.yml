@@ -250,7 +250,7 @@ resources:
   source:
     email: cf-diego+docker@pivotal.io
     username: cfdiegodocker
-    password: {{cfdiegodocker-password}}
+    password: ((cfdiegodocker-password))
     repository: cloudfoundry/diego-units-ci
 
 - name: diego-pipeline-image
@@ -258,7 +258,7 @@ resources:
   source:
     email: cf-diego+docker@pivotal.io
     username: cfdiegodocker
-    password: {{cfdiegodocker-password}}
+    password: ((cfdiegodocker-password))
     repository: cloudfoundry/diego-pipeline
 
 - name: golang-ci
@@ -266,7 +266,7 @@ resources:
   source:
     email: cf-diego+docker@pivotal.io
     username: cfdiegodocker
-    password: {{cfdiegodocker-password}}
+    password: ((cfdiegodocker-password))
     repository: cloudfoundry/golang-ci
 
 - name: diego-docker-app
@@ -274,22 +274,22 @@ resources:
   source:
     email: cf-diego+docker@pivotal.io
     username: cfdiegodocker
-    password: {{cfdiegodocker-password}}
+    password: ((cfdiegodocker-password))
     repository: cloudfoundry/diego-docker-app
 
 - name: aws-ecr-docker-app
   type: docker-image
   source:
-    aws_access_key_id: {{aws-ecr-access-key-id}}
-    aws_secret_access_key: {{aws-ecr-secret-access-key}}
-    repository: {{aws-ecr-repo-uri}}
+    aws_access_key_id: ((aws-ecr-access-key-id))
+    aws_secret_access_key: ((aws-ecr-secret-access-key))
+    repository: ((aws-ecr-repo-uri))
 
 - name: inigo-ci-rootfs
   type: docker-image
   source:
     email: cf-diego+docker@pivotal.io
     username: cfdiegodocker
-    password: {{cfdiegodocker-password}}
+    password: ((cfdiegodocker-password))
     repository: cloudfoundry/inigo-ci-rootfs
 
 - name: inigo-ci
@@ -297,7 +297,7 @@ resources:
   source:
     email: cf-diego+docker@pivotal.io
     username: cfdiegodocker
-    password: {{cfdiegodocker-password}}
+    password: ((cfdiegodocker-password))
     repository: cloudfoundry/inigo-ci
 
 - name: cloudfoundry-grace-docker
@@ -305,7 +305,7 @@ resources:
   source:
     email: cf-diego+docker@pivotal.io
     username: cfdiegodocker
-    password: {{cfdiegodocker-password}}
+    password: ((cfdiegodocker-password))
     repository: cfdiegodocker/grace
 
 - name: daily
@@ -319,7 +319,7 @@ resources:
   source:
     bucket: diego-assets-bucket
     regexp: grace.tar.gz
-    json_key: {{gcs-asset-manager}}
+    json_key: ((gcs-asset-manager))
 
 - name: diego-ci
   type: git
@@ -332,7 +332,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/deployments-diego
     branch: master
-    private_key: {{cf-diego-private-key}}
+    private_key: ((cf-diego-private-key))
 
 resource_types:
 - name: google-cloud-storage

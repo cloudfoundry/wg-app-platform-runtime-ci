@@ -263,9 +263,9 @@ jobs:
     tags: [units]
     params:
       SCRIPT: run-unit-tests-no-backing-store
-      ECR_TEST_AWS_ACCESS_KEY_ID: {{aws-ecr-access-key-id}}
-      ECR_TEST_AWS_SECRET_ACCESS_KEY: {{aws-ecr-secret-access-key}}
-      ECR_TEST_REPO_URI: {{aws-ecr-repo-uri}}
+      ECR_TEST_AWS_ACCESS_KEY_ID: ((aws-ecr-access-key-id))
+      ECR_TEST_AWS_SECRET_ACCESS_KEY: ((aws-ecr-secret-access-key))
+      ECR_TEST_REPO_URI: ((aws-ecr-repo-uri))
 
 - name: update-envoy-blob
   serial: true
@@ -280,8 +280,8 @@ jobs:
   - task: update-envoy-blob
     file: diego-ci/tasks/update_envoy_blob.build.yml
     params:
-      access_key_id: {{aws-diego-final-release-access-key-id}}
-      secret_access_key: {{aws-diego-final-release-secret-access-key}}
+      access_key_id: ((aws-diego-final-release-access-key-id))
+      secret_access_key: ((aws-diego-final-release-secret-access-key))
   - put: diego-release-envoy-bump
     params:
       repository: updated-diego-release
@@ -289,7 +289,7 @@ jobs:
   - task: create-pr
     file: diego-ci/tasks/create_diego_pr.build.yml
     params:
-      GITHUB_TOKEN: {{cf-diego-user-github-access-token}}
+      GITHUB_TOKEN: ((cf-diego-user-github-access-token))
       LABEL: "dependencies"
       BRANCH: "bump-envoy"
     input_mapping:
@@ -306,8 +306,8 @@ jobs:
   - task: update-golang-packages
     file: diego-ci/tasks/update_golang_packages.build.yml
     params:
-      access_key_id: {{aws-diego-final-release-access-key-id}}
-      secret_access_key: {{aws-diego-final-release-secret-access-key}}
+      access_key_id: ((aws-diego-final-release-access-key-id))
+      secret_access_key: ((aws-diego-final-release-secret-access-key))
   - put: diego-release-golang-bump
     params:
       repository: updated-diego-release
@@ -315,7 +315,7 @@ jobs:
   - task: create-pr
     file: diego-ci/tasks/create_diego_pr.build.yml
     params:
-      GITHUB_TOKEN: {{cf-diego-user-github-access-token}}
+      GITHUB_TOKEN: ((cf-diego-user-github-access-token))
       LABEL: "dependencies"
       BRANCH: "bump-golang"
     input_mapping:
@@ -386,16 +386,16 @@ jobs:
     params:
       DEFAULT_EVENTUALLY_TIMEOUT: 5m
       SQL_FLAVOR: mysql
-      INIGO_PRIVATE_DOCKER_IMAGE_URI: {{inigo-private-docker-image-uri}}
-      INIGO_PRIVATE_DOCKER_IMAGE_REF: {{inigo-private-docker-image-ref}}
-      INIGO_PRIVATE_DOCKER_IMAGE_ROOTFS_PATH: {{inigo-private-docker-image-rootfs-path}}
-      INIGO_PRIVATE_DOCKER_IMAGE_USERNAME: {{inigo-private-docker-image-username}}
-      INIGO_PRIVATE_DOCKER_IMAGE_PASSWORD: {{inigo-private-docker-image-password}}
-      INIGO_ECR_AWS_ACCESS_KEY_ID: {{inigo-ecr-aws-access-key-id}}
-      INIGO_ECR_AWS_SECRET_ACCESS_KEY: {{inigo-ecr-aws-secret-access-key}}
-      INIGO_ECR_IMAGE_REF: {{inigo-ecr-image-ref}}
-      INIGO_ECR_IMAGE_ROOTFS_PATH: {{inigo-ecr-image-rootfs-path}}
-      INIGO_ECR_IMAGE_URI: {{inigo-ecr-image-uri}}
+      INIGO_PRIVATE_DOCKER_IMAGE_URI: ((inigo-private-docker-image-uri))
+      INIGO_PRIVATE_DOCKER_IMAGE_REF: ((inigo-private-docker-image-ref))
+      INIGO_PRIVATE_DOCKER_IMAGE_ROOTFS_PATH: ((inigo-private-docker-image-rootfs-path))
+      INIGO_PRIVATE_DOCKER_IMAGE_USERNAME: ((inigo-private-docker-image-username))
+      INIGO_PRIVATE_DOCKER_IMAGE_PASSWORD: ((inigo-private-docker-image-password))
+      INIGO_ECR_AWS_ACCESS_KEY_ID: ((inigo-ecr-aws-access-key-id))
+      INIGO_ECR_AWS_SECRET_ACCESS_KEY: ((inigo-ecr-aws-secret-access-key))
+      INIGO_ECR_IMAGE_REF: ((inigo-ecr-image-ref))
+      INIGO_ECR_IMAGE_ROOTFS_PATH: ((inigo-ecr-image-rootfs-path))
+      INIGO_ECR_IMAGE_URI: ((inigo-ecr-image-uri))
 
 - name: inigo-postgres
   serial_groups: [inigo-postgres]
@@ -425,16 +425,16 @@ jobs:
     params:
       DEFAULT_EVENTUALLY_TIMEOUT: 5m
       SQL_FLAVOR: postgres
-      INIGO_PRIVATE_DOCKER_IMAGE_URI: {{inigo-private-docker-image-uri}}
-      INIGO_PRIVATE_DOCKER_IMAGE_REF: {{inigo-private-docker-image-ref}}
-      INIGO_PRIVATE_DOCKER_IMAGE_ROOTFS_PATH: {{inigo-private-docker-image-rootfs-path}}
-      INIGO_PRIVATE_DOCKER_IMAGE_USERNAME: {{inigo-private-docker-image-username}}
-      INIGO_PRIVATE_DOCKER_IMAGE_PASSWORD: {{inigo-private-docker-image-password}}
-      INIGO_ECR_AWS_ACCESS_KEY_ID: {{inigo-ecr-aws-access-key-id}}
-      INIGO_ECR_AWS_SECRET_ACCESS_KEY: {{inigo-ecr-aws-secret-access-key}}
-      INIGO_ECR_IMAGE_REF: {{inigo-ecr-image-ref}}
-      INIGO_ECR_IMAGE_ROOTFS_PATH: {{inigo-ecr-image-rootfs-path}}
-      INIGO_ECR_IMAGE_URI: {{inigo-ecr-image-uri}}
+      INIGO_PRIVATE_DOCKER_IMAGE_URI: ((inigo-private-docker-image-uri))
+      INIGO_PRIVATE_DOCKER_IMAGE_REF: ((inigo-private-docker-image-ref))
+      INIGO_PRIVATE_DOCKER_IMAGE_ROOTFS_PATH: ((inigo-private-docker-image-rootfs-path))
+      INIGO_PRIVATE_DOCKER_IMAGE_USERNAME: ((inigo-private-docker-image-username))
+      INIGO_PRIVATE_DOCKER_IMAGE_PASSWORD: ((inigo-private-docker-image-password))
+      INIGO_ECR_AWS_ACCESS_KEY_ID: ((inigo-ecr-aws-access-key-id))
+      INIGO_ECR_AWS_SECRET_ACCESS_KEY: ((inigo-ecr-aws-secret-access-key))
+      INIGO_ECR_IMAGE_REF: ((inigo-ecr-image-ref))
+      INIGO_ECR_IMAGE_ROOTFS_PATH: ((inigo-ecr-image-rootfs-path))
+      INIGO_ECR_IMAGE_URI: ((inigo-ecr-image-uri))
 
 - name: inigo-windows
   serial: true
@@ -993,7 +993,7 @@ jobs:
       params:
         API: api.warp-drive.cf-app.com
         ORG: canaries
-        PASSWORD: {{warp-drive-cf-admin-password}}
+        PASSWORD: ((warp-drive-cf-admin-password))
         SPACE: coal-mine
         USER: admin
         APP_DOMAIN: warp-drive.cf-app.com
@@ -1006,7 +1006,7 @@ jobs:
       params:
         API: api.warp-drive.cf-app.com
         ORG: canaries
-        PASSWORD: {{warp-drive-cf-admin-password}}
+        PASSWORD: ((warp-drive-cf-admin-password))
         SPACE: coal-mine
         USER: admin
         APP_NAME: diego-canary-windows-app
@@ -1179,7 +1179,7 @@ jobs:
         vars/grace-config-vars.yml
       DEPLOY_WITH_UPTIME_MEASUREMENTS: true
       FAIL_ON_DOWNTIME: true
-      CF_ADMIN_PASSWORD: {{electron-cannon-cf-admin-password}}
+      CF_ADMIN_PASSWORD: ((electron-cannon-cf-admin-password))
       MEASURE_SYSLOG_AVAILABILITY: false
       TCP_DOMAIN: " "
       AVAILABLE_PORT: -1
@@ -1195,7 +1195,7 @@ jobs:
     params:
       CF_TARGET: api.electron-cannon.cf-app.com
       CF_USER: admin
-      CF_PASSWORD: {{electron-cannon-cf-admin-password}}
+      CF_PASSWORD: ((electron-cannon-cf-admin-password))
 
 - name: electron-cannon-test-evacuation
   serial_groups: [electron-cannon-cf-deployment]
@@ -1223,7 +1223,7 @@ jobs:
         vars/grace-config-vars.yml
       DEPLOY_WITH_UPTIME_MEASUREMENTS: true
       FAIL_ON_DOWNTIME: true
-      CF_ADMIN_PASSWORD: {{electron-cannon-cf-admin-password}}
+      CF_ADMIN_PASSWORD: ((electron-cannon-cf-admin-password))
       MEASURE_SYSLOG_AVAILABILITY: false
       TCP_DOMAIN: " "
       AVAILABLE_PORT: -1
@@ -1355,7 +1355,7 @@ jobs:
       params:
         API: api.electron-cannon.cf-app.com
         ORG: canaries
-        PASSWORD: {{electron-cannon-cf-admin-password}}
+        PASSWORD: ((electron-cannon-cf-admin-password))
         SPACE: coal-mine
         USER: admin
         APP_DOMAIN: electron-cannon.cf-app.com
@@ -1368,7 +1368,7 @@ jobs:
       params:
         API: api.electron-cannon.cf-app.com
         ORG: canaries
-        PASSWORD: {{electron-cannon-cf-admin-password}}
+        PASSWORD: ((electron-cannon-cf-admin-password))
         SPACE: coal-mine
         USER: admin
         APP_NAME: diego-canary-windows-app
@@ -1439,8 +1439,8 @@ jobs:
   - task: create-final-release
     file: diego-ci/tasks/create_final_release.build.yml
     params:
-      access_key_id: {{aws-diego-final-release-access-key-id}}
-      secret_access_key: {{aws-diego-final-release-secret-access-key}}
+      access_key_id: ((aws-diego-final-release-access-key-id))
+      secret_access_key: ((aws-diego-final-release-secret-access-key))
   - put: diego-final-releases
     params:
       file: final-release/diego-*.tgz
@@ -1642,7 +1642,7 @@ resources:
   type: git
   source:
     uri: git@github.com:cloudfoundry/deployments-diego.git
-    private_key: {{cf-diego-private-key}}
+    private_key: ((cf-diego-private-key))
 
 - name: time-rotor-gcp-config
   type: git
@@ -1652,13 +1652,13 @@ resources:
     - operations
     - vars
     uri: git@github.com:cloudfoundry/deployments-diego.git
-    private_key: {{cf-diego-private-key}}
+    private_key: ((cf-diego-private-key))
 
 - name: warp-drive-config
   type: git
   source:
     uri: git@github.com:cloudfoundry/deployments-diego.git
-    private_key: {{cf-diego-private-key}}
+    private_key: ((cf-diego-private-key))
 
 - name: warp-drive-cats-config
   type: git
@@ -1668,7 +1668,7 @@ resources:
     - envs/warp-drive/integration_config.json
     - envs/warp-drive/wats_integration_config.json
     uri: git@github.com:cloudfoundry/deployments-diego.git
-    private_key: {{cf-diego-private-key}}
+    private_key: ((cf-diego-private-key))
 
 - name: electron-cannon-cats-config
   type: git
@@ -1677,20 +1677,20 @@ resources:
     - envs/electron-cannon/integration_config.json
     - envs/electron-cannon/wats_integration_config.json
     uri: git@github.com:cloudfoundry/deployments-diego.git
-    private_key: {{cf-diego-private-key}}
+    private_key: ((cf-diego-private-key))
 
 - name: diego-ci
   type: git
   source:
     uri: git@github.com:cloudfoundry/diego-ci
-    private_key: {{cf-diego-private-key}}
+    private_key: ((cf-diego-private-key))
 
 - name: deployments-diego
   type: git
   source:
     branch: master
     uri: git@github.com:cloudfoundry/deployments-diego.git
-    private_key: {{cf-diego-private-key}}
+    private_key: ((cf-diego-private-key))
 
 - name: bosh-deployment
   type: git
@@ -1702,14 +1702,14 @@ resources:
   source:
     branch: main
     uri: git@github.com:cloudfoundry/bosh-bootloader.git
-    private_key: {{cf-diego-private-key}}
+    private_key: ((cf-diego-private-key))
 
 - name: cf-deployment
   type: git
   source:
     branch: main
     uri: git@github.com:cloudfoundry/cf-deployment.git
-    private_key: {{cf-diego-private-key}}
+    private_key: ((cf-diego-private-key))
 
 - name: cf-acceptance-tests
   type: git
@@ -1732,13 +1732,13 @@ resources:
       - dev_releases
       - git-hooks
     uri: git@github.com:cloudfoundry/diego-release.git
-    private_key: {{cf-diego-private-key}}
+    private_key: ((cf-diego-private-key))
 
 - name: version
   type: semver
   source:
-    access_key_id: {{aws-diego-pipeline-access-key-id}}
-    secret_access_key: {{aws-diego-pipeline-secret-access-key}}
+    access_key_id: ((aws-diego-pipeline-access-key-id))
+    secret_access_key: ((aws-diego-pipeline-secret-access-key))
     bucket: diego-release-versions
     initial_version: 0.1000.0
     key: current-version
@@ -1749,30 +1749,30 @@ resources:
   source:
     bucket: diego-final-releases
     regexp: diego-(.*).tgz
-    access_key_id: {{aws-diego-final-release-access-key-id}}
-    secret_access_key: {{aws-diego-final-release-secret-access-key}}
+    access_key_id: ((aws-diego-final-release-access-key-id))
+    secret_access_key: ((aws-diego-final-release-secret-access-key))
 
 - name: diego-dusts-logs
   type: s3
   source:
     bucket: diego-trace-logs
     regexp: ketchup-smoke-tests/dusts-component-logs\.(0\.0\.0)\.[\d\.\-]+.log
-    access_key_id: {{aws-diego-pipeline-access-key-id}}
-    secret_access_key: {{aws-diego-pipeline-secret-access-key}}
+    access_key_id: ((aws-diego-pipeline-access-key-id))
+    secret_access_key: ((aws-diego-pipeline-secret-access-key))
 
 - name: diego-release-release-candidate
   type: git
   source:
     uri: git@github.com:cloudfoundry/diego-release.git
     branch: release-candidate
-    private_key: {{cf-diego-private-key}}
+    private_key: ((cf-diego-private-key))
 
 - name: diego-release-golang-bump
   type: git
   source:
     uri: git@github.com:cloudfoundry/diego-release.git
     branch: bump-golang
-    private_key: {{cf-diego-private-key}}
+    private_key: ((cf-diego-private-key))
 
 - name: envoyproxy-image
   type: docker-image
@@ -1785,21 +1785,21 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/diego-release.git
     branch: bump-envoy
-    private_key: {{cf-diego-private-key}}
+    private_key: ((cf-diego-private-key))
 
 - name: diego-release-master
   type: git
   source:
     uri: git@github.com:cloudfoundry/diego-release.git
     branch: master
-    private_key: {{cf-diego-private-key}}
+    private_key: ((cf-diego-private-key))
 
 - name: diego-release-mergeback
   type: git
   source:
     uri: git@github.com:cloudfoundry/diego-release.git
     branch: develop
-    private_key: {{cf-diego-private-key}}
+    private_key: ((cf-diego-private-key))
 
 - name: candidate-lock
   type: pool
@@ -1807,14 +1807,14 @@ resources:
     uri: git@github.com:cloudfoundry/diego-ci-pools.git
     branch: master
     pool: candidate-lock
-    private_key: {{cf-diego-private-key}}
+    private_key: ((cf-diego-private-key))
 
 - name: tracker
   type: tracker
   source:
     tracker_url: https://www.pivotaltracker.com
     project_id: "1003146"
-    token: {{tracker-token}}
+    token: ((tracker-token))
 
 - name: routing-release-tarball
   type: bosh-io-release
@@ -1856,7 +1856,7 @@ resources:
     user: cloudfoundry
     repository: diego-release
     drafts: true
-    access_token: {{pm-personal-access-token}}
+    access_token: ((pm-personal-access-token))
 
 - name: diego-release-v1.0.0
   type: git
@@ -1906,5 +1906,5 @@ resources:
   source:
     paths:
     - diego-release/*
-    private_key: {{norsk-deploy-key}}
+    private_key: ((norsk-deploy-key))
     uri: git@github.com:pivotal/oslo-scan-status.git
