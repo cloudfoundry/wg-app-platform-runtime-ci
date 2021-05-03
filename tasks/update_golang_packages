@@ -32,7 +32,7 @@ Bump Dockerfile golang version
 - [ ] Sync pipelines
 
 Acceptance
-- [ ] Check the progress of the bump in [diego-ci](https://diego.ci.cf-app.com/teams/main/pipelines/main). Confirm all jobs have passed and [release-candidate branch](https://github.com/cloudfoundry/diego-release/tree/release-candidate) has been bumped
+- [ ] Check the progress of the bump in [diego-ci](https://ci.funtime.lol/teams/diego/pipelines/main). Confirm all jobs have passed and [release-candidate branch](https://github.com/cloudfoundry/diego-release/tree/release-candidate) has been bumped
 
 EOF
 
