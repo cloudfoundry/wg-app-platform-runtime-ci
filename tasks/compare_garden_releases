@@ -2,8 +2,8 @@
 
 set -e -x
 
-DIEGO_GARDEN_SUBMODULE=src/code.cloudfoundry.org/garden
-DIEGO_GUARDIAN_SUBMODULE=src/code.cloudfoundry.org/guardian
+DIEGO_GARDEN_SUBMODULE=src/garden
+DIEGO_GUARDIAN_SUBMODULE=src/guardian
 GARDEN_RUNC_GARDEN_SUBMODULE=src/garden
 GARDEN_RUNC_GUARDIAN_SUBMODULE=src/guardian
 
