@@ -348,7 +348,7 @@ jobs:
 
 - name: units-windows
   public: true
-  serial_groups: [units-windows]
+  serial_groups: [windows]
   plan:
   - get: diego-release
     trigger: true
@@ -432,7 +432,7 @@ jobs:
       INIGO_ECR_IMAGE_URI: ((inigo-ecr-image-uri))
 
 - name: inigo-windows
-  serial: true
+  serial_groups: [windows]
   public: true
   plan:
   - in_parallel:
