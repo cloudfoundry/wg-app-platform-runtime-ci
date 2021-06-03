@@ -12,7 +12,7 @@ jobs:
   - task: print-go-version-tag
     file: diego-ci/tasks/generate_go_version_tag.build.yml
     params:
-      GO_VERSION: &go-version go1.15.8
+      GO_VERSION: &go-version go1.16.4
   - put: golang-ci
     params:
       build: git-golang-ci/golang-ci
