@@ -1832,7 +1832,7 @@ resources:
   type: git
   source:
     uri: https://github.com/cloudfoundry/winc-release
-    branch: master
+    branch: develop
 
 - name: envoy-nginx-release
   type: git
