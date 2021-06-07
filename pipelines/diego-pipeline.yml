@@ -259,6 +259,7 @@ jobs:
     trigger: true
   - task: build
     file: diego-release/scripts/ci/run_unit.build.yml
+    tags: [diego-units]
     privileged: true
     params:
       SCRIPT: run-unit-tests-no-backing-store
@@ -328,6 +329,7 @@ jobs:
     trigger: true
   - task: build
     file: diego-release/scripts/ci/run_unit.build.yml
+    tags: [diego-units]
     privileged: true
     params:
       SCRIPT: run-unit-tests-with-backing-store
@@ -341,6 +343,7 @@ jobs:
     trigger: true
   - task: build
     file: diego-release/scripts/ci/run_unit.build.yml
+    tags: [diego-units]
     privileged: true
     params:
       SCRIPT: run-unit-tests-with-backing-store
@@ -379,6 +382,7 @@ jobs:
   - task: build
     privileged: true
     file: diego-release/scripts/ci/run_inigo_grootfs.build.yml
+    tags: [diego-inigo-mysql]
     params:
       DEFAULT_EVENTUALLY_TIMEOUT: 5m
       SQL_FLAVOR: mysql
@@ -417,6 +421,7 @@ jobs:
   - task: build
     privileged: true
     file: diego-release/scripts/ci/run_inigo_grootfs.build.yml
+    tags: [diego-inigo-postgres]
     params:
       DEFAULT_EVENTUALLY_TIMEOUT: 5m
       SQL_FLAVOR: postgres
@@ -493,6 +498,7 @@ jobs:
   - task: build
     privileged: true
     file: diego-release/scripts/ci/run_upgrade_acceptance.build.yml
+    tags: [diego-dusts-v1.0.0]
     input_mapping:
       diego-release-v0: diego-release-v1.0.0
       grace-vars: deployments-diego
@@ -531,6 +537,7 @@ jobs:
   - task: build
     privileged: true
     file: diego-release/scripts/ci/run_upgrade_acceptance.build.yml
+    tags: [diego-dusts-v1.25.2]
     input_mapping:
       diego-release-v0: diego-release-v1.25.2
       grace-vars: deployments-diego
