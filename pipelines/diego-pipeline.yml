@@ -1166,6 +1166,7 @@ jobs:
         operations/change-loggregator-agent-deployment.yml
         operations/turn-on-debug-mode-on-route-emitter.yml
         operations/set-windows2019-cell-max-idle-conns.yml
+        operations/metric-discovery-nats-instance-group.yml
   - task: deploy-cf-deployment-with-uptimer
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping: *electron_cannon_deployment_input_mappings
