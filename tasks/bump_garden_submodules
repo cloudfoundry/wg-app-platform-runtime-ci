@@ -38,13 +38,14 @@ git -C "diego-release/$DIEGO_GROOTFS_SUBMODULE" reset --hard "$GROOTFS_SHA"
 
 
 pushd diego-release
-  ./scripts/sync-package-specs
-  ./scripts/sync-submodule-config
 
   pushd src/code.cloudfoundry.org
     go mod tidy
     go mod vendor
   popd
+
+  ./scripts/sync-package-specs
+  ./scripts/sync-submodule-config
 
   if [ -n "$(git status --porcelain)" ]; then
     git config user.email "cf-diego+github@pivotal.io"
