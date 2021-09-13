@@ -17,15 +17,6 @@ popd
 
 pushd pr-message
   cat > description.md <<EOF
-Remember to also bump the following submodules:
-- [ ] golang.org/x/crypto
-- [ ] golang.org/x/net
-- [ ] golang.org/x/sys
-- [ ] golang.org/x/text
-- [ ] golang.org/x/time
-- [ ] golang.org/x/tools
-- [ ] golang.org/x/mod
-- [ ] golang.org/x/xerrors
 
 Bump Dockerfile golang version
 - [ ] [Example bump for previous go version](https://github.com/cloudfoundry/diego-ci/blob/master/pipelines/docker-pipeline.yml#L15)
