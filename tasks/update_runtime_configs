@@ -10,7 +10,7 @@ function update_runtime_configs() {
   done
 
   bosh interpolate ${arguments} bbl-state/${BBL_STATE_DIR}/runtime-config/runtime-config.yml > /tmp/runtime-config.yml
-  bosh update-runtime-config --name dns /tmp/runtime-config.yml
+  bosh -n update-runtime-config --name dns /tmp/runtime-config.yml
 }
 
 function main() {
