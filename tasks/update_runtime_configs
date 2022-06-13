@@ -1,0 +1,21 @@
+#!/bin/bash -exu
+
+source cf-deployment-concourse-tasks/shared-functions
+
+function update_runtime_configs() {
+  local arguments=''
+  for op in ${OPS_FILES}
+  do
+    arguments="${arguments} -o ops-files/${op}"
+  done
+
+  bosh interpolate ${arguments} bbl-state/${BBL_STATE_DIR}/runtime-config/runtime-config.yml > /tmp/runtime-config.yml
+  bosh update-runtime-config --name dns /tmp/runtime-config.yml
+}
+
+function main() {
+  setup_bosh_env_vars
+  update_runtime_configs
+}
+
+main
