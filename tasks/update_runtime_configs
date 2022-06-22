@@ -9,7 +9,8 @@ function update_runtime_configs() {
     arguments="${arguments} -o ops-files/${op}"
   done
 
-  bosh interpolate ${arguments} bbl-state/${BBL_STATE_DIR}/runtime-config/runtime-config.yml > /tmp/runtime-config.yml
+  bosh --json config --column content --type runtime --name default | jq .Tables[0].Rows[0].content -r > /tmp/original-runtime-config.yml
+  bosh interpolate ${arguments} /tmp/original-runtime-config.yml > /tmp/runtime-config.yml
   bosh -n update-runtime-config --name dns /tmp/runtime-config.yml
 }
 
