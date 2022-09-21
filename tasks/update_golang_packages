@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e -x
+DATE=$(date '+%Y-%m-%d %H:%M:%S')
 
 cat > $PWD/diego-release/config/private.yml <<EOF
 ---
@@ -32,6 +33,8 @@ echo "Bump Golang to $new_go_version" > title.txt
 popd
 
 cd diego-release
+echo "This file was updated by CI on ${DATE}" > docs/go.version
+echo "$new_go_version" >> docs/go.version
 
 bosh vendor-package golang-1-linux ../golang-release
 bosh vendor-package golang-1-windows ../golang-release
@@ -43,5 +46,6 @@ git config user.name "CI (Automated)"
 
 git checkout -b bump-golang
 git add -A packages .final_builds
+git add docs/go.version
 git commit -n -F "../pr-message/title.txt"
 rsync -av $PWD/ ../updated-diego-release
