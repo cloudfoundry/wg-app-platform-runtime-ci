@@ -1,9 +1,0 @@
-#!/bin/bash
-
-set -e -x -u
-
-pushd ${PWD}/deployments-diego/${DEPLOYMENT_DIR}
-source .envrc
-popd
-
-bosh -n urc ${PWD}/deployments-diego/${DEPLOYMENT_DIR}/deployments/bbl/runtime-config/runtime-config.yml --name $NAME
