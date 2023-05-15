@@ -1,3 +1,3 @@
-# Diego CI
+# WG-App-Platform-Runtime-CI
 
-DEPRECATED
+
