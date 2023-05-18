@@ -1,0 +1,9 @@
+---
+readme: |
+  This task will build-binaries using helper FUNCTIONS defined dynamically. For windows, this is accomplished by using powershell functions defined at the release level that know how to build binaries for that release. The goal is to centralized building process of binaries for all concourse tasks within the release that defines them so that we don't have different ways of building. `built-binaries` will contain the output of binaries.
+oses:
+  - linux
+  - windows
+params:
+  FUNCTIONS: Multiline parameter that accepts path to (powershell/bash) scripts that define functions to be used. e.g. ci/winc-release/helpers/configure-binaries.ps1
+  MAPPING: Multiline parameter that defines maps funcation call to code containing source. e.g. Build-Gdn=src/guardian/cmd/gdn

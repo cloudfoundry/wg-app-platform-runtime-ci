@@ -1,0 +1,6 @@
+---
+readme: |
+  This task will run tests for bosh templates defined within release
+oses:
+  - linux
+

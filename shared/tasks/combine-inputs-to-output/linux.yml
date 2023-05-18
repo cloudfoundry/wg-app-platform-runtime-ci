@@ -1,0 +1,17 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+- name: 1st-input
+  optional: true
+- name: 2nd-input
+  optional: true
+- name: 3rd-input
+  optional: true
+
+outputs:
+- name: combined-output
+
+run:
+  path: ci/shared/tasks/combine-inputs-to-output/task.bash

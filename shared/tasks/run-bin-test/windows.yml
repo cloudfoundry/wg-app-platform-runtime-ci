@@ -1,0 +1,25 @@
+---
+platform: windows
+
+inputs:
+- name: ci
+- name: repo
+- name: built-binaries
+  optional: true
+
+params:
+  DIR:
+  DEBUG: false
+  ENVS: #|
+    # ENV_KEY=ENV_VALUE
+  FUNCTIONS: #|
+    #PATH-To-FUNCTIONS-PS1
+
+run:
+  path: powershell
+  args:
+  - "-ExecutionPolicy"
+  - "Bypass"
+  - "-File"
+  - ci/shared/tasks/run-bin-test/task.ps1
+
