@@ -7,7 +7,6 @@ function Run
 {
     . Expand-Functions
 
-    Verify-Ginkgo
     Get-ChildItem -Path built-binaries -Filter *.ps1 -Recurse -File -Name -ErrorAction SilentlyContinue | ForEach-Object {
         $PS1File = "./built-binaries/$_"
         Write-Host "Sourcing: $PS1File"
@@ -19,7 +18,11 @@ function Run
 
     Expand-Envs
 
+    Verify-Go
+    Verify-Ginkgo
+
     Push-Location "repo/$env:DIR"
+    go vet ./...
     ./bin/test.ps1
     Pop-Location
 }
