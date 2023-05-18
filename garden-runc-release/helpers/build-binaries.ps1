@@ -53,7 +53,7 @@ function Build-Gdn
         }
     Pop-Location
     $PS1FILE='$env:GDN_BINARY="$PWD/{0}"
-$env:GDN_DEPOT_PATH="\var\vcap\data\tmp\depot"
+$env:GDN_DEPOT_PATH="/var/vcap/data/tmp/depot"
 $env:GDN_OUT_LOG_FILE="$PWD/{1}"
 $env:GDN_ERR_LOG_FILE="$PWD/{2}"
 $env:GDN_BIND_IP="127.0.0.1"
