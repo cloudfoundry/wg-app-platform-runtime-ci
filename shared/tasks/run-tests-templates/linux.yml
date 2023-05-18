@@ -1,0 +1,9 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+- name: repo
+
+run:
+  path: ci/shared/tasks/run-tests-templates/task.bash

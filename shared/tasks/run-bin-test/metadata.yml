@@ -1,0 +1,12 @@
+---
+readme: |
+  This task will run respective `./bin/test{.bash,ps1}` for different OSes. In order to to make this task more generalized by setting up env variables and defining functions for the actual test, it will source FUNCTIONS and ENVS defined within the task before calling the respective test file. This will optionally take built-binaries (chained with build-binaries task) that have corresponding source files (run.ps1/run.bash) to be used at runtime.
+oses:
+  - linux
+  - windows
+params:
+  DIR: path to where you can run `./bin/test{.bash,ps1}`. This is helpful to use when using submodule pattern and wanting to test internal repos without having to create more resources.
+  DEBUG: defaults to false. Turn on debug for more discriptive actions taken by task or test.
+  ENVS: Multiline envs that can be defined dynamically and loaded into the test without having to create more params. e.g. ROOTFS=/tmp/rootfs.tar
+  FUNCTIONS:  Multiline functions to be used for extra configuration of binaries. e.g. ci/winc-release/helpers/configure-binaries.ps1
+

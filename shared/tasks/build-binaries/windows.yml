@@ -1,0 +1,24 @@
+---
+platform: windows
+
+inputs:
+- name: ci
+- name: repo
+
+outputs:
+- name: built-binaries
+
+params:
+  FUNCTIONS: #|
+    #PATH-To-FUNCTIONS-PS1
+  MAPPING: #|
+    # PS1-FUNCTION-NAME=PATH
+
+run:
+  path: powershell
+  args:
+  - "-ExecutionPolicy"
+  - "Bypass"
+  - "-File"
+  - ci/shared/tasks/build-binaries/task.ps1
+
