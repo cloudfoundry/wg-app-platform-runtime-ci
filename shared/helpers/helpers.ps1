@@ -18,6 +18,13 @@ function Verify-Go {
     go.exe version
 }
 
+function Verify-GoVet {
+  go.exe vet ./...
+  if ($LastExitCode -ne 0) {
+    exit 1
+  }
+}
+
 function Verify-Ginkgo {
   Test-CommandExists "ginkgo.exe"
 }
@@ -48,9 +55,19 @@ Function Expand-Functions {
   ForEach ($entry in "$env:FUNCTIONS".Split("`r`n", [System.StringSplitOptions]::RemoveEmptyEntries))
   {
     Write-Host "Sourcing: $entry"
-      . $entry
+    . $entry
   }
   Debug "Expand-Functions Ending"
+}
+
+Function Expand-Verifications {
+  Debug "Expand-Verifications Starting"
+  ForEach ($entry in "$env:VERIFICATIONS".Split("`r`n", [System.StringSplitOptions]::RemoveEmptyEntries))
+  {
+    Write-Host "Verifying: $entry"
+    & $entry
+  }
+  Debug "Expand-Verifications Ending"
 }
 
 Function Debug {

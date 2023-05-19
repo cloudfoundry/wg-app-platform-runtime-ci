@@ -14,6 +14,10 @@ params:
     # ENV_KEY=ENV_VALUE
   FUNCTIONS: #|
     #PATH-To-FUNCTIONS-PS1
+  VERIFICATIONS: |
+    Verify-Go
+    Verify-Ginkgo
+    Verify-GoVet
 
 run:
   path: powershell

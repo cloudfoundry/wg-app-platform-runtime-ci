@@ -18,14 +18,8 @@ function Run
 
     Expand-Envs
 
-    Verify-Go
-    Verify-Ginkgo
-
     Push-Location "repo/$env:DIR"
-    go vet ./...
-    if ($LastExitCode -ne 0) {
-        exit 1
-    }
+    Expand-Verifications
     ./bin/test.ps1
     Pop-Location
 }
