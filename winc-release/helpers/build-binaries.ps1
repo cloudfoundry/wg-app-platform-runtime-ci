@@ -21,17 +21,17 @@ function Build-Groot
         Push-Location "$Source"
         go.exe build -o "$Target\run.exe" main.go
         if ($LastExitCode -ne 0) {
-            exit $LastExitCode
+            exit 1
         }
 
     gcc.exe -c ".\volume\quota\quota.c" -o "$env:TEMP\quota.o"
         if ($LastExitCode -ne 0) {
-            exit $LastExitCode
+            exit 1
         }
 
     gcc.exe -shared -o "$Target\quota.dll" "$env:TEMP\quota.o" -lole32 -loleaut32
         if ($LastExitCode -ne 0) {
-            exit $LastExitCode
+            exit 1
         }
     Pop-Location
 
@@ -64,7 +64,7 @@ function Build-Winc-Network
 
         go.exe build -o "$Target\run.exe" -tags "hnsAcls" .
         if ($LastExitCode -ne 0) {
-            exit $LastExitCode
+            exit 1
         }
     Pop-Location
       $Config = '{"mtu": 0, "network_name": "winc-nat", "subnet_range": "172.30.0.0/22", "gateway_address": "172.30.0.1"}'
@@ -97,7 +97,7 @@ function Build-Winc
 
         go.exe build -o "$Target\run.exe" .
         if ($LastExitCode -ne 0) {
-            exit $LastExitCode
+            exit 1
         }
     Pop-Location
         $PS1FILE='$env:WINC_BINARY="$PWD/{0}"' -f "$BuiltDir/winc/run.exe"
@@ -124,7 +124,7 @@ function Build-Nstar
 
         go.exe build -o "$Target\run.exe" .
         if ($LastExitCode -ne 0) {
-            exit $LastExitCode
+            exit 1
         }
     Pop-Location
         $PS1FILE='$env:NSTAR_BINARY="$PWD/{0}"' -f "$BuiltDir/nstar/run.exe"

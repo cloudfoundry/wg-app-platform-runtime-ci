@@ -20,7 +20,7 @@ function Build-Winit
         Push-Location "$Source"
         go.exe build -o "$Target\run.exe" main.go
         if ($LastExitCode -ne 0) {
-            exit $LastExitCode
+            exit 1
         }
 
     Pop-Location
@@ -49,7 +49,7 @@ function Build-Gdn
 
         go.exe build -o "$Target\run.exe" -tags "hnsAcls" .
         if ($LastExitCode -ne 0) {
-            exit $LastExitCode
+            exit 1
         }
     Pop-Location
     $PS1FILE='$env:GDN_BINARY="$PWD/{0}"

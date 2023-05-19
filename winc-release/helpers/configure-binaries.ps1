@@ -11,7 +11,7 @@ function Configure-Groot{
         Write-Host "Pulling Image:" $Rootfs
         & "$env:GROOT_BINARY" --driver-store "$env:GROOT_IMAGE_STORE" pull "$Rootfs"
         if ($LastExitCode -ne 0) {
-            throw "Running $GROOT_BINARY pull failed with exit code: $LastExitCode"
+            throw "Running $GROOT_BINARY pull failed"
         }
 }
 
