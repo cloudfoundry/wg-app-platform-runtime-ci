@@ -130,3 +130,31 @@ function Build-Nstar
         $PS1FILE='$env:NSTAR_BINARY="$PWD/{0}"' -f "$BuiltDir/nstar/run.exe"
         Set-Content -Path "$Target/run.ps1" -Value $PS1FILE -Encoding Asci
 }
+
+function Build-Diff-Exporter
+{
+    Param
+        (
+         [Parameter(Mandatory=$true, Position=0)]
+         [string] $Source,
+         [Parameter(Mandatory=$true, Position=1)]
+         [string] $Target
+        )
+
+        Verify-Go
+
+        $BuiltDir=$(Split-Path $Target -Leaf)
+        $Target = Update-Dir-If-Symlink "$Target"
+        $Target = Join-Path "$Target" "diff-exporter"
+        New-Item -ItemType Directory -Force -Path "$Target"
+
+        Push-Location "$Source"
+
+        go.exe build -o "$Target\run.exe" .
+        if ($LastExitCode -ne 0) {
+            exit 1
+        }
+    Pop-Location
+        $PS1FILE='$env:DIFF_EXPORTER_BINARY="$PWD/{0}"' -f "$BuiltDir/diff-exporter/run.exe"
+        Set-Content -Path "$Target/run.ps1" -Value $PS1FILE -Encoding Asci
+}
