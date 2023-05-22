@@ -66,7 +66,7 @@ function Build-Winc-Network
 
         Push-Location "$Source"
 
-        go.exe build -o "$Target\run.exe" -tags "hnsAcls" .
+        go.exe build -o "$Target\run.exe" .
         if ($LastExitCode -ne 0) {
             exit 1
         }
