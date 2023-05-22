@@ -13,6 +13,7 @@ function Build-Winit
         Verify-Go
 
         $env:TEMP="/var/vcap/data/tmp"
+        $env:TMP="/var/vcap/data/tmp"
         $BuiltDir=$(Split-Path $Target -Leaf)
         $Target = Update-Dir-If-Symlink "$Target"
         $Target = Join-Path "$Target" "winit"
@@ -42,6 +43,7 @@ function Build-Gdn
         Verify-Go
 
         $env:TEMP="/var/vcap/data/tmp"
+        $env:TMP="/var/vcap/data/tmp"
         $BuiltDir=$(Split-Path $Target -Leaf)
         $Target = Update-Dir-If-Symlink "$Target"
         $Target = Join-Path "$Target" "gdn"
