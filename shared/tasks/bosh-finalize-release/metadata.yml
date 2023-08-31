@@ -1,0 +1,11 @@
+---
+readme: |
+  This task will finalize a given bosh-release. This will output release tarball and will tag the resulting repo with the specified version.
+oses:
+  - linux
+params:
+  GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: Environment secret
+  AWS_SECRET_ACCESS_KEY: Environment secret
+  AWS_ACCESS_KEY_ID: Environment secret
+  AWS_ASSUME_ROLE_ARN: Environment secret
+
