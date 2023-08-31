@@ -1,0 +1,14 @@
+---
+platform: linux
+
+inputs:
+  - name: ci
+  - name: repo
+  - name: previous-github-release
+  - name: version
+
+outputs:
+  - name: built-release-notes
+
+run:
+  path: ci/shared/tasks/build-release-notes/task.bash
