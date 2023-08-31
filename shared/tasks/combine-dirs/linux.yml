@@ -1,0 +1,17 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+- name: input-01
+  optional: true
+- name: input-02
+  optional: true
+- name: input-03
+  optional: true
+
+outputs:
+- name: combined-dirs
+
+run:
+  path: ci/shared/tasks/combine-dirs/task.bash

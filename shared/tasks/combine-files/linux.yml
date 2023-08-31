@@ -1,0 +1,19 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+- name: input-01
+  optional: true
+- name: input-02
+  optional: true
+
+outputs:
+- name: combined-files
+
+run:
+  path: ci/shared/tasks/combine-files/task.bash
+
+params:
+  GLOB: ~
+  PREFIX: ~
