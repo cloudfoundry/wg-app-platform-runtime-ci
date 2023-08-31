@@ -1,5 +1,0 @@
----
-readme: |
-  This task will combine multiple inputs into a single output. This is helpful for running shared tasks multiple times and wanting to combine the outputs into a single output. e.g. build-binaries for two different releases into two different outputs and then use this task to combine those outputs (as inputs for this task) to a single output.
-oses:
-  - linux

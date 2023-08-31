@@ -1,0 +1,11 @@
+
+---
+readme: |
+  This task will combine multiple files into a single directory. This is helpful for collating files into a single location for use later. 
+extra_inputs:
+  input-*: Extra inputs that you can match the GLOB with
+oses:
+  - linux
+params:
+  GLOB: Glob to match files
+  PREFIX: Prefix to add to the files
