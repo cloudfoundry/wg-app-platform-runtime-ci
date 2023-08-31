@@ -1,0 +1,36 @@
+---
+name: ((DEPLOYMENT_NAME))
+
+releases:
+- name: cipher-test
+  url: ((DEPLOYMENT_RELEASE_DIR))
+  version: create
+
+stemcells:
+- alias: stemcell
+  os: ((CF_STEMCELL_OS))
+  version: latest
+
+instance_groups:
+- name: run-cipher-test
+  lifecycle: errand
+  azs: [((CF_AZ))]
+  instances: 1
+  jobs:
+  - name: run_cipher_test
+    properties:
+      router:
+        ciphers: "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384"
+        ip: ((DEPLOYMENT_GOROUTER_IP))
+        port: 443
+    release: cipher-test
+  networks:
+  - name: ((CF_NETWORK))
+  stemcell: stemcell
+  vm_type: ((CF_VM_TYPE))
+
+update:
+  canaries: 1
+  max_in_flight: 3
+  canary_watch_time: 1000-240000
+  update_watch_time: 1000-240000
