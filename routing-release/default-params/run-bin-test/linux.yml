@@ -1,0 +1,4 @@
+---
+params:
+  FUNCTIONS: ci/routing-release/helpers/configure-binaries.bash
+

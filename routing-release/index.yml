@@ -1,0 +1,20 @@
+#@data/values
+---
+#@overlay/match missing_ok=True
+internal_repos:
+- "gorouter"
+- "cf-tcp-router"
+- "multierror"
+- "route-registrar"
+- "routing-api"
+- "routing-api-cli"
+- "routing-info"
+opsfiles:
+- add-lb-ca-cert.yml
+- scale-for-cats.yml
+- add-smoke-tests.yml
+- use-compiled-releases.yml
+- add-persistent-isolation-segment-diego-cell.yml
+- add-persistent-isolation-segment-router.yml
+- enable-backup-restore.yml
+- disable-bbr-non-routing.yml
