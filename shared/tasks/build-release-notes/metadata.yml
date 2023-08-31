@@ -1,0 +1,5 @@
+---
+readme: |
+  This task will build release notes by looking into diff from previous-github-release and will diff bosh jobs spec if exists.
+oses:
+  - linux
