@@ -1,0 +1,11 @@
+---
+platform: linux
+
+inputs:
+  - name: ci
+  - name: repo
+  - name: release-repo
+  - name: version
+
+run:
+  path: ci/shared/tasks/check-safe-to-release-repo/task.bash

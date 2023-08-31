@@ -1,0 +1,6 @@
+
+---
+readme: |
+  This task will check to ensure that HEAD and the release branch have not diverged before attempting to create a new release. 
+oses:
+  - linux
