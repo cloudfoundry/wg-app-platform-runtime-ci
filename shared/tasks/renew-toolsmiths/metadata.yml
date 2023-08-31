@@ -1,0 +1,7 @@
+---
+readme: |
+  This task will renew a toolsmiths environment
+oses:
+  - linux
+params:
+  TOOLSMITHS_API_TOKEN: API Token for accessing toolsmiths
