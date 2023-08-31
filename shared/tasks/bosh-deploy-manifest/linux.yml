@@ -1,0 +1,17 @@
+---
+platform: linux
+
+inputs:
+  - name: ci
+  - name: repo
+  - name: toolsmiths-env
+  - name: release-01 
+    optional: true
+
+params:
+  DEPLOYMENT_NAME:
+  ENVS:
+  MANIFEST:
+
+run:
+  path: ci/shared/tasks/bosh-deploy-manifest/task.bash
