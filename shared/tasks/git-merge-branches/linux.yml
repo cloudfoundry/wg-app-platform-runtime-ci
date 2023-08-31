@@ -1,0 +1,13 @@
+---
+platform: linux
+
+inputs:
+  - name: ci
+  - name: source-branch
+  - name: onto-branch
+
+outputs:
+  - name: merged-branch
+
+run:
+  path: ci/shared/tasks/git-merge-branches/task.bash
