@@ -1,0 +1,32 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+- name: repo
+- name: built-binaries
+  optional: true
+- name: input-01
+  optional: true
+
+params:
+  DEFAULT_PARAMS:
+  DIR:
+  ENVS:
+  FLAGS: |
+    --keep-going
+    --trace
+    -r
+    --fail-on-pending
+    --randomize-all
+    -p
+    --race
+    --timeout 20m
+  FUNCTIONS:
+  VERIFICATIONS: |
+    verify_go repo/$DIR
+    verify_go_version_match_bosh_release repo
+    verify_gofmt repo/$DIR
+    verify_govet repo/$DIR
+run:
+  path: ci/shared/tasks/run-bin-test/task.bash

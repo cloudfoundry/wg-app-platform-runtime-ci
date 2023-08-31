@@ -6,18 +6,28 @@ inputs:
 - name: repo
 - name: built-binaries
   optional: true
+- name: input-01
+  optional: true
 
 params:
+  DEFAULT_PARAMS: #Not Implemented for windows yet
   DIR:
-  DEBUG: false
-  ENVS: #|
-    # ENV_KEY=ENV_VALUE
-  FUNCTIONS: #|
-    #PATH-To-FUNCTIONS-PS1
+  ENVS:
+  FLAGS: |
+    --keep-going
+    --trace
+    -r
+    --fail-on-pending
+    --randomize-all
+    -p
+    --race
+    --timeout 20m
+  FUNCTIONS:
   VERIFICATIONS: |
-    Verify-Go
-    Verify-Ginkgo
-    Verify-GoVet
+    Verify-Go repo/$env:DIR
+    Verify-GoVersionMatchBoshRelease repo
+    Verify-Ginkgo repo/$env:DIR
+    Verify-GoVet repo/$env:DIR
 
 run:
   path: powershell
