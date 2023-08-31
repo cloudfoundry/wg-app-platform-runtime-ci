@@ -1,0 +1,11 @@
+---
+readme: |
+  This task will deploy a given manifest. A set of default vars will be provided for the manifest. See bosh-helpers.bash file for `bosh_extract_manifest_defaults_from_cf` function. 
+extra_inputs:
+  release-*: (Optional) Generic release (git resource) to be created in manifest. Manifest can have `version:create` with variable path. The content in this release can then be mapped via ENV variable.
+oses:
+  - linux
+params:
+  DEPLOYMENT_NAME: Name of deployment
+  ENVS: Multiline envs that can be defined dynamically and loaded into the bosh deploy vars without having to create more params. Values set here would then be available as a VARS to bosh deploy command. It's also possible to run a single line command for extracting VARS that would only be available when targeting env. e.g. DEPLOYMENT_GOROUTER_IP=$(bosh -d cf vms --json | jq -r ".Tables[].Rows[] | select(.instance | startswith(\"router\")) | .ips" | head -n1)
+  MANIFEST: Path to manifest 
