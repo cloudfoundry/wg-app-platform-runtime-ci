@@ -1,0 +1,7 @@
+---
+readme: |
+  This task will prepare environment for deploying cf-deployment. It will do so by running `./bin/prepare-cf-deployment-env.bash` under repo. Adding custom bash functions would be be possible by using FUNCTIONS params. It will then output, prepared-env/*.yml to use for deploying. Respective repos can also use prepared-env output to add in extra vars.yml if needed.
+oses:
+  - linux
+params:
+  FUNCTIONS:  Multiline functions to be used for extra configuration for running prepare-env.bash. e.g. ci/routing-release/helpers/helpers.bash

@@ -1,0 +1,15 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+- name: repo
+- name: toolsmiths-env
+
+outputs:
+- name: prepared-env
+
+params:
+  FUNCTIONS:
+run:
+  path: ci/shared/tasks/run-bin-prepare-cf-deployment-env/task.bash
