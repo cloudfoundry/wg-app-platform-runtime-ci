@@ -9,10 +9,9 @@ outputs:
 - name: built-binaries
 
 params:
-  FUNCTIONS: #|
-    #PATH-To-FUNCTIONS-PS1
-  MAPPING: #|
-    # PS1-FUNCTION-NAME=PATH
+  DEFAULT_PARAMS:
+  FUNCTIONS: 
+  MAPPING: 
 
 run:
   path: powershell
