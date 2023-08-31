@@ -1,0 +1,21 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+- name: repo
+- name: package-release
+
+outputs:
+- name: vendored-repo
+
+params:
+  PACKAGE_NAME:
+  PACKAGE_PREFIX:
+  GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY:
+  AWS_SECRET_ACCESS_KEY:
+  AWS_ACCESS_KEY_ID:
+  AWS_ASSUME_ROLE_ARN:
+
+run:
+  path: ci/shared/tasks/bosh-vendor-package/task.bash
