@@ -14,13 +14,14 @@ unset THIS_FILE_DIR
 function run() {
     pushd ci >> /dev/null
 
-    image_resource
-    task_params_match
-    extra_inputs_match
-    metadata_checks
-    allowed_task_files
     allowed_dirs
+    allowed_task_files
+    extra_inputs_match
+    image_resource
+    metadata_checks
     run_platform_match
+    task_params_match
+    verify_opsfile_use
 
     popd > /dev/null
 
@@ -205,6 +206,26 @@ function run_platform_match() {
             FOUND_ERROR=true
         elif [[ ! -f "${dir}/windows.yml" && "$(yq '.oses[] | select(.=="windows")' ${dir}/metadata.yml)" == "windows" ]]; then
             echo "Task ${dir} missing missing Windows config based on metadata"
+            FOUND_ERROR=true
+        fi
+    done
+}
+
+function verify_opsfile_use(){
+    debug "Running verify_opsfile_use"
+    for file in $(find . -ipath "*opsfiles/*.yml" -type f)
+    do
+        local opsfile=$(basename "${file}")
+        local matched=false
+        for index in $(find . -name "index.yml")
+        do
+            if [[ $(yq ".opsfiles[] | select(.==\"${opsfile}\")" "${index}") == "${opsfile}" ]]; then
+                matched=true
+                break;
+            fi
+        done
+        if [[ ${matched} == false ]]; then
+            echo "Opsfile ${file} is not used.  Consider removing it." 
             FOUND_ERROR=true
         fi
     done
