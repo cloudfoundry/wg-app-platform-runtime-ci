@@ -1,0 +1,5 @@
+---
+readme: |
+  This task will perform a git merge on the two given branches. 
+oses:
+  - linux
