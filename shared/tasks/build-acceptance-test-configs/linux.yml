@@ -1,0 +1,17 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+- name: toolsmiths-env
+
+outputs:
+- name: built-acceptance-test-configs
+
+params:
+  CONFIGS:
+  WITH_ISOSEG: false
+  WITH_DYNAMIC_ASG: false
+
+run:
+  path: ci/shared/tasks/build-acceptance-test-configs/task.bash
