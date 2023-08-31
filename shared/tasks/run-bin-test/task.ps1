@@ -10,17 +10,16 @@ function Run
     Get-ChildItem -Path built-binaries -Filter *.ps1 -Recurse -File -Name -ErrorAction SilentlyContinue | ForEach-Object {
         $PS1File = "./built-binaries/$_"
         Write-Host "Sourcing: $PS1File"
-        if ( $env:DEBUG -ne "false" ) {
-            Get-Content -Path $PS1File
-        }
+        Debug {Get-Content -Path $PS1File}
         . $PS1File
     }
 
     Expand-Envs
 
-    Push-Location "repo/$env:DIR"
     Expand-Verifications
-    ./bin/test.ps1
+
+    Push-Location "repo/$env:DIR"
+    ./bin/test.ps1 $(Expand-Flags)
     Pop-Location
 }
 
