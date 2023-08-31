@@ -1,4 +1,3 @@
-#!/bin/bash
 
 function configure_rsyslog() {
     local rsyslog_pid=$(pidof rsyslogd || true)
