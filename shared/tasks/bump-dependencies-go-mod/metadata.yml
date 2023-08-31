@@ -1,0 +1,12 @@
+---
+readme: |
+  This task bump dependencies for a go project with go.mod
+extra_inputs:
+  dep-local-repo-replace-*: (Optional) Generic input to use when go.mod has a local import path
+oses:
+  - linux
+params:
+  GOOS: unset and will default to the OS that's running under
+  GO_MODS: Multiline path for go.mods e.g. src/code.cloudfoundry.org/go.mod
+  REPLACE_DIRECTIVES: Create a local directory mapping for values set here so that local go.mod dirs can resolve. e.g. dep-local-repo-replace-01:garden
+  EXTRA_GO_TAGS: Extra go tag to run go mod vendor and go mod tidy with e.g. tools
