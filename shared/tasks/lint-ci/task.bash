@@ -1,4 +1,6 @@
 #!/bin/bash
+# fragile for loops on find
+# shellcheck disable=SC2044 
 
 set -eEu
 set -o pipefail
@@ -8,25 +10,24 @@ export TASK_NAME="$(basename $THIS_FILE_DIR)"
 source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
 unset THIS_FILE_DIR
 
-# fragile for loops on find
-# shellcheck disable=SC2044 
 
 function run() {
-    pushd ci >> /dev/null
+    pushd ci || return >> /dev/null
 
     allowed_dirs
     allowed_task_files
     extra_inputs_match
     image_resource
     metadata_checks
+    opsfile_metadata
     run_platform_match
     task_params_match
     verify_opsfile_use
 
-    popd > /dev/null
+    popd || return > /dev/null
 
     if [[ ${FOUND_ERROR} == true ]]; then
-        throw
+        throw #We need a command that doesn't exist so that the script's ERR trap is invoked
     fi
 }
 
@@ -36,7 +37,7 @@ function image_resource() {
     for file in $(find . -name "linux.yml" )
     do
         if [[ $(yq .image_resource "${file}") != "null" ]]; then
-            echo "Found image_resource in ${file}. Please remove that and use 'image' to inject into the task at runtime."
+            debug "Found image_resource in ${file}. Please remove that and use 'image' to inject into the task at runtime."
             FOUND_ERROR=true
         fi
     done
@@ -47,18 +48,20 @@ function task_params_match() {
     local params_expression='.params|select(.)|keys'
     for dir in $(find . -ipath "*tasks/*" -type d)
     do
-        if [[ -f "${dir}/linux.yml" ]]; then
-            local same
-            if [[ "$(diff <(yq ${params_expression} "${dir}"/linux.yml) <(yq ${params_expression} "${dir}"/metadata.yml))" != "" ]]; then
-                echo "params are not matching for ${dir} task according to metadata.yml and linux.yml"
+        local linux windows metadata
+        linux="${dir}/linux.yml"
+        windows="${dir}/windows.yml"
+        metadata="${dir}/metadata.yml"
+
+        if [[ -f "${linux}" ]]; then
+            if [[ "$(diff <(yq ${params_expression} "${linux}") <(yq ${params_expression} "${metadata}"))" != "" ]]; then
+                debug "params are not matching for ${dir} task according to metadata.yml and linux.yml"
                 FOUND_ERROR=true
             fi
         fi
-        if [[ -f "$dir/windows.yml" ]]; then
-            local same
-
-            if [[ "$(diff <(yq ${params_expression} "${dir}"/windows.yml) <(yq ${params_expression} "${dir}"/metadata.yml))" != "" ]]; then
-                echo "params are not matching for ${dir} task according to metadata.yml and windows.yml"
+        if [[ -f "${windows}" ]]; then
+            if [[ "$(diff <(yq ${params_expression} "${windows}") <(yq ${params_expression} "${metadata}"))" != "" ]]; then
+                debug "params are not matching for ${dir} task according to metadata.yml and windows.yml"
                 FOUND_ERROR=true
             fi
         fi
@@ -69,7 +72,9 @@ function task_params_match() {
 # it is called by extra_inputs_match
 function intersect_inputs() {
     local set1=${1}
-    local set2=${2}
+    local set1_name=${2}
+    local set2=${3}
+    local set2_name=${4}
 
     IFS=$'\n'
     for set1_input in ${set1}
@@ -85,7 +90,25 @@ function intersect_inputs() {
         done
 
         if [[ ${matched} == false ]]; then
-            echo "Could not find ${set1_input} in ${set2} when checking ${set1} " 
+            debug "Could not find ${set1_input} in ${set2_name} when checking ${set1_name}" 
+            FOUND_ERROR=true
+        fi
+    done
+
+    for set2_input in ${set2}
+    do
+        local matched=false
+        for set1_input in ${set1}
+        do
+            if [[ "${set2_input}" =~ ${set1_input} ]]; then
+                matched=true
+            elif [[ "${set1_input}" =~ ${set2_input} ]]; then
+                matched=true
+            fi
+        done
+
+        if [[ ${matched} == false ]]; then
+            debug "Could not find ${set2_input} in ${set1_name} when checking ${set2_name}" 
             FOUND_ERROR=true
         fi
     done
@@ -94,14 +117,24 @@ function extra_inputs_match() {
     debug "Running extra_inputs_match function"
     for dir in $(find . -ipath "*tasks/*" -type d)
     do
-        if [[ -f "$dir/linux.yml" ]]; then
-            local metadata_inputs
-            metadata_inputs="$(yq -r '.extra_inputs | select(.) | keys | .[]' "${dir}"/metadata.yml)"
-            local optional_inputs
-            optional_inputs="$(yq -r '.inputs[] | select(.optional==true) | .name' "${dir}"/linux.yml)"
+        local linux windows metadata
+        linux="${dir}/linux.yml"
+        windows="${dir}/windows.yml"
+        metadata="${dir}/metadata.yml"
 
-            intersect_inputs "${metadata_inputs}" "${optional_inputs}"
-            intersect_inputs "${optional_inputs}" "${metadata_inputs}" 
+        local metadata_inputs
+        metadata_inputs="$(yq -r '.extra_inputs | select(.) | keys | .[]' "${metadata}")"
+
+        if [[ -f "${linux}" ]]; then
+            local optional_inputs_linux
+            optional_inputs_linux="$(yq -r '.inputs[] | select(.optional==true) | .name' "${linux}")"
+
+            intersect_inputs "${metadata_inputs}" "metadata inputs" "${optional_inputs_linux}" "${linux}"
+        fi
+        if [[ -f "${windows}" ]]; then
+            local optional_inputs_windows
+            optional_inputs_windows="$(yq -r '.inputs[] | select(.optional==true) | .name' "${windows}")"
+            intersect_inputs "${metadata_inputs}" "metadata inputs" "${optional_inputs_windows}" "${windows}"
         fi
     done
 }
@@ -110,13 +143,22 @@ function metadata_checks() {
     for file in $(find . -name "metadata.yml")
     do
         if [[ $(yq '.readme' "${file}") == 'null' ]]; then
-            echo "No readme found in ${file}"
+            debug "No readme found in ${file}"
             FOUND_ERROR=true
         fi
 
-        if [[ $(yq '.oses' "${file}") == 'null' ]]; then
-            echo "No oses found in ${file}"
-            FOUND_ERROR=true
+        if [[ $(dirname "${file}") = *tasks* ]]; then 
+            if [[ $(yq '.oses' "${file}") == 'null' ]]; then
+                debug "No oses found in ${file}"
+                FOUND_ERROR=true
+            fi
+        fi
+
+        if [[ $(dirname "${file}") = *opsfiles* ]]; then 
+            if [[ $(yq '.opsfiles' "${file}") == 'null' ]]; then
+                debug "No opsfiles found in ${file}"
+                FOUND_ERROR=true
+            fi
         fi
     done
 }
@@ -137,7 +179,7 @@ function allowed_task_files() {
         # literal regex matching
         # shellcheck disable=2076
         if ! [[ "${filenames[*]}" =~ "${file}" ]]; then
-            echo "File ${filepath} is not allowed"
+            debug "File ${filepath} is not allowed"
             FOUND_ERROR=true
         fi
     done
@@ -148,9 +190,9 @@ function allowed_dirs() {
     local release_list="garden-runc-release|routing-release|winc-release"
     local dir_patterns
     dir_patterns="$(cat <<EOF
-^./(shared|$release_list)/helpers$
+^./(shared|$release_list)/(helpers|opsfiles)$
 ^./(shared|$release_list)/tasks/[a-z\-]*$
-^./($release_list)/(manifests|opsfiles)$
+^./($release_list)/(manifests)$
 ^./($release_list)/default-params/[a-z\-]*$
 EOF
 )"
@@ -167,7 +209,7 @@ do
 
     done
     if [[ ${matched} == false ]]; then
-        echo "Could not find ${entry} in allowed directory patterns" 
+        debug "Could not find ${entry} in allowed directory patterns" 
         FOUND_ERROR=true
     fi
 done
@@ -178,45 +220,46 @@ function run_platform_match() {
     for dir in $(find . -ipath "*tasks/*" -type d)
     do
         if [[ -f "${dir}/linux.yml" && ! -f "${dir}/task.bash" ]]; then
-            echo "Task ${dir} has a Linux config and no Bash file"
+            debug "Task ${dir} has a Linux config and no Bash file"
             FOUND_ERROR=true
         elif [[ ! -f "${dir}/linux.yml" && -f "${dir}/task.bash" ]]; then
-            echo "Task ${dir} has a Bash file and no Linux config"
+            debug "Task ${dir} has a Bash file and no Linux config"
             FOUND_ERROR=true
         fi
 
         if [[ -f "${dir}/windows.yml" && ! -f "${dir}/task.ps1" ]]; then
-            echo "Task ${dir} has a Windows config and no Powershell file"
+            debug "Task ${dir} has a Windows config and no Powershell file"
             FOUND_ERROR=true
         elif [[ ! -f "${dir}/windows.yml" && -f "${dir}/task.ps1" ]]; then
-            echo "Task ${dir} has a Powershell file and no Windows config"
+            debug "Task ${dir} has a Powershell file and no Windows config"
             FOUND_ERROR=true
         fi
 
-        if [[ -f "${dir}/linux.yml" && "$(yq '.oses[] | select(.=="linux")' ${dir}/metadata.yml)" != "linux" ]]; then
-            echo "Task $(basename "${dir}") missing missing osses metadata"
+        if [[ -f "${dir}/linux.yml" && "$(yq '.oses[] | select(.=="linux")' "${dir}/metadata.yml")" != "linux" ]]; then
+            debug "Task $(basename "${dir}") missing missing oses metadata"
             FOUND_ERROR=true
-        elif [[ ! -f "${dir}/linux.yml" && "$(yq '.oses[] | select(.=="linux")' ${dir}/metadata.yml)" == "linux" ]]; then
-            echo "Task $(basename "${dir}") missing missing Linux config based on metadata"
+        elif [[ ! -f "${dir}/linux.yml" && "$(yq '.oses[] | select(.=="linux")' "${dir}/metadata.yml")" == "linux" ]]; then
+            debug "Task $(basename "${dir}") missing missing Linux config based on metadata"
             FOUND_ERROR=true
         fi
 
-        if [[ -f "${dir}/windows.yml" && "$(yq '.oses[] | select(.=="windows")' ${dir}/metadata.yml)" != "windows" ]]; then
-            echo "Task $(basename "${dir}") missing missing osses metadata"
+        if [[ -f "${dir}/windows.yml" && "$(yq '.oses[] | select(.=="windows")' "${dir}/metadata.yml")" != "windows" ]]; then
+            debug "Task $(basename "${dir}") missing missing oses metadata"
             FOUND_ERROR=true
-        elif [[ ! -f "${dir}/windows.yml" && "$(yq '.oses[] | select(.=="windows")' ${dir}/metadata.yml)" == "windows" ]]; then
-            echo "Task ${dir} missing missing Windows config based on metadata"
+        elif [[ ! -f "${dir}/windows.yml" && "$(yq '.oses[] | select(.=="windows")' "${dir}/metadata.yml")" == "windows" ]]; then
+            debug "Task ${dir} missing missing Windows config based on metadata"
             FOUND_ERROR=true
         fi
     done
 }
 
 function verify_opsfile_use(){
-    debug "Running verify_opsfile_use"
-    for file in $(find . -ipath "*opsfiles/*.yml" -type f)
+    debug "Running verify_opsfile_use function"
+    for file in $(find . -ipath "*opsfiles/*.yml" ! -name "metadata.yml" -type f)
     do
-        local opsfile=$(basename "${file}")
         local matched=false
+        local opsfile
+        opsfile=$(basename "${file}")
         for index in $(find . -name "index.yml")
         do
             if [[ $(yq ".opsfiles[] | select(.==\"${opsfile}\")" "${index}") == "${opsfile}" ]]; then
@@ -225,8 +268,27 @@ function verify_opsfile_use(){
             fi
         done
         if [[ ${matched} == false ]]; then
-            echo "Opsfile ${file} is not used.  Consider removing it." 
+            debug "Opsfile ${file} is not used.  Consider removing it." 
             FOUND_ERROR=true
+        fi
+    done
+}
+
+function opsfile_metadata() {
+    debug "Running opsfile_metadata function"
+
+    for dir in $(find . -name "opsfiles" -type d)
+    do 
+        local metadata_file="${dir}/metadata.yml"
+        if [[ ! -f "${metadata_file}" ]]; then
+            debug "No metadata.yml file found in ${dir}"
+            FOUND_ERROR=true
+        else
+            local metadata_opsfiles dir_opsfiles
+            metadata_opsfiles=$(yq '.opsfiles | keys | .[]' "${metadata_file}")
+            dir_opsfiles=$(find "${dir}" -ipath "*.yml" ! -name "metadata.yml")
+
+            intersect_inputs "${metadata_opsfiles}" "metadata" "${dir_opsfiles}" "${dir}"
         fi
     done
 }
