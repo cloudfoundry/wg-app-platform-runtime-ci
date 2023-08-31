@@ -1,12 +1,14 @@
 #!/bin/bash
 
 function verify_go(){
-    pushd "${1}" >/dev/null
+    local dir="${1:?Provide a dir}"
+    pushd "${dir}" >/dev/null
     go version
     popd > /dev/null
 }
 function verify_go_version_match_bosh_release(){
-    pushd "${1}" >/dev/null
+    local dir="${1:?Provide a dir}"
+    pushd "${dir}" >/dev/null
     local go_version="$(go version | cut -d " " -f 3 | sed 's/go//')"
     local golang_release_dir="$(mktemp -d -t XXX-golang_release_dir)"
     local package_path=$(find ./packages/ -name "golang-*linux" -type d)
@@ -22,12 +24,14 @@ function verify_go_version_match_bosh_release(){
     popd > /dev/null
 }
 function verify_gofmt(){
-    pushd "${1}" >/dev/null
+    local dir="${1:?Provide a dir}"
+    pushd "${dir}" >/dev/null
     files=$(gofmt -l . | grep -v vendor || true) && [ -z "$files" ]
     popd > /dev/null
 }
 function verify_govet(){
-    pushd "${1}" >/dev/null
+    local dir="${1:?Provide a dir}"
+    pushd "${dir}" >/dev/null
     go vet ./...
     popd > /dev/null
 }

@@ -10,7 +10,7 @@ inputs:
   optional: true
 
 params:
-  DEFAULT_PARAMS: #Not Implemented for windows yet
+  DEFAULT_PARAMS:
   DIR:
   ENVS:
   FLAGS: |
