@@ -1,0 +1,28 @@
+---
+platform: linux
+
+inputs:
+  - name: ci
+  - name: repo
+  - name: dep-local-repo-replace-01
+    optional: true
+  - name: dep-local-repo-replace-02
+    optional: true
+  - name: dep-local-repo-replace-03
+    optional: true
+  - name: dep-local-repo-replace-04
+    optional: true
+  - name: dep-local-repo-replace-05
+    optional: true
+
+outputs:
+  - name: bumped-repo
+
+params:
+  GOOS:
+  GO_MODS: 
+  REPLACE_DIRECTIVES: 
+  EXTRA_GO_TAGS: 
+
+run:
+  path: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
