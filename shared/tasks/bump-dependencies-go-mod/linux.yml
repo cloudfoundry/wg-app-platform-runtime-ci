@@ -25,4 +25,4 @@ params:
   EXTRA_GO_TAGS: 
 
 run:
-  path: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+  path: ci/shared/tasks/bump-dependencies-go-mod/task.bash
