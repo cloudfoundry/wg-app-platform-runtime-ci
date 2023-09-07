@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [[ -z ${WORKSPACE_ROOT} ]]; then
+    WORKSPACE_ROOT="${HOME}/workspace"
+fi
+FLY_TARGET="${:-runtime-networking}"
+
+GLOB="ci/routing-release/opsfiles/*.yml
+input-01/operations/use-compiled-releases.yml" fly -t "${FLY_TARGET}" e -c ${WORKSPACE_ROOT}/wg-app-platform-runtime-ci/shared/tasks/combine-files/linux.yml \
+-i ci=${WORKSPACE_ROOT}/wg-app-platform-runtime-ci \
+-i input-01=${WORKSPACE_ROOT}/cf-deployment \
+-o combined-files=${WORKSPACE_ROOT}/outputs/combine-files \
+--inputs-from routing-release/template-tests \
+--image image 

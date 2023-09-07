@@ -192,6 +192,7 @@ function allowed_dirs() {
     local dir_patterns
     dir_patterns="$(cat <<EOF
 ^./shared/templates/[a-z\-]*$
+^./examples/[a-z\-]*$
 ^./(shared|${release_list})/(helpers|opsfiles)$
 ^./(shared|${release_list})/tasks/[a-z\-]*$
 ^./(${release_list})/(manifests)$

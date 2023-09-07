@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if [[ -z ${WORKSPACE_ROOT} ]]; then
+    WORKSPACE_ROOT="${HOME}/workspace"
+fi
+FLY_TARGET="${:-runtime-networking}"
+
+FLAGS="-r" DEBUG=true ENVS='CONFIG=$PWD/input-01/integration_config.json' \
+FUNCTIONS="ci/routing-release/helpers/configure-binaries.bash" \
+DIR=src/code.cloudfoundry.org/routing-acceptance-tests \
+fly -t "${FLY_TARGET}" e -c ${WORKSPACE_ROOT}/wg-app-platform-runtime-ci/shared/tasks/run-bin-test/linux.yml \
+-i ci=${WORKSPACE_ROOT}/wg-app-platform-runtime-ci \
+-i repo=${WORKSPACE_ROOT}/routing-release \
+--inputs-from routing-release/template-tests \
+--image image \
+-i built-binaries=${WORKSPACE_ROOT}/binaries \
+-i input-01=${WORKSPACE_ROOT}/config

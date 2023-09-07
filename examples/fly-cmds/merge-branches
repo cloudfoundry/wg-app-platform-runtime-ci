@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if [[ -z ${WORKSPACE_ROOT} ]]; then
+    WORKSPACE_ROOT="${HOME}/workspace"
+fi
+FLY_TARGET="${:-runtime-networking}"
+
+# source-branch and onto-branch inputs here can be any local repo
+DEBUG="true" fly -t "${FLY_TARGET}" e \
+-c ${WORKSPACE_ROOT}/wg-app-platform-runtime-ci/shared/tasks/merge-branches/linux.yml \
+-i ci=${WORKSPACE_ROOT}/wg-app-platform-runtime-ci \
+-i source-branch=${WORKSPACE_ROOT}/g1 \
+-i onto-branch=${WORKSPACE_ROOT}/garden \
+-o merged-branch=${WORKSPACE_ROOT}/outputs/merged-branch \
+--inputs-from routing-release/template-tests \
+--image image \
+--include-ignored
