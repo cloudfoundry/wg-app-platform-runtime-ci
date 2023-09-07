@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [[ -z ${WORKSPACE_ROOT} ]]; then
+    WORKSPACE_ROOT="${HOME}/workspace"
+fi
+FLY_TARGET="${:-runtime-networking}"
+
+FUNCTIONS="ci/winc-release/helpers/build-binaries.ps1" MAPPING="Build-Groot=src/code.cloudfoundry.org/groot-windows
+Build-Winc-Network=src/code.cloudfoundry.org/winc/cmd/winc-network" fly -t "${FLY_TARGET}" e -c ${WORKSPACE_ROOT}/wg-app-platform-runtime-ci/shared/tasks/build-binaries/windows.yml -i ci=${WORKSPACE_ROOT}/wg-app-platform-runtime-ci -i repo=${WORKSPACE_ROOT}/winc-release -o built-binaries=${WORKSPACE_ROOT}/binaries
