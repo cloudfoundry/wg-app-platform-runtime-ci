@@ -64,7 +64,7 @@ function bosh_configure_private_yml() {
     local private_yml="${1?Provide private yml path}"
     if [[ -n "${GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY}" ]]; then
         debug "Using GCP"
-        local formatted_key="$(sed 's/^/      /' <(echo ${GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY}))"
+        local formatted_key="$(sed 's/^/      /' <(echo "${GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY}"))"
         cat > "$private_yml" <<EOF
 ---
 blobstore:
@@ -74,9 +74,7 @@ blobstore:
 ${formatted_key}
 EOF
 
-    fi
-
-    if [[ -z ${AWS_ACCESS_KEY_ID} ]]; then
+    elif [[ -n ${AWS_ACCESS_KEY_ID} ]]; then
         debug "Using AWS Access Key"
         cat > "$private_yml" <<EOF
 ---
@@ -85,13 +83,13 @@ blobstore:
     secret_access_key: "${AWS_SECRET_ACCESS_KEY}"
     access_key_id: "${AWS_ACCESS_KEY_ID}"
 EOF
-    fi
 
-    if [[ -n "${AWS_ASSUME_ROLE_ARN}" ]]; then
-        debug "Using AWS Role ARN"
-        cat > "$private_yml" <<EOF
+        if [[ -n "${AWS_ASSUME_ROLE_ARN}" ]]; then
+            debug "Using AWS Role ARN"
+            cat > "$private_yml" <<EOF
     assume_role_arn: "${AWS_ASSUME_ROLE_ARN}"
 EOF
+        fi
     fi
     set -x
 }

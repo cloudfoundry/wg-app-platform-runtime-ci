@@ -96,6 +96,11 @@ function get_git_remote_name() {
     basename $(git remote get-url origin)
 }
 
+function git_safe_directory() {
+    #This is work around --buildvcs issues in Go 1.18+
+    git config --global --add safe.directory '*'
+}
+
 function err_reporter() {
     echo "---Debug Report Starting--"
     cat "/tmp/$TASK_NAME.log"
