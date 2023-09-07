@@ -27,7 +27,7 @@ function run() {
     popd || return > /dev/null
 
     if [[ ${FOUND_ERROR} == true ]]; then
-        throw #We need a command that doesn't exist so that the script's ERR trap is invoked
+        throw 2>/dev/null #We need a command that doesn't exist so that the script's ERR trap is invoked
     fi
 }
 
@@ -165,13 +165,13 @@ function metadata_checks() {
 
 function allowed_task_files() {
     debug "Running allowed_task_files function"
-    local filenames='metadata.yml
-    linux.yml
-    windows.yml
-    task.bash
-    task.ps1
-    '
-    IFS=$'\n'
+    local filenames=(
+        metadata.yml
+        linux.yml
+        windows.yml
+        task.bash
+        task.ps1
+    )
     for filepath in $(find . -ipath "*tasks/*/*" -type f)
     do
         local file
@@ -180,6 +180,7 @@ function allowed_task_files() {
         # shellcheck disable=2076
         if ! [[ "${filenames[*]}" =~ "${file}" ]]; then
             debug "File ${filepath} is not allowed"
+            debug "Should be one of ${filenames[*]}"
             FOUND_ERROR=true
         fi
     done
@@ -191,10 +192,10 @@ function allowed_dirs() {
     local dir_patterns
     dir_patterns="$(cat <<EOF
 ^./shared/templates/[a-z\-]*$
-^./(shared|$release_list)/(helpers|opsfiles)$
-^./(shared|$release_list)/tasks/[a-z\-]*$
-^./($release_list)/(manifests)$
-^./($release_list)/default-params/[a-z\-]*$
+^./(shared|${release_list})/(helpers|opsfiles)$
+^./(shared|${release_list})/tasks/[a-z\-]*$
+^./(${release_list})/(manifests)$
+^./(${release_list})/default-params/[a-z\-]*$
 EOF
 )"
 IFS=$'\n'
@@ -210,7 +211,8 @@ do
 
     done
     if [[ ${matched} == false ]]; then
-        debug "Could not find ${entry} in allowed directory patterns" 
+        debug "Found unexpected directory ${entry}."
+        debug "If this should be present, make sure it's added to the allowed_dirs() function in lint-ci/task.bash. Otherwise, remove it."
         FOUND_ERROR=true
     fi
 done

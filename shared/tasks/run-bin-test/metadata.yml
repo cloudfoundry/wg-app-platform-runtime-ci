@@ -23,7 +23,7 @@ params:
       -p
       --race
       --timeout 20m
-    ) Multiline flags to call test with. If running against a non-go project, this needs to overriden
+    ) Multiline flags to call test with. If running against a non-go project, this needs to be overridden
   FUNCTIONS:  Multiline functions to be used for extra configuration of binaries. e.g. ci/winc-release/helpers/configure-binaries.{ps1,bash}
   VERIFICATIONS: |
     (Defaults to

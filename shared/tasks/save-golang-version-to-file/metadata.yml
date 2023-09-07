@@ -1,8 +1,0 @@
----
-readme: |
-  This task will save golang version (from bosh package) into a file under repo's docs/go.version.
-oses:
-  - linux
-params:
-  PACKAGE: Name of golang package e.g. golang-1-linux
-

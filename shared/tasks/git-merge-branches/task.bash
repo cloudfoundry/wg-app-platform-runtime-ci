@@ -10,7 +10,7 @@ unset THIS_FILE_DIR
 
 function run(){
     init_git_author
-    git config --global --add safe.directory '*'
+    git_safe_directory
 
     local onto_branch_name="$(git -C ./onto-branch rev-parse --abbrev-ref HEAD)"
     local source_branch_name="$(git -C ./source-branch rev-parse --abbrev-ref HEAD)"

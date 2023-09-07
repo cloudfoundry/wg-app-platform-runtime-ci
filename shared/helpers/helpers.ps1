@@ -44,7 +44,7 @@ function Verify-GoVersionMatchBoshRelease {
   $bosh_go_majorminor = $bosh_release_go_version.Split('.')[0..1] -Join '.'
 
   Pop-Location
-  if ($go_majorminor -ne $bosh_release_go_version) {
+  if ($go_majorminor -ne $bosh_go_majorminor) {
     Write-Host "Mismatch between windows worker go version ($go_version) and bosh release's go version ($bosh_release_go_version). Please make sure the two match on major and minor"
     exit 1
   }
