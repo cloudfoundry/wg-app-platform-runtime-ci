@@ -71,7 +71,6 @@ function cats() {
     "use_http": true
 }
 EOF
-cat  $file | jq .
 }
 
 function rats() {
@@ -101,7 +100,6 @@ function rats() {
   }
 }
 EOF
-cat  $file | jq .
 }
 
 function drats() {
@@ -137,8 +135,6 @@ function drats() {
         "ssh_proxy_private_key": $ssh_proxy_private_key,
         "include_cf-routing": true
       }' > $file
-
-cat  $file | jq .
 }
 
 function cfsmoke() {
@@ -170,7 +166,6 @@ function cfsmoke() {
   "skip_ssl_validation": true
 }
 EOF
-cat  $file | jq .
 }
 
 function wats() {
