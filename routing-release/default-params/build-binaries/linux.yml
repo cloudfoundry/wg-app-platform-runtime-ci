@@ -1,4 +1,8 @@
 ---
+inputs:
+  repo: $REPO_PATH
+outputs:
+  built-binaries: $HOME/built-binaries
 params:
   MAPPING: |
     build_nats_server=src/code.cloudfoundry.org/vendor/github.com/nats-io/nats-server/v2

@@ -1,4 +1,7 @@
 ---
+inputs:
+  repo: $REPO_PATH
+  built-binaries: $HOME/built-binaries
 params:
   FUNCTIONS: ci/routing-release/helpers/configure-binaries.bash
 
