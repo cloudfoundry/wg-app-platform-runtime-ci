@@ -1,8 +1,0 @@
-#!/bin/bash
-
-if [[ -z ${WORKSPACE_ROOT} ]]; then
-    WORKSPACE_ROOT="${HOME}/workspace"
-fi
-FLY_TARGET="${:-runtime-networking}"
-
-DIR=src/code.cloudfoundry.org/multierror fly -t "${FLY_TARGET}" e -c ${WORKSPACE_ROOT}/wg-app-platform-runtime-ci/shared/tasks/run-bin-test/linux.yml -i ci=${WORKSPACE_ROOT}/wg-app-platform-runtime-ci -i repo=${WORKSPACE_ROOT}/routing-release --inputs-from routing-release/template-tests --image image -i built-binaries=${WORKSPACE_ROOT}/binaries

@@ -93,7 +93,7 @@ function init_git_author(){
 }
 
 function get_git_remote_name() {
-    basename $(git remote get-url origin)
+    basename "$(git remote get-url origin)" | sed 's/.git//g'
 }
 
 function git_safe_directory() {
