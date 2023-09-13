@@ -80,20 +80,6 @@ function debug(){
     echo "${@}" >> "/tmp/$TASK_NAME.log"
 }
 
-function init_git_author(){
-    git config --global user.name "${GIT_COMMIT_USERNAME:=App Platform Runtime Working Group CI Bot}"
-    git config --global user.email "${GIT_COMMIT_EMAIL:=app+platform+runtime+wg+ci@vmware.com}"
-}
-
-function get_git_remote_name() {
-    basename "$(git remote get-url origin)" | sed 's/.git//g'
-}
-
-function git_safe_directory() {
-    #This is work around --buildvcs issues in Go 1.18+
-    git config --global --add safe.directory '*'
-}
-
 function get_go_version_for_package(){
     local spec_lock_value="${1:?Provide a spec lock value}"
     local package_name="${2:?Provide a package name}"

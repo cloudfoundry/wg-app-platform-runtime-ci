@@ -6,20 +6,21 @@ set -o pipefail
 THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 export TASK_NAME="$(basename $THIS_FILE_DIR)"
 source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
+source "$THIS_FILE_DIR/../../../shared/helpers/git-helpers.bash"
 unset THIS_FILE_DIR
 
 function run(){
     local task_tmp_dir="${1:?provide temp dir for task}"
     shift 1
 
-    git_safe_directory 
+    git_configure_safe_directory
 
     local version
     version="$(cat version/version)"
 
     pushd "repo/$DIR"  > /dev/null
 
-    debug "Releasing $(get_git_remote_name) version ${version}"
+    debug "Releasing $(git_get_remote_name) version ${version}"
     
     IFS=$'\n'
     for arch in ${ARCH}; do

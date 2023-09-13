@@ -1,0 +1,44 @@
+function git_configure_author(){
+    git config --global user.name "${GIT_COMMIT_USERNAME:=App Platform Runtime Working Group CI Bot}"
+    git config --global user.email "${GIT_COMMIT_EMAIL:=app+platform+runtime+wg+ci@vmware.com}"
+}
+
+function git_get_remote_name() {
+    basename "$(git remote get-url origin)" | sed 's/.git//g'
+}
+
+function git_configure_safe_directory() {
+    #This is work around --buildvcs issues in Go 1.18+
+    git config --global --add safe.directory '*'
+}
+
+function git_commit_with_submodule_log() {
+    git_submodule_log "$@" | git commit --file -
+}
+
+function git_fetch_latest_submodules() {
+    git pull
+    git submodule sync --recursive
+    git submodule foreach --recursive git submodule sync
+    git submodule update --init --recursive
+}
+
+function git_submodule_log() {
+    echo -n "bump "
+    for submodule in $(git diff --cached --submodule | grep '^Submodule' | awk '{print $2}'); do
+        echo -n "$(basename $submodule) "
+    done
+
+    echo
+    echo
+
+    if [ "$#" != "0" ]; then
+        for id in "$@"; do
+            echo "[finishes #${id}]"
+        done
+
+        echo
+    fi
+
+    git submodule status | awk '{print $2}' | xargs git diff --cached --submodule
+}

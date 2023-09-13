@@ -7,12 +7,13 @@ THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )
 TASK_NAME="$(basename "$THIS_FILE_DIR")"
 export TASK_NAME
 source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
+source "$THIS_FILE_DIR/../../../shared/helpers/git-helpers.bash"
 source "$THIS_FILE_DIR/../../../shared/helpers/bosh-helpers.bash"
 unset THIS_FILE_DIR
 
 function run() {
-  init_git_author
-  git_safe_directory
+  git_configure_author
+  git_configure_safe_directory
 
   pushd repo > /dev/null
   local private_yml="./config/private.yml"

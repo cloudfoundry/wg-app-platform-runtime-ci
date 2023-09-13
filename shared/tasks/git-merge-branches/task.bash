@@ -6,11 +6,12 @@ set -o pipefail
 THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 export TASK_NAME="$(basename $THIS_FILE_DIR)"
 source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
+source "$THIS_FILE_DIR/../../../shared/helpers/git-helpers.bash"
 unset THIS_FILE_DIR
 
 function run(){
-    init_git_author
-    git_safe_directory
+    git_configure_author
+    git_configure_safe_directory
 
     local onto_branch_name="$(git -C ./onto-branch rev-parse --abbrev-ref HEAD)"
     local source_branch_name="$(git -C ./source-branch rev-parse --abbrev-ref HEAD)"

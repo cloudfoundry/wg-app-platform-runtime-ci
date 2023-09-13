@@ -7,16 +7,17 @@ set -o pipefail
 THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 export TASK_NAME="$(basename "$THIS_FILE_DIR")"
 source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
+source "$THIS_FILE_DIR/../../../shared/helpers/git-helpers.bash"
 source "$THIS_FILE_DIR/../../../shared/helpers/bosh-helpers.bash"
 unset THIS_FILE_DIR
 
 function run(){
-  git_safe_directory
+  git_configure_safe_directory
 
   pushd repo > /dev/null
   local go_version release_name spec_diff
   go_version="$(get_go_version_for_release)"
-  release_name="$(get_git_remote_name)"
+  release_name="$(git_get_remote_name)"
   spec_diff=$(get_bosh_job_spec_diff)
   popd > /dev/null
 
