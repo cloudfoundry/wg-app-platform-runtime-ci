@@ -20,6 +20,7 @@ function run() {
     image_resource
     metadata_checks
     opsfile_metadata
+    required_repo_linters
     run_platform_match
     task_params_match
     verify_opsfile_use
@@ -295,6 +296,22 @@ function opsfile_metadata() {
             intersect_inputs "${metadata_opsfiles}" "metadata" "${dir_opsfiles}" "${dir}"
         fi
     done
+}
+
+function required_repo_linters() {
+    debug "Running required_repo_linters function"
+    local required_linters=$(yq '.params.LINTERS' ./shared/tasks/lint-repo/linux.yml)
+
+    for required_linter in ${required_linters}; do
+        for dir in $(find . -ipath "*linters" -type d)
+        do
+            if ! [[ -f "${dir}/${required_linter}" ]]; then
+                debug "Required linter ${required_linter} was not found in ${dir}"
+                FOUND_ERROR=true
+            fi
+        done
+    done
+    
 }
 
 trap 'err_reporter $LINENO' ERR
