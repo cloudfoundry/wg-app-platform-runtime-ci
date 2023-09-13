@@ -1,0 +1,10 @@
+---
+readme: |
+  Runs linting for a specified repo. The implementation for each linter is located within linters directory for the CI repo under repo's remote name.
+oses:
+  - linux
+params:
+  LINTERS: (Defaults to 
+    sync-package-specs.bash
+    sync-submodule-config.bash
+    ) Mulitline list of linters to run within the release

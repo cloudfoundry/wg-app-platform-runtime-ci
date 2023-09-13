@@ -1,0 +1,14 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+- name: repo
+
+params:
+  LINTERS: |
+    sync-package-specs.bash
+    sync-submodule-config.bash
+
+run:
+  path: ci/shared/tasks/lint-repo/task.bash

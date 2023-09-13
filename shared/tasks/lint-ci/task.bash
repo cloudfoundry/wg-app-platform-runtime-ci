@@ -193,7 +193,7 @@ function allowed_dirs() {
     dir_patterns="$(cat <<EOF
 ^./bin/*$
 ^./examples/(task)*$
-^./(shared|${release_list})/(helpers|opsfiles)$
+^./(shared|${release_list})/(helpers|opsfiles|linters)$
 ^./(shared|${release_list})/tasks/[a-z\-]*$
 ^./(${release_list})/(manifests)$
 ^./(${release_list})/default-params/[a-z\-]*$
