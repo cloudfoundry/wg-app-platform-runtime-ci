@@ -6,20 +6,13 @@ function verify_go(){
 }
 function verify_go_version_match_bosh_release(){
     local dir="${1:-$PWD}"
-    pushd "${dir}" >/dev/null
-    local go_version="$(go version | cut -d " " -f 3 | sed 's/go//')"
-    local golang_release_dir="$(mktemp -d -t XXX-golang_release_dir)"
-    local package_path=$(find ./packages/ -name "golang-*linux" -type d)
-    local package_name=$(basename "${package_path}")
-    local spec_lock_value=$(yq .fingerprint "${package_path}/spec.lock")
-    git clone --quiet https://github.com/bosh-packages/golang-release "${golang_release_dir}" > /dev/null
-    local bosh_release_go_version=$("${golang_release_dir}/scripts/get-package-version.sh" "${spec_lock_value}" "${package_name}")
-    rm -rf  "${golang_release_dir}"
-    if [[ "$(echo $go_version | cut -d '.' -f1,2)" != "$(echo $bosh_release_go_version | cut -d '.' -f1,2)" ]]; then
-        echo "Mismatch between container go version ($go_version) and bosh release's go version ($bosh_release_go_version). Please make sure the two match on major and minor"
+    local container_go_version bosh_release_go_version
+    container_go_version="$(go version | cut -d " " -f 3 | sed 's/go//' | cut -d '.' -f1,2 )"
+    bosh_release_go_version="$(get_go_version_for_release "${dir}" | cut -d '.' -f1,2)"
+    if [[ "$container_go_version" != "$bosh_release_go_version" ]]; then
+        echo "Mismatch between container's go version (${container_go_version}.X) and bosh release's go version (${bosh_release_go_version}.X). Please make sure the two match on major and minor"
         exit 1
     fi
-    popd > /dev/null
 }
 function verify_gofmt(){
     local dir="${1:-$PWD}"
@@ -99,6 +92,29 @@ function get_git_remote_name() {
 function git_safe_directory() {
     #This is work around --buildvcs issues in Go 1.18+
     git config --global --add safe.directory '*'
+}
+
+function get_go_version_for_package(){
+    local spec_lock_value="${1:?Provide a spec lock value}"
+    local package_name="${2:?Provide a package name}"
+
+    local golang_release_dir go_version
+    golang_release_dir="$(mktemp -d -t XXX-golang-release-dir)"
+    git clone --quiet https://github.com/bosh-packages/golang-release "${golang_release_dir}" > /dev/null
+    go_version=$("${golang_release_dir}/scripts/get-package-version.sh" "${spec_lock_value}" "${package_name}")
+    rm -rf  "${golang_release_dir}"
+    echo "$go_version"
+}
+
+function get_go_version_for_release(){
+    local dir="${1:-$PWD}"
+    pushd "${dir}" > /dev/null
+    local package_path package_name spec_lock_value
+    package_path=$(find ./packages/ -name "golang-*linux" -type d)
+    package_name=$(basename "${package_path}")
+    spec_lock_value=$(yq .fingerprint "${package_path}/spec.lock")
+    popd > /dev/null
+    get_go_version_for_package "${spec_lock_value}" "${package_name}"
 }
 
 function err_reporter() {

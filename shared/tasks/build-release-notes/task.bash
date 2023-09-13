@@ -14,17 +14,10 @@ function run(){
   git_safe_directory
 
   pushd repo > /dev/null
-  commit_message=$(git log -1 --oneline --grep="Upgrade golang-" packages/golang-*)
-  go_version=$(echo "${commit_message}" | sed -En 's/.*Upgrade golang-.* \((.*)\)/\1/p')
-  if [[ -z ${go_version} ]]; then
-    echo "Could not detect go version from git history of 'packages/golang-*':"
-    echo "${commit_message}"
-    exit 1
-  fi
-
-  local release_name="$(get_git_remote_name)"
-
-  local spec_diff=$(get_bosh_job_spec_diff)
+  local go_version release_name spec_diff
+  go_version="$(get_go_version_for_release)"
+  release_name="$(get_git_remote_name)"
+  spec_diff=$(get_bosh_job_spec_diff)
   popd > /dev/null
 
   local new_version="$(cat version/number)"
