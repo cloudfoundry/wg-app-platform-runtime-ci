@@ -1,0 +1,17 @@
+---
+readme: |
+  This task will run respective `./bin/release-binaries.bash` for different OSes and architectures for repositories
+  that are meant to release binaries in their github releases. Each repo is responsible for how they like to package
+  their binaries. Script will be called with the following signature `./bin/release-binaries.bash "${arch}" "${os}" "${version}" "${output_dir}"`
+oses:
+  - linux
+params:
+  DIR: (Defaults to .) Path to where you can run `./bin/release-binaries.bash`. 
+  OS: |
+    (Defaults to
+      linux
+    ) Multiline oses that are used to release the binaries.
+  ARCH: |
+    (Defaults to
+      amd64
+    ) Multiline architectures that are used to release the binaries.

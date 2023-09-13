@@ -1,0 +1,20 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+- name: repo
+- name: version
+
+outputs:
+- name: released-binaries
+
+params:
+  DIR: .
+  OS: |
+    linux
+  ARCH: |
+    amd64
+
+run:
+  path: ci/shared/tasks/run-bin-release-binaries/task.bash
