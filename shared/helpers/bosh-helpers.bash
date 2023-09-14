@@ -1,6 +1,6 @@
 function bosh_target(){
     eval "$(bbl print-env --metadata-file toolsmiths-env/metadata)"
-    export TOOLSMITHS_ENVIRONMENT_NAME="$(cat toolsmiths-env/name)"
+    export TOOLSMITHS_ENVIRONMENT_NAME="$(jq -r .name toolsmiths-env/metadata)"
 }
 
 function bosh_manifest(){
