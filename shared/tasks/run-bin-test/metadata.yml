@@ -31,4 +31,5 @@ params:
       Verifying if go version matches with bosh's package # Should be overriden when running this against a repo that's not a bosh-release e.g. cpu-entitlment-plugin
       Verifying if go fmt is passing
       Verifying if go vet is passing
+      Verifying if staticcheck (honnef.co/go/tools/cmd/staticcheck) is passing
     ) Verify helper functions to run for a give test.
