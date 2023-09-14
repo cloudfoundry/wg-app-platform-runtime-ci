@@ -1,7 +1,7 @@
 function cf_target(){
     export CF_SYSTEM_DOMAIN="$(cf_system_domain)"
     export CF_ADMIN_PASSWORD=$(bosh_get_password_from_credhub cf_admin_password)
-    export CF_ENVIRONMENT_NAME=$(cat toolsmiths-env/name)
+    export CF_ENVIRONMENT_NAME=$(jq -r .name toolsmiths-env/metadata)
     export CF_TCP_DOMAIN="tcp.${CF_SYSTEM_DOMAIN}"
     export CF_MANIFEST_VERSION=$(bosh int <(bosh_manifest) --path /manifest_version)
 }
