@@ -19,7 +19,7 @@ function git_commit_with_submodule_log() {
 function git_fetch_latest_submodules() {
     git submodule sync --recursive
     git submodule foreach --recursive git submodule sync
-    git submodule update --init --recursive
+    git submodule update --remote --recursive
 }
 
 function git_submodule_log() {
