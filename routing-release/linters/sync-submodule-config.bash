@@ -3,8 +3,16 @@
 set -eu
 set -o pipefail
 
+THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+export TASK_NAME="$(basename $THIS_FILE_DIR)"
+source "$THIS_FILE_DIR/../../shared/helpers/helpers.bash"
+source "$THIS_FILE_DIR/../../shared/helpers/git-helpers.bash"
+unset THIS_FILE_DIR
+
 function run() {
-  pushd "${REPO_PATH}" > /dev/null
+  local repo_path=${1:?Provide a path to the repository}
+  local exit_on_error=${2:-"false"}
+  pushd "${repo_path}" > /dev/null
 
   rm -rf /tmp/packages
   cat > /tmp/packages <<EOF
@@ -22,22 +30,13 @@ EOF
 
 cat /tmp/packages | xargs -s 1048576 gosub sync --force-https=true
 
-popd > /dev/null
-}
-
-
-if [[ "${1:-empty}" != "empty" ]]; then
-  export REPO_PATH="${1}"
-  shift 1
-else
-  export REPO_PATH=${REPO_PATH}
+if [[ "$exit_on_error" == "true" ]]; then
+  git_error_when_diff
 fi
 
-export PATH="${REPO_PATH}/tmp:$PATH"
+popd > /dev/null
 
-(
-mkdir -p ${REPO_PATH}/tmp
-go build -C "${REPO_PATH}/src/gosub" -o "${REPO_PATH}/tmp/gosub" .
-)
+}
 
+verify_binary gosub
 run "$@"

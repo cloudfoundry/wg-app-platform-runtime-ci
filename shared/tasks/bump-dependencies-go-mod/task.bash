@@ -46,11 +46,12 @@ function run() {
   git_configure_safe_directory
 
   pushd repo > /dev/null
+  local repo_name=$(git_get_remote_name)
 
-  git submodule update --remote --recursive
+  git_fetch_latest_submodules
   if [[ $(git status --porcelain) ]]; then
     git add -A .
-    ./scripts/commit-with-submodule-log
+    git_commit_with_submodule_log
   fi
 
   for entry in ${GO_MODS}
@@ -79,7 +80,7 @@ function run() {
     popd > /dev/null
   done
 
-  ./scripts/sync-package-specs || true
+  "../ci/${repo_name}/linters/sync-package-specs.bash" ${PWD}
   if [[ $(git status --porcelain) ]]; then
     git add -A .
     git commit -m "Sync package specs"

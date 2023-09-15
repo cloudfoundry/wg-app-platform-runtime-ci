@@ -1,6 +1,8 @@
 ---
 readme: |
-  Runs linting for a specified repo. The implementation for each linter is located within linters directory for the CI repo under repo's remote name.
+  Runs linting for a specified repo. The implementation for each linter is located within linters directory for the CI repo under repo's remote name e.g. ci/{routing-release}/linters/sync-package-specs.bash. This script will be called with 2 arguments.
+  1st-Argument -> path to where repo is located
+  2nd-Argument -> Whether it should error on detecting failures or not (true or false). In some tasks we take advantage of sync-package-specs script to automatically bump go-mod-dependencies, so that changes can be committed and for backward compatibility we are keeping the same behavior.
 oses:
   - linux
 params:

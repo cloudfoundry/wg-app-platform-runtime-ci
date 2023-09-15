@@ -27,6 +27,14 @@ function verify_govet(){
     popd > /dev/null
 }
 
+function verify_binary() {
+    local cmd=${1:?"Provide a command to verify"}
+    if ! [ -x "$(command -v "$cmd")" ]; then
+        echo "Error: $cmd is not installed." >&2
+        exit 1
+    fi
+}
+
 function expand_flags(){
     debug "expand_flags Starting"
     local list=""
@@ -104,8 +112,10 @@ function get_go_version_for_release(){
 }
 
 function err_reporter() {
-    echo "---Debug Report Starting--"
-    cat "/tmp/$TASK_NAME.log"
-    echo "---Debug Report Ending--"
+    if [[ -f "/tmp/$TASK_NAME.log" ]]; then
+        echo "---Debug Report Starting--"
+        cat "/tmp/$TASK_NAME.log"
+        echo "---Debug Report Ending--"
+    fi
 }
 

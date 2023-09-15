@@ -42,3 +42,16 @@ function git_submodule_log() {
 
     git submodule status | awk '{print $2}' | xargs git diff --cached --submodule
 }
+
+function git_error_when_diff() {
+    if ! git diff-files --exit-code --ignore-submodules; then
+        echo >&2 "There are unstaged changes in the index!"
+        exit 1
+    fi
+
+    if ! git diff-index --cached --exit-code HEAD --ignore-submodules; then
+        echo >&2 "There are uncommitted changes in the index!"
+        exit 1
+    fi
+}
+

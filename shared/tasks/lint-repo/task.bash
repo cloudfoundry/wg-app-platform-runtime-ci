@@ -16,13 +16,13 @@ function run(){
     git_configure_safe_directory
 
     pushd "repo" > /dev/null
-    local release_name=$(git_get_remote_name)
+    local repo_name=$(git_get_remote_name)
     popd > /dev/null
 
     IFS=$'\n'
     for linter in ${LINTERS}; do
-        echo "Running ./ci/${release_name}/linters/${linter} repo"
-        "./ci/${release_name}/linters/${linter}" "$PWD/repo"
+        echo "Running ./ci/${repo_name}/linters/${linter} for-$repo_name with-exit-on-error=true"
+        "./ci/${repo_name}/linters/${linter}" "$PWD/repo" true
     done
 }
 
