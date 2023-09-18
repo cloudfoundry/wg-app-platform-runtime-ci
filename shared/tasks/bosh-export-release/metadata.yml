@@ -1,9 +1,8 @@
 ---
 readme: |
-  This task will export jobs for a given release.  
+  This task will export jobs for a given release. Release name would be fetched from repo's config/final.yml.
 oses:
   - linux
 params:
-  RELEASE: Release name to export. This can be found in config/final.yml for a given release.
   OS:  (defaults to ubuntu). Name of OS.
   DEPLOYMENT_NAME: (default to cf). Name of deployment.

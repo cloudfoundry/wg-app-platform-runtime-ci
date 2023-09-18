@@ -12,7 +12,11 @@ unset THIS_FILE_DIR
 
 function run(){
     bosh_target
-    local release=$(bosh releases --json | jq -r --arg release "${RELEASE}" '.Tables[].Rows[] | select(.name == $release and (.version | contains("*"))) | .name + "/" + .version' | tr -d "*" | sort -V | tail -1)
+    pushd repo > /dev/null
+    local release_name="$(yq -r .final_name < ./config/final.yml)"
+    popd > /dev/null
+
+    local release=$(bosh releases --json | jq -r --arg release "${release_name}" '.Tables[].Rows[] | select(.name == $release and (.version | contains("*"))) | .name + "/" + .version' | tr -d "*" | sort -V | tail -1)
     local stemcell=$(bosh stemcells --json | jq -r --arg os "${OS}" '.Tables[].Rows[] | select(.os | contains($os)) | select(.version | contains("*")) | .os + "/" + .version' | tr -d "*" | sort -V | tail -1)
 
 
