@@ -84,7 +84,7 @@ if [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
     - Running a simple task with minimal inputs: 'fly-exec.bash lint-ci'
     - Running tests from within a release where REPO_NAME and REPO_PATH are source by .envrc: 'DIR=src/code.cloudfoundry.org/multierror fly-exec.bash run-bin-test'
     - Running tests outside of a release repo: 'REPO_NAME=routing-release REPO_PATH=~/workspace/routing-release DIR=src/code.cloudfoundry.org/multierror fly-exec.bash run-bin-test'
-    - Running tasks with custom inputs and outputs: 'fly-exec.bash bosh-export-release -i repo=~/workspace/routing-release -i toolsmiths-env=~/workspace/envs/cool-beans'
+    - Running tasks with custom inputs and outputs: 'fly-exec.bash bosh-export-release -i repo=~/workspace/routing-release -i env=~/workspace/envs/cool-beans'
 
     Environment variables:
     - FLY_OS: defaults to linux

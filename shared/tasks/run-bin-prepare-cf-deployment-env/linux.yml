@@ -4,7 +4,7 @@ platform: linux
 inputs:
 - name: ci
 - name: repo
-- name: toolsmiths-env
+- name: env
 
 outputs:
 - name: prepared-env

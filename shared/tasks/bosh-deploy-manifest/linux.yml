@@ -4,7 +4,7 @@ platform: linux
 inputs:
   - name: ci
   - name: repo
-  - name: toolsmiths-env
+  - name: env
   - name: release-01 
     optional: true
 
