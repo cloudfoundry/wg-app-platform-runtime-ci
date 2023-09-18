@@ -16,14 +16,20 @@ function cf_system_domain(){
 }
 
 function cf_create_tcp_domain(){
-    cf api --skip-ssl-validation "https://api.${CF_SYSTEM_DOMAIN}"
-    cf auth admin "${CF_ADMIN_PASSWORD}"
+    cf_command api --skip-ssl-validation "https://api.${CF_SYSTEM_DOMAIN}"
+    cf_command auth admin "${CF_ADMIN_PASSWORD}"
 
     local domain_exists=$(cf curl /v2/domains | jq ".resources[] | select(.entity.name == \"$CF_TCP_DOMAIN\")")
 
     if [[ "${domain_exists:=empty}" == "empty" ]] ; then
       echo "Create TCP domain"
-      cf create-shared-domain "$CF_TCP_DOMAIN" --router-group default-tcp
+      cf_command create-shared-domain "$CF_TCP_DOMAIN" --router-group default-tcp
     fi
 
+}
+
+function cf_command() {
+    local cmd=$@
+    debug "Running CF Command with Args: $cmd"
+    eval "cf $cmd"
 }

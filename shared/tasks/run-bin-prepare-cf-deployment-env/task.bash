@@ -2,7 +2,6 @@
 
 set -eEu
 set -o pipefail
-set -x
 
 THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 export TASK_NAME="$(basename $THIS_FILE_DIR)"
