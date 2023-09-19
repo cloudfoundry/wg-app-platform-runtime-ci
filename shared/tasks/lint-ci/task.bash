@@ -189,11 +189,11 @@ function allowed_task_files() {
 
 function allowed_dirs() {
     debug "Running allowed_dirs function"
-    local release_list="garden-runc-release|routing-release|winc-release"
+    local release_list="garden-runc-release|routing-release|winc-release|nats-release"
     local dir_patterns
     dir_patterns="$(cat <<EOF
 ^./bin/*$
-^./examples/(task)*$
+^./examples/(task|pipeline)*$
 ^./(shared|${release_list})/(helpers|opsfiles|linters)$
 ^./(shared|${release_list})/tasks/[a-z\-]*$
 ^./(${release_list})/(manifests)$
