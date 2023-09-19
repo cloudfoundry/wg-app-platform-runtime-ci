@@ -18,7 +18,7 @@ function run(){
 
     git clone ./source-branch ./merged-branch
 
-    popd merged-branch > /dev/null
+    pushd merged-branch > /dev/null
 
     git remote add local ../onto-branch
     git fetch local
@@ -26,7 +26,7 @@ function run(){
 
     git merge --no-edit "${source_branch_name}"
 
-    pushd > /dev/null
+    popd > /dev/null
 }
 
 trap 'err_reporter $LINENO' ERR
