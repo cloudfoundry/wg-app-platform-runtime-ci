@@ -10,6 +10,7 @@ source "$THIS_FILE_DIR/../../../shared/helpers/git-helpers.bash"
 unset THIS_FILE_DIR
 
 function run() {
+    git_configure_safe_directory
     pushd repo > /dev/null
     bundle install
     debug "Running bundle exec rspec spec $(git_get_remote_name):"

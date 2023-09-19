@@ -1,0 +1,8 @@
+#@data/values
+---
+#@overlay/match missing_ok=True
+internal_repos:
+- "nats-v2-migrate"
+opsfiles:
+- scale-for-cats.yml
+- use-compiled-releases.yml
