@@ -52,7 +52,7 @@ function expand_envs(){
     local env_file="${1?path to env file}"
     debug "expand_envs Starting"
     IFS=$'\n'
-    for entry in ${ENVS}
+    for entry in ${ENVS:-}
     do
         local key=$(echo $entry | cut -d '=' -f1)
         local value=$(echo $entry | cut -d '=' -f2)
@@ -65,8 +65,8 @@ function expand_envs(){
 function expand_functions(){
     debug "expand_functions Starting"
     IFS=$'\n'
-    debug "Bash functions to source: ${FUNCTIONS}"
-    for entry in ${FUNCTIONS}
+    debug "Bash functions to source: ${FUNCTIONS:-}"
+    for entry in ${FUNCTIONS:-}
     do
         echo "Sourcing: $entry"
         source $entry
