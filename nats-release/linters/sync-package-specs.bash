@@ -15,7 +15,8 @@ function run() {
 
     pushd "${repo_path}" > /dev/null
 
-    sync_package gnatsd        -app github.com/nats-io/gnatsd/... &
+    BUILD_FLAGS="--tags gnatsd" sync_package gnatsd        -app github.com/nats-io/gnatsd/... &
+    BUILD_FLAGS="--tags nats-server" sync_package nats-server        -app github.com/nats-io/nats-server/v2/... &
     sync_package nats-smoke       -app code.cloudfoundry.org/nats-smoke/... &
     sync_package nats-tls-healthcheck -app code.cloudfoundry.org/nats-tls-healthcheck/... &
     sync_package nats-v2-migrate -app code.cloudfoundry.org/nats-v2-migrate/... &
