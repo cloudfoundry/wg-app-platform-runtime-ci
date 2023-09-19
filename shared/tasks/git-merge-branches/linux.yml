@@ -9,5 +9,9 @@ inputs:
 outputs:
   - name: merged-branch
 
+params:
+  SOURCE_BRANCH_NAME:
+  ONTO_BRANCH_NAME:
+
 run:
   path: ci/shared/tasks/git-merge-branches/task.bash
