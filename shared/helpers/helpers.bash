@@ -17,7 +17,13 @@ function verify_go_version_match_bosh_release(){
 function verify_gofmt(){
     local dir="${1:-$PWD}"
     pushd "${dir}" >/dev/null
-    files=$(gofmt -l . | grep -v vendor || true) && [ -z "$files" ]
+
+    files=$(gofmt -l . | grep -v vendor || true)
+    if [[ -n "$files" ]]; then
+        echo "failed gofmt for the following: $files"
+        exit 1
+    fi
+
     popd > /dev/null
 }
 function verify_govet(){
@@ -37,12 +43,14 @@ function verify_binary() {
 
 function expand_flags(){
     debug "expand_flags Starting"
+
     local list=""
     IFS=$'\n'
     for entry in ${FLAGS}
     do
         list="${list}${entry} "
     done
+
     debug "running with flags: ${list}"
     debug "expand_flags Ending"
     echo "${list}"
@@ -65,10 +73,9 @@ function expand_envs(){
 function expand_functions(){
     debug "expand_functions Starting"
     IFS=$'\n'
-    debug "Bash functions to source: ${FUNCTIONS:-}"
     for entry in ${FUNCTIONS:-}
     do
-        echo "Sourcing: $entry"
+        debug "Source: $entry"
         source $entry
     done
     debug "expand_functions Ending"

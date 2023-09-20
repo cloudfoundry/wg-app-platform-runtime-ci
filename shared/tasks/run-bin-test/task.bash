@@ -36,7 +36,13 @@ function run(){
     expand_verifications
 
     pushd "repo/$DIR"  > /dev/null
-    ./bin/test.bash $(expand_flags) "$@"
+    if [[ -f ./bin/test.bash ]]; then
+        debug "Running ./bin/test.bash for repo/$DIR"
+        ./bin/test.bash $(expand_flags) "$@"
+    else
+        debug "Missing ./bin/test.bash for repo/$DIR. Running ginkgo by default"
+        eval "go run github.com/onsi/ginkgo/v2/ginkgo $(expand_flags) $@"
+    fi
     popd  > /dev/null
 }
 

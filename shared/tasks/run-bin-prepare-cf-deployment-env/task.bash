@@ -24,7 +24,7 @@ function run(){
 
     pushd "repo" > /dev/null
     if [[ -f ./bin/prepare-cf-deployment-env.bash ]]; then
-        debug "Running ./bin/prepare-env.bash for repo"
+        debug "Running ./bin/prepare-cf-deployment-env.bash for repo"
         ./bin/prepare-cf-deployment-env.bash "$@"
     fi
     popd > /dev/null
