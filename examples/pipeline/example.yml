@@ -11,11 +11,10 @@ groups:
   - prepare-env
   - run-cats
   - <REPLACE_ME>
-  - run-cfsmoke
   - export-release
   - ship-what
   - ship-it
-  - unclaim-smith-env
+  - unclaim-env
 
 - name: periodics
   jobs:
