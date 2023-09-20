@@ -491,6 +491,9 @@ jobs:
       input_mapping:
         source-branch: release-branch
         onto-branch: develop-branch-mergeback
+      params:
+        SOURCE_BRANCH_NAME: <REPLACE_ME> or release
+        ONTO_BRANCH_NAME: <REPLACE_ME> or develop
 
     - in_parallel:
         steps:
@@ -499,7 +502,7 @@ jobs:
             name: version/number
             tag: version/number
             tag_prefix: v
-            body: release-notes/notes.md
+            body: built-release-notes/notes.md
             globs:
             - finalized-release-tarball/<REPLACE_ME>*.tgz
         - put: develop-branch-mergeback
