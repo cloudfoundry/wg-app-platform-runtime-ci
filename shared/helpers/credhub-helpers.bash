@@ -1,4 +1,4 @@
-function upload_cert_to_credhub() {
+function credhub_save_lb_cert() {
     set +e                                                     
     cert="$(openssl s_client -showcerts -connect "any.${CF_SYSTEM_DOMAIN}:443" </dev/null 2>/dev/null)"
     set -e                                                     
@@ -12,4 +12,3 @@ function upload_cert_to_credhub() {
         --type certificate \
         --certificate "${cert_file}"
 }
-export -f upload_cert_to_credhub
