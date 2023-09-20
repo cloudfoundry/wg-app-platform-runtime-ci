@@ -2,5 +2,6 @@
 readme:
   This directory contains the shared opsfiles needed for the Application Runtime Working Group.
 opsfiles:
+  add-lb-ca-cert.yml: Required for resolving route services hosted on the platform. This is needed for running route_services tests.
   add-smoke-tests.yml: Configures the CF smoke tests. Required for running CF smoke tests. Enables isolation segment smoke tests. Required for running CF smoke tests.
   scale-for-cats.yml: This is used for testing with a cf-deployment pooled env. They are provisioned pretty light, so we need to scale them up. Otherwise, CATS becomes very flakey. Adds diego cells and increase their size.

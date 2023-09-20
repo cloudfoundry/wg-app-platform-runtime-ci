@@ -8,6 +8,7 @@ export TASK_NAME="$(basename $THIS_FILE_DIR)"
 source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
 source "$THIS_FILE_DIR/../../../shared/helpers/bosh-helpers.bash"
 source "$THIS_FILE_DIR/../../../shared/helpers/cf-helpers.bash"
+source "$THIS_FILE_DIR/../../../shared/helpers/credhub-helpers.bash"
 unset THIS_FILE_DIR
 
 function run(){
@@ -19,10 +20,11 @@ function run(){
     bosh_target
     cf_target
     cf_create_tcp_domain
+    credhub_save_lb_cert
 
     pushd "repo" > /dev/null
-    debug "Running ./bin/prepare-env.bash for repo"
     if [[ -f ./bin/prepare-cf-deployment-env.bash ]]; then
+        debug "Running ./bin/prepare-env.bash for repo"
         ./bin/prepare-cf-deployment-env.bash "$@"
     fi
     popd > /dev/null
