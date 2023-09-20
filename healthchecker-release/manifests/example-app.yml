@@ -1,0 +1,36 @@
+---
+name: ((DEPLOYMENT_NAME))
+
+releases:
+- name: healthchecker
+  url: ((DEPLOYMENT_RELEASE_DIR))
+  version: create
+- name: bpm
+  version: latest
+
+stemcells:
+- alias: stemcell
+  os: ((CF_STEMCELL_OS))
+  version: latest
+
+instance_groups:
+- name: healthchecker
+  azs: [((CF_AZ))]
+  instances: 1
+  jobs:
+  - name: example
+    release: healthchecker
+    properties: {}
+  - name: bpm
+    release: bpm
+  vm_type: ((CF_VM_TYPE))
+  stemcell: stemcell
+  networks:
+  - name: ((CF_NETWORK))
+
+update:
+  canaries: 2
+  max_in_flight: 1
+  canary_watch_time: 5000-60000
+  update_watch_time: 5000-60000
+
