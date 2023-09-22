@@ -5,14 +5,20 @@ readme: |
   it will source FUNCTIONS and ENVS defined within the task before calling the respective test file.
 extra_inputs:
   built-binaries: (Optional) This will optionally take built-binaries (chained with build-binaries task) that have corresponding source files (run.ps1/run.bash) to be used at runtime.
-  input-*: (Optional) Generic inputs for passing in config files or files needed to run the test. ENVS would be updated with the path to access those files. e.g. CONFIG=$PWD/input-01/config.json
+  input-*: |
+    (Optional) Generic inputs for passing in config files or files needed to run the test.
+    Any param defined below can reference files in this input. e.g. CONFIG=$PWD/input-01/config.json
 oses:
   - linux
   - windows
 params:
   DEFAULT_PARAMS: (Currently works on Linux only) Path to .yml file containing repo's default-params to use instead. If this value is set, it will override other params set explicitly.
   DIR: Path to where you can run `./bin/test{.bash,ps1}`. This is helpful to use when using submodule pattern and wanting to test internal repos without having to create more resources.
-  ENVS: Multiline envs that can be defined dynamically and loaded into the test without having to create more params. e.g. ROOTFS=/tmp/rootfs.tar
+  ENVS: |
+    This parameter defines a list of environment variables will be loaded at runtime, as opposed to
+    container-creation time. The purpose here is to allow users to extend the list of environment
+    variables used by the task simply by updating the pipeline config, rather than by updating the task definition
+    in linux.yml or windows.yml.
   FLAGS: |
     (Ginkgo Defaults are
       --keep-going
