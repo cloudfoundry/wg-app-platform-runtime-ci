@@ -4,5 +4,4 @@ readme:
 opsfiles:
   add-acceptance-test-jobs.yml: Adds co-located jobs for test-release in cf-networking-release, so that acceptance tests would pass
   add-apps-internal-search-domain.yml: Adds apps.internal as a DNS search domain for app containers to use during service discovery.
-  limit-app-outbound-connections.yml: "TODO: Figure out what this does"
   use-latest.yml: Uses latest silk and cf-networking releases

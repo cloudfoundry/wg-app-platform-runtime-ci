@@ -26,4 +26,3 @@ opsfiles:
 - add-apps-internal-search-domain.yml
 - add-acceptance-test-jobs.yml
 - enable-iptables-logger.yml
-- limit-app-outbound-connections.yml
