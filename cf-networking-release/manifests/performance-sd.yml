@@ -1,0 +1,186 @@
+---
+name: ((DEPLOYMENT_NAME))
+
+releases:
+- name: nats
+  version: latest
+- name: bosh-dns
+  version: latest
+- name: cf-networking
+  version: create
+  url: ((DEPLOYMENT_RELEASE_DIR))
+- name: bpm
+  version: latest
+
+stemcells:
+- alias: stemcell
+  os: ((CF_STEMCELL_OS))
+  version: latest
+
+instance_groups:
+- name: performance
+  lifecycle: errand
+  azs: [((CF_AZ))]
+  instances: 1
+  jobs:
+  - name: performance-test-sd
+    properties: {}
+    release: cf-networking
+  - name: bpm
+    release: bpm
+  networks:
+  - name: ((CF_NETWORK))
+  stemcell: default
+  vm_type: default
+
+- name: nats
+  azs: [((CF_AZ))]
+  instances: 1
+  jobs:
+  - name: nats
+    properties:
+      nats:
+        debug: true
+        monitor_port: ((NATS_PORT))
+        password: ((NATS_PASSWORD))
+        trace: true
+        user: nats
+        hostname: ((NATS_IP))
+        migrate_server:
+          tls:
+            ca: "((nats_server_cert.ca))"
+            private_key: "((nats_server_cert.private_key))"
+            certificate: "((nats_server_cert.certificate))"
+        migrate_client:
+          tls:
+            ca: "((nats_client_cert.ca))"
+            private_key: "((nats_client_cert.private_key))"
+            certificate: "((nats_client_cert.certificate))"
+    provides:
+      nats:
+        as: nats
+        shared: true
+    release: nats
+  - name: bpm
+    release: bpm
+  networks:
+  - name: ((CF_NETWORK))
+    static_ips: [((NATS_IP))]
+  stemcell: default
+  vm_type: minimal
+
+- azs:
+  - z1
+  - z2
+  instances: 2
+  jobs:
+  - name: bosh-dns-adapter
+    properties:
+      internal_route_vip_range: 127.128.0.0/9
+      dnshttps:
+        client:
+          tls:
+            ca: ((service_discovery_ca.ca))
+            certificate: ((service_discovery_client_tls.certificate))
+            private_key: ((service_discovery_client_tls.private_key))
+        server:
+          ca: ((service_discovery_ca.ca))
+    release: cf-networking
+  - name: service-discovery-controller
+    properties:
+      dnshttps:
+        client:
+          ca: ((service_discovery_ca.ca))
+        server:
+          tls:
+            ca: ((service_discovery_ca.ca))
+            certificate: ((service_discovery_server_tls.certificate))
+            private_key: ((service_discovery_server_tls.private_key))
+    release: cf-networking
+  - name: bpm
+    release: bpm
+  name: cf-app-sd
+  networks:
+  - name: ((CF_NETWORK))
+  stemcell: default
+  update:
+    max_in_flight: 20
+  vm_extensions:
+  - 100GB_ephemeral_disk
+  vm_type: small-highmem
+
+update:
+  canaries: 1
+  canary_watch_time: 30000-1200000
+  max_in_flight: 5
+  serial: false
+  update_watch_time: 5000-1200000
+
+variables:
+- name: service_discovery_ca
+  type: certificate
+  options:
+    is_ca: true
+    common_name: service-discovery-controller.service.cf.internal
+- name: nats_ca
+  type: certificate
+  options:
+    common_name: nats
+    is_ca: true
+
+- name: nats_client_cert
+  type: certificate
+  update_mode: converge
+  options:
+    ca: nats_ca
+    common_name: nats_client
+    alternative_names:
+    - nats_client
+    extended_key_usage:
+    - client_auth
+
+- name: nats_server_cert
+  type: certificate
+  update_mode: converge
+  options:
+    ca: nats_ca
+    common_name: nats.service.cf.internal
+    alternative_names:
+    - "*.nats.service.cf.internal"
+    - nats.service.cf.internal
+    extended_key_usage:
+    - server_auth
+
+- name: service_discovery_server_tls
+  type: certificate
+  options:
+    ca: service_discovery_ca
+    common_name: service-discovery-controller.service.cf.internal
+    extended_key_usage:
+    - server_auth
+- name: service_discovery_client_tls
+  type: certificate
+  options:
+    ca: service_discovery_ca
+    common_name: service-discovery-controller.service.cf.internal
+    extended_key_usage:
+    - client_auth
+- name: dns_api_tls_ca
+  options:
+    common_name: dnsApiTlsCa
+    is_ca: true
+  type: certificate
+- name: dns_api_server_tls
+  type: certificate
+  options:
+    ca: dns_api_tls_ca
+    common_name: api.bosh-dns
+    extended_key_usage:
+    - server_auth
+- name: dns_api_client_tls
+  type: certificate
+  options:
+    ca: dns_api_tls_ca
+    common_name: api.bosh-dns
+    extended_key_usage:
+    - client_auth

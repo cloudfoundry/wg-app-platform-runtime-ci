@@ -1,0 +1,29 @@
+#@data/values
+---
+#@overlay/match missing_ok=True
+cf_networking_packages:
+- "bosh-dns-adapter"
+- "cf-pusher"
+- "garden-external-networker"
+- "lib"
+- "policy_server"
+- "service-discovery-controller"
+
+silk_packages:
+- "silk"
+- "cni-teardown"
+- "cni-wrapper-plugin"
+- "iptables-logger"
+- "lib"
+- "netmon"
+- "silk-daemon-bootstrap"
+- "silk-datastore-syncer"
+- "silk"
+- "vxlan-policy-agent"
+opsfiles:
+- use-compiled-releases.yml
+- use-latest.yml
+- add-apps-internal-search-domain.yml
+- add-acceptance-test-jobs.yml
+- enable-iptables-logger.yml
+- limit-app-outbound-connections.yml
