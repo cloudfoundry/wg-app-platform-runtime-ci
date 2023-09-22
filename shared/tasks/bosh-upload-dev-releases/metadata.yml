@@ -1,0 +1,13 @@
+---
+readme: |
+  Creates local dev releases and uploads them to a BOSH director.
+  This workflow is valuable for pipelines that want to validate
+  bleeding edge changes to a paritcular BOSH release against a 
+  stable cf-deployment.
+oses:
+  - linux
+inputs:
+  env: Resources that represents the deployment environment. Can be a Toolsmiths or Shephered Environment
+extra_inputs:
+  release-*: BOSH releases that will be created locally and uploaded to the director
+params:

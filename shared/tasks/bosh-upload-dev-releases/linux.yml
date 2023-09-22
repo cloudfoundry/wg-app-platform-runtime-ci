@@ -1,0 +1,15 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+- name: env
+- name: release-01
+  optional: true
+- name: release-02
+  optional: true
+
+params:
+
+run:
+  path: ci/shared/tasks/bosh-upload-dev-releases/task.bash
