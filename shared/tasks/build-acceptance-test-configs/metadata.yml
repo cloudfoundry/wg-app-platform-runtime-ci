@@ -1,11 +1,17 @@
 ---
 readme: |
-  This task will build acceptance-test configs for cats,rats,wats,drats, and cfsmoke. The result would be a files with the same name with .json. e.g. cats.json 
+  This task will build acceptance-test configs for cats, rats, wats, drats, cfsmoke, cf-networking acceptance tests,
+  and service discovery acceptance tests. The result would be a files with the same name with .json. e.g. cats.json
 oses:
   - linux
 params:
   CONFIGS: Multiline config file to be created. e.g. |
     cats
     rats
+  ENVS: |
+    This parameter defines a list of environment variables will be loaded at runtime, as opposed to
+    container-creation time. The purpose here is to allow users to extend the list of environment
+    variables used by the task simply by updating the pipeline config, rather than by updating the task definition
+    in linux.yml or windows.yml.
   WITH_ISOSEG: (defaults to false). It will turn on/off isolation segment tests for diego-cell with isolated router
   WITH_DYNAMIC_ASG: (defaults to false) It will turn on/off dynamic asgs tests

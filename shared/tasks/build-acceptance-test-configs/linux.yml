@@ -10,6 +10,7 @@ outputs:
 
 params:
   CONFIGS:
+  ENVS:
   WITH_ISOSEG: false
   WITH_DYNAMIC_ASG: false
 

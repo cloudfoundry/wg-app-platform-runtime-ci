@@ -11,6 +11,13 @@ source "$THIS_FILE_DIR/../../../shared/helpers/cf-helpers.bash"
 unset THIS_FILE_DIR
 
 function run(){
+    local task_tmp_dir="${1:?provide temp dir for task}"
+    shift 1
+
+    local env_file="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-env.bash')"
+    expand_envs "${env_file}"
+    . "${env_file}"
+
     bosh_target
     cf_target
 
@@ -26,6 +33,12 @@ function run(){
             drats "built-acceptance-test-configs/drats.json"
         elif [[ "$entry" == "cfsmoke" ]]; then
             cfsmoke "built-acceptance-test-configs/cfsmoke.json"
+        elif [[ "$entry" == "cf-networking-acceptance-tests" ]]; then
+            cf_networking_acceptance_tests "built-acceptance-test-configs/cf-networking-acceptance-tests.json"
+        elif [[ "$entry" == "service-discovery-acceptance-tests" ]]; then
+            cf_networking_acceptance_tests "built-acceptance-test-configs/service-discovery-acceptance-tests.json"
+        elif [[ "$entry" == "service-discovery-performance-tests" ]]; then
+            service_discovery_performance_tests "built-acceptance-test-configs/service-discovery-performance-tests.json"
         else
             echo "Unable to generate config for $entry"
             exit 1
@@ -173,5 +186,56 @@ function wats() {
     exit 1
 }
 
+function cf_networking_acceptance_tests() {
+    local file="${1?Provide config file}"
+    echo "Creating ${file}"
+    cat << EOF > "${file}"
+{
+    "admin_password": "$CF_ADMIN_PASSWORD",
+    "admin_secret": "$(bosh_get_password_from_credhub uaa_admin_client_secret)",
+    "admin_user":"admin",
+    "api": "api.${CF_SYSTEM_DOMAIN}",
+    "apps_domain": "${CF_SYSTEM_DOMAIN}",
+    "default_security_groups": [ "dns", "public_networks" ],
+    "dynamic_asgs_enabled": "${WITH_DYNAMIC_ASG}",
+    "extra_listen_ports": 2,
+    "nodes": 1,
+    "prefix":"test-",
+    "proxy_applications": 1,
+    "proxy_instances": 1,
+    "run_custom_iptables_compatibility_test": true,
+    "run_experimental_outbound_conn_limit_test": true,
+    "skip_search_domain_tests": true,
+    "skip_space_developer_policy_test": true,
+    "skip_ssl_validation":true,
+    "test_app_instances": 3,
+    "test_applications": 2,
+    "include_security_groups": true,
+    "use_http":true
+}
+EOF
+}
+
+function service_discovery_performance_tests() {
+    local file="${1?Provide config file}"
+    echo "Creating ${file}"
+    cat << EOF > "${file}"
+{
+    "nats_url": "$NATS_IP",
+    "nats_username": "nats",
+    "nats_password": "$NATS_PASSWORD",
+    "nats_monitoring_port": $NATS_PORT,
+    "num_messages": 100000,
+    "num_publishers": 10
+}
+EOF
+}
+
+function cleanup() {
+    rm -rf $task_tmp_dir
+}
+
+task_tmp_dir="$(mktemp -d -t 'XXXX-task-tmp-dir')"
+trap cleanup EXIT
 trap 'err_reporter $LINENO' ERR
-run "$@"
+run $task_tmp_dir "$@"
