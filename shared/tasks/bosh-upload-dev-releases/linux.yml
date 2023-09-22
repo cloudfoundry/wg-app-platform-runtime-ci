@@ -8,6 +8,8 @@ inputs:
   optional: true
 - name: release-02
   optional: true
+- name: release-03
+  optional: true
 
 params:
 
