@@ -1,0 +1,6 @@
+---
+readme: |
+  This task generate tags with go version to use in docker image builds
+oses:
+  - linux
+

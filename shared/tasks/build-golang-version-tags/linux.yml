@@ -1,0 +1,18 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source: {repository: cloudfoundry/tas-runtime-build}
+
+inputs:
+- name: ci
+
+outputs:
+- name: tag
+
+params:
+  IMAGE:
+
+run:
+  path: ci/shared/tasks/build-golang-version-tags/task.bash
