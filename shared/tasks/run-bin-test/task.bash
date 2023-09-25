@@ -35,6 +35,10 @@ function run(){
 
     expand_verifications
 
+    if [[ "${DB:-missing}" != "missing" ]]; then
+        configure_db "${DB}"
+    fi
+
     pushd "repo/$DIR"  > /dev/null
     if [[ -f ./bin/test.bash ]]; then
         debug "Running ./bin/test.bash for repo/$DIR"

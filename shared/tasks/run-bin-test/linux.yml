@@ -10,6 +10,7 @@ inputs:
   optional: true
 
 params:
+  DB:
   DEFAULT_PARAMS:
   DIR:
   ENVS:

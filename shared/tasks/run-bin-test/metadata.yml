@@ -12,6 +12,7 @@ oses:
   - linux
   - windows
 params:
+  DB: (Currently works on linux only). Set DB flavor to configure for tests. e.g. postgres, mysql
   DEFAULT_PARAMS: (Currently works on Linux only) Path to .yml file containing repo's default-params to use instead. If this value is set, it will override other params set explicitly.
   DIR: Path to where you can run `./bin/test{.bash,ps1}`. This is helpful to use when using submodule pattern and wanting to test internal repos without having to create more resources.
   ENVS: |

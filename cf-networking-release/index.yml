@@ -1,25 +1,42 @@
 #@data/values
 ---
 #@overlay/match missing_ok=True
+
+db_flavors:
+- image: postgres
+  value: postgres
+- image: mysql-8.0
+  value: mysql
+- image: mysql-5.7
+  value: mysql
+
 cf_networking_packages:
-- "bosh-dns-adapter"
-- "cf-pusher"
-- "garden-external-networker"
-- "lib"
-- "policy_server"
-- "service-discovery-controller"
+- name: "bosh-dns-adapter"
+- name: "cf-pusher"
+- name: "garden-external-networker"
+  privileged: true
+- name: "lib"
+  privileged: true
+- name: "policy-server"
+  configure_db: true
+- name: "service-discovery-controller"
 
 silk_packages:
-- "silk"
-- "cni-teardown"
-- "cni-wrapper-plugin"
-- "iptables-logger"
-- "lib"
-- "netmon"
-- "silk-daemon-bootstrap"
-- "silk-datastore-syncer"
-- "silk"
-- "vxlan-policy-agent"
+- name: "cni-teardown"
+  privileged: true
+- name: "cni-wrapper-plugin"
+  privileged: true
+- name: "iptables-logger"
+- name: "lib"
+  privileged: true
+- name: "netmon"
+- name: "silk"
+  configure_db: true
+- name: "silk-daemon-bootstrap"
+  privileged: true
+- name: "silk-datastore-syncer"
+- name: "vxlan-policy-agent"
+  privileged: true
 opsfiles:
 - use-compiled-releases.yml
 - use-latest.yml
