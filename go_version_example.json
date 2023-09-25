@@ -1,0 +1,12 @@
+{
+    "default": "1.21",
+    "releases": {
+        "cf-networking-release": "1.20"
+    },
+    "images": {
+        "diego-golang-ci": "1.20"
+    },
+    "plugins": {
+        "cpu-entitlement-plugin": "1.20"
+    }
+}
