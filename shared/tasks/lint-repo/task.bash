@@ -21,8 +21,18 @@ function run(){
 
     IFS=$'\n'
     for linter in ${LINTERS}; do
-        echo "Running ./ci/${repo_name}/linters/${linter} for-$repo_name with-exit-on-error=true"
-        "./ci/${repo_name}/linters/${linter}" "$PWD/repo" true
+        local repo_linter="./ci/${repo_name}/linters/${linter}"
+        local shared_linter="./ci/shared/linters/${linter}"
+        if [[ -f "$repo_linter" ]]; then
+            echo "Running $repo_linter for-$repo_name with-exit-on-error=true"
+            "$repo_linter" "$PWD/repo" true
+        elif [[ -f "$shared_linter" ]]; then
+            echo "Running $shared_linter for-$repo_name with-exit-on-error=true"
+            "$shared_linter" "$PWD/repo" true
+        else
+            echo "Unable to find linter ${linter}."
+            exit 1
+        fi
     done
 }
 

@@ -189,7 +189,7 @@ function allowed_task_files() {
 
 function allowed_dirs() {
     debug "Running allowed_dirs function"
-    local release_list="garden-runc-release|routing-release|winc-release|nats-release|healthchecker-release|cf-networking-release"
+    local release_list="garden-runc-release|routing-release|winc-release|nats-release|healthchecker-release|cf-networking-release|silk-release"
     local dir_patterns
     dir_patterns="$(cat <<EOF
 ^./bin/*$
@@ -303,11 +303,13 @@ function required_repo_linters() {
     local required_linters=$(yq '.params.LINTERS' ./shared/tasks/lint-repo/linux.yml)
 
     for required_linter in ${required_linters}; do
-        for dir in $(find . -ipath "*linters" -type d)
+        for dir in $(find . -ipath "*linters" -type d | grep -v shared)
         do
             if ! [[ -f "${dir}/${required_linter}" ]]; then
-                debug "Required linter ${required_linter} was not found in ${dir}"
-                FOUND_ERROR=true
+                if ! [[ -f "./shared/linters/${required_linter}" ]]; then
+                    debug "Required linter ${required_linter} was not found in ${dir}"
+                    FOUND_ERROR=true
+                fi
             fi
         done
     done

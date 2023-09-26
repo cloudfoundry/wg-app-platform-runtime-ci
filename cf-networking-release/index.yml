@@ -10,33 +10,24 @@ db_flavors:
 - image: mysql-5.7
   value: mysql
 
-cf_networking_packages:
+internal_repos:
 - name: "bosh-dns-adapter"
+  repo: cf-networking-repo
 - name: "cf-pusher"
+  repo: cf-networking-repo
 - name: "garden-external-networker"
   privileged: true
+  repo: cf-networking-repo
 - name: "lib"
   privileged: true
+  repo: cf-networking-repo
 - name: "policy-server"
   configure_db: true
+  repo: cf-networking-repo
+  privileged: true
 - name: "service-discovery-controller"
+  repo: cf-networking-repo
 
-silk_packages:
-- name: "cni-teardown"
-  privileged: true
-- name: "cni-wrapper-plugin"
-  privileged: true
-- name: "iptables-logger"
-- name: "lib"
-  privileged: true
-- name: "netmon"
-- name: "silk"
-  configure_db: true
-- name: "silk-daemon-bootstrap"
-  privileged: true
-- name: "silk-datastore-syncer"
-- name: "vxlan-policy-agent"
-  privileged: true
 opsfiles:
 - use-compiled-releases.yml
 - use-latest.yml

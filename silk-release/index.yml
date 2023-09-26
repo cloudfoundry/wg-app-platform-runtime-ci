@@ -1,0 +1,33 @@
+#@data/values
+---
+#@overlay/match missing_ok=True
+
+internal_repos:
+- name: "cni-teardown"
+  privileged: true
+  repo: silk-repo
+- name: "cni-wrapper-plugin"
+  privileged: true
+  repo: silk-repo
+- name: "iptables-logger"
+  repo: silk-repo
+- name: "lib"
+  privileged: true
+  repo: silk-repo
+- name: "netmon"
+  repo: silk-repo
+- name: "silk"
+  configure_db: true
+  privileged: true
+  repo: silk-repo
+- name: "silk-daemon-bootstrap"
+  privileged: true
+  repo: silk-repo
+- name: "silk-daemon-shutdown"
+  privileged: true
+  repo: silk-repo
+- name: "silk-datastore-syncer"
+  repo: silk-repo
+- name: "vxlan-policy-agent"
+  privileged: true
+  repo: silk-repo
