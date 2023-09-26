@@ -3,4 +3,6 @@ readme: |
   This task generate tags with go version to use in docker image builds
 oses:
   - linux
+params:
+  IMAGE: Name of the image that matches image name in the go_vesion.json file
 
