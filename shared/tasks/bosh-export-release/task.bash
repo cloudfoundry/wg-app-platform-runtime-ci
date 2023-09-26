@@ -13,16 +13,7 @@ unset THIS_FILE_DIR
 function run(){
     bosh_target
     pushd repo > /dev/null
-    local release_name="$(yq -r '.final_name|select(.)' < ./config/final.yml)"
-    if [[ -z "$release_name" ]] ; then
-        release_name="$(yq -r .name < ./config/final.yml)"
-    fi
-
-    if [[ -z "$release_name" ]] ; then
-        debug "Release name could not be found. Make sure the release's config/final.yml contains either a 'final_name' or 'name' field."
-        exit 1
-    fi
-
+    local release_name=$(bosh_release_name)
     popd > /dev/null
 
     local release=$(bosh releases --json | jq -r --arg release "${release_name}" '.Tables[].Rows[] | select(.name == $release and (.version | contains("*"))) | .name + "/" + .version' | tr -d "*" | sort -V | tail -1)

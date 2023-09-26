@@ -24,7 +24,7 @@ function run() {
   bosh_configure_private_yml "$private_yml"
 
   echo "creating final release"
-  local release_name="$(yq -r .final_name < ./config/final.yml)"
+  local release_name=$(bosh_release_name)
   echo "release name:" ${release_name}
   bosh -n create-release --final --version="$version" --tarball  ../finalized-release-tarball/${release_name}-${version}.tgz
   git add -A

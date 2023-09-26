@@ -93,3 +93,16 @@ EOF
     fi
     set -x
 }
+
+function bosh_release_name() {
+    local release_name="$(yq -r '.final_name|select(.)' < ./config/final.yml)"
+    if [[ -z "$release_name" ]] ; then
+        release_name="$(yq -r .name < ./config/final.yml)"
+    fi
+
+    if [[ -z "$release_name" ]] ; then
+        debug "Release name could not be found. Make sure the release's config/final.yml contains either a 'final_name' or 'name' field."
+        exit 1
+    fi
+    echo "$release_name"
+}
