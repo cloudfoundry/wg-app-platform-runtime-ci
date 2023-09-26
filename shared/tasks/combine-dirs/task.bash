@@ -9,10 +9,17 @@ source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
 unset THIS_FILE_DIR
 
 function run() {
-  for f in input-*
+  for input in input-*
   do
-    ls $f
-    cp -r $f/* ./combined-dirs/
+    if [[ "${GLOB:-empty}" == "empty" ]]; then
+      ls $input
+      cp -r $input/* ./combined-dirs/
+    else
+      for glob in ${GLOB}
+      do
+        cp -r $input/$glob ./combined-dirs/ || true
+      done
+    fi
   done
 }
 

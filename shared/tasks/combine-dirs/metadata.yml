@@ -5,3 +5,5 @@ extra_inputs:
   input-*: Extra inputs that you can match the GLOB with
 oses:
   - linux
+params:
+  GLOB: Glob to match dirs. This will run against all inputs
