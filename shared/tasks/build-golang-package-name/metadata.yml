@@ -1,0 +1,9 @@
+---
+readme: |
+  This task generate golang package name based on version in go_version.json
+oses:
+  - linux
+params:
+  PLATFORM: Name of the golang package platform (e.g. linux or windows)
+  RELEASE: Name of the release referenced in go_version.json
+
