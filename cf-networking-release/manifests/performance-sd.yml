@@ -66,8 +66,8 @@ instance_groups:
   networks:
   - name: ((CF_NETWORK))
     static_ips: [((NATS_IP))]
-  stemcell: default
-  vm_type: minimal
+  stemcell: stemcell
+  vm_type: ((CF_VM_TYPE))
 
 - azs:
   - z1
@@ -102,12 +102,12 @@ instance_groups:
   name: cf-app-sd
   networks:
   - name: ((CF_NETWORK))
-  stemcell: default
+  stemcell: stemcell
+  vm_type: ((CF_VM_TYPE))
   update:
     max_in_flight: 20
   vm_extensions:
   - 100GB_ephemeral_disk
-  vm_type: small-highmem
 
 update:
   canaries: 1
