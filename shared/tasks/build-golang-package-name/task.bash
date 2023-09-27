@@ -12,3 +12,8 @@ go_minor_version=$(cat ${go_version_file} | jq -r "if (.releases.\"${RELEASE}\" 
 cat <<HERE > $PWD/package-name/name
 golang-${go_minor_version}-${PLATFORM}
 HERE
+
+old_package_name=$(find repo/packages -name "golang-*-${PLATFORM}" -printf '%f')
+cat <<HERE > $PWD/package-name/old-name
+${old_package_name}
+HERE
