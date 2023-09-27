@@ -6,6 +6,7 @@ inputs:
 - name: repo
 - name: package-release
 - name: package-name
+  optional: true
 
 outputs:
 - name: vendored-repo
