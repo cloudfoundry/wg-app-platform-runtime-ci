@@ -29,6 +29,7 @@ internal_repos:
   repo: cf-networking-repo
 
 opsfiles:
+- add-lb-ca-cert.yml
 - use-compiled-releases.yml
 - use-latest.yml
 - add-apps-internal-search-domain.yml
