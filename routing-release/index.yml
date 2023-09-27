@@ -1,12 +1,23 @@
 #@data/values
 ---
 #@overlay/match missing_ok=True
+db_flavors:
+- image: postgres
+  value: postgres
+- image: mysql-8.0
+  value: mysql
+- image: mysql-5.7
+  value: mysql
+
 internal_repos:
 - name: "gorouter"
+  configure_db: true
 - name: "cf-tcp-router"
+  configure_db: true
 - name: "multierror"
 - name: "route-registrar"
 - name: "routing-api"
+  configure_db: true
 - name: "routing-api-cli"
 - name: "routing-info"
 opsfiles:
