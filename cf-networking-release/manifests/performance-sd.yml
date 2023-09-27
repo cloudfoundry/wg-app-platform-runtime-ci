@@ -30,8 +30,8 @@ instance_groups:
     release: bpm
   networks:
   - name: ((CF_NETWORK))
-  stemcell: default
-  vm_type: default
+  stemcell: stemcell
+  vm_type: ((CF_VM_TYPE))
 
 - name: nats
   azs: [((CF_AZ))]
