@@ -5,12 +5,12 @@ inputs:
 - name: ci
 - name: repo
 - name: package-release
+- name: package-name
 
 outputs:
 - name: vendored-repo
 
 params:
-  PACKAGE_NAME:
   PACKAGE_PREFIX:
   GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY:
   AWS_SECRET_ACCESS_KEY:

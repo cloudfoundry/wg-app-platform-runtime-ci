@@ -4,7 +4,6 @@ readme: |
 oses:
   - linux
 params:
-  PACKAGE_NAME: Name of the bosh package to be updated e.g. healthchecker / golang-1-linux
   PACKAGE_PREFIX: Prefix value for the bosh package. For routing-healthchecker this would be set to "routing".
   GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: Environment secret
   AWS_SECRET_ACCESS_KEY: Environment secret
