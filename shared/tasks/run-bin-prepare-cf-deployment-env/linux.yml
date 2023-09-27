@@ -5,6 +5,8 @@ inputs:
 - name: ci
 - name: repo
 - name: env
+- name: extra-vars
+  optional: true
 
 outputs:
 - name: prepared-env

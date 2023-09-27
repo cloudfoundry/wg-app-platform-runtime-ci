@@ -37,6 +37,18 @@ CF_SYSTEM_DOMAIN: "${CF_SYSTEM_DOMAIN}"
 CF_TCP_DOMAIN: "${CF_TCP_DOMAIN}"
 CF_MANIFEST_VERSION: "${CF_MANIFEST_VERSION}"
 EOF
+
+append_extra_vars
+}
+
+function append_extra_vars(){
+    if [[ -d extra-vars ]]; then
+        pushd extra-vars > /dev/null
+            for file in $(find . -type f -print); do
+                cat "${file}" >> ../prepared-env/vars.yml
+            done
+        popd > /dev/null
+    fi
 }
 
 function cleanup() {

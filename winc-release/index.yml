@@ -1,0 +1,19 @@
+#@data/values
+---
+#@overlay/match missing_ok=True
+internal_repos:
+vars:
+- vars.yml
+opsfiles:
+- use-compiled-releases.yml           
+- scale-to-one-az.yml                 
+- windows2019-cell.yml                
+- use-online-windows2019fs.yml        
+- use-latest-windows2019-stemcell.yml 
+- scale-down-windows2019.yml          
+- enable-rdp-2019.yml                 
+- decrease-rep-evacuation-timeout.yml 
+- use-2-azs-for-router.yml            
+- enable-windows-auth.yml             
+- enable-windows-tcp-routes.yml       
+- add-dc-to-security-groups.yml       
