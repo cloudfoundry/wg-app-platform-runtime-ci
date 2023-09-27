@@ -6,8 +6,10 @@ set -o pipefail
 THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 TASK_NAME="$(basename "$THIS_FILE_DIR")"
 export TASK_NAME
-PACKAGE_NAME="$(cat package-name/name)"
-export PACKAGE_NAME
+if [[ -z ${PACKAGE_NAME} ]]; then
+  PACKAGE_NAME="$(cat package-name/name)"
+  export PACKAGE_NAME
+fi
 OLD_PACKAGE_NAME="$(cat package-name/old-name)"
 export OLD_PACKAGE_NAME
 source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
