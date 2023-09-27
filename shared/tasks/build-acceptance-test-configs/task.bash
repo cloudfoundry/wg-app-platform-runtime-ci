@@ -192,7 +192,7 @@ function cf_networking_acceptance_tests() {
     cat << EOF > "${file}"
 {
     "admin_password": "$CF_ADMIN_PASSWORD",
-    "admin_secret": "$(bosh_get_password_from_credhub uaa_admin_client_secret)",
+    "admin_client_secret": "$(bosh_get_password_from_credhub uaa_admin_client_secret)",
     "admin_user":"admin",
     "api": "api.${CF_SYSTEM_DOMAIN}",
     "apps_domain": "${CF_SYSTEM_DOMAIN}",
