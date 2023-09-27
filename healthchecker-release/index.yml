@@ -2,4 +2,4 @@
 ---
 #@overlay/match missing_ok=True
 internal_repos:
-- "healthchecker"
+- name: "healthchecker"

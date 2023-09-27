@@ -2,13 +2,13 @@
 ---
 #@overlay/match missing_ok=True
 internal_repos:
-- "gorouter"
-- "cf-tcp-router"
-- "multierror"
-- "route-registrar"
-- "routing-api"
-- "routing-api-cli"
-- "routing-info"
+- name: "gorouter"
+- name: "cf-tcp-router"
+- name: "multierror"
+- name: "route-registrar"
+- name: "routing-api"
+- name: "routing-api-cli"
+- name: "routing-info"
 opsfiles:
 - add-lb-ca-cert.yml
 - scale-for-cats.yml

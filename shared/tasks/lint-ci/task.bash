@@ -194,6 +194,8 @@ function allowed_dirs() {
     dir_patterns="$(cat <<EOF
 ^./bin/*$
 ^./examples/(task|pipeline)*$
+^./examples/repo/(scripts-dir-with-db|scripts-dir-generic)$
+^./examples/repo/(scripts-dir-with-db|scripts-dir-generic)/docker$
 ^./(shared|${release_list})/(helpers|opsfiles|linters)$
 ^./(shared|${release_list})/tasks/[a-z\-]*$
 ^./(${release_list})/(manifests)$
