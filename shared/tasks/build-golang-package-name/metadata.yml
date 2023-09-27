@@ -6,4 +6,5 @@ oses:
 params:
   PLATFORM: Name of the golang package platform (e.g. linux or windows)
   RELEASE: Name of the release referenced in go_version.json
+  PREFIX: Package name prefix, defaults to no prefix
 
