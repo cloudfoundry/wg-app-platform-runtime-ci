@@ -1,0 +1,23 @@
+#@data/values
+---
+#@overlay/match missing_ok=True
+
+#! <OPTIONAL> if your pipeline needs to run with DB
+db_flavors:
+- image: postgres
+  value: postgres
+- image: mysql-8.0
+  value: mysql
+- image: mysql-5.7
+  value: mysql
+
+#! <MUST> repo/component/package to test in your repo/release
+internal_repos:
+- name: <REPLACE_ME> #! <MUST> e.g. "bosh-dns-adapter"
+  repo: <REPLACE_ME> #! <OPTIONAL> (Defaults to repo) This is only needed when we are locking two repo under the same pipeline. e.g. silk-release and cf-networking-release e.g. cf-networking-repo
+  configure_db: <REPLACE_ME> #! <OPTIONAL> (Defaults to false) Set to "true" if you'd like the run-bin-test to automatically configure_db before running tests.
+  privileged: <REPLACE_ME>  #! <OPTIONAL> (Defaults to false) Set to "true" if you need the test run in a privileged container
+
+#! <OPTIONAL> set to a list of opsfile if pipeline needs to update cf-deployment
+opsfiles:
+- <REPLACE_ME> #! e.g. use-compiled-releases.yml

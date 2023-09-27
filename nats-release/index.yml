@@ -2,7 +2,7 @@
 ---
 #@overlay/match missing_ok=True
 internal_repos:
-- "nats-v2-migrate"
+- name: "nats-v2-migrate"
 opsfiles:
 - add-lb-ca-cert.yml
 - scale-for-cats.yml
