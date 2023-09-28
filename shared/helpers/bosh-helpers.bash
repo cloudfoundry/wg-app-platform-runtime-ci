@@ -82,14 +82,13 @@ blobstore:
   options:
     secret_access_key: "${AWS_SECRET_ACCESS_KEY}"
     access_key_id: "${AWS_ACCESS_KEY_ID}"
-EOF
 
         if [[ -n "${AWS_ASSUME_ROLE_ARN}" ]]; then
             debug "Using AWS Role ARN"
-            cat > "$private_yml" <<EOF
+            cat >> "$private_yml" <<EOF
     assume_role_arn: "${AWS_ASSUME_ROLE_ARN}"
-EOF
         fi
+EOF
     fi
     set -x
 }
