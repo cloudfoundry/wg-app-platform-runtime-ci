@@ -35,9 +35,11 @@ function run() {
         from_package=$(basename ./packages/golang-*-${PLATFORM})
         to_package="golang-${go_minor_version}-${PLATFORM}"
     fi
-    echo "Replacing bosh package from:${from_package} to:${to_package}"
-    sed -i "s/${from_package}/${to_package}/g" packages/**/spec jobs/**/spec
-    rm -rf "packages/${from_package}"
+    if [[ "${from_package}" != "${to_package}" ]]; then
+        echo "Replacing bosh package from:${from_package} to:${to_package}"
+        sed -i "s/${from_package}/${to_package}/g" packages/**/spec jobs/**/spec
+        rm -rf "packages/${from_package}"
+    fi
 
     rsync -a $PWD/ "../bumped-repo"
     popd > /dev/null
