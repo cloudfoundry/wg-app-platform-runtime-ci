@@ -87,8 +87,8 @@ EOF
             debug "Using AWS Role ARN"
             cat >> "$private_yml" <<EOF
     assume_role_arn: "${AWS_ASSUME_ROLE_ARN}"
-        fi
 EOF
+        fi
     fi
     set -x
 }
