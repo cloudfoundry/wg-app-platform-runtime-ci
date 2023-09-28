@@ -486,7 +486,7 @@ jobs:
 
     - task: merge-release-onto-develop
       image: image
-      file: ci/shared/tasks/merge-branches/linux.yml
+      file: ci/shared/tasks/git-merge-branches/linux.yml
       input_mapping:
         source-branch: release-branch
         onto-branch: develop-branch-mergeback
