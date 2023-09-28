@@ -1,0 +1,11 @@
+---
+readme: |
+  This tasks takes IWA specific properties and saves them to a file to use when
+  deploying bosh, and used by the CCG plugin.
+oses:
+  - linux
+params:
+  IWA_DC_IPS: IP address range for IWA Domain Controllers.
+  IWA_PLUGIN_INPUT: Credentials for a user that is allowed to retrieve the gMSA.
+  IWA_CREDENTIAL_SPEC: JSON object that has the necessary information for the CCG to retrieve the gMSA password.
+  FILENAME: Name of file to be created.

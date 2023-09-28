@@ -1,0 +1,17 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+
+outputs:
+- name: created-iwa-vars-file
+
+run:
+  path: ci/winc-release/tasks/create-iwa-vars-file/task.bash
+
+params:
+  IWA_DC_IPS:
+  IWA_PLUGIN_INPUT:
+  IWA_CREDENTIAL_SPEC:
+  FILENAME: vars.yml
