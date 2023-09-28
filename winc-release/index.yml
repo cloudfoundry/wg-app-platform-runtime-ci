@@ -5,8 +5,9 @@ internal_repos:
 vars:
 - vars.yml
 opsfiles:
-- use-compiled-releases.yml           
 - scale-to-one-az.yml                 
+- use-compiled-releases.yml
+- use-compiled-releases-windows.yml
 - windows2019-cell.yml                
 - use-online-windows2019fs.yml        
 - use-latest-windows2019-stemcell.yml 
