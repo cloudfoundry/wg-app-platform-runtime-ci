@@ -1,0 +1,18 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+
+outputs:
+- name: created-file
+
+run:
+  path: ci/shared/tasks/create-file/task.bash
+
+params:
+  CONTENT_TO_WRITE: 
+  FILENAME: 
+
+
+  

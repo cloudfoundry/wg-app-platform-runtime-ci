@@ -1,0 +1,8 @@
+---
+readme: |
+  Creates a file from the given input.  Useful for saving credhub secrets to file.
+oses:
+  - linux
+params:
+  CONTENT_TO_WRITE: Content to write to the file
+  FILENAME: Name of the file to write
