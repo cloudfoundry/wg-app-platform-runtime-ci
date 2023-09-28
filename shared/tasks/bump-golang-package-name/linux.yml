@@ -1,0 +1,17 @@
+---
+platform: linux
+
+inputs:
+- name: repo
+- name: ci
+
+outputs:
+- name: bumped-repo
+
+params:
+  GO_VERSION_FILE: ci/go_version.json
+  PLATFORM:
+  PREFIX: ""
+
+run:
+  path: ci/shared/tasks/bump-golang-package-name/task.bash
