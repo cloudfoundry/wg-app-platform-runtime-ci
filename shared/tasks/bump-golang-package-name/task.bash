@@ -40,6 +40,8 @@ function run() {
         sed -i "s/${from_package}/${to_package}/g" packages/**/spec jobs/**/spec
         rm -rf "packages/${from_package}"
     fi
+    # making sure new package exists for subsequent bosh-vendor-package task1
+    mkdir -p "packages/${to_package}"
 
     rsync -a $PWD/ "../bumped-repo"
     popd > /dev/null
