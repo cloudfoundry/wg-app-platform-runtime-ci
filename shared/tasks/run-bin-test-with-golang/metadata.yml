@@ -1,0 +1,41 @@
+---
+readme: |
+  This task will run respective `./bin/test{.bash,ps1}` for different OSes.
+  In order to to make this task more generalized by setting up env variables and defining functions for the actual test,
+  it will source FUNCTIONS and ENVS defined within the task before calling the respective test file.
+extra_inputs:
+  built-binaries: (Optional) This will optionally take built-binaries (chained with build-binaries task) that have corresponding source files (run.ps1/run.bash) to be used at runtime.
+  input-*: |
+    (Optional) Generic inputs for passing in config files or files needed to run the test.
+    Any param defined below can reference files in this input. e.g. CONFIG=$PWD/input-01/config.json
+oses:
+  - linux
+  - windows
+params:
+  DB: (Currently works on linux only). Set DB flavor to configure for tests. e.g. postgres, mysql
+  DEFAULT_PARAMS: (Currently works on Linux only) Path to .yml file containing repo's default-params to use instead. If this value is set, it will override other params set explicitly.
+  DIR: Path to where you can run `./bin/test{.bash,ps1}`. This is helpful to use when using submodule pattern and wanting to test internal repos without having to create more resources.
+  ENVS: |
+    This parameter defines a list of environment variables will be loaded at runtime, as opposed to
+    container-creation time. The purpose here is to allow users to extend the list of environment
+    variables used by the task simply by updating the pipeline config, rather than by updating the task definition
+    in linux.yml or windows.yml.
+  FLAGS: |
+    (Ginkgo Defaults are
+      --keep-going
+      --trace
+      -r
+      --fail-on-pending
+      --randomize-all
+      -p
+      --race
+      --timeout 20m
+    ) Multiline flags to call test with. If running against a non-go project, this needs to be overridden
+  FUNCTIONS:  Multiline functions to be used for extra configuration of binaries. e.g. ci/winc-release/helpers/configure-binaries.{ps1,bash}
+  VERIFICATIONS: |
+    (Defaults to
+      Verifying if go exists
+      Verifying if go version matches with bosh's package # Should be overriden when running this against a repo that's not a bosh-release e.g. cpu-entitlment-plugin
+      Verifying if go fmt is passing
+      Verifying if go vet is passing
+    ) Verify helper functions to run for a give test.

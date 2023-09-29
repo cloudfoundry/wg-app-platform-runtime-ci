@@ -1,0 +1,40 @@
+---
+platform: windows
+
+inputs:
+- name: ci
+- name: repo
+- name: built-binaries
+  optional: true
+- name: input-01
+  optional: true
+
+params:
+  DB:
+  DEFAULT_PARAMS:
+  DIR:
+  ENVS:
+  FLAGS: |
+    --keep-going
+    --trace
+    -r
+    --fail-on-pending
+    --randomize-all
+    -p
+    --race
+    --timeout 20m
+  FUNCTIONS:
+  VERIFICATIONS: |
+    Verify-Go repo/$env:DIR
+    Verify-GoVersionMatchBoshRelease repo
+    Verify-Ginkgo repo/$env:DIR
+    Verify-GoVet repo/$env:DIR
+
+run:
+  path: powershell
+  args:
+  - "-ExecutionPolicy"
+  - "Bypass"
+  - "-File"
+  - ci/shared/tasks/run-bin-test/task.ps1
+
