@@ -17,7 +17,7 @@ function run() {
         exit 1
     fi
 
-    local go_minor_version=$(cat ${go_version_file} | jq -r "if (.releases.\"${RELEASE_NAME}\" == null) then .default else .releases.\"${release_name}\" end")
+    local go_minor_version=$(cat ${go_version_file} | jq -r "if (.releases.\"${RELEASE_NAME}\" == null) then .default else .releases.\"${RELEASE_NAME}\" end")
     echo $go_minor_version > ci/go_version.txt
 }
 
