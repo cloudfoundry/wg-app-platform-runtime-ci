@@ -18,7 +18,7 @@ function run() {
     fi
 
     local go_minor_version=$(cat ${go_version_file} | jq -r "if (.releases.\"${RELEASE_NAME}\" == null) then .default else .releases.\"${RELEASE_NAME}\" end")
-    echo $go_minor_version > files/go_version.txt
+    echo $go_minor_version > ./files/go_version.txt
 }
 
 trap 'err_reporter $LINENO' ERR
