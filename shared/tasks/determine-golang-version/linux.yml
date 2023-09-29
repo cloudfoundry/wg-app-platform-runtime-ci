@@ -2,11 +2,11 @@
 platform: linux
 
 inputs:
-- name: repo
 - name: ci
 
 params:
   GO_VERSION_FILE: ci/go_version.json
+  RELEASE_NAME:
 
 run:
   path: ci/shared/tasks/determine-golang-version/task.bash
