@@ -224,7 +224,8 @@ function service_discovery_performance_tests() {
     "nats_url": "$NATS_IP",
     "nats_username": "nats",
     "nats_password": "$NATS_PASSWORD",
-    "nats_monitoring_port": $NATS_PORT,
+    "nats_monitoring_port": $NATS_MONITORING_PORT,
+    "nats_port": $NATS_PORT,
     "num_messages": 100000,
     "num_publishers": 10
 }

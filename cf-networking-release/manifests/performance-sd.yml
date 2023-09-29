@@ -41,7 +41,8 @@ instance_groups:
     properties:
       nats:
         debug: true
-        monitor_port: ((NATS_PORT))
+        port: ((NATS_PORT))
+        monitor_port: ((NATS_MONITORING_PORT))
         password: ((NATS_PASSWORD))
         trace: true
         user: nats
