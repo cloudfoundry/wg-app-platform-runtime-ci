@@ -4,6 +4,9 @@ platform: linux
 inputs:
 - name: ci
 
+outputs:
+- name: files
+
 params:
   GO_VERSION_FILE: ci/go_version.json
   RELEASE_NAME:
