@@ -15,7 +15,8 @@ function run(){
     cat <<EOF > created-iwa-vars-file/"${FILENAME}"
 iwa_dc_ips: "${IWA_DC_IPS}"
 iwa_plugin_input: ${IWA_PLUGIN_INPUT}
-iwa_credential_spec: "${IWA_CREDENTIAL_SPEC}"
+iwa_credential_spec: |
+    ${IWA_CREDENTIAL_SPEC}
 EOF
 }
 
