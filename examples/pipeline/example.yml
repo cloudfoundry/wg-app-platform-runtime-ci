@@ -203,6 +203,12 @@ jobs:
     - get: golang-release-latest
       trigger: true
 
+  - task: bump-golang-package-name
+    image: image
+    file: ci/shared/tasks/bump-golang-package-name/linux.yml
+    params:
+      PLATFORM: linux
+
   - task: bump-golang-linux
     file: ci/shared/tasks/bosh-vendor-package/linux.yml
     image: image
