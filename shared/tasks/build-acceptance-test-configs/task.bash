@@ -25,6 +25,8 @@ function run(){
     do
         if [[ "$entry" == "cats" ]]; then
             cats "built-acceptance-test-configs/cats.json"
+        elif [[ "$entry" == "cats-windows" ]]; then
+            cats_windows "built-acceptance-test-configs/cats.json"
         elif [[ "$entry" == "wats" ]]; then
             wats "built-acceptance-test-configs/wats.json"
         elif [[ "$entry" == "rats" ]]; then
@@ -57,6 +59,7 @@ function cats() {
     "apps_domain": "${CF_SYSTEM_DOMAIN}",
     "artifacts_directory": "logs",
     "backend": "diego",
+    "dynamic_asgs_enabled": ${WITH_DYNAMIC_ASG},
     "include_apps": true,
     "include_backend_compatibility": false,
     "include_detect": true,
@@ -68,7 +71,7 @@ function cats() {
     "include_privileged_container_support": false,
     "include_route_services": true,
     "include_routing": true,
-    "include_security_groups": ${WITH_DYNAMIC_ASG},
+    "include_security_groups": true,
     "include_services": true,
     "include_ssh": false,
     "include_sso": false,
@@ -84,6 +87,48 @@ function cats() {
     "use_http": true
 }
 EOF
+}
+
+function cats_windows() {
+    local cats_file="${1?Provide config file}"
+    cats "${cats_file}"
+
+    echo "Adding windows-specific config"
+    #! The following settings were brought over from pesto:
+    #! "include_apps": false,
+    #! "include_detect": false,
+    #! "include_persistent_app": false,
+    #! "include_routing": false,
+    #! "include_ssh": true,
+    #! "credhub_mode": "assisted",
+    #! "credhub_client": "${CREDHUB_CLIENT}",
+    #! "credhub_secret": "${CREDHUB_SECRET}",
+    #! "cf_push_timeout": 300,
+    #! Consider turning these values on
+
+    local windows_file="${cats_file}.windows"
+    cat << EOF > "${windows_file}"
+{
+  "include_windows": true,
+  "use_windows_test_task": true,
+  "use_windows_context_path": true,
+  "windows_stack": "windows"
+
+  "include_apps": false,
+  "include_detect": false,
+  "include_persistent_app": false,
+  "include_routing": false,
+  "include_ssh": true,
+  "credhub_mode": "assisted",
+  "credhub_client": "${CREDHUB_CLIENT}",
+  "credhub_secret": "${CREDHUB_SECRET}",
+  "cf_push_timeout": 300,
+}
+EOF
+
+    local combined_file="${cats_file}.combined"
+    jq -s '.[0] * [1]' "${cats_file}" "${windows_file}" > "${combined_file}"
+    mv -f "${combined_file}" "${cats_file}"
 }
 
 function rats() {
