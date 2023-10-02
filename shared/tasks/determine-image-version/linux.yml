@@ -1,0 +1,16 @@
+---
+platform: linux
+
+inputs:
+- name: repo
+- name: ci
+
+outputs:
+- name: image_version
+
+params:
+  GO_VERSION_FILE: ci/go_version.json
+  IMAGE:
+
+run:
+  path: ci/shared/tasks/determine-image-version/task.bash
