@@ -37,8 +37,6 @@ function run(){
             cf_networking_acceptance_tests "built-acceptance-test-configs/cf-networking-acceptance-tests.json"
         elif [[ "$entry" == "service-discovery-acceptance-tests" ]]; then
             cf_networking_acceptance_tests "built-acceptance-test-configs/service-discovery-acceptance-tests.json"
-        elif [[ "$entry" == "service-discovery-performance-tests" ]]; then
-            service_discovery_performance_tests "built-acceptance-test-configs/service-discovery-performance-tests.json"
         else
             echo "Unable to generate config for $entry"
             exit 1
@@ -212,22 +210,6 @@ function cf_networking_acceptance_tests() {
     "test_applications": 2,
     "include_security_groups": true,
     "use_http":true
-}
-EOF
-}
-
-function service_discovery_performance_tests() {
-    local file="${1?Provide config file}"
-    echo "Creating ${file}"
-    cat << EOF > "${file}"
-{
-    "nats_url": "$NATS_IP",
-    "nats_username": "nats",
-    "nats_password": "$NATS_PASSWORD",
-    "nats_monitoring_port": $NATS_MONITORING_PORT,
-    "nats_port": $NATS_PORT,
-    "num_messages": 100000,
-    "num_publishers": 10
 }
 EOF
 }
