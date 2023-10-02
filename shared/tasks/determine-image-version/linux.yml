@@ -10,7 +10,7 @@ outputs:
 
 params:
   GO_VERSION_FILE: ci/go_version.json
-  IMAGE:
+  IMAGE: cloudfoundry/tas-runtime-build
 
 run:
   path: ci/shared/tasks/determine-image-version/task.bash
