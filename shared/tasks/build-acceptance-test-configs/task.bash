@@ -128,7 +128,7 @@ function cats_windows() {
 EOF
 
     local combined_file="${cats_file}.combined"
-    jq -s '.[0] * [1]' "${cats_file}" "${windows_file}" > "${combined_file}"
+    jq -s '.[0] * .[1]' "${cats_file}" "${windows_file}" > "${combined_file}"
     mv -f "${combined_file}" "${cats_file}"
 }
 
