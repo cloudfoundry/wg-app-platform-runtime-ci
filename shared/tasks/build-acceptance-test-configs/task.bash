@@ -112,7 +112,7 @@ function cats_windows() {
   "include_windows": true,
   "use_windows_test_task": true,
   "use_windows_context_path": true,
-  "windows_stack": "windows"
+  "windows_stack": "windows",
 
   "include_apps": false,
   "include_detect": false,
@@ -122,7 +122,7 @@ function cats_windows() {
   "credhub_mode": "assisted",
   "credhub_client": "${CREDHUB_CLIENT}",
   "credhub_secret": "${CREDHUB_SECRET}",
-  "cf_push_timeout": 300,
+  "cf_push_timeout": 300
 }
 EOF
 
