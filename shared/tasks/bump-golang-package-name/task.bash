@@ -3,6 +3,11 @@
 set -eEu
 set -o pipefail
 
+THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
+source "$THIS_FILE_DIR/../../../shared/helpers/bosh-helpers.bash"
+unset THIS_FILE_DIR
+
 function run() {
     local go_version_file="$PWD/$GO_VERSION_FILE"
 

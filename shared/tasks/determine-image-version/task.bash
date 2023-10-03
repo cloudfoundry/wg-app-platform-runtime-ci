@@ -7,7 +7,9 @@ export RETRY_INTERVAL=10
 export MAX_RETRIES=60
 
 THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
 source "$THIS_FILE_DIR/../../../shared/helpers/bosh-helpers.bash"
+unset THIS_FILE_DIR
 
 function run() {
     local go_version_file="$PWD/$GO_VERSION_FILE"
@@ -17,10 +19,17 @@ function run() {
         exit 1
     fi
 
-    pushd repo > /dev/null
+    local go_minor_version
+    if [ -n "$PLUGIN" ]; then
+        go_minor_version=$(cat ${go_version_file} | jq -r "if (.plugins.\"${PLUGIN}\" == null) then .default else .plugins.\"${PLUGIN}\" end")
+    else
+        pushd repo > /dev/null
 
-    local release_name=$(bosh_release_name)
-    local go_minor_version=$(cat ${go_version_file} | jq -r "if (.releases.\"${release_name}\" == null) then .default else .releases.\"${release_name}\" end")
+        local release_name=$(bosh_release_name)
+        popd > /dev/null
+
+        go_minor_version=$(cat ${go_version_file} | jq -r "if (.releases.\"${release_name}\" == null) then .default else .releases.\"${release_name}\" end")
+    fi
 
     for (( i = 0; i <= MAX_RETRIES; i++ ))
     do
@@ -35,8 +44,6 @@ function run() {
         echo -n "."
         sleep $RETRY_INTERVAL
     done
-
-    popd > /dev/null
 
     echo "digest:${digest}" > image_version/version
 }
