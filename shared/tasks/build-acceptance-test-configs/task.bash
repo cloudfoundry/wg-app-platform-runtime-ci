@@ -93,6 +93,7 @@ EOF
 function cats_windows() {
     local cats_file="${1?Provide config file}"
     cats "${cats_file}"
+    CF_CREDHUB_SECRET=$(get_value_from_credhub credhub_admin_client_secret)
 
     echo "Adding windows-specific config"
     #! The following settings were brought over from pesto:
@@ -121,8 +122,8 @@ function cats_windows() {
   "include_routing": false,
   "include_ssh": true,
   "credhub_mode": "assisted",
-  "credhub_client": "${CREDHUB_CLIENT}",
-  "credhub_secret": "${CREDHUB_SECRET}",
+  "credhub_client": "credhub_admin_client",
+  "credhub_secret": "${CF_CREDHUB_SECRET}",
   "cf_push_timeout": 300
 }
 EOF
