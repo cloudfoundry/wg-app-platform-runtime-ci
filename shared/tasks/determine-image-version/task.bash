@@ -36,14 +36,18 @@ function run() {
 
     echo "Getting digest of ${IMAGE} with latest tag that starts with go-${go_minor_version}"
 
+    local digest
+    local tag
     for (( i = 0; i <= MAX_RETRIES; i++ ))
     do
         set +e
-        digest=$(curl -s -H "Accept: application/json"  https://hub.docker.com/v2/repositories/${IMAGE}/tags | jq "[.results[] | select(.name | startswith(\"go-${go_minor_version}\")) ] | sort_by(.name) | reverse[0] | .digest" 2>/dev/null)
+        image_info=$(curl -s -H "Accept: application/json"  https://hub.docker.com/v2/repositories/${IMAGE}/tags | jq "[.results[] | select(.name | startswith(\"go-${go_minor_version}\")) ] | sort_by(.name) | reverse[0]" 2>/dev/null)
         set -e
 
-        if [ -n "$digest" ]; then
-           break
+        if [ -n "$image_info" ]; then
+            digest=$(echo $image_info | jq -r .digest)
+            tag=$(echo $image_info | jq -r .name)
+            break
         fi
 
         echo -n "."
@@ -51,8 +55,9 @@ function run() {
     done
 
     echo "digest:${digest}" > image_version/version
+    echo "${tag}" > image_version/tag
 
-    echo "Digest found: ${digest}"
+    echo "Found image with digest: ${digest} and tag: ${tag}"
 }
 
 trap 'err_reporter $LINENO' ERR
