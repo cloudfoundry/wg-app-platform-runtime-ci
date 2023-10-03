@@ -4,7 +4,10 @@ set -eEu
 set -o pipefail
 
 THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+TASK_NAME="$(basename "$THIS_FILE_DIR")"
+export TASK_NAME
 source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
+source "$THIS_FILE_DIR/../../../shared/helpers/git-helpers.bash"
 source "$THIS_FILE_DIR/../../../shared/helpers/bosh-helpers.bash"
 unset THIS_FILE_DIR
 

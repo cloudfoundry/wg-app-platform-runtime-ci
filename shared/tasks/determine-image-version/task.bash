@@ -7,7 +7,10 @@ export RETRY_INTERVAL=10
 export MAX_RETRIES=60
 
 THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+TASK_NAME="$(basename "$THIS_FILE_DIR")"
+export TASK_NAME
 source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
+source "$THIS_FILE_DIR/../../../shared/helpers/git-helpers.bash"
 source "$THIS_FILE_DIR/../../../shared/helpers/bosh-helpers.bash"
 unset THIS_FILE_DIR
 
@@ -31,10 +34,12 @@ function run() {
         go_minor_version=$(cat ${go_version_file} | jq -r "if (.releases.\"${release_name}\" == null) then .default else .releases.\"${release_name}\" end")
     fi
 
+    echo "Getting digest of ${IMAGE} with latest tag that starts with go-${go_minor_version}"
+
     for (( i = 0; i <= MAX_RETRIES; i++ ))
     do
         set +e
-        digest=$(curl -s -H "Accept: application/json"  https://hub.docker.com/v2/repositories/${IMAGE}/tags | jq "[.results[] | select(.name | startswith(\"go-${go_minor_version}\")) ] | sort_by(.name) | reverse[0] | .digest")
+        digest=$(curl -s -H "Accept: application/json"  https://hub.docker.com/v2/repositories/${IMAGE}/tags | jq "[.results[] | select(.name | startswith(\"go-${go_minor_version}\")) ] | sort_by(.name) | reverse[0] | .digest" 2>/dev/null)
         set -e
 
         if [ -n "$digest" ]; then
@@ -46,6 +51,8 @@ function run() {
     done
 
     echo "digest:${digest}" > image_version/version
+
+    echo "Digest found: ${digest}"
 }
 
 trap 'err_reporter $LINENO' ERR
