@@ -2,8 +2,12 @@
 
 set -eEu
 set -o pipefail
+
 export RETRY_INTERVAL=10
 export MAX_RETRIES=60
+
+THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+source "$THIS_FILE_DIR/../../../shared/helpers/bosh-helpers.bash"
 
 function run() {
     local go_version_file="$PWD/$GO_VERSION_FILE"
