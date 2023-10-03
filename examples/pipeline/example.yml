@@ -544,10 +544,11 @@ jobs:
 
 - name: release-env-lock
   plan:
-  - get: env
   - get: env-lock
   - try:
       do:
+      - get: env
+        passed: [claim-env]
       - put: env
         params:
           action: unclaim
@@ -557,7 +558,8 @@ jobs:
       #!   params:
       #!     action: release
       #!     resource: env
-  - put: env-lock
+  ensure:
+    put: env-lock
     params:
       release: env-lock #! path to the resource in the above get
 
