@@ -9,6 +9,7 @@ export TASK_NAME="$(basename $THIS_FILE_DIR)"
 source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
 source "$THIS_FILE_DIR/../../../shared/helpers/bosh-helpers.bash"
 source "$THIS_FILE_DIR/../../../shared/helpers/cf-helpers.bash"
+source "$THIS_FILE_DIR/../../../shared/helpers/credhub-helpers.bash"
 unset THIS_FILE_DIR
 
 function run(){
