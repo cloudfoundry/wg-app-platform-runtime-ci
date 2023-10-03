@@ -30,7 +30,7 @@ function run() {
     fi
     if [[ "${from_package}" != "${to_package}" ]]; then
         echo "Replacing bosh package from:${from_package} to:${to_package}"
-        sed -i "s/${from_package}/${to_package}/g" packages/**/spec
+        sed -i "s/${from_package}/${to_package}/g" packages/**/spec packages/**/packaging
         # do not match the job name, e.g. golang-1-windows in windows-tools-release
         sed -i "3,\$s/${from_package}/${to_package}/g" jobs/**/spec
         rm -rf "packages/${from_package}"
