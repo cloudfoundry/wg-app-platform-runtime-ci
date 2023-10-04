@@ -7,8 +7,7 @@ releases:
 - name: bosh-dns
   version: latest
 - name: cf-networking
-  version: create
-  url: ((DEPLOYMENT_RELEASE_DIR))
+  version: latest
 - name: bpm
   version: latest
 
