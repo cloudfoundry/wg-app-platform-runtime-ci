@@ -35,11 +35,17 @@ function run() {
 # image_resource
 function image_resource() {
     debug "Running image_resource function"
+    # Ignored tasks define image resource to dynamically load tagged image
+    ignored_tasks=("run-bin-test")
+
     for file in $(find . -name "linux.yml" )
     do
-        if [[ $(yq .image_resource "${file}") != "null" ]]; then
-            debug "Found image_resource in ${file}. Please remove that and use 'image' to inject into the task at runtime."
-            FOUND_ERROR=true
+        task_dir_name="$(basename $(dirname \"${file}\"))"
+        if [[ ! "${ignored_tasks[*]}" =~ "${task_dir_name}" ]]; then
+            if [[ $(yq .image_resource "${file}") != "null" ]]; then
+                debug "Found image_resource in ${file}. Please remove that and use 'image' to inject into the task at runtime."
+                FOUND_ERROR=true
+            fi
         fi
     done
 
