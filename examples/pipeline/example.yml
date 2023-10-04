@@ -364,6 +364,27 @@ jobs:
       USE_SINGLE_APP_INSTANCE: "false"
       VARS_FILES: vars.yml
       OPS_FILES: #@ "\n".join(data.values.opsfiles)
+  - task: open-asg-for-credhub
+    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      INSTANCE_GROUP_NAME: credhub
+      SECURITY_GROUP_NAME: credhub
+  - task: open-asg-for-uaa
+    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      INSTANCE_GROUP_NAME: uaa
+      SECURITY_GROUP_NAME: uaa
+  - task: enable-feature-flags-for-cats
+    file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
+
 - name: run-cats
   serial: true
   serial_groups: [acceptance]
