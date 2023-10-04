@@ -5,7 +5,7 @@ oses:
   - linux
 inputs:
   ci: The wg-app-platform-runtime-ci directory
-extra-inputs:
+extra_inputs:
   repo: Optional release repo to pass to task to find go version for that release in GO_VERSION_FILE
 params:
   GO_VERSION_FILE: (Defaults to ci/go_version.json). Path to go-version.json where the new version is defined.
