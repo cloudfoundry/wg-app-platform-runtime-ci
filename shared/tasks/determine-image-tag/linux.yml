@@ -7,7 +7,7 @@ inputs:
 - name: ci
 
 outputs:
-- name: image_version
+- name: image_tag
 
 params:
   GO_VERSION_FILE: ci/go_version.json
@@ -15,4 +15,4 @@ params:
   PLUGIN:
 
 run:
-  path: ci/shared/tasks/determine-image-version/task.bash
+  path: ci/shared/tasks/determine-image-tag/task.bash

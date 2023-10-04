@@ -34,9 +34,8 @@ function run() {
         go_minor_version=$(cat ${go_version_file} | jq -r "if (.releases.\"${release_name}\" == null) then .default else .releases.\"${release_name}\" end")
     fi
 
-    echo "Getting digest of ${IMAGE} with latest tag that starts with go-${go_minor_version}"
+    echo "Getting latest tag of ${IMAGE} with latest tag that starts with go-${go_minor_version}"
 
-    local digest
     local tag
     for (( i = 0; i <= MAX_RETRIES; i++ ))
     do
@@ -45,7 +44,6 @@ function run() {
         set -e
 
         if [ -n "$image_info" ]; then
-            digest=$(echo $image_info | jq -r .digest)
             tag=$(echo $image_info | jq -r .name)
             break
         fi
@@ -54,10 +52,9 @@ function run() {
         sleep $RETRY_INTERVAL
     done
 
-    echo "digest:${digest}" > image_version/version
-    echo "${tag}" > image_version/tag
+    echo "${tag}" > image_tag/tag
 
-    echo "Found image with digest: ${digest} and tag: ${tag}"
+    echo "Found image with tag: ${tag}"
 }
 
 trap 'err_reporter $LINENO' ERR
