@@ -110,12 +110,41 @@ function get_go_version_for_package(){
 function get_go_version_for_release(){
     local dir="${1:-$PWD}"
     pushd "${dir}" > /dev/null
-    local package_path package_name spec_lock_value
-    package_path=$(find ./packages/ -name "golang-*linux" -type d)
-    package_name=$(basename "${package_path}")
-    spec_lock_value=$(yq .fingerprint "${package_path}/spec.lock")
+
+    local linux_package_path linux_package_name linux_spec_lock_value
+    linux_package_path=$(find ./packages/ -name "golang-*linux" -type d)
+    linux_package_name=$(basename "${linux_package_path}")
+    linux_spec_lock_value=$(yq .fingerprint "${linux_package_path}/spec.lock")
+
+    local windows_package_path windows_package_name windows_spec_lock_value
+    windows_package_path=$(find ./packages/ -name "golang-*windows" -type d)
+    windows_package_name=$(basename "${windows_package_path}")
+    windows_spec_lock_value=$(yq .fingerprint "${windows_package_path}/spec.lock")
+
     popd > /dev/null
-    get_go_version_for_package "${spec_lock_value}" "${package_name}"
+
+    linux_go_version=$(get_go_version_for_package "${linux_spec_lock_value}" "${linux_package_name}")
+    windows_go_version=$(get_go_version_for_package "${windows_spec_lock_value}" "${windows_package_name}")
+
+    if [ -z "$linux_go_version" ] && [ -z "$windows_go_version" ]; then
+        debug "No go packages detected in the release."
+        exit 1
+    elif [ -z "$linux_go_version" ] && [ -n  "$windows_go_version" ]; then
+        debug "Release only contains a golang package for windows"
+        echo "$windows_go_version"
+    elif [ -n "$linux_go_version" ] && [ -z "$windows_go_version" ]; then
+        debug "Release only contains a golang package for linux"
+        echo "$linux_go_version"
+    else
+        debug "Relase contains go packages for both linux and windows"
+        if [ "$linux_go_version" -eq "$windows_go_version" ]; then
+            debug "Go versions match"
+            echo "$linux_go_version"
+        else
+            debug "Go versions for linux and windows do not match. Failing..."
+            exit 1
+        fi
+    fi
 }
 
 function err_reporter() {
