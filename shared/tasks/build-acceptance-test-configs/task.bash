@@ -112,20 +112,25 @@ function cats_windows() {
     local windows_file="${cats_file}.windows"
     cat << EOF > "${windows_file}"
 {
-  "include_windows": true,
-  "use_windows_test_task": true,
-  "use_windows_context_path": true,
-  "windows_stack": "windows",
+    "include_windows": true,
+    "use_windows_test_task": true,
+    "use_windows_context_path": true,
+    "windows_stack": "windows",
 
-  "include_apps": false,
-  "include_detect": false,
-  "include_persistent_app": false,
-  "include_routing": false,
-  "include_ssh": true,
-  "credhub_mode": "assisted",
-  "credhub_client": "credhub_admin_client",
-  "credhub_secret": "${CF_CREDHUB_SECRET}",
-  "cf_push_timeout": 300
+    "include_apps": false,
+    "include_detect": false,
+    "include_persistent_app": false,
+    "include_route_services": false,
+    "include_routing": false,
+    "include_security_groups": false,
+    "include_services": false,
+    "include_ssh": true,
+    "include_zipkin": false,
+
+    "credhub_mode": "assisted",
+    "credhub_client": "credhub_admin_client",
+    "credhub_secret": "${CF_CREDHUB_SECRET}",
+    "cf_push_timeout": 300
 }
 EOF
 
