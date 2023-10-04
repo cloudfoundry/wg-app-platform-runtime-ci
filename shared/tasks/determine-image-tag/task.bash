@@ -34,7 +34,7 @@ function run() {
         go_minor_version=$(cat ${go_version_file} | jq -r "if (.releases.\"${release_name}\" == null) then .default else .releases.\"${release_name}\" end")
     fi
 
-    echo "Getting latest tag of ${IMAGE} with latest tag that starts with go-${go_minor_version}"
+    echo "Getting latest tag that starts with go-${go_minor_version} for image ${IMAGE}"
 
     local tag
     for (( i = 0; i <= MAX_RETRIES; i++ ))
