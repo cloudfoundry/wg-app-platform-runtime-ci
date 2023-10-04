@@ -180,8 +180,36 @@ EOF
 }
 
 function wats() {
-    echo "not yet implemented"
-    exit 1
+    local file="${1?Provide config file}"
+    echo "Creating ${file}"
+    cat << EOF > "${file}"
+{
+  "api": "api.${CF_SYSTEM_DOMAIN}",
+  "apps_domain": "${CF_SYSTEM_DOMAIN}",
+  "admin_user":"admin",
+  "admin_password": "${CF_ADMIN_PASSWORD}",
+  "skip_ssl_validation": true,
+  "include_apps": false,
+  "include_detect": false,
+  "include_persistent_app": false,
+  "include_routing": false,
+  "include_v3": false,
+  "include_capi_no_bridge": false,
+  "include_security_groups": true,
+  "use_http": true,
+  "include_windows": true,
+  "include_ssh": false,
+  "credhub_mode": "assisted",
+  "credhub_client": "credhub_admin_client",
+  "credhub_secret": "$(bosh_get_password_from_credhub credhub_admin_client_secret)",
+  "cf_push_timeout": 300,
+  "unallocated_ip_for_security_group": "10.0.0.5",
+  "use_windows_test_task": true,
+  "use_windows_context_path": true,
+  "windows_stack": "windows"
+
+}
+EOF
 }
 
 function cf_networking_acceptance_tests() {
