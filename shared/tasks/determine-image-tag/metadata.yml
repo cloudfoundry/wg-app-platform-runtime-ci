@@ -3,6 +3,10 @@ readme: |
   This task writes image resource version for the golang version specified in GO_VERSION_FILE
 oses:
   - linux
+inputs:
+  ci: The wg-app-platform-runtime-ci directory
+extra-inputs:
+  repo: Optional release repo to pass to task to find go version for that release in GO_VERSION_FILE
 params:
   GO_VERSION_FILE: (Defaults to ci/go_version.json). Path to go-version.json where the new version is defined.
   IMAGE: The image name in dockerhub, e.g. cloudfoundry/tas-runtime-build
