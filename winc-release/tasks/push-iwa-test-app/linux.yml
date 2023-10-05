@@ -1,0 +1,11 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+- name: repo
+- name: env
+
+params:
+run:
+  path: ci/winc-release/tasks/push-iwa-test-app/task.bash

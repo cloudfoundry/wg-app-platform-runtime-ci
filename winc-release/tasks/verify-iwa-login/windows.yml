@@ -1,0 +1,17 @@
+---
+platform: windows
+
+inputs:
+- name: ci
+- name: repo
+
+params:
+
+run:
+  path: powershell
+  args:
+  - "-ExecutionPolicy"
+  - "Bypass"
+  - "-File"
+  - ci/<REPLACE_ME>/tasks/<REPLACE_ME>/task.ps1
+
