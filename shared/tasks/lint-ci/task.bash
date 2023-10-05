@@ -36,7 +36,7 @@ function run() {
 function image_resource() {
     debug "Running image_resource function"
     # Ignored tasks define image resource to dynamically load tagged image
-    ignored_tasks=("run-bin-test")
+    ignored_tasks=("run-bin-test" "build-binaries")
 
     for file in $(find . -name "linux.yml" )
     do
