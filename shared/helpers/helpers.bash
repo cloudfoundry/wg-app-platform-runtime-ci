@@ -118,14 +118,18 @@ function get_go_version_for_release(){
     debug "Finding the go version for linux"
     local linux_package_path linux_package_name linux_spec_lock_value
     linux_package_path=$(find ./packages/ -name "golang-*linux" -type d)
-    linux_package_name=$(basename "${linux_package_path}")
-    linux_spec_lock_value=$(yq .fingerprint "${linux_package_path}/spec.lock")
+    if [ -n "$linux_package_path" ]; then
+        linux_package_name=$(basename "${linux_package_path}")
+        linux_spec_lock_value=$(yq .fingerprint "${linux_package_path}/spec.lock")
+    fi
 
     debug "Finding the go version for windows"
     local windows_package_path windows_package_name windows_spec_lock_value
     windows_package_path=$(find ./packages/ -name "golang-*windows" -type d)
-    windows_package_name=$(basename "${windows_package_path}")
-    windows_spec_lock_value=$(yq .fingerprint "${windows_package_path}/spec.lock")
+    if [ -n "$windows_package_path" ]; then
+        windows_package_name=$(basename "${windows_package_path}")
+        windows_spec_lock_value=$(yq .fingerprint "${windows_package_path}/spec.lock")
+    fi
 
     popd > /dev/null
 
