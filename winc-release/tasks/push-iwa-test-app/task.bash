@@ -19,6 +19,7 @@ function run(){
 
     bosh_target
     cf_target
+    cf_create_tcp_domain # idempotent...should already be created
     cf_command "create-org ${ORG_NAME}"
     cf_command "create-space -o ${ORG_NAME} ${SPACE_NAME}"
     cf_command "target -o ${ORG_NAME} -s ${SPACE_NAME}"
