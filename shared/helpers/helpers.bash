@@ -155,9 +155,9 @@ function get_go_version_for_release(){
 
 function err_reporter() {
     if [[ -f "/tmp/$TASK_NAME.log" ]]; then
-        echo "---Debug Report Starting--"
-        cat "/tmp/$TASK_NAME.log"
-        echo "---Debug Report Ending--"
+        echo "---Debug Report Starting--" >&2
+        cat "/tmp/$TASK_NAME.log"         >&2
+        echo "---Debug Report Ending--"   >&2
     fi
 }
 
