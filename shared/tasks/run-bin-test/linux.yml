@@ -4,8 +4,8 @@ platform: linux
 image_resource:
   type: registry-image
   source:
-    repository: cloudfoundry/tas-runtime-build
-    tag: ((.:image_tag))
+    repository: ((image_repository))
+    tag: ((image_tag))
 
 inputs:
 - name: ci
