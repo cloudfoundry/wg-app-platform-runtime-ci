@@ -96,6 +96,7 @@ function debug(){
 }
 
 function get_go_version_for_package(){
+    debug "running get_go_version_for_package with args '$1' '$2'"
     local spec_lock_value="${1:?Provide a spec lock value}"
     local package_name="${2:?Provide a package name}"
 
@@ -104,18 +105,23 @@ function get_go_version_for_package(){
     git clone --quiet https://github.com/bosh-packages/golang-release "${golang_release_dir}" > /dev/null
     go_version=$("${golang_release_dir}/scripts/get-package-version.sh" "${spec_lock_value}" "${package_name}")
     rm -rf  "${golang_release_dir}"
+
     echo "$go_version"
 }
 
 function get_go_version_for_release(){
+    debug "running get_go_version_for_release with args '$1'"
+
     local dir="${1:-$PWD}"
     pushd "${dir}" > /dev/null
 
+    debug "Finding the go version for linux"
     local linux_package_path linux_package_name linux_spec_lock_value
     linux_package_path=$(find ./packages/ -name "golang-*linux" -type d)
     linux_package_name=$(basename "${linux_package_path}")
     linux_spec_lock_value=$(yq .fingerprint "${linux_package_path}/spec.lock")
 
+    debug "Finding the go version for windows"
     local windows_package_path windows_package_name windows_spec_lock_value
     windows_package_path=$(find ./packages/ -name "golang-*windows" -type d)
     windows_package_name=$(basename "${windows_package_path}")
