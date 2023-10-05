@@ -96,7 +96,7 @@ function debug(){
 }
 
 function get_go_version_for_package(){
-    debug "running get_go_version_for_package with args '$1' '$2'"
+    debug "running get_go_version_for_package with args $*"
     local spec_lock_value="${1:?Provide a spec lock value}"
     local package_name="${2:?Provide a package name}"
 
@@ -110,7 +110,7 @@ function get_go_version_for_package(){
 }
 
 function get_go_version_for_release(){
-    debug "running get_go_version_for_release with args '$1'"
+    debug "running get_go_version_for_release with args $*"
 
     local dir="${1:-$PWD}"
     pushd "${dir}" > /dev/null
