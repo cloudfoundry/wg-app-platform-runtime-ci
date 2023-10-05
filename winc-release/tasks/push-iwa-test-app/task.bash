@@ -17,6 +17,7 @@ function run(){
     local task_tmp_dir="${1:?provide temp dir for task}"
     shift 1
 
+    bosh_target
     cf_target
     cf_command "create-org ${ORG_NAME}"
     cf_command "create-space -o ${ORG_NAME} ${SPACE_NAME}"
