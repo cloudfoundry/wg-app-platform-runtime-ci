@@ -2,17 +2,16 @@
 platform: linux
 
 inputs:
+- name: ci
 - name: repo
   optional: true
-- name: ci
 
 outputs:
-- name: image_tag
+- name: determined-tag
 
 params:
-  GO_VERSION_FILE: ci/go_version.json
+  GO_VERSION_FILE: ci/go-version.json
   IMAGE: cloudfoundry/tas-runtime-build
-  PLUGIN:
 
 run:
   path: ci/shared/tasks/determine-image-tag/task.bash

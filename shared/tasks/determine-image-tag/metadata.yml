@@ -1,13 +1,10 @@
 ---
 readme: |
-  This task writes image resource version for the golang version specified in GO_VERSION_FILE
+  This task will determine image tag for the golang version specified in GO_VERSION_FILE for a repo or an image. 
 oses:
   - linux
-inputs:
-  ci: The wg-app-platform-runtime-ci directory
 extra_inputs:
-  repo: Optional release repo to pass to task to find go version for that release in GO_VERSION_FILE
+  repo: The presence of this input will determine if the task need to generate tags for an image or a repo.
 params:
-  GO_VERSION_FILE: (Defaults to ci/go_version.json). Path to go-version.json where the new version is defined.
-  IMAGE: The image name in dockerhub, e.g. cloudfoundry/tas-runtime-build
-  PLUGIN: The name of the plugin, e.g. cpu-entitlement-plugin. Otherwise, release from repo input will be used.
+  GO_VERSION_FILE: (Defaults to ci/go-version.json). Path to go-version.json where the new version is defined.
+  IMAGE: (Defaults to cloudfoundry/tas-runtime-build) The image name in dockerhub.

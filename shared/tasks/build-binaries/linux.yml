@@ -4,8 +4,8 @@ platform: linux
 image_resource:
   type: registry-image
   source:
-    repository: ((image_repository))
-    tag: ((image_tag))
+    repository: ((repository))
+    tag: ((tag))
 
 inputs:
 - name: ci
