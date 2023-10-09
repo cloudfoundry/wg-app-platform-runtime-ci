@@ -16,7 +16,15 @@ function run(){
 
   pushd repo > /dev/null
   local go_version release_name spec_diff
-  go_version="$(get_go_version_for_release)"
+  go_version=$(get_go_version_for_release "$PWD" "golang-*linux")
+  if [[ -z "${go_version}" ]]; then
+    go_version=$(get_go_version_for_release "$PWD" "golang-*windows")
+  fi
+  if [[ -z "${go_version}" ]]; then
+    echo "Unable to find version of go"
+    exit 1
+  fi
+
   release_name="$(git_get_remote_name)"
   spec_diff=$(get_bosh_job_spec_diff)
   popd > /dev/null

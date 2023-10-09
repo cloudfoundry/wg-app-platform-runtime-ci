@@ -8,7 +8,7 @@ function verify_go_version_match_bosh_release(){
     local dir="${1:-$PWD}"
     local container_go_version bosh_release_go_version
     container_go_version="$(go version | cut -d " " -f 3 | sed 's/go//' | cut -d '.' -f1,2 )"
-    bosh_release_go_version="$(get_go_version_for_release "${dir}" | cut -d '.' -f1,2)"
+    bosh_release_go_version="$(get_go_version_for_release "${dir}" "golang-*linux" | cut -d '.' -f1,2)"
     if [[ "$container_go_version" != "$bosh_release_go_version" ]]; then
         echo "Mismatch between container's go version (${container_go_version}.X) and bosh release's go version (${bosh_release_go_version}.X). Please make sure the two match on major and minor"
         exit 1
@@ -111,55 +111,22 @@ function get_go_version_for_package(){
 
 function get_go_version_for_release(){
     debug "running get_go_version_for_release with args $*"
+    local dir="${1:?Provide release directory path}"
+    local package="${2:?Provide a package glob}"
 
-    local dir="${1:-$PWD}"
     pushd "${dir}" > /dev/null
-
-    debug "Finding the go version for linux"
-    local linux_package_path linux_package_name linux_spec_lock_value
-    linux_package_name=""
-    linux_spec_lock_value=""
-    linux_package_path=$(find ./packages/ -name "golang-*linux" -type d)
-    if [ -n "$linux_package_path" ]; then
-        linux_package_name=$(basename "${linux_package_path}")
-        linux_spec_lock_value=$(yq .fingerprint "${linux_package_path}/spec.lock")
+    debug "Finding the go version for $package"
+    local package_path package_name spec_lock_value
+    package_name=""
+    spec_lock_value=""
+    package_path=$(find ./packages/ -name "$package" -type d)
+    if [ -n "$package_path" ]; then
+        package_name=$(basename "${package_path}")
+        spec_lock_value=$(yq .fingerprint "${package_path}/spec.lock")
+        get_go_version_for_package "${spec_lock_value}" "${package_name}"
     fi
-
-    debug "Finding the go version for windows"
-    local windows_package_path windows_package_name windows_spec_lock_value
-    windows_package_name=""
-    windows_spec_lock_value=""
-
-    windows_package_path=$(find ./packages/ -name "golang-*windows" -type d)
-    if [ -n "$windows_package_path" ]; then
-        windows_package_name=$(basename "${windows_package_path}")
-        windows_spec_lock_value=$(yq .fingerprint "${windows_package_path}/spec.lock")
-    fi
-
     popd > /dev/null
 
-    linux_go_version=$(get_go_version_for_package "${linux_spec_lock_value}" "${linux_package_name}")
-    windows_go_version=$(get_go_version_for_package "${windows_spec_lock_value}" "${windows_package_name}")
-
-    if [ -z "$linux_go_version" ] && [ -z "$windows_go_version" ]; then
-        debug "No go packages detected in the release."
-        exit 1
-    elif [ -z "$linux_go_version" ] && [ -n  "$windows_go_version" ]; then
-        debug "Release only contains a golang package for windows"
-        echo "$windows_go_version"
-    elif [ -n "$linux_go_version" ] && [ -z "$windows_go_version" ]; then
-        debug "Release only contains a golang package for linux"
-        echo "$linux_go_version"
-    else
-        debug "Relase contains go packages for both linux and windows"
-        if [ "$linux_go_version" -eq "$windows_go_version" ]; then
-            debug "Go versions match"
-            echo "$linux_go_version"
-        else
-            debug "Go versions for linux and windows do not match. Failing..."
-            exit 1
-        fi
-    fi
 }
 
 function err_reporter() {

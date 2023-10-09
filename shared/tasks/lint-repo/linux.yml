@@ -9,6 +9,7 @@ params:
   LINTERS: |
     sync-package-specs.bash
     sync-submodule-config.bash
+    match-golang-os-package-versions.bash
 
 run:
   path: ci/shared/tasks/lint-repo/task.bash
