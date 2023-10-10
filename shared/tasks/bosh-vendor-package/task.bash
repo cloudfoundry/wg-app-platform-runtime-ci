@@ -19,25 +19,34 @@ function run() {
   local private_yml="./config/private.yml"
   bosh_configure_private_yml $private_yml
 
-  local package_name=$(basename ./packages/${PACKAGE_NAME})
-  debug "Expanding glob from:${PACKAGE_NAME} to:${package_name}"
+  vendored_package_name=$PACKAGE_NAME
+  if [[ -n "${PACKAGE_PREFIX}" ]]; then
+    vendored_package_name="${PACKAGE_PREFIX}-${PACKAGE_NAME}"
+  fi
 
-  debug "bosh vendor for package: ${package_name} and prefix: ${PACKAGE_PREFIX}"
+  if [ -f "packages/${vendored_package_name}/spec.lock" ]; then
+    for dep in $(cat packages/${vendored_package_name}/spec.lock | yq -r .dependencies[]); do 
+      echo "cleaning up dependency ${dep}"
+      rm -rf "packages/${dep}"
+    done
+  fi
+
+  debug "bosh vendor for package: ${PACKAGE_NAME} and prefix: ${PACKAGE_PREFIX}"
 
   if [[ -n "${PACKAGE_PREFIX}" ]]; then
-    bosh vendor-package "${package_name}" ../package-release --prefix "${PACKAGE_PREFIX}"
+    bosh vendor-package "${PACKAGE_NAME}" ../package-release --prefix "${PACKAGE_PREFIX}"
   else
-    bosh vendor-package "${package_name}" ../package-release
+    bosh vendor-package "${PACKAGE_NAME}" ../package-release
   fi
 
   if [[ -n $(git status --porcelain) ]]; then
     echo "changes detected, will commit..."
     git add --all
-    message="Upgrade ${package_name}"
+    message="Upgrade ${PACKAGE_NAME}"
 
     if [[ -x ../package-release/scripts/get-package-version.sh ]]; then
-      fingerprint="$(yq .fingerprint < "packages/${package_name}/spec.lock")"
-      pkg_version=$(cd ../package-release && ./scripts/get-package-version.sh "${fingerprint}" "${package_name}")
+      fingerprint="$(yq .fingerprint < "packages/${vendored_package_name}/spec.lock")"
+      pkg_version=$(cd ../package-release && ./scripts/get-package-version.sh "${fingerprint}" "${PACKAGE_NAME}")
       message="${message} (${pkg_version})"
     fi
     git commit -m "${message}"
