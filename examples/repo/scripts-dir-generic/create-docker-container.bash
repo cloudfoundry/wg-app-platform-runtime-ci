@@ -11,6 +11,7 @@ REPO_PATH="${THIS_FILE_DIR}/../"
 unset THIS_FILE_DIR
 
 IMAGE="cloudfoundry/tas-runtime-build"
+CONTAINER_NAME="$REPO_NAME-docker-container"
 
 if [[ -z "${*}" ]]; then
   ARGS="-it"
@@ -18,14 +19,13 @@ else
   ARGS="${*}"
 fi
 
-echo $ARGS
-
 docker pull "${IMAGE}"
-docker rm -f "$REPO_NAME-docker-container"
+docker rm -f $CONTAINER_NAME
 docker run -it \
   --env "REPO_NAME=$REPO_NAME" \
   --env "REPO_PATH=/repo" \
-  --name "$REPO_NAME-docker-container" \
+  --rm \
+  --name "$CONTAINER_NAME" \
   -v "${REPO_PATH}:/repo" \
   -v "${CI}:/ci" \
    <REPLACE_ME> or --privileged \ #Needed for releases that need containers with elavated permissions
