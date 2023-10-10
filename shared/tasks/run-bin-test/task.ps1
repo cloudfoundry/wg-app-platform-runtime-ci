@@ -19,7 +19,16 @@ function Run
     Expand-Verifications
 
     Push-Location "repo/$env:DIR"
-    ./bin/test.ps1 $(Expand-Flags)
+    if (Test-Path "./bin/test.ps1") {
+        Debug "Runing ./bin/test.ps1 for repo/$env:DIR"
+        ./bin/test.ps1 $(Expand-Flags)
+    } else {
+        Debug "Missing ./bin/test.ps1. Running ginkgo by default for repo/$env:DIR"
+        Invoke-Expression "go run github.com/onsi/ginkgo/v2/ginkgo $(Expand-Flags)"
+        if ($LASTEXITCODE -ne 0){
+            throw "failed"
+        }
+    }
     Pop-Location
 }
 
