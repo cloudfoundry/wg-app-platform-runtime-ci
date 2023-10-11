@@ -1,0 +1,12 @@
+
+---
+readme: |
+  This task will combine assets (files or dirs) into a single directory.
+extra_inputs:
+  input-*: Extra inputs that you can use in COPY_ACTIONS for referring to assets.
+oses:
+  - linux
+params:
+  COPY_ACTIONS: |
+    Multiline copy actions that are taken for copying assets. Each line should be in the format of `{source,dest}`.
+    e.g. {input-01/dir-01/*,combined-assets/}

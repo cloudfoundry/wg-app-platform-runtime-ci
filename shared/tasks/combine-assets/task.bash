@@ -8,12 +8,12 @@ export TASK_NAME="$(basename $THIS_FILE_DIR)"
 source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
 unset THIS_FILE_DIR
 
-: "${GLOB:?Need to set GLOB}"
+: "${COPY_ACTIONS:?Need to set COPY_ACTIONS}"
 function run(){
-  for f in ${GLOB}
+  for copy_action in ${COPY_ACTIONS}
   do
-    ls $f
-    cp $f ./combined-files/"${PREFIX}$(basename $f)"
+    debug "Copying: ${copy_action}"
+    eval "cp -r ${copy_action}"
   done
 }
 

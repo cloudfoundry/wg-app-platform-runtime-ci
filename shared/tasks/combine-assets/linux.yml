@@ -9,11 +9,10 @@ inputs:
   optional: true
 
 outputs:
-- name: combined-files
+- name: combined-assets
 
 run:
-  path: ci/shared/tasks/combine-files/task.bash
+  path: ci/shared/tasks/combine-assets/task.bash
 
 params:
-  GLOB: ~
-  PREFIX: ~
+  COPY_ACTIONS:
