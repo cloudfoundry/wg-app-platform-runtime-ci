@@ -24,29 +24,30 @@ function run() {
     vendored_package_name="${PACKAGE_PREFIX}-${PACKAGE_NAME}"
   fi
 
+  ACTUAL_PACKAGE_NAME=$(basename "packages/$PACKAGE_NAME") # resolve globs in PACKAGE_NAME
   if [ -f "packages/${vendored_package_name}/spec.lock" ]; then
-    for dep in $(cat packages/${vendored_package_name}/spec.lock | yq -r .dependencies[]); do 
+    for dep in $(cat "packages/${vendored_package_name}/spec.lock" | yq -r .dependencies[]); do
       echo "cleaning up dependency ${dep}"
       rm -rf "packages/${dep}"
     done
   fi
 
-  debug "bosh vendor for package: ${PACKAGE_NAME} and prefix: ${PACKAGE_PREFIX}"
+  debug "bosh vendor for package: ${ACTUAL_PACKAGE_NAME} and prefix: ${PACKAGE_PREFIX}"
 
   if [[ -n "${PACKAGE_PREFIX}" ]]; then
-    bosh vendor-package "${PACKAGE_NAME}" ../package-release --prefix "${PACKAGE_PREFIX}"
+    bosh vendor-package "${ACTUAL_PACKAGE_NAME}" ../package-release --prefix "${PACKAGE_PREFIX}"
   else
-    bosh vendor-package "${PACKAGE_NAME}" ../package-release
+    bosh vendor-package "${ACTUAL_PACKAGE_NAME}" ../package-release
   fi
 
   if [[ -n $(git status --porcelain) ]]; then
     echo "changes detected, will commit..."
     git add --all
-    message="Upgrade ${PACKAGE_NAME}"
+    message="Upgrade ${ACTUAL_PACKAGE_NAME}"
 
     if [[ -x ../package-release/scripts/get-package-version.sh ]]; then
       fingerprint="$(yq .fingerprint < "packages/${vendored_package_name}/spec.lock")"
-      pkg_version=$(cd ../package-release && ./scripts/get-package-version.sh "${fingerprint}" "${PACKAGE_NAME}")
+      pkg_version=$(cd ../package-release && ./scripts/get-package-version.sh "${fingerprint}" "${ACTUAL_PACKAGE_NAME}")
       message="${message} (${pkg_version})"
     fi
     git commit -m "${message}"
