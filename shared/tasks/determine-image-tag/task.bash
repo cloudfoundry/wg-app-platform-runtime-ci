@@ -26,12 +26,11 @@ function run() {
     if [ -n "$PLUGIN" ]; then
         go_minor_version=$(cat ${go_version_file} | jq -r "if (.plugins.\"${PLUGIN}\" == null) then .default else .plugins.\"${PLUGIN}\" end")
     else
-        pushd repo > /dev/null
+        package_name=$(cd repo && basename packages/golang-*-linux)
+        fingerprint="$(cd repo && yq -r .fingerprint < "packages/${package_name}/spec.lock")"
+        pkg_version=$(cd package-release && ./scripts/get-package-version.sh "${fingerprint}" "${package_name}")
 
-        local release_name=$(bosh_release_name)
-        popd > /dev/null
-
-        go_minor_version=$(cat ${go_version_file} | jq -r "if (.releases.\"${release_name}\" == null) then .default else .releases.\"${release_name}\" end")
+        go_minor_version="${pkg_version%.*}"
     fi
 
     echo "Getting latest tag that starts with go-${go_minor_version} for image ${IMAGE}"

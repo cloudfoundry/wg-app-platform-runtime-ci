@@ -4,6 +4,8 @@ platform: linux
 inputs:
 - name: repo
   optional: true
+- name: package-release
+  optional: true
 - name: ci
 
 outputs:
