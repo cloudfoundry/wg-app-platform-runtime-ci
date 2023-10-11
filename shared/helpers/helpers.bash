@@ -6,6 +6,10 @@ function verify_go(){
 }
 function verify_go_version_match_bosh_release(){
     local dir="${1:-$PWD}"
+    if [[ "$(is_repo_bosh_release)" == "no" ]]; then
+        echo "Skipping this verification, since it's not a bosh release"
+        return
+    fi
     local container_go_version bosh_release_go_version
     container_go_version="$(go version | cut -d " " -f 3 | sed 's/go//' | cut -d '.' -f1,2 )"
     bosh_release_go_version="$(get_go_version_for_release "${dir}" "golang-*linux" | cut -d '.' -f1,2)"
@@ -134,6 +138,14 @@ function err_reporter() {
         echo "---Debug Report Starting--" >&2
         cat "/tmp/$TASK_NAME.log"         >&2
         echo "---Debug Report Ending--"   >&2
+    fi
+}
+
+function is_repo_bosh_release() {
+    if [[ -f "./config/final.yml" ]] && [[ -d "./packages" ]] && [[ -d "./jobs" ]]; then
+        echo "yes"
+    else
+        echo "no"
     fi
 }
 

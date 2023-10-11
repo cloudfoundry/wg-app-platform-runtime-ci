@@ -1,0 +1,4 @@
+---
+params:
+  FUNCTIONS: ci/cpu-entitlement-plugin/helpers/configure-binaries.bash
+

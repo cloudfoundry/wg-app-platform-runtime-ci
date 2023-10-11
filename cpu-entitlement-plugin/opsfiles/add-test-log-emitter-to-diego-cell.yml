@@ -1,0 +1,32 @@
+- type: replace
+  path: /releases/name=test-log-emitter?
+  value:
+   name: test-log-emitter
+   version: latest
+
+- type: replace
+  path: /instance_groups/name=diego-cell/jobs/name=test-log-emitter?
+  value:
+   name: test-log-emitter
+   release: test-log-emitter
+   properties:
+    listen_port: 9999
+
+- type: replace
+  path: /instance_groups/name=diego-cell/jobs/name=route_registrar?
+  value:
+   name: route_registrar
+   release: routing
+   properties:
+    nats:
+      tls:
+        client_cert: ((nats_client_cert.certificate))
+        client_key: ((nats_client_cert.private_key))
+        enabled: true
+    route_registrar:
+      routes:
+        - name: test-log-emitter
+          registration_interval: 20s
+          port: 9999
+          uris:
+          - test-log-emitter.((system_domain))
