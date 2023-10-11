@@ -13,7 +13,7 @@ function run(){
   for copy_action in ${COPY_ACTIONS}
   do
     debug "Copying: ${copy_action}"
-    eval "cp -r ${copy_action}"
+    eval "cp -rL ${copy_action}"
   done
 }
 
