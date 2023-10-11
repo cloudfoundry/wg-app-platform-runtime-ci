@@ -1,7 +1,7 @@
 ---
 params:
   MAPPING: |
-    cpu_entitlement_plugin=cmd/cpu-entitlement
-    cpu-overentitlement-instances-plugin=cmd/cpu-overentitlement-instances
+    build_cpu_entitlement_plugin=cmd/cpu-entitlement
+    build_cpu_overentitlement_instances_plugin=cmd/cpu-overentitlement-instances
   FUNCTIONS: ci/cpu-entitlement-plugin/helpers/build-binaries.bash
 

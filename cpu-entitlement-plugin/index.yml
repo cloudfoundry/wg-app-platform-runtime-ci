@@ -4,7 +4,7 @@
 opsfiles:
 - set-cpu-weight.yml
 - enable-containerd-for-processes.yml
-- add-test-log-emitter-to-diego-cell.ops.yml
-- enable-cpu-throttling.ops.yml
-- grootfs-direct-io.ops.yml
-- single-diego-cell.ops.yml
+- add-test-log-emitter-to-diego-cell.yml
+- enable-cpu-throttling.yml
+- grootfs-direct-io.yml
+- single-diego-cell.yml
