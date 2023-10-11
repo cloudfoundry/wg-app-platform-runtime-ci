@@ -37,6 +37,8 @@ function run(){
             cf_networking_acceptance_tests "built-acceptance-test-configs/cf-networking-acceptance-tests.json"
         elif [[ "$entry" == "service-discovery-acceptance-tests" ]]; then
             cf_networking_acceptance_tests "built-acceptance-test-configs/service-discovery-acceptance-tests.json"
+        elif [[ "$entry" == "cpu-entitlement-plugin" ]]; then
+            cpu_entitlement_plugin "built-acceptance-test-configs/cpu-entitlement-plugin.json"
         else
             echo "Unable to generate config for $entry"
             exit 1
@@ -243,6 +245,18 @@ function cf_networking_acceptance_tests() {
     "test_applications": 2,
     "include_security_groups": true,
     "use_http":true
+}
+EOF
+}
+
+function cpu_entitlement_plugin() {
+    local file="${1?Provide config file}"
+    echo "Creating ${file}"
+    cat << EOF > "${file}"
+{
+    "admin_password": "${CF_ADMIN_PASSWORD}",
+    "admin_user": "admin",
+    "api": "api.${CF_SYSTEM_DOMAIN}",
 }
 EOF
 }
