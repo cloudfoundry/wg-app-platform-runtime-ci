@@ -36,14 +36,11 @@ function run() {
         from_package=$(basename ./packages/golang-*-${PLATFORM})
         to_package="golang-${go_minor_version}-${PLATFORM}"
     fi
-
-    echo "Replacing bosh package from:${from_package} to:${to_package}"
-    sed -i "s/${from_package}/${to_package}/g" packages/**/spec packages/**/packaging
-    # do not match the job name, e.g. golang-1-windows in windows-tools-release
-    sed -i "3,\$s/${from_package}/${to_package}/g" jobs/**/spec
-    sed -i "s/${from_package}/${to_package}/g" jobs/**/templates/*
-
     if [[ "${from_package}" != "${to_package}" ]]; then
+        echo "Replacing bosh package from:${from_package} to:${to_package}"
+        sed -i "s/${from_package}/${to_package}/g" packages/**/spec packages/**/packaging
+        # do not match the job name, e.g. golang-1-windows in windows-tools-release
+        sed -i "3,\$s/${from_package}/${to_package}/g" jobs/**/spec
         rm -rf "packages/${from_package}"
     fi
     # making sure new package exists for subsequent bosh-vendor-package task1
