@@ -8,15 +8,15 @@ export TASK_NAME="$(basename $THIS_FILE_DIR)"
 source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
 unset THIS_FILE_DIR
 
+one_line_iwa_creds=$(echo ${IWA_CREDENTIAL_SPEC}| jq -c .)
 function run(){
     local task_tmp_dir="${1:?provide temp dir for task}"
     shift 1
 
     cat <<EOF > created-iwa-vars-file/"${FILENAME}"
 iwa_dc_ips: "${IWA_DC_IPS}"
-iwa_plugin_input: ${IWA_PLUGIN_INPUT}
-iwa_credential_spec: |
-    ${IWA_CREDENTIAL_SPEC}
+iwa_plugin_input: "${IWA_PLUGIN_INPUT}"
+iwa_credential_spec: ${one_line_iwa_creds}
 EOF
 }
 
