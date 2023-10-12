@@ -252,13 +252,17 @@ EOF
 function cpu_entitlement_plugin() {
     local file="${1?Provide config file}"
     echo "Creating ${file}"
-    cat << EOF > "${file}"
-{
-    "admin_password": "${CF_ADMIN_PASSWORD}",
-    "admin_user": "admin",
-    "api": "api.${CF_SYSTEM_DOMAIN}",
-}
-EOF
+    jq -n \
+      --arg api "https://api.${CF_SYSTEM_DOMAIN}" \
+      --arg username "admin" \
+      --arg password "${CF_ADMIN_PASSWORD}" \
+      --arg ca_cert "$(echo '' | openssl s_client -showcerts -servername api.${CF_SYSTEM_DOMAIN} -connect api.${CF_SYSTEM_DOMAIN}:443 -prexit 2>/dev/null | openssl x509 )" \
+      '{
+        "api": $api,
+        "admin_password": $password,
+        "admin_username": $username,
+        "ca_cert": $ca_cert
+      }' > $file
 }
 
 function cleanup() {
