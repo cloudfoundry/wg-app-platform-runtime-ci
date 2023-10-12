@@ -43,6 +43,8 @@ function run(){
             cf_networking_acceptance_tests "built-acceptance-test-configs/service-discovery-acceptance-tests.json"
         elif [[ "$entry" == "service-discovery-performance-tests" ]]; then
             service_discovery_performance_tests "built-acceptance-test-configs/service-discovery-performance-tests.json"
+        elif [[ "$entry" == "iwa" ]]; then
+            iwa "built-acceptance-test-configs/iwa.json"
         else
             echo "Unable to generate config for $entry"
             exit 1
@@ -280,6 +282,19 @@ function service_discovery_performance_tests() {
     "nats_monitoring_port": $NATS_PORT,
     "num_messages": 100000,
     "num_publishers": 10
+}
+EOF
+}
+
+function iwa() {
+    local file="${1?Provide config file}"
+    echo "Creating ${file}"
+    cat << EOF > "${file}"
+{
+    "iwa_domain": "", 
+    "iwa_username": "",
+    "iwa_password": "",
+    "iwa_test_app_route": "tcp.${CF_SYSTEM_DOMAIN}:1030/auth",
 }
 EOF
 }

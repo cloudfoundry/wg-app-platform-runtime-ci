@@ -4,7 +4,6 @@ platform: linux
 inputs:
 - name: ci
 - name: repo
-- name: built-acceptance-test-configs
 
 params:
 run:
