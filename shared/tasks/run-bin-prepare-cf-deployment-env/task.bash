@@ -39,6 +39,7 @@ CF_MANIFEST_VERSION: "${CF_MANIFEST_VERSION}"
 EOF
 
 append_extra_vars
+cat prepared-env/vars.yml
 }
 
 function append_extra_vars(){
