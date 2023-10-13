@@ -6,6 +6,8 @@ inputs:
   - name: repo
   - name: previous-github-release
   - name: version
+  - name: released-binaries
+    optional: true
 
 outputs:
   - name: built-release-notes

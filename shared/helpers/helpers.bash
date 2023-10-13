@@ -149,6 +149,27 @@ function is_repo_bosh_release() {
     fi
 }
 
+function get_go_version_for_binaries() {
+    local dir=${1:?Provide dir for finding binaries}
+    local go_version=""
+    for file in $(find $dir -type f -name "*.tgz")
+    do
+        unpack ${file}
+    done
+    for file in $(find $dir -type f -executable)
+    do
+        local next_go_version
+        next_go_version=$(go version ${file} 2>&1 | grep -v "unrecognized file format" |  cut -d ':' -f2 | sed 's/^[[:space:]]go//g')
+        if [[ "${go_version}" == "" ]]; then
+            go_version=${next_go_version}
+        elif [[ ${next_go_version} != "" ]] && [[ "${go_version}" != "${next_go_version}" ]]; then
+            echo "Binaries included are built with different versions of Go. Found ${go_version} and ${next_go_version}"
+            exit 1
+        fi
+    done
+    echo ${go_version}
+}
+
 function configure_db() {
   db="$1"
 

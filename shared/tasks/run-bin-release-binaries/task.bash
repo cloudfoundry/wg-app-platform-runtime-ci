@@ -25,8 +25,10 @@ function run(){
     IFS=$'\n'
     for arch in ${ARCH}; do
         for os in ${OS}; do
-            debug "Running release-binaries for Arch (${arch}) and Os (${os})"
-            ./bin/release-binaries.bash "${arch}" "${os}" "${version}" "${task_tmp_dir}" 
+            if [[ -n "$(go tool dist list | grep ${os}/${arch})" ]]; then
+                debug "Running release-binaries for Arch (${arch}) and Os (${os})"
+                ./bin/release-binaries.bash "${arch}" "${os}" "${version}" "${task_tmp_dir}" 
+            fi
         done
     done
 

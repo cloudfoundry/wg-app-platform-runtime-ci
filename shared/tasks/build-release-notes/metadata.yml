@@ -1,5 +1,7 @@
 ---
 readme: |
   This task will build release notes by looking into diff from previous-github-release and will diff bosh jobs spec if exists.
+extra_inputs:
+  released-binaries: This input would be helpful when passing binaries for getting version of go
 oses:
   - linux

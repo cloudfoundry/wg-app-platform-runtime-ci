@@ -15,17 +15,27 @@ function run(){
   git_configure_safe_directory
 
   pushd repo > /dev/null
-  local go_version release_name spec_diff
-  go_version=$(get_go_version_for_release "$PWD" "golang-*linux")
-  if [[ -z "${go_version}" ]]; then
-    go_version=$(get_go_version_for_release "$PWD" "golang-*windows")
+  local go_version repo_name spec_diff
+  if [[ "$(is_repo_bosh_release)" == "yes" ]]; then
+    go_version=$(get_go_version_for_release "$PWD" "golang-*linux")
+    if [[ -z "${go_version}" ]]; then
+      go_version=$(get_go_version_for_release "$PWD" "golang-*windows")
+    fi
+  else
+    if [[ -d "released-binaries" ]]; then
+      go_version=$(get_go_version_for_binaries "$PWD/released-binaries")
+    else 
+      echo "Missing released-binaries dir for repo that's not a bosh-release"
+      exit 1
+    fi
   fi
+
   if [[ -z "${go_version}" ]]; then
     echo "Unable to find version of go"
     exit 1
   fi
 
-  release_name="$(git_get_remote_name)"
+  repo_name="$(git_get_remote_name)"
   spec_diff=$(get_bosh_job_spec_diff)
   popd > /dev/null
 
@@ -41,11 +51,11 @@ ${spec_diff}
 
 ## ✨  Built with go ${go_version}
 
-**Full Changelog**: https://github.com/cloudfoundry/${release_name}/compare/${old_version}...${new_version}
+**Full Changelog**: https://github.com/cloudfoundry/${repo_name}/compare/${old_version}...${new_version}
 
 ## Resources
 
-- [Download release ${new_version} from bosh.io](https://bosh.io/releases/github.com/cloudfoundry/${release_name}?version=${new_version}).
+- [Download release ${new_version} from bosh.io](https://bosh.io/releases/github.com/cloudfoundry/${repo_name}?version=${new_version}).
 EOF
 
 
