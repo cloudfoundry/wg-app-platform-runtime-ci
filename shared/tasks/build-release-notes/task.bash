@@ -14,6 +14,8 @@ unset THIS_FILE_DIR
 function run(){
   git_configure_safe_directory
 
+  local released_binaries_path="$PWD/released-binaries"
+
   pushd repo > /dev/null
   local go_version repo_name spec_diff
   if [[ "$(is_repo_bosh_release)" == "yes" ]]; then
@@ -22,8 +24,8 @@ function run(){
       go_version=$(get_go_version_for_release "$PWD" "golang-*windows")
     fi
   else
-    if [[ -d "released-binaries" ]]; then
-      go_version=$(get_go_version_for_binaries "$PWD/released-binaries")
+    if [[ -d "${released_binaries_path}" ]]; then
+      go_version=$(get_go_version_for_binaries "${released_binaries_path}")
     else 
       echo "Missing released-binaries dir for repo that's not a bosh-release"
       exit 1
