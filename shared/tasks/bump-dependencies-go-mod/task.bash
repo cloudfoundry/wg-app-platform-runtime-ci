@@ -80,7 +80,10 @@ function run() {
     popd > /dev/null
   done
 
-  "../ci/${repo_name}/linters/sync-package-specs.bash" ${PWD}
+  if [[ -f "../ci/${repo_name}/linters/sync-package-specs.bash" ]]; then
+    "../ci/${repo_name}/linters/sync-package-specs.bash" ${PWD}
+  fi
+
   if [[ $(git status --porcelain) ]]; then
     git add -A .
     git commit -m "Sync package specs"
