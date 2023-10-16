@@ -1,0 +1,11 @@
+---
+- type: replace
+  path: /instance_groups/name=diego-cell/jobs/name=garden/properties/grootfs?/reserved_space_for_other_jobs_in_mb?
+
+  # Currently the cell has 100G disk with - 26G swap = ~75G
+
+  # With 50G reserved space, both the privilege and unprivilege stores would
+  # use 25G of disk for a total of 50G.  With the rep's cache using 10G. This
+  # leaves 5G for the rest of the system.
+
+  value: 50_000

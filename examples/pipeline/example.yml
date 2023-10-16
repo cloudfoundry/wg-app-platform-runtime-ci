@@ -246,14 +246,18 @@ jobs:
     - get: image
   - task: build-binaries
     file: ci/shared/tasks/build-binaries/linux.yml
-    image: image
     params:
       DEFAULT_PARAMS: "ci/<REPLACE_ME>/default-params/build-binaries/linux.yml"
+    vars:
+      image_repository: cloudfoundry/tas-runtime-build
+      image_tag: ((.:image_tag))
   - in_parallel:
 #@ for repo in data.values.internal_repos:
     - task: #@ "{}".format(repo)
       file: ci/shared/tasks/run-bin-test/linux.yml
-      image: image
+      vars:
+        image_repository: cloudfoundry/tas-runtime-build
+        image_tag: ((.:image_tag))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(repo)
         DEFAULT_PARAMS: "ci/<REPLACE_ME>/default-params/run-bin-test/linux.yml"
@@ -323,12 +327,13 @@ jobs:
     params:
       FUNCTIONS: "ci/<REPLACE_ME>/helpers/helpers.bash"
   - task: combine-ops-files
-    file: ci/shared/tasks/combine-files/linux.yml
+    file: ci/shared/tasks/combine-assets/linux.yml
     image: image
     input_mapping:
       input-01: cf-deployment
     params:
-      GLOB: |
+      COPY_ACTIONS: |
+        {input-01/operations/use-compiled-releases.yml,combined-assets}
         <REPLACE_ME>
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml

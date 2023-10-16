@@ -195,7 +195,7 @@ function allowed_task_files() {
 
 function allowed_dirs() {
     debug "Running allowed_dirs function"
-    local release_list="garden-runc-release|routing-release|winc-release|nats-release|healthchecker-release|cf-networking-release|silk-release|envoy-nginx-release"
+    local release_list="garden-runc-release|routing-release|winc-release|nats-release|healthchecker-release|cf-networking-release|silk-release|envoy-nginx-release|cpu-entitlement-plugin|diego-release"
     local dir_patterns
     dir_patterns="$(cat <<EOF
 ^./bin/*$
@@ -209,7 +209,7 @@ function allowed_dirs() {
 EOF
 )"
 IFS=$'\n'
-for entry in $(find . -type f | grep -Ev "index.yml|README.md|NOTICE|CODEOWNERS|LICENSE|.git" | xargs dirname | uniq)
+for entry in $(find . -type f | grep -Ev "index.yml|README.md|NOTICE|CODEOWNERS|LICENSE|.git|go_version.json" | xargs dirname | uniq)
 do
     local matched=false
     for pattern in $dir_patterns

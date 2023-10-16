@@ -1,0 +1,4 @@
+---
+- type: replace
+  path: /addons/name=metrics-discovery-registrar/jobs/name=metrics-discovery-registrar/properties/nats_instance_group?
+  value: nats

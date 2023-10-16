@@ -1,0 +1,52 @@
+#@data/values
+---
+#@overlay/match missing_ok=True
+db_flavors:
+- image: postgres
+  value: postgres
+- image: mysql-8.0
+  value: mysql
+
+internal_repos:
+- name: "auction"
+- name: "auctioneer"
+  configure_db: true
+- name: "bbs"
+  configure_db: true
+- name: "buildpackapplifecycle"
+- name: "cachedownloader"
+- name: "cfdot"
+- name: "dockerapplifecycle"
+- name: "ecrhelper"
+- name: "executor"
+- name: "fileserver"
+- name: "healthcheck"
+- name: "inigo"
+- name: "localdriver"
+- name: "converger"
+  configure_db: true
+- name: "locket"
+  configure_db: true
+- name: "operationq"
+- name: "rep"
+  configure_db: true
+- name: "route-emitter"
+  configure_db: true
+- name: "volman"
+- name: "workpool"
+opsfiles:
+- use-compiled-releases.yml
+- use-compiled-releases-windows.yml
+- scale-database-cluster.yml
+- windows2019-cell.yml
+- use-online-windows2019fs.yml
+- disable-dynamic-asgs.yml
+- add-lb-ca-cert.yml
+- add-persistent-isolation-segment-diego-cell.yml
+- add-persistent-isolation-segment-router.yml
+- scale-to-HA.yml
+- add-vizzini-errand.yml
+- set-rep-max-idle-conns.yml
+- turn-on-debug-mode.yml
+- metric-discovery-nats-instance-group.yml
+- resize-grootfs-store.yml

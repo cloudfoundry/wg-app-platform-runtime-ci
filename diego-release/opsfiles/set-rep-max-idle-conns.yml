@@ -1,0 +1,7 @@
+---
+- type: replace
+  path: /instance_groups/name=diego-cell/jobs/name=rep/properties/diego/rep?/bbs/max_idle_conns_per_host
+  value: 250
+- type: replace
+  path: /instance_groups/name=windows2019-cell/jobs/name=rep_windows/properties/diego/rep?/bbs/max_idle_conns_per_host
+  value: 250

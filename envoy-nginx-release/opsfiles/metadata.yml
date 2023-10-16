@@ -1,0 +1,7 @@
+---
+readme:
+  This directory contains the opsfiles needed for routing-release.
+opsfiles:
+  decrease-rep-evacuation-timeout.yml: <TODO> find out what this is for
+  scale-down-windows2019.yml: Only use a single windows diego cell, because test works with only 1
+  use-2-azs-for-router.yml: <TODO> find out what test this is for

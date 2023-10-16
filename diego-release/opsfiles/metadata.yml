@@ -1,0 +1,9 @@
+---
+readme:
+  This directory contains the opsfiles needed for diego-release.
+opsfiles:
+  add-vizzini-errand.yml: Add vizzini errand with properties needed for running in this repo
+  set-rep-max-idle-conns.yml: <TODO> figure out what test needs this opsfile
+  turn-on-debug-mode.yml: Turn on debug mode for all diego's components
+  metric-discovery-nats-instance-group.yml: <TODO> not sure why this is needed. Copying from old pipeline
+  resize-grootfs-store.yml: <TODO> figure out what test needs this opsfile
