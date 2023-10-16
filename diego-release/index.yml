@@ -14,7 +14,7 @@ internal_repos:
 - name: "bbs"
   configure_db: true
 - name: "buildpackapplifecycle"
-- name: "cachedownloader"
+- name: "cacheddownloader"
 - name: "cfdot"
 - name: "dockerapplifecycle"
 - name: "ecrhelper"
@@ -23,8 +23,6 @@ internal_repos:
 - name: "healthcheck"
 - name: "inigo"
 - name: "localdriver"
-- name: "converger"
-  configure_db: true
 - name: "locket"
   configure_db: true
 - name: "operationq"

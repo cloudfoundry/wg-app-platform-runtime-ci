@@ -42,7 +42,6 @@ code.cloudfoundry.org/vizzini
 code.cloudfoundry.org/volman
 code.cloudfoundry.org/workpool
 garden
-gosub
 grootfs
 guardian
 idmapper
