@@ -1,0 +1,6 @@
+---
+params:
+  MAPPING: |
+    Build-Nats-Server=src/code.cloudfoundry.org/vendor/github.com/nats-io/nats-server/v2
+  FUNCTIONS: ci/diego-release/helpers/build-binaries.ps1
+
