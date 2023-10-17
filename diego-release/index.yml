@@ -16,12 +16,12 @@ internal_repos:
 - name: "buildpackapplifecycle"
 - name: "cacheddownloader"
 - name: "cfdot"
+  configure_db: true
 - name: "dockerapplifecycle"
 - name: "ecrhelper"
 - name: "executor"
 - name: "fileserver"
 - name: "healthcheck"
-- name: "inigo"
 - name: "localdriver"
 - name: "locket"
   configure_db: true

@@ -6,10 +6,12 @@ function verify_go(){
 }
 function verify_go_version_match_bosh_release(){
     local dir="${1:-$PWD}"
+    pushd "${dir}" >/dev/null
     if [[ "$(is_repo_bosh_release)" == "no" ]]; then
         echo "Skipping this verification, since it's not a bosh release"
         return
     fi
+    popd > /dev/null
     local container_go_version bosh_release_go_version
     container_go_version="$(go version | cut -d " " -f 3 | sed 's/go//' | cut -d '.' -f1,2 )"
     bosh_release_go_version="$(get_go_version_for_release "${dir}" "golang-*linux" | cut -d '.' -f1,2)"
@@ -173,12 +175,15 @@ function get_go_version_for_binaries() {
 function configure_db() {
   db="$1"
 
+  local db_user=${DB_USER:-root}
+  local db_password=${DB_PASSWORD:-password}
+
   if [ "${db}" = "postgres" ]; then
-    launchDB="(/postgres-entrypoint.sh postgres &> /var/log/postgres-boot.log) &"
-    testConnection="psql -h localhost -U postgres -c '\conninfo'"
-  elif [ "${db}" = "mysql" ]  || [ "${db}" = "mysql-5.6" ] || [ "${db}" = "mysql8" ]; then
-    launchDB="(MYSQL_ROOT_PASSWORD=password /mysql-entrypoint.sh mysqld &> /var/log/mysql-boot.log) &"
-    testConnection="mysql -h localhost -u root -D mysql -e '\s;' --password='password'"
+    launchDB="(POSTGRES_USER=$db_user POSTGRES_PASSWORD=$db_password /postgres-entrypoint.sh postgres -c max_connections=300 &> /var/log/postgres-boot.log) &"
+    testConnection="PGPASSWORD=$db_password psql -h localhost -U $db_user -c '\conninfo'"
+  elif [ "${db}" = "mysql" ]  || [ "${db}" = "mysql-5.7" ] || [ "${db}" = "mysql8" ]; then
+    launchDB="(MYSQL_USER='' MYSQL_ROOT_PASSWORD=$db_password /mysql-entrypoint.sh mysqld --max_allowed_packet=256M &> /var/log/mysql-boot.log) &"
+    testConnection="mysql -h localhost -u $db_user -D mysql -e '\s;' --password='$db_password'"
   else
     echo "DB variable not set. The script does not determine which database to use and would fail some tests with errors related to being unable to connect to the db. Bailing early."
     exit 1
