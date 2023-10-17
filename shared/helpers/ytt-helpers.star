@@ -24,13 +24,29 @@ def packages_without_configure_db(packages = []):
  return l
 end
 
+def on_windows(package):
+    if hasattr(package, "on_windows"):
+        if package.on_windows:
+            return True
+        end
+    end
+    return False
+end
+
+
 def privileged(package):
     if hasattr(package, "privileged"):
         if package.privileged:
             return True
-  end
- end
- return False
+        end
+    end
+    return False
 end
 
-helpers = struct.make(packages_with_configure_db=packages_with_configure_db, packages_without_configure_db=packages_without_configure_db, privileged=privileged)
+helpers = struct.make(
+    packages_with_configure_db=packages_with_configure_db,
+    packages_without_configure_db=packages_without_configure_db,
+    on_windows=on_windows,
+    privileged=privileged
+)
+

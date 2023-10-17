@@ -126,6 +126,21 @@ Function Expand-Verifications {
   Debug "Expand-Verifications Ending"
 }
 
+Function Extract-Default-Params-For-Task
+{
+  $task= $args[0]
+
+  Debug "Extract-Default-Params-For-Task Starting"
+  $values=(Get-Content "$task" | yq -o json '.params | to_entries | select(.) '  | ConvertFrom-Json)
+  Foreach ($entry in $values){
+    Write-Host ("Setting env {0} to {1} " -f $entry.key,$entry.value)
+    $value=$entry.value
+    $key=$entry.Key
+    Set-Item -Path "Env:$key" -Value "$value"
+  }
+  Debug "Extract-Default-Params-For-Task Ending"
+}
+
 Function Debug {
   Param ($msg)
   Add-Content -Path $env:TEMP/$env:TASK_NAME.log -Value $msg

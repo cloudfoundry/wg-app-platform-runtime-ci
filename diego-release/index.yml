@@ -14,24 +14,34 @@ internal_repos:
 - name: "bbs"
   configure_db: true
 - name: "buildpackapplifecycle"
+  on_windows: true
 - name: "cacheddownloader"
+  on_windows: true
 - name: "cfdot"
   configure_db: true
+- name: "diego-ssh"
+  on_windows: true
 - name: "dockerapplifecycle"
 - name: "ecrhelper"
 - name: "executor"
+  on_windows: true
 - name: "fileserver"
 - name: "healthcheck"
+  on_windows: true
 - name: "localdriver"
 - name: "locket"
   configure_db: true
 - name: "operationq"
+  on_windows: true
 - name: "rep"
   configure_db: true
+  on_windows: true
 - name: "route-emitter"
   configure_db: true
+  on_windows: true
 - name: "volman"
 - name: "workpool"
+  on_windows: true
 opsfiles:
 - use-compiled-releases.yml
 - use-compiled-releases-windows.yml
