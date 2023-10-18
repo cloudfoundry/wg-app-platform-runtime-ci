@@ -12,3 +12,5 @@ params:
   GO_VERSION_FILE: (Defaults to ci/go_version.json). Path to go-version.json where the new version is defined.
   IMAGE: The image name in dockerhub, e.g. cloudfoundry/tas-runtime-build
   PLUGIN: The name of the plugin, e.g. cpu-entitlement-plugin. Otherwise, release from repo input will be used.
+  DOCKER_REGISTRY_USERNAME: Dockerhub username
+  DOCKER_REGISTRY_PASSWORD: Dockerhub password
