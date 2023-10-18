@@ -179,6 +179,7 @@ function configure_db() {
   local db_password=${DB_PASSWORD:-password}
 
   if [ "${db}" = "postgres" ]; then
+    db_user=${DB_USER:-postgres}
     launchDB="(POSTGRES_USER=$db_user POSTGRES_PASSWORD=$db_password /postgres-entrypoint.sh postgres -c max_connections=300 &> /var/log/postgres-boot.log) &"
     testConnection="PGPASSWORD=$db_password psql -h localhost -U $db_user -c '\conninfo'"
   elif [ "${db}" = "mysql" ]  || [ "${db}" = "mysql-5.7" ] || [ "${db}" = "mysql8" ]; then
