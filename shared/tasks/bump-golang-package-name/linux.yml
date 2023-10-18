@@ -9,7 +9,7 @@ outputs:
 - name: bumped-repo
 
 params:
-  GO_VERSION_FILE: ci/go_version.json
+  GO_VERSION_FILE: ci/go-version.json
   PLATFORM:
   PREFIX: ""
 

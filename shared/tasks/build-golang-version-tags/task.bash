@@ -13,7 +13,7 @@ get_latest_minor_version() {
 get_latest_image_go_version() {
   local image_name=$1
 
-  go_version_file=$PWD/ci/go_version.json
+  go_version_file=$PWD/ci/go-version.json
 
   go_minor_version=$(cat ${go_version_file} | jq -r "if (.images.\"${image_name}\" == null) then .default else .images.\"${image_name}\" end")
 
@@ -25,7 +25,7 @@ get_latest_image_go_version() {
 get_latest_release_go_version() {
   local release_name=$1
 
-  go_version_file=$PWD/ci/go_version.json
+  go_version_file=$PWD/ci/go-version.json
 
   go_minor_version=$(cat ${go_version_file} | jq -r "if (.releases.\"${release_name}\" == null) then .default else .releases.\"${release_name}\" end")
 

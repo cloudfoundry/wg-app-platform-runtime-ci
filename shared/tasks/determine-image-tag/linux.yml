@@ -12,7 +12,7 @@ outputs:
 - name: determined-image-tag
 
 params:
-  GO_VERSION_FILE: ci/go_version.json
+  GO_VERSION_FILE: ci/go-version.json
   IMAGE: cloudfoundry/tas-runtime-build
   DOCKER_REGISTRY_USERNAME: ((dockerhub-tasruntime/user))
   DOCKER_REGISTRY_PASSWORD: ((dockerhub-tasruntime/password))

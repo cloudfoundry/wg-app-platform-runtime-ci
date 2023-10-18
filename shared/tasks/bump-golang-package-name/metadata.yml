@@ -4,6 +4,6 @@ readme: |
 oses:
   - linux
 params:
-  GO_VERSION_FILE: (Defaults to ci/go_version.json). Path to go-version.json where the new version is defined.
+  GO_VERSION_FILE: (Defaults to ci/go-version.json). Path to go-version.json where the new version is defined.
   PLATFORM: Name of the golang package platform (e.g. linux or windows)
   PREFIX: (Defaults to ""). Package name prefix. This is used mostly when bumping golang packages for healthchecker.e.g routing 

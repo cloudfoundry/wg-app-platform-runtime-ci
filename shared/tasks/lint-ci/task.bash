@@ -209,7 +209,7 @@ function allowed_dirs() {
 EOF
 )"
 IFS=$'\n'
-for entry in $(find . -type f | grep -Ev "index.yml|README.md|NOTICE|CODEOWNERS|LICENSE|.git|go_version.json" | xargs dirname | uniq)
+for entry in $(find . -type f | grep -Ev "index.yml|README.md|NOTICE|CODEOWNERS|LICENSE|.git|go-version.json" | xargs dirname | uniq)
 do
     local matched=false
     for pattern in $dir_patterns
