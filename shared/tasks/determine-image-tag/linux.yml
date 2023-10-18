@@ -9,7 +9,7 @@ inputs:
 - name: ci
 
 outputs:
-- name: image_tag
+- name: determined-image-tag
 
 params:
   GO_VERSION_FILE: ci/go_version.json

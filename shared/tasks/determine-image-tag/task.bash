@@ -53,7 +53,7 @@ function run() {
         sleep $RETRY_INTERVAL
     done
 
-    echo "${tag}" > image_tag/tag
+    echo "${tag}" > determined-image-tag/tag
 
     echo "Found image with tag: ${tag}"
 }

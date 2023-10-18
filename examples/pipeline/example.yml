@@ -244,6 +244,11 @@ jobs:
     - get: repo
       trigger: true
     - get: image
+  - task: determine-image-tag
+    image: image
+    file: ci/shared/tasks/determine-image-tag/linux.yml
+  - load_var: image_tag
+    file: determined-image-tag/tag
   - task: build-binaries
     file: ci/shared/tasks/build-binaries/linux.yml
     params:
