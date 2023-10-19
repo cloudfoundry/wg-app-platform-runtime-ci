@@ -1,5 +1,5 @@
 ---
 params:
   ENVS: |
-    DB_USER=root
-    DB_PASSWORD=password
+    DB_USER=diego
+    DB_PASSWORD=diego_password
