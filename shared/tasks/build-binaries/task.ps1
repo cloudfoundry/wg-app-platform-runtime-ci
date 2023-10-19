@@ -2,6 +2,10 @@ $ErrorActionPreference = "Stop";
 trap { $host.SetShouldExit(1) }
 
 . "$PSScriptRoot\..\..\..\shared\helpers\helpers.ps1"
+if ([System.IO.File]::Exists($env:DEFAULT_PARAMS)) {
+    Debug "Extract-Default-Params-For-Task with values from ${env:DEFAULT_PARAMS}"
+    Extract-Default-Params-For-Task "$env:DEFAULT_PARAMS"
+}
 
 function Run
 {
