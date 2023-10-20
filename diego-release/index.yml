@@ -21,7 +21,9 @@ internal_repos:
   configure_db: true
 - name: "diego-ssh"
   on_windows: true
-  with_flags: --procs=1
+  with_flags: |
+    -r
+    --procs=1
 - name: "dockerapplifecycle"
 - name: "ecrhelper"
 - name: "executor"
