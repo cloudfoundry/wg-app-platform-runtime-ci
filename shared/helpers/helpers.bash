@@ -9,6 +9,7 @@ function verify_go_version_match_bosh_release(){
     pushd "${dir}" >/dev/null
     if [[ "$(is_repo_bosh_release)" == "no" ]]; then
         echo "Skipping this verification, since it's not a bosh release"
+        popd > /dev/null
         return
     fi
     popd > /dev/null
