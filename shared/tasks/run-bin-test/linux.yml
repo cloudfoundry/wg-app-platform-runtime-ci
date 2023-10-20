@@ -14,6 +14,10 @@ inputs:
   optional: true
 - name: input-01
   optional: true
+- name: input-02
+  optional: true
+- name: input-03
+  optional: true
 
 params:
   DB:
