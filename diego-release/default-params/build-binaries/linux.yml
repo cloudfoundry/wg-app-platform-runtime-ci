@@ -2,5 +2,6 @@
 params:
   MAPPING: |
     build_nats_server=src/code.cloudfoundry.org/vendor/github.com/nats-io/nats-server/v2
+    build_proxy=.
   FUNCTIONS: ci/diego-release/helpers/build-binaries.bash
 

@@ -22,3 +22,23 @@ function build_nats_server(){
 export NATS_SERVER_BINARY="\$PWD/${built_dir}/nats-server/run"
 EOF
 }
+
+function build_proxy(){
+    local source="${1?Provide source dir}"
+    local target="${2?Provide target dir}"
+
+    local built_dir=$(basename "${target}")
+    target="$target/proxy"
+    mkdir -p "${target}"
+
+    pushd "$source" || exit
+    bosh sync-blobs
+    ln -s ./blobs/proxy ./proxy
+    chmod +x packages/proxy/packaging
+    BOSH_INSTALL_TARGET="${target}" packages/proxy/packaging
+    popd || exit
+
+    cat > "${target}/run.bash" << EOF
+export PROXY_BINARY="\$PWD/${built_dir}/proxy/envoy"
+EOF
+}
