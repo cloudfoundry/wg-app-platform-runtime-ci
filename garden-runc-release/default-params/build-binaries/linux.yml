@@ -1,0 +1,6 @@
+---
+params:
+  MAPPING: |
+    build_tar=.
+  FUNCTIONS: ci/garden-runc-release/helpers/build-binaries.bash
+
