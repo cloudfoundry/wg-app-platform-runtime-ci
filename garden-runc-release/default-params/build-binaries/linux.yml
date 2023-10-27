@@ -2,5 +2,12 @@
 params:
   MAPPING: |
     build_tar=.
+    build_nstar=src/guardian/rundmc/nstar
+    build_runc=src/guardian/vendor/github.com/opencontainers/runc
+    build_grootfs=src/grootfs
+    build_init=src/guardian/cmd/init
+    build_dadoo=src/guardian/cmd/dadoo
+    build_idmapper=src/idmapper
+    build_containerd=src/guardian/vendor/github.com/containerd/containerd
   FUNCTIONS: ci/garden-runc-release/helpers/build-binaries.bash
 

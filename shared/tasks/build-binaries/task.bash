@@ -6,6 +6,7 @@ set -o pipefail
 THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 export TASK_NAME="$(basename $THIS_FILE_DIR)"
 source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
+source "$THIS_FILE_DIR/../../../shared/helpers/git-helpers.bash"
 if [[ -n "${DEFAULT_PARAMS:-}" ]] && [[ -f "${DEFAULT_PARAMS}" ]]; then
     debug "extract-default-params-for-task with values from ${DEFAULT_PARAMS}"
     . <("$THIS_FILE_DIR/../../../shared/helpers/extract-default-params-for-task.bash" "${DEFAULT_PARAMS}")
@@ -13,6 +14,7 @@ fi
 unset THIS_FILE_DIR
 
 function run(){
+    git_configure_safe_directory
     expand_functions
 
     export GOFLAGS="-buildvcs=false"
