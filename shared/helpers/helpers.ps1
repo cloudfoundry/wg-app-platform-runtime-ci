@@ -89,7 +89,7 @@ Function Expand-Envs
         $key=$items[0]
         $value=$items[1]
         Write-Host "Setting env $key=$value"
-        Set-Item -Path Env:$key -Value $value
+        Set-Item -Path "Env:$key" -Value "$value"
     }
     Debug "Expand-Envs Ending"
 }
