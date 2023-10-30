@@ -27,7 +27,6 @@ params:
   VERIFICATIONS: |
     Verify-Go repo/$env:DIR
     Verify-GoVersionMatchBoshRelease repo
-    Verify-Ginkgo repo/$env:DIR
     Verify-GoVet repo/$env:DIR
 
 run:

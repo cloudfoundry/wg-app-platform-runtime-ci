@@ -41,7 +41,8 @@ function Build-Groot
 
     $PS1FILE='$env:GROOT_BINARY="$PWD/{0}"
 $env:GROOT_IMAGE_STORE="\var\vcap\data\tmp\groot"
-$env:GROOT_CONFIG="$PWD/{1}"' -f "$BuiltDir\groot-windows\run.exe", "$BuiltDir/groot-windows/config.yml"
+$env:GROOT_CONFIG="$PWD/{1}"
+$env:GROOT_QUOTA_DLL="$PWD/{2}"' -f "$BuiltDir\groot-windows\run.exe", "$BuiltDir/groot-windows/config.yml", "$BuiltDir/groot-windows/quota.dll"
         Set-Content -Path "$Target/run.ps1" -Value $PS1FILE -Encoding Asci
 }
 
