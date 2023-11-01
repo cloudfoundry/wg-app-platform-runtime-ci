@@ -2,11 +2,11 @@
 platform: linux
 
 inputs:
+- name: ci
 - name: repo
   optional: true
 - name: package-release
   optional: true
-- name: ci
 
 outputs:
 - name: determined-image-tag

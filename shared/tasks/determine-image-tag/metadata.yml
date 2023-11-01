@@ -3,14 +3,12 @@ readme: |
   This task writes image resource version for the golang version specified in GO_VERSION_FILE
 oses:
   - linux
-inputs:
-  ci: The wg-app-platform-runtime-ci directory
 extra_inputs:
   repo: Optional release repo to pass to task to find go version for that release in the packages folder that matches pattern golang-*-linux
   package-release: Optional bosh release for golang package used to find golang package version
 params:
   GO_VERSION_FILE: (Defaults to ci/go-version.json). Path to go-version.json where the new version is defined.
   IMAGE: The image name in dockerhub, e.g. cloudfoundry/tas-runtime-build
-  PLUGIN: The name of the plugin, e.g. cpu-entitlement-plugin. Otherwise, release from repo input will be used.
   DOCKER_REGISTRY_USERNAME: Dockerhub username
   DOCKER_REGISTRY_PASSWORD: Dockerhub password
+  PLUGIN: The name of the plugin, e.g. cpu-entitlement-plugin. Otherwise, release from repo input will be used.
