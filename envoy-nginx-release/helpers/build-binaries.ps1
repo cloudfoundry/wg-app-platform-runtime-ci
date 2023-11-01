@@ -25,12 +25,12 @@ function Build-Proxy
         Pop-Location
 
         Push-Location "$Source/src/code.cloudfoundry.org/envoy-nginx"
-        go.exe build -o "$Target\run.exe" main.go
+        go.exe build -o "$Target\envoy.exe" main.go
         if ($LastExitCode -ne 0) {
             exit 1
         }
         Pop-Location
 
-        $PS1FILE='$env:PROXY_BINARY="$PWD/{0}"' -f "$BuiltDir/proxy/run.exe"
+        $PS1FILE='$env:PROXY_BINARY="$PWD/{0}"' -f "$BuiltDir/proxy/envoy.exe"
         Set-Content -Path "$Target/run.ps1" -Value $PS1FILE -Encoding Asci
 }
