@@ -17,7 +17,8 @@ function build_tar(){
     ln -s ./blobs/tar ./tar
     ln -s ./blobs/musl ./musl
     chmod +x packages/tar/packaging
-    BOSH_INSTALL_TARGET="${target}" packages/tar/packaging
+    echo "Executing tar packaging script"
+    BOSH_INSTALL_TARGET="${target}" packages/tar/packaging &> /dev/null
     mv "${target}/tar" "${target}/run"
     popd || exit
 
