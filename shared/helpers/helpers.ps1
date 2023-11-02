@@ -88,7 +88,7 @@ Function Expand-Envs
       $items=$entry.Split("=")
         $key=$items[0]
         $value=$items[1]
-        Write-Host "Setting env $key=$value"
+        Write-Host "Setting env $key"
         Invoke-Expression "Set-Item -Path Env:$key -Value $value"
     }
     Debug "Expand-Envs Ending"
