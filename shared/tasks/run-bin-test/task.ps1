@@ -9,6 +9,8 @@ if ([System.IO.File]::Exists($env:DEFAULT_PARAMS)) {
 
 function Run
 {
+    $env:TEMP="/var/vcap/data/tmp"
+    $env:TMP="/var/vcap/data/tmp"
     . Expand-Functions
 
     Get-ChildItem -Path built-binaries -Filter *.ps1 -Recurse -File -Name -ErrorAction SilentlyContinue | ForEach-Object {
