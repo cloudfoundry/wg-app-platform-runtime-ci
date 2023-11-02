@@ -206,3 +206,23 @@ function configure_db() {
   exit 1
 }
 export -f configure_db
+
+function retry_command() {
+    local cmd="${1:?Provide a command to retry}"
+    local max_iteration=5
+
+    for i in $(seq 1 $max_iteration)
+    do
+        $cmd >& /dev/null
+        result=$?
+        if [[ $result -eq 0 ]]
+        then
+            echo "Runing: $cmd with success."
+            break
+        else
+            echo "Runing: $cmd without success."
+            sleep 1
+        fi
+    done
+}
+export -f retry_command
