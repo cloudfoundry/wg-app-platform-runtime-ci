@@ -11,6 +11,7 @@ if [[ -n "${DEFAULT_PARAMS:-}" ]] && [[ -f "${DEFAULT_PARAMS}" ]]; then
     debug "extract-default-params-for-task with values from ${DEFAULT_PARAMS}"
     . <("$THIS_FILE_DIR/../../../shared/helpers/extract-default-params-for-task.bash" "${DEFAULT_PARAMS}")
 fi
+export CI_DIR="$THIS_FILE_DIR/../../.."
 unset THIS_FILE_DIR
 
 function run(){
