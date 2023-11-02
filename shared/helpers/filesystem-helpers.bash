@@ -38,7 +38,7 @@ function filesystem_permit_device_control() {
 }
 
 function filesystem_create_loop_devices() {
-  set +ex
+  set +e
   LOOP_CONTROL=/dev/loop-control
   if [ ! -c $LOOP_CONTROL ]; then
     mknod $LOOP_CONTROL c 10 237
@@ -50,7 +50,7 @@ function filesystem_create_loop_devices() {
   for i in $( seq 0 "$amt" ); do
     mknod -m 0660 "/dev/loop${i}" b 7 "$i" > /dev/null 2>&1
   done
-  set -ex
+  set -e
 }
 
 # workaround until Concourse's garden sets this up for us
