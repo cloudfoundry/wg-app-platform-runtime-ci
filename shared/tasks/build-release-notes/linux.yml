@@ -12,5 +12,9 @@ inputs:
 outputs:
   - name: built-release-notes
 
+params:
+  BOSH_IO_ORG: cloudfoundry
+  GITHUB_ORG:  cloudfoundry
+
 run:
   path: ci/shared/tasks/build-release-notes/task.bash

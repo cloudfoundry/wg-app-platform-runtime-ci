@@ -39,10 +39,17 @@ function run(){
 
   repo_name="$(git_get_remote_name)"
   spec_diff=$(get_bosh_job_spec_diff)
+  bosh_io_resources="$(get_bosh_io_resources "${BOSH_IO_ORG}" "${repo_name}" "${new_version}")"
   popd > /dev/null
 
   local new_version="$(cat version/number)"
   local old_version="$(cat previous-github-release/tag)"
+
+  # Compensate for previous github tag having a `v` prefix
+  local new_tag_version="${new_version}"
+  if [[ "${old_version}" =~ ^v ]]; then
+    new_tag_version="v${new_version}"
+  fi
 
   cat >> built-release-notes/notes.md <<EOF
 ## Changes
@@ -53,11 +60,9 @@ ${spec_diff}
 
 ## ✨  Built with go ${go_version}
 
-**Full Changelog**: https://github.com/cloudfoundry/${repo_name}/compare/${old_version}...${new_version}
+**Full Changelog**: https://github.com/${GITHUB_ORG}/${repo_name}/compare/${old_version}...${new_tag_version}
 
-## Resources
-
-- [Download release ${new_version} from bosh.io](https://bosh.io/releases/github.com/cloudfoundry/${repo_name}?version=${new_version}).
+${bosh_io_resources}
 EOF
 
 
@@ -85,6 +90,20 @@ ${job_spec_diff}
 \`\`\`
 EOF
     fi
+  fi
+}
+
+function get_bosh_io_resources() {
+  local bosh_io_org=$1
+  local bosh_io_repo=$2
+  local version=$3
+
+  if ls jobs/*/spec 1> /dev/null 2>&1; then
+    cat <<EOF
+## Resources
+
+- [Download release ${version} from bosh.io](https://bosh.io/releases/github.com/${bosh_io_org}/${bosh_io_repo}?version=${version}).
+EOF
   fi
 }
 
