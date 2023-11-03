@@ -30,6 +30,7 @@ params:
     --race
     --timeout 20m
   FUNCTIONS:
+  RUN_AS:
   VERIFICATIONS: |
     Verify-Go repo/$env:DIR
     Verify-GoVersionMatchBoshRelease repo
