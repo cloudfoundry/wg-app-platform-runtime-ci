@@ -37,10 +37,6 @@ function run(){
     exit 1
   fi
 
-  repo_name="$(git_get_remote_name)"
-  spec_diff=$(get_bosh_job_spec_diff)
-  bosh_io_resources="$(get_bosh_io_resources "${BOSH_IO_ORG}" "${repo_name}" "${new_version}")"
-  popd > /dev/null
 
   local new_version="$(cat version/number)"
   local old_version="$(cat previous-github-release/tag)"
@@ -50,6 +46,11 @@ function run(){
   if [[ "${old_version}" =~ ^v ]]; then
     new_tag_version="v${new_version}"
   fi
+
+  repo_name="$(git_get_remote_name)"
+  spec_diff=$(get_bosh_job_spec_diff)
+  bosh_io_resources="$(get_bosh_io_resources "${BOSH_IO_ORG}" "${repo_name}" "${new_version}")"
+  popd > /dev/null
 
   cat >> built-release-notes/notes.md <<EOF
 ## Changes
