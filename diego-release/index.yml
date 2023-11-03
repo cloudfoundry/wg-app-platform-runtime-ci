@@ -57,6 +57,7 @@ opsfiles:
 - add-persistent-isolation-segment-router.yml
 - scale-to-HA.yml
 - add-vizzini-errand.yml
+- grace-opsfile.yml
 - set-rep-max-idle-conns.yml
 - turn-on-debug-mode.yml
 - metric-discovery-nats-instance-group.yml
