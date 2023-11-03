@@ -1,9 +1,3 @@
-#!/bin/bash
-
-THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-source "$THIS_FILE_DIR/../../shared/helpers/helpers.bash"
-unset THIS_FILE_DIR
-
 function build_nats_server(){
     local source="${1?Provide source dir}"
     local target="${2?Provide target dir}"

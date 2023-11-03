@@ -43,6 +43,9 @@ fi
 cat <<HERE > $PWD/tag/tag
 go-${GO_VERSION}
 HERE
+cat <<HERE > $PWD/tag/version
+go-${GO_VERSION}
+HERE
 cat <<HERE > $PWD/tag/build-args
 { "go_version": "${GO_VERSION}" }
 HERE
