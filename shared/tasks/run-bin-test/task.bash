@@ -16,14 +16,16 @@ export BUILD_ROOT_DIR="${CI_DIR}/.."
 unset THIS_FILE_DIR
 
 function run_test_cmd() {
-    if [[ -n "${RUN_AS}" ]]; then
+    if [[ "${RUN_AS}" != "root" ]]; then
         debug "Running tests as '${RUN_AS}', with PATH '${PATH}'"
         origPath="${PATH}"
         origDir="${PWD}"
         chown -R "${RUN_AS}" "${BUILD_ROOT_DIR}"
-        su - "${RUN_AS}" -c "bash -c \"export PATH=$origPath; cd \\\"${origDir}\\\"; eval \\\"$@\\\"\""
+        local env_file="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-env.bash')"
+        expand_envs "${env_file}"
+        su - "${RUN_AS}" -c "bash -c \"export PATH=\\\"${origPath}\\\"; . \\\"${env_file}\\\"; cd \\\"${origDir}\\\"; eval \\\"$@\\\"\""
     else
-        "$@"
+        eval "$@"
     fi
 }
 

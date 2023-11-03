@@ -36,7 +36,7 @@ params:
     --race
     --timeout 20m
   FUNCTIONS:
-  RUN_AS:
+  RUN_AS: root
   VERIFICATIONS: |
     verify_go repo/$DIR
     verify_go_version_match_bosh_release repo
