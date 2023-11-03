@@ -16,6 +16,17 @@ function run(){
 
   local released_binaries_path="$PWD/released-binaries"
 
+  local new_version
+  new_version="$(cat version/number)"
+  local old_version
+  old_version="$(cat previous-github-release/tag)"
+
+  # Compensate for previous github tag having a `v` prefix
+  local new_tag_version="${new_version}"
+  if [[ "${old_version}" =~ ^v ]]; then
+    new_tag_version="v${new_version}"
+  fi
+
   pushd repo > /dev/null
   local go_version repo_name spec_diff
   if [[ "$(is_repo_bosh_release)" == "yes" ]]; then
@@ -35,16 +46,6 @@ function run(){
   if [[ -z "${go_version}" ]]; then
     echo "Unable to find version of go"
     exit 1
-  fi
-
-
-  local new_version="$(cat version/number)"
-  local old_version="$(cat previous-github-release/tag)"
-
-  # Compensate for previous github tag having a `v` prefix
-  local new_tag_version="${new_version}"
-  if [[ "${old_version}" =~ ^v ]]; then
-    new_tag_version="v${new_version}"
   fi
 
   repo_name="$(git_get_remote_name)"
