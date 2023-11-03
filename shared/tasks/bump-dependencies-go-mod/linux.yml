@@ -22,6 +22,7 @@ params:
   GOOS:
   GO_MODS: 
   REPLACE_DIRECTIVES: 
+  FUNCTIONS:
   EXTRA_GO_TAGS: 
 
 run:
