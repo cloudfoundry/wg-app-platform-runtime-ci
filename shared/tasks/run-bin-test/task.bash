@@ -12,7 +12,20 @@ if [[ -n "${DEFAULT_PARAMS:-}" ]] && [[ -f "${DEFAULT_PARAMS}" ]]; then
     . <("$THIS_FILE_DIR/../../../shared/helpers/extract-default-params-for-task.bash" "${DEFAULT_PARAMS}")
 fi
 export CI_DIR="$THIS_FILE_DIR/../../.."
+export BUILD_ROOT_DIR="${CI_DIR}/.."
 unset THIS_FILE_DIR
+
+function run_test_cmd() {
+    if [[ -n "${RUN_AS}" ]]; then
+        debug "Running tests as '${RUN_AS}', with PATH '${PATH}'"
+        origPath="${PATH}"
+        origDir="${PWD}"
+        chown -R "${RUN_AS}" "${BUILD_ROOT_DIR}"
+        su - "${RUN_AS}" -c "bash -c \"export PATH=$origPath; cd \\\"${origDir}\\\"; eval \\\"$@\\\"\""
+    else
+        "$@"
+    fi
+}
 
 function run(){
     local task_tmp_dir="${1:?provide temp dir for task}"
@@ -43,13 +56,14 @@ function run(){
         configure_db "${DB}"
     fi
 
+    path=${PATH}
     pushd "repo/$DIR"  > /dev/null
     if [[ -f ./bin/test.bash ]]; then
         debug "Running ./bin/test.bash for repo/$DIR"
-        ./bin/test.bash $(expand_flags) "$@"
+        run_test_cmd ./bin/test.bash $(expand_flags) "$@"
     else
         debug "Missing ./bin/test.bash for repo/$DIR. Running ginkgo by default"
-        eval "go run github.com/onsi/ginkgo/v2/ginkgo $(expand_flags) $@"
+        run_test_cmd "go run github.com/onsi/ginkgo/v2/ginkgo $(expand_flags) $@"
     fi
     popd  > /dev/null
 }
