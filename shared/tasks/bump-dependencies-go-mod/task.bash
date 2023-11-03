@@ -54,7 +54,7 @@ function run() {
     git_commit_with_submodule_log
   fi
 
-  expand_functions "${FUNCTIONS}"
+  expand_functions
 
   for entry in ${GO_MODS}
   do
