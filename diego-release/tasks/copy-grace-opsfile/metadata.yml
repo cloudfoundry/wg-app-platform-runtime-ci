@@ -1,0 +1,5 @@
+---
+readme: |
+  Copy grace-opsfile from container to a resource
+oses:
+  - linux

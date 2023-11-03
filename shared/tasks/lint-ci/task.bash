@@ -36,7 +36,7 @@ function run() {
 function image_resource() {
     debug "Running image_resource function"
     # Ignored tasks define image resource to dynamically load tagged image
-    ignored_tasks=("run-bin-test" "build-binaries")
+    ignored_tasks=("run-bin-test" "build-binaries" "copy-grace-opsfile")
 
     for file in $(find . -name "linux.yml" )
     do
@@ -230,7 +230,7 @@ done
 
 function run_platform_match() {
     debug "Running run_platform_match function"
-    for dir in $(find . -ipath "*tasks/*" -type d)
+    for dir in $(find . -ipath "*tasks/*" -type d | grep -Ev "copy-grace-opsfile")
     do
         if [[ -f "${dir}/linux.yml" && ! -f "${dir}/task.bash" ]]; then
             debug "Task ${dir} has a Linux config and no Bash file"
