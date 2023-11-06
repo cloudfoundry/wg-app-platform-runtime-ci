@@ -18,6 +18,9 @@
     - name: vizzini
       release: diego
       properties:
+        enable_container_proxy_tests: true
+        enable_declarative_healthcheck: true
+        enable_privileged_container_tests: false
         vizzini:
           bbs:
             ca_cert: "((diego_bbs_client.ca))"
@@ -26,13 +29,10 @@
           ssh:
             proxy_secret: "((ssh_proxy_diego_credentials))"
           routable_domain_suffix: "((system_domain))"
-          enable_container_proxy_tests: true
           container_proxy:
             ca: "((application_ca.certificate))"
             client_cert: "((gorouter_backend_tls.certificate))"
             client_key: "((gorouter_backend_tls.private_key))"
-          enable_declarative_healthcheck: true
-          enable_privileged_container_tests: false
           stream: true
 - type: replace
   path: /instance_groups/name=scheduler/jobs/name=ssh_proxy/properties/diego/ssh_proxy/enable_diego_auth?
