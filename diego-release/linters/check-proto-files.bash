@@ -12,15 +12,12 @@ function run() {
   install_protoc "$task_tmp_dir"
   install_gogoslick "$task_tmp_dir"
 
-  pushd src/code.cloudfoundry.org/bbs > /dev/null
+  pushd src/code.cloudfoundry.org > /dev/null
   go generate -run generate_proto ./...
   git diff --exit-code
   popd > /dev/null
 
-  pushd src/code.cloudfoundry.org/locket > /dev/null
-  go generate -run generate_proto ./...
-  git diff --exit-code
-  popd > /dev/null
+  exit 1
 
   popd > /dev/null
 }
@@ -38,9 +35,9 @@ install_protoc() {
 install_gogoslick() {
   local tmpDir="${1:?Provide a dir path}"
   mkdir -p "$tmpDir/bin"
-  pushd "$PWD/src/code.cloudfoundry.org"
+  pushd "$PWD/src/code.cloudfoundry.org" > /dev/null
   go build -o "$tmpDir/bin/protoc-gen-gogoslick" github.com/gogo/protobuf/protoc-gen-gogoslick
-  popd
+  popd > /dev/null
   export PATH="$PATH:$tmpDir/bin"
 }
 
