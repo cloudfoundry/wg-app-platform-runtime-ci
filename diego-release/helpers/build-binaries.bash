@@ -28,8 +28,8 @@ function build_proxy(){
     pushd "$source" || exit
     bosh sync-blobs
     ln -s ./blobs/proxy ./proxy
-    chmod +x packages/proxy/packaging
-    BOSH_INSTALL_TARGET="${target}" packages/proxy/packaging
+    BOSH_INSTALL_TARGET="${target}" bash packages/proxy/packaging
+    rm -rf ./proxy
     popd || exit
 
     cat > "${target}/run.bash" << EOF
