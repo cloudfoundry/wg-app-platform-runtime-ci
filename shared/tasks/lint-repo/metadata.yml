@@ -7,6 +7,7 @@ readme: |
 oses:
   - linux
 params:
+  DEFAULT_PARAMS: Path to .yml file containing repo's default-params to use instead. If this value is set, it will override other params set explicitly.
   LINTERS: (Defaults to 
     sync-package-specs.bash
     sync-submodule-config.bash

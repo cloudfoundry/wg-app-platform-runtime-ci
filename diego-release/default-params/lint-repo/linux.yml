@@ -1,16 +1,11 @@
 ---
-platform: linux
-
-inputs:
-- name: ci
-- name: repo
-
 params:
-  DEFAULT_PARAMS:
   LINTERS: |
     sync-package-specs.bash
     sync-submodule-config.bash
     match-golang-os-package-versions.bash
+    check-envoy-versions.bash
+    check-for-windows-drift.bash
+    check-proto-files.bash
 
-run:
-  path: ci/shared/tasks/lint-repo/task.bash
+
