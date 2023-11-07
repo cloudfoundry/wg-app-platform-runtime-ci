@@ -33,16 +33,6 @@ def on_windows(package):
     return False
 end
 
-def with_flags(package):
-    if hasattr(package, "with_flags"):
-        if package.with_flags:
-            return True
-        end
-    end
-    return False
-end
-
-
 def privileged(package):
     if hasattr(package, "privileged"):
         if package.privileged:
@@ -56,7 +46,6 @@ helpers = struct.make(
     packages_with_configure_db=packages_with_configure_db,
     packages_without_configure_db=packages_without_configure_db,
     on_windows=on_windows,
-    with_flags=with_flags,
     privileged=privileged
 )
 
