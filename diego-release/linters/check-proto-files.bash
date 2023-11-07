@@ -17,8 +17,6 @@ function run() {
   git diff --exit-code
   popd > /dev/null
 
-  exit 1
-
   popd > /dev/null
 }
 
