@@ -7,5 +7,4 @@ params:
     check-envoy-versions.bash
     check-for-windows-drift.bash
     check-proto-files.bash
-
-
+    check-metrics-documentation.bash
