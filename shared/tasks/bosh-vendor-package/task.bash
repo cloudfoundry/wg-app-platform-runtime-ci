@@ -35,7 +35,7 @@ function run() {
   debug "bosh vendor for package: ${package_name} and prefix: ${PACKAGE_PREFIX}"
 
   if [[ -n "${PACKAGE_PREFIX}" ]]; then
-    bosh vendor-package "${package_name}" ../package-release --prefix "${PACKAGE_PREFIX}"
+    bosh vendor-package "${PACKAGE_NAME}" ../package-release --prefix "${PACKAGE_PREFIX}"
   else
     bosh vendor-package "${package_name}" ../package-release
   fi
