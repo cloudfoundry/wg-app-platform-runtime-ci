@@ -67,7 +67,13 @@ function Verify-Ginkgo {
   Pop-Location
 }
 
+function Set-TemporaryDirectory {
+    $env:TEMP="/var/vcap/data/tmp"
+    $env:TMP="/var/vcap/data/tmp"
+}
+
 function New-TemporaryDirectory {
+    Set-TemporaryDirectory 
     $parent = [System.IO.Path]::GetTempPath()
     [string] $name = [System.Guid]::NewGuid()
     New-Item -ItemType Directory -Path (Join-Path $parent $name)

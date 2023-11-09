@@ -13,8 +13,7 @@ function Build-Groot
         Verify-Go
         Verify-GCC
 
-        $env:TEMP="/var/vcap/data/tmp"
-        $env:TMP="/var/vcap/data/tmp"
+        Set-TemporaryDirectory 
         $BuiltDir=$(Split-Path $Target -Leaf)
         $Target = Update-Dir-If-Symlink "$Target"
         $Target = Join-Path "$Target" "groot-windows"
@@ -58,8 +57,7 @@ function Build-Winc-Network
 
         Verify-Go
 
-        $env:TEMP="/var/vcap/data/tmp"
-        $env:TMP="/var/vcap/data/tmp"
+        Set-TemporaryDirectory 
         $BuiltDir=$(Split-Path $Target -Leaf)
         $Target = Update-Dir-If-Symlink "$Target"
         $Target = Join-Path "$Target" "winc-network"
@@ -93,8 +91,8 @@ function Build-Winc
 
         Verify-Go
 
-        $env:TEMP="/var/vcap/data/tmp"
-        $env:TMP="/var/vcap/data/tmp"
+        Set-TemporaryDirectory 
+
         $BuiltDir=$(Split-Path $Target -Leaf)
         $Target = Update-Dir-If-Symlink "$Target"
         $Target = Join-Path "$Target" "winc"
@@ -123,8 +121,8 @@ function Build-Nstar
 
         Verify-Go
 
-        $env:TEMP="/var/vcap/data/tmp"
-        $env:TMP="/var/vcap/data/tmp"
+        Set-TemporaryDirectory 
+
         $BuiltDir=$(Split-Path $Target -Leaf)
         $Target = Update-Dir-If-Symlink "$Target"
         $Target = Join-Path "$Target" "nstar"
@@ -152,8 +150,7 @@ function Build-Diff-Exporter
 
         Verify-Go
 
-        $env:TEMP="/var/vcap/data/tmp"
-        $env:TMP="/var/vcap/data/tmp"
+        Set-TemporaryDirectory 
         $BuiltDir=$(Split-Path $Target -Leaf)
         $Target = Update-Dir-If-Symlink "$Target"
         $Target = Join-Path "$Target" "diff-exporter"
