@@ -1,0 +1,8 @@
+---
+readme: |
+  Bump envoy blob to a newer version
+oses:
+  - linux
+params:
+  AWS_SECRET_ACCESS_KEY: AWS Secret Access Key
+  AWS_ACCESS_KEY_ID: AWS Access Key

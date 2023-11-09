@@ -1,0 +1,10 @@
+---
+readme: |
+   Create envoy blob by terraforming a VM and installing docker and running envoy's docker image at a certain sha,
+   so that we could build envoy in a xenial vm
+oses:
+  - linux
+params:
+  GCP_KEY: Secret Key for Google console to creating new VMs
+  IMAGE_NAME: Name of envoy image to pull
+  IMAGE_ID: Hardcoded sha of the image with Xenial support
