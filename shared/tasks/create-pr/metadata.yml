@@ -1,0 +1,10 @@
+readme: |
+  This task will create a PR using Github CLI (gh) for the respective repo.
+  Target branch defaults to develop.
+oses:
+  - linux
+params:
+  GITHUB_TOKEN: Github token to be used for the user that's openning a pull-request
+  LABEL:  (Defaults to dependencies). Label to use for the PR.
+  BRANCH: Branch to use for PR's base
+

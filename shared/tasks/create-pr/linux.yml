@@ -1,0 +1,14 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+- name: repo
+
+params:
+  GITHUB_TOKEN: ~
+  LABEL: dependencies
+  BRANCH: ~
+
+run:
+  path: ci/shared/tasks/create-pr/task.bash
