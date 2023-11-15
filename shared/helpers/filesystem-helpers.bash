@@ -32,9 +32,7 @@ function filesystem_permit_device_control() {
   fi
 
   # permit our cgroup to do everything with all devices
-  if [[ ! -f "${cgroup_dir}${devices_subdir}/devices.allow" ]]; then 
-    echo a > "${cgroup_dir}${devices_subdir}/devices.allow"
-  fi
+  echo a > "${cgroup_dir}${devices_subdir}/devices.allow"
 
   umount "$cgroup_dir"
 }
