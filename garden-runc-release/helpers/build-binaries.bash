@@ -12,15 +12,18 @@ function build_tar(){
     target="$target/tar"
     mkdir -p "${target}"
 
-    pushd "$source" || exit
+    local tmpDir=$(mktemp -d -p /tmp "build-tar-XXXX")
+
+    rsync -aq "$source/" "$tmpDir"
+    pushd "$tmpDir" || exit
     bosh sync-blobs
     ln -s ./blobs/tar ./tar
     ln -s ./blobs/musl ./musl
-    chmod +x packages/tar/packaging
     echo "Executing tar packaging script"
-    BOSH_INSTALL_TARGET="${target}" packages/tar/packaging &> /dev/null
+    BOSH_INSTALL_TARGET="${target}" bash packages/tar/packaging &> /dev/null
     mv "${target}/tar" "${target}/run"
     popd || exit
+    rm -rf "$tmpDir"
 
     cat > "${target}/run.bash" << EOF
 export TAR_BINARY="\$PWD/${built_dir}/tar/run"
@@ -47,6 +50,42 @@ function build_nstar(){
 
     cat > "${target}/run.bash" << EOF
 export NSTAR_BINARY="\$PWD/${built_dir}/nstar/nstar"
+EOF
+    
+}
+
+function build_socket2me(){
+    local source="${1?Provide source dir}"
+    local target="${2?Provide target dir}"
+
+    local built_dir=$(basename "${target}")
+    target="$target/socket2me"
+    mkdir -p "${target}"
+
+    pushd "$source" || exit
+    go build -o "${target}/run" .
+    popd || exit
+
+    cat > "${target}/run.bash" << EOF
+export SOCKET2ME_BINARY="\$PWD/${built_dir}/socket2me/run"
+EOF
+    
+}
+
+function build_fake_runc_stderr(){
+    local source="${1?Provide source dir}"
+    local target="${2?Provide target dir}"
+
+    local built_dir=$(basename "${target}")
+    target="$target/fake_runc_stderr"
+    mkdir -p "${target}"
+
+    pushd "$source" || exit
+    go build -o "${target}/run" .
+    popd || exit
+
+    cat > "${target}/run.bash" << EOF
+export FAKE_RUNC_STDERR_BINARY="\$PWD/${built_dir}/fake_runc_stderr/run"
 EOF
     
 }
@@ -177,10 +216,10 @@ function build_containerd() {
     popd || exit
 
     cat > "${target}/run.bash" << EOF
-export COTAINERD_BINARY="\$PWD/${built_dir}/containerd/containerd"
-export COTAINERD_SHIM_BINARY="\$PWD/${built_dir}/containerd/containerd-shim"
-export COTAINERD_SHIM_RUNC_V1_BINARY="\$PWD/${built_dir}/containerd/containerd-shim-runc-v1"
-export COTAINERD_SHIM_RUNC_V2_BINARY="\$PWD/${built_dir}/containerd/containerd-shim-runc-v2"
-export COTAINERD_CTR_BINARY="\$PWD/${built_dir}/containerd/ctr"
+export CONTAINERD_BINARY="\$PWD/${built_dir}/containerd/containerd"
+export CONTAINERD_SHIM_BINARY="\$PWD/${built_dir}/containerd/containerd-shim"
+export CONTAINERD_SHIM_RUNC_V1_BINARY="\$PWD/${built_dir}/containerd/containerd-shim-runc-v1"
+export CONTAINERD_SHIM_RUNC_V2_BINARY="\$PWD/${built_dir}/containerd/containerd-shim-runc-v2"
+export CONTAINERD_CTR_BINARY="\$PWD/${built_dir}/containerd/ctr"
 EOF
 }

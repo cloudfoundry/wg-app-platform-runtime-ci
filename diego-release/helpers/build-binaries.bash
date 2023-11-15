@@ -25,12 +25,15 @@ function build_proxy(){
     target="$target/proxy"
     mkdir -p "${target}"
 
-    pushd "$source" || exit
+    local tmpDir=$(mktemp -d -p /tmp "build-proxy-XXXX")
+    rsync -aq "$source/" "$tmpDir"
+
+    pushd "$tmpDir" || exit
     bosh sync-blobs
     ln -s ./blobs/proxy ./proxy
     BOSH_INSTALL_TARGET="${target}" bash packages/proxy/packaging
-    rm -rf ./proxy
     popd || exit
+    rm -rf "$tmpDir"
 
     cat > "${target}/run.bash" << EOF
 export PROXY_BINARY="\$PWD/${built_dir}/proxy/envoy"

@@ -32,7 +32,9 @@ function filesystem_permit_device_control() {
   fi
 
   # permit our cgroup to do everything with all devices
-  echo a > "${cgroup_dir}${devices_subdir}/devices.allow"
+  if [[ ! -f "${cgroup_dir}${devices_subdir}/devices.allow" ]]; then 
+    echo a > "${cgroup_dir}${devices_subdir}/devices.allow"
+  fi
 
   umount "$cgroup_dir"
 }
@@ -48,8 +50,8 @@ function filesystem_create_loop_devices() {
 
   amt=${1:-256}
   for i in $( seq 0 "$amt" ); do
-    mknod -m 0660 "/dev/loop${i}" b 7 "$i" > /dev/null 2>&1
-  done
+    mknod -m 0660 "/dev/loop${i}" b 7 "$i"
+  done &> /dev/null 2>&1
   set -e
 }
 
@@ -58,4 +60,53 @@ function filesystem_mount_sysfs() {
   if ! grep -qs '/sys' /proc/mounts; then
     mount -t sysfs sysfs /sys
   fi
+}
+
+function filesystem_mount_storage() {
+  mkdir /mnt/ext4
+  truncate -s 256M /ext4_volume
+  mkfs.ext4 /ext4_volume &> /dev/null
+  mount /ext4_volume /mnt/ext4 &> /dev/null
+  chmod 777 /mnt/ext4
+
+  for i in {1..10}
+  do
+    # Make XFS Volume
+    truncate -s 3G /xfs_volume_${i}
+    mkfs.xfs -b size=4096 /xfs_volume_${i} &> /dev/null
+
+    # Mount XFS
+    mkdir /mnt/xfs-${i}
+    if ! mount -t xfs -o pquota,noatime /xfs_volume_${i} /mnt/xfs-${i}; then
+      free -h
+      echo Mounting xfs failed, bailing out early!
+      echo NOTE: this might be because of low system memory, please check out output from free above
+      exit 13
+    fi
+    chmod 777 -R /mnt/xfs-${i}
+  done
+}
+
+function filesystem_unmount_storage() {
+  umount -l /mnt/ext4
+
+  for i in {1..10}
+  do
+    umount -l /mnt/xfs-${i}
+    rmdir /mnt/xfs-${i}
+    rm /xfs_volume_${i}
+  done
+
+  rmdir /mnt/ext4
+  rm /ext4_volume
+}
+
+function filesystem_sudo_mount_storage() {
+  local MOUNT_STORAGE_FUNC=$(declare -f filesystem_mount_storage)
+  sudo bash -c "$MOUNT_STORAGE_FUNC; filesystem_mount_storage"
+}
+
+function filesystem_sudo_unmount_storage() {
+  local UNMOUNT_STORAGE_FUNC=$(declare -f filesystem_unmount_storage)
+  sudo bash -c "$UNMOUNT_STORAGE_FUNC; filesystem_unmount_storage"
 }
