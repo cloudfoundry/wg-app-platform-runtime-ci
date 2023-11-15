@@ -106,6 +106,13 @@ resources:
     branch: release-candidate
     uri: https://github.com/cloudfoundry/cf-acceptance-tests
 
+- name: go-version
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: [go-version.json]
+
 #! TIMERS
 - name: weekly
   type: time
@@ -200,6 +207,8 @@ jobs:
     - get: ci
     - get: repo
     - get: image
+    - get: go-version
+      trigger: true
     - get: golang-release-latest
       trigger: true
 
@@ -213,10 +222,12 @@ jobs:
     file: ci/shared/tasks/bosh-vendor-package/linux.yml
     image: image
     input_mapping:
+      repo: bumped-golang-package-name-linux
       package-release: golang-release-latest
     params:
-      PACKAGE_NAME: golang-1-linux
-      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+      PACKAGE_NAME: golang-*-linux
+      AWS_ACCESS_KEY_ID: ((aws-s3-295558626344-garden-linux-release/access-key-id))
+      AWS_SECRET_ACCESS_KEY: ((aws-s3-295558626344-garden-linux-release/secret-access-key))
 
   - put: repo
     params:
@@ -343,7 +354,7 @@ jobs:
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
     input_mapping:
-      ops-files: combined-files
+      ops-files: combined-assets
       vars-files: prepared-env
       toolsmiths-env: env
     params:
@@ -354,7 +365,7 @@ jobs:
   - task: uptimer-measure-with-<REPLACE_ME>-update
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping:
-      ops-files: combined-files
+      ops-files: combined-assets
       release: repo
       vars-files: prepared-env
       toolsmiths-env: env
