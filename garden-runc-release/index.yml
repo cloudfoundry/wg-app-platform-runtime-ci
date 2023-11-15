@@ -1,0 +1,29 @@
+#@data/values
+---
+#@overlay/match missing_ok=True
+
+#! <MUST> repo/component/package to test in your repo/release
+internal_repos:
+- name: greenskeeper 
+  privileged: true
+- name: thresholder
+  privileged: true
+- name: dontpanic
+  privileged: true
+- name: garden
+- name: guardian
+  privileged: true
+  on_windows: true
+- name: idmapper
+  privileged: true
+  on_windows: true
+- name: netplugin-shim
+  privileged: true
+- name: grootfs
+  privileged: true
+
+#! <OPTIONAL> set to a list of opsfile if pipeline needs to update cf-deployment
+opsfiles:
+- add-lb-ca-cert.yml
+- scale-for-cats.yml
+- use-compiled-releases.yml
