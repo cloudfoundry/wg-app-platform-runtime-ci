@@ -32,7 +32,7 @@ params:
     -r
     --fail-on-pending
     --randomize-all
-    -p
+    --nodes=7
     --race
     --timeout 20m
   FUNCTIONS:
