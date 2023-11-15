@@ -255,6 +255,8 @@ jobs:
     - get: repo
       trigger: true
     - get: image
+    - get: package-release
+      resource: golang-release-latest
   - task: determine-image-tag
     image: image
     file: ci/shared/tasks/determine-image-tag/linux.yml
