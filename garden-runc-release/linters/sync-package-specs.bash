@@ -64,7 +64,7 @@ function sync_package() {
   {
     cat $spec | grep -v '# gosub'
 
-    for package in $("$RELEASE_DIR/bin/gosub" list "$@"); do
+    for package in $(gosub list "$@"); do
       repo=$(echo ${2} | cut -f1-3 -d/)
       base_pkg="$(echo $package | cut -f2- -d /)"
       if [ -d "../../src/${src_dir}/vendor/${package}" ]; then
