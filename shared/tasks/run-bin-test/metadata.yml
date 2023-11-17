@@ -27,7 +27,7 @@ params:
       -r
       --fail-on-pending
       --randomize-all
-      -p
+      --nodes=7
       --race
       --timeout 20m
     ) Multiline flags to call test with. If running against a non-go project, this needs to be overridden
