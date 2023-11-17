@@ -16,7 +16,6 @@ internal_repos:
   on_windows: true
 - name: idmapper
   privileged: true
-  on_windows: true
 - name: netplugin-shim
   privileged: true
 - name: grootfs
