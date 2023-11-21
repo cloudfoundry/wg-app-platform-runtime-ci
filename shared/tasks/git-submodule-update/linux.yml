@@ -1,0 +1,12 @@
+---
+platform: linux
+
+inputs:
+  - name: ci
+  - name: repo
+
+outputs:
+  - name: repo
+
+run:
+  path: ci/shared/tasks/git-submodule-update/task.bash

@@ -1,0 +1,8 @@
+---
+readme: |
+  This task will checkout all of the submodules for a git repository.
+  This is useful for pull-request concourse resources, as they don't come fully
+  cloned if the repo contains any submodules.
+oses:
+  - linux
+params:
