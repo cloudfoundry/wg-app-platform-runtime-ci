@@ -3,6 +3,9 @@ readme: |
   This task will run respective `./bin/release-binaries.bash` for different OSes and architectures for repositories
   that are meant to release binaries in their github releases. Each repo is responsible for how they like to package
   their binaries. Script will be called with the following signature `./bin/release-binaries.bash "${arch}" "${os}" "${version}" "${output_dir}"`
+extra_inputs:
+  version: version resource to use or will default to using git sha for HEAD
+  built-binaries: Provide dependent binaries for releasing. e.g. gdn for concourse needs other binaries to be built
 oses:
   - linux
 params:

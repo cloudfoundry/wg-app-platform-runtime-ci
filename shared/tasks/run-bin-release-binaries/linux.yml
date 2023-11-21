@@ -5,6 +5,9 @@ inputs:
 - name: ci
 - name: repo
 - name: version
+  optional: true
+- name: built-binaries
+  optional: true
 
 outputs:
 - name: released-binaries

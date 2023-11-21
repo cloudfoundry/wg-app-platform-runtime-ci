@@ -16,9 +16,20 @@ function run(){
     git_configure_safe_directory
 
     local version
-    version="$(cat version/version)"
+
+    if [[ -d version ]]; then
+        version="$(cat version/version)"
+    fi
+
+    if [[ -d built-binaries ]]; then
+        export BUILT_BINARIES="$PWD/built-binaries"
+    fi
 
     pushd "repo/$DIR"  > /dev/null
+
+    if [[ "${version:-empty}" == "empty" ]]; then
+        version=$(git rev-parse HEAD)
+    fi
 
     debug "Releasing $(git_get_remote_name) version ${version}"
     
