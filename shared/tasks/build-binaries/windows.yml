@@ -11,6 +11,7 @@ outputs:
 params:
   DEFAULT_PARAMS:
   FUNCTIONS: 
+  ENVS:
   MAPPING: 
 
 run:

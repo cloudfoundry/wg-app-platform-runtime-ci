@@ -7,4 +7,9 @@ oses:
 params:
   DEFAULT_PARAMS: (Currently works on Linux only) Path to .yml file containing repo's default-params to use instead. If this value is set, it will override other params set explicitly.
   FUNCTIONS: Multiline parameter that accepts path to (powershell/bash) scripts that define functions to be used. e.g. ci/winc-release/helpers/configure-binaries.ps1
+  ENVS: |
+    (Currently works on Linux Only). This parameter defines a list of environment variables will be loaded at runtime, as opposed to
+    container-creation time. The purpose here is to allow users to extend the list of environment
+    variables used by the task simply by updating the pipeline config, rather than by updating the task definition
+    in linux.yml.
   MAPPING: Multiline parameter that defines maps function call to code containing source. e.g. Build-Gdn=src/guardian/cmd/gdn
