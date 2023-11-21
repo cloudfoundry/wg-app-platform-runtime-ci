@@ -30,9 +30,95 @@ export TAR_BINARY="\$PWD/${built_dir}/tar/run"
 EOF
 }
 
+function build_pkg_config(){
+    local source="${1?Provide source dir}"
+    local target="${2?Provide target dir}"
+
+    mkdir -p "${target}"
+    local built_dir=$(basename "${target}")
+    target="$target/pkg-config"
+    mkdir -p "${target}"
+
+    local tmpDir=$(mktemp -d -p /tmp "build-pkg-config-XXXX")
+
+    rsync -aq "$source/" "$tmpDir"
+    pushd "$tmpDir" || exit
+    bosh sync-blobs
+    ln -s ./blobs/pkg-config ./pkg-config
+    echo "Executing pkg-config packaging script"
+    BOSH_INSTALL_TARGET="${target}" bash packages/pkg-config/packaging &> /dev/null
+    popd || exit
+    rm -rf "$tmpDir"
+}
+
+function build_musl(){
+    local source="${1?Provide source dir}"
+    local target="${2?Provide target dir}"
+
+    local built_dir=$(basename "${target}")
+    target="$target/musl"
+    mkdir -p "${target}"
+
+    local tmpDir=$(mktemp -d -p /tmp "build-musl-XXXX")
+
+    rsync -aq "$source/" "$tmpDir"
+    pushd "$tmpDir" || exit
+    bosh sync-blobs
+    local musl_tarball="$(ls ./blobs/musl/musl-*.tar.gz)"
+    tar xzf "$musl_tarball" --strip-components=1
+    echo "Building musl gcc..."
+    ./configure --prefix="$target" &> /dev/null
+    make install &> /dev/null
+
+    ln -sf /usr/include/linux "$target/include/"
+    ln -sf /usr/include/asm-generic "$target/include/"
+    ln -sf /usr/include/asm-generic "$target/include/asm"
+
+    popd || exit
+    rm -rf "$tmpDir"
+
+    cat > "${target}/run.bash" << EOF
+export MUSL_BINARY="\$PWD/${built_dir}/musl/bin/musl-gcc"
+EOF
+}
+
+function build_iptables(){
+    local source="${1?Provide source dir}"
+    local target="${2?Provide target dir}"
+
+    build_pkg_config $source "/var/vcap/packages"
+
+    local built_dir=$(basename "${target}")
+    target="$target/iptables"
+    mkdir -p "${target}"
+
+    local tmpDir=$(mktemp -d -p /tmp "build-iptables-XXXX")
+
+    rsync -aq "$source/" "$tmpDir"
+    pushd "$tmpDir" || exit
+    bosh sync-blobs
+    ln -s ./blobs/iptables ./iptables
+    echo "Executing iptables packaging script"
+    STATIC=true BOSH_INSTALL_TARGET="/var/vcap/packages/iptables" bash packages/iptables/packaging &> /dev/null
+    cp -aL "/var/vcap/packages/iptables/sbin/iptables" "${target}/iptables"
+    cp -aL "/var/vcap/packages/iptables/sbin/iptables-restore" "${target}/iptables-restore"
+    popd || exit
+    rm -rf "$tmpDir"
+
+    cat > "${target}/run.bash" << EOF
+export IPTABLES_BINARY="\$PWD/${built_dir}/iptables/iptables"
+export IPTABLES_RESTORE_BINARY="\$PWD/${built_dir}/iptables/iptables-restore"
+EOF
+}
+
 function build_nstar(){
     local source="${1?Provide source dir}"
     local target="${2?Provide target dir}"
+
+    if [[ "${WITH_MUSL:-no}" != "no" ]]; then
+        build_musl "$(echo ${source}|cut -d '/' -f1)" "${target}"
+        . "${target}/musl/run.bash"
+    fi
 
     local built_dir=$(basename "${target}")
     target="$target/nstar"
@@ -40,10 +126,10 @@ function build_nstar(){
 
     pushd "$source" || exit
     make clean
-    if [  "${WITH_MUSL:-no}" == "no" ]; then
-      make
+    if [  "${WITH_MUSL:-no}" != "no" ]; then
+        CC="${MUSL_BINARY}" make
     else
-      CC="${WITH_MUSL}" make
+        make
     fi
     mv nstar "${target}"
     popd || exit
@@ -51,7 +137,7 @@ function build_nstar(){
     cat > "${target}/run.bash" << EOF
 export NSTAR_BINARY="\$PWD/${built_dir}/nstar/nstar"
 EOF
-    
+
 }
 
 function build_socket2me(){
@@ -69,7 +155,7 @@ function build_socket2me(){
     cat > "${target}/run.bash" << EOF
 export SOCKET2ME_BINARY="\$PWD/${built_dir}/socket2me/run"
 EOF
-    
+
 }
 
 function build_fake_runc_stderr(){
@@ -87,7 +173,7 @@ function build_fake_runc_stderr(){
     cat > "${target}/run.bash" << EOF
 export FAKE_RUNC_STDERR_BINARY="\$PWD/${built_dir}/fake_runc_stderr/run"
 EOF
-    
+
 }
 
 function build_runc() {
@@ -112,23 +198,62 @@ function build_grootfs() {
     local source="${1?Provide source dir}"
     local target="${2?Provide target dir}"
 
+    if [[ "${WITH_MUSL:-no}" != "no" ]]; then
+        build_musl "$(echo ${source}|cut -d '/' -f1)" "${target}"
+        . "${target}/musl/run.bash"
+    fi
+
     local built_dir=$(basename "${target}")
     target="$target/grootfs"
     mkdir -p "${target}"
 
     pushd "$source" || exit
     make clean
-    if [  "${WITH_MUSL:-no}" == "no" ]; then
-      make
+    if [  "${WITH_MUSL:-no}" != "no" ]; then
+        CC="${MUSL_BINARY}" STATIC_BINARY=true make
     else
-      CC="${WITH_MUSL}" STATIC_BINARY=true make
+        make
     fi
     make prefix="${target}" install
     popd || exit
 
-    cat > "${target}/run.bash" << EOF
+    cat <<EOF > ${target}/grootfs-privileged.yml
+---
+store: /var/lib/grootfs/store-privileged
+tardis_bin: \${GROOTFS_TARDIS_BINARY}
+newuidmap_bin: \${IDMAPPER_NEWUIDMAP_BINARY}
+newgidmap_bin: \${IDMAPPER_NEWGIDMAP_BINARY}
+log_level: error
+
+create:
+  with_clean: false
+  without_mount: false
+
+init:
+  store_size_bytes: 51398832128
+EOF
+
+cat <<EOF > ${target}/grootfs.yml
+---
+store: /var/lib/grootfs/store
+tardis_bin: \${GROOTFS_TARDIS_BINARY}
+newuidmap_bin: \${IDMAPPER_NEWUIDMAP_BINARY}
+newgidmap_bin: \${IDMAPPER_NEWGIDMAP_BINARY}
+log_level: error
+
+create:
+  with_clean: false
+  without_mount: false
+
+init:
+  store_size_bytes: 51398832128
+EOF
+
+cat > "${target}/run.bash" << EOF
 export GROOTFS_BINARY="\$PWD/${built_dir}/grootfs/grootfs"
 export GROOTFS_TARDIS_BINARY="\$PWD/${built_dir}/grootfs/tardis"
+export GROOTFS_REGULAR_CONFIG=\$PWD/${built_dir}/grootfs.yml
+export GROOTFS_PRIVILEGED_CONFIG=\$PWD/${built_dir}/grootfs-privileged.yml
 EOF
 }
 
@@ -136,21 +261,26 @@ function build_init() {
     local source="${1?Provide source dir}"
     local target="${2?Provide target dir}"
 
+    if [[ "${WITH_MUSL:-no}" != "no" ]]; then
+        build_musl "$(echo ${source}|cut -d '/' -f1)" "${target}"
+        . "${target}/musl/run.bash"
+    fi
+
     local built_dir=$(basename "${target}")
     target="$target/init"
     mkdir -p "${target}"
 
     pushd "$source" || exit
-    if [  "${WITH_MUSL:-no}" == "no" ]; then
-      gcc -static -o init init.c ignore_sigchild.c
+    if [  "${WITH_MUSL:-no}" != "no" ]; then
+        CC="${MUSL_BINARY}" gcc -static -o init init.c ignore_sigchild.c
     else
-      CC="${WITH_MUSL}" gcc -static -o init init.c ignore_sigchild.c
+        gcc -static -o init init.c ignore_sigchild.c
     fi
-    mv init "${target}/run"
+    mv init "${target}/init"
     popd || exit
 
     cat > "${target}/run.bash" << EOF
-export INIT_BINARY="\$PWD/${built_dir}/init/run"
+export INIT_BINARY="\$PWD/${built_dir}/init/init"
 EOF
 }
 
@@ -165,11 +295,11 @@ function build_dadoo() {
     verify_go
 
     pushd "$source" || exit
-    go build -o "${target}/run" .
+    go build -o "${target}/dadoo" .
     popd || exit
 
     cat > "${target}/run.bash" << EOF
-export DADOO_BINARY="\$PWD/${built_dir}/dadoo/run"
+export DADOO_BINARY="\$PWD/${built_dir}/dadoo/dadoo"
 EOF
 }
 

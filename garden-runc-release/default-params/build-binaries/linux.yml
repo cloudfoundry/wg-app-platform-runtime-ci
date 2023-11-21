@@ -2,6 +2,7 @@
 params:
   MAPPING: |
     build_tar=.
+    build_iptables=.
     build_nstar=src/guardian/rundmc/nstar
     build_runc=src/guardian/vendor/github.com/opencontainers/runc
     build_socket2me=src/guardian/cmd/socket2me
