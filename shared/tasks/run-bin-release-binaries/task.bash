@@ -21,8 +21,15 @@ function run(){
         version="$(cat version/version)"
     fi
 
-    if [[ -d built-binaries ]]; then
-        export BUILT_BINARIES="$PWD/built-binaries"
+    if [[ -d "built-binaries" ]]; then
+        IFS=$'\n'
+        for entry in $(find built-binaries -name "*.bash");
+        do
+            echo "Sourcing: $entry"
+            debug "$(cat $entry)"
+            source "${entry}"
+        done
+        unset IFS
     fi
 
     pushd "repo/$DIR"  > /dev/null

@@ -14,7 +14,11 @@ function configure_gdn() {
     --privileged-image-plugin-extra-arg=${GROOTFS_PRIVILEGED_CONFIG} \
     --default-rootfs=${GARDEN_TEST_ROOTFS} &
 
-  for i in {1..5}; do
+  for i in {1..6}; do
+    if [ ${i} -gt 5 ]; then
+      echo "Unable to start guardian"
+      exit 1
+    fi
     curl "${GDN_BIND_IP}:${GDN_BIND_PORT}/ping" && break || sleep 5
   done
 }

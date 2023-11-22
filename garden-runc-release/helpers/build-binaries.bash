@@ -252,8 +252,8 @@ EOF
 cat > "${target}/run.bash" << EOF
 export GROOTFS_BINARY="\$PWD/${built_dir}/grootfs/grootfs"
 export GROOTFS_TARDIS_BINARY="\$PWD/${built_dir}/grootfs/tardis"
-export GROOTFS_REGULAR_CONFIG=\$PWD/${built_dir}/grootfs.yml
-export GROOTFS_PRIVILEGED_CONFIG=\$PWD/${built_dir}/grootfs-privileged.yml
+export GROOTFS_REGULAR_CONFIG="\$PWD/${built_dir}/grootfs/grootfs.yml"
+export GROOTFS_PRIVILEGED_CONFIG="\$PWD/${built_dir}/grootfs/grootfs-privileged.yml"
 EOF
 }
 
