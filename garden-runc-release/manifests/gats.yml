@@ -46,6 +46,7 @@ instance_groups:
       cpu_throttling: ((WITH_CPU_THROTTLING))
       rootless: ((WITH_ROOTLESS_MODE))
       containerd_for_processes: ((WITH_COTAINERD_FOR_PROCESSES_MODE))
+      garden_test_rootfs: "docker:///cloudfoundry/garden-rootfs#with-oss-ci-export"
 - name: gpats
   instances: 1
   vm_type: ((CF_VM_TYPE))
