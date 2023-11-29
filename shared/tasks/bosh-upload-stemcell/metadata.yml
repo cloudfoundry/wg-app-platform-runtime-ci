@@ -1,0 +1,7 @@
+---
+readme: |
+  This task will upload a stmcell to bosh director.
+oses:
+  - linux
+params:
+  STEMCELL_URL: URL for stemcell

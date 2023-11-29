@@ -1,0 +1,13 @@
+---
+platform: linux
+
+inputs:
+  - name: ci
+  - name: repo
+  - name: env
+
+params:
+  STEMCELL_URL:
+
+run:
+  path: ci/shared/tasks/bosh-upload-stemcell/task.bash
