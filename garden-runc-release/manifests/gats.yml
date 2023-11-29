@@ -35,7 +35,6 @@ instance_groups:
         bpm:
           enabled: ((WITH_BPM))
         destroy_containers_on_start: ((WITH_BPM))
-        network_plugin: ((WITH_NOOP_NETWORK_PLUGIN))
         experimental_rootless_mode: ((WITH_ROOTLESS_MODE))
         containerd_mode: ((WITH_CONTAINERD_MODE))
         experimental_use_containerd_mode_for_processes: ((WITH_COTAINERD_FOR_PROCESSES_MODE))
