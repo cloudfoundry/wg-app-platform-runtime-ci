@@ -2,8 +2,7 @@ name: ((DEPLOYMENT_NAME))
 
 releases:
 - name: garden-runc
-  url: ((DEPLOYMENT_RELEASE_DIR))
-  version: create
+  version: latest
 - name: bpm
   version: latest
 
