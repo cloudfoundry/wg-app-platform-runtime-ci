@@ -38,6 +38,7 @@ instance_groups:
         experimental_rootless_mode: ((WITH_ROOTLESS_MODE))
         containerd_mode: ((WITH_CONTAINERD_MODE))
         experimental_use_containerd_mode_for_processes: ((WITH_COTAINERD_FOR_PROCESSES_MODE))
+        network_plugin: ((WITH_NETWORK_PLUGIN))
       grootfs:
         skip_mount: ((WITH_ROOTLESS_MODE))
   - name: gats
