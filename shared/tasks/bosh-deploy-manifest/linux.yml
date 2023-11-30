@@ -5,7 +5,11 @@ inputs:
   - name: ci
   - name: repo
   - name: env
-  - name: release-01 
+  - name: release-01
+    optional: true
+  - name: release-02
+    optional: true
+  - name: release-03
     optional: true
 
 params:
