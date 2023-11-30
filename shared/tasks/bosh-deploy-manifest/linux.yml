@@ -16,6 +16,7 @@ params:
   DEPLOYMENT_NAME:
   ENVS:
   MANIFEST:
+  OPS_FILES:
 
 run:
   path: ci/shared/tasks/bosh-deploy-manifest/task.bash

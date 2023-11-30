@@ -27,6 +27,10 @@ function run(){
     debug "Extracted vars from ENV variable: $(cat ${env_file})"
 
     local arguments=$(bosh_extract_vars_from_env_files ${default_envs_file} ${env_file})
+    for op in ${OPS_FILES:-}
+    do
+        arguments="${arguments} -o ${op}"
+    done
     debug "bosh arguments for deploy: ${arguments}"
 
     eval "bosh -d ${DEPLOYMENT_NAME} deploy -n ${MANIFEST} --var=DEPLOYMENT_NAME=${DEPLOYMENT_NAME}${arguments}"
