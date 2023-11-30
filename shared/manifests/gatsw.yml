@@ -6,9 +6,11 @@ releases:
   url: ((DEPLOYMENT_GARDEN_RUNC_RELEASE_DIR))
   version: create
 - name: winc
-  version: latest
+  url: ((DEPLOYMENT_WINC_RELEASE_DIR))
+  version: create
 - name: windows-utilities
-  version: latest
+  url: ((DEPLOYMENT_WINDOWS_UTILITIES_RELEASE_DIR))
+  version: create
 - name: garden-ci-artifacts
   url: ((DEPLOYMENT_GARDEN_CI_ARTIFACTS_RELEASE_DIR))
   version: create
