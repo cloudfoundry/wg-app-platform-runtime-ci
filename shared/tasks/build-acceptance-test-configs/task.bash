@@ -109,6 +109,7 @@ function rats() {
   "default_timeout": 120,
   "cf_push_timeout": 120,
   "tcp_router_group": "default-tcp",
+  "tcp_apps_domain": "${CF_TCP_DOMAIN}",
   "oauth": {
     "token_endpoint": "https://uaa.${CF_SYSTEM_DOMAIN}",
     "client_name": "routing_api_client",
