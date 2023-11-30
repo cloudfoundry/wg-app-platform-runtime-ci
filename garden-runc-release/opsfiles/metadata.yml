@@ -1,0 +1,5 @@
+---
+readme:
+  This directory contains the opsfiles needed for garden-runc-release.
+opsfiles:
+  noop-networking.yml: Set network_plugin to a no-op binary for rootless gats tests.
