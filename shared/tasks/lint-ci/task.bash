@@ -202,10 +202,11 @@ function allowed_dirs() {
 ^./examples/(task|pipeline)*$
 ^./examples/repo/(scripts-dir-with-db|scripts-dir-generic)$
 ^./examples/repo/(scripts-dir-with-db|scripts-dir-generic)/docker$
-^./(shared|${release_list})/(helpers|opsfiles|linters)$
+^./(shared|${release_list})/(helpers|opsfiles|linters|manifests|dockerfiles)$
 ^./(shared|${release_list})/tasks/[a-z\-]*$
 ^./(${release_list})/(manifests)$
 ^./(${release_list})/default-params/[a-z\-]*$
+^./(${release_list})/dockerfiles/[a-z\-]*$
 EOF
 )"
 IFS=$'\n'

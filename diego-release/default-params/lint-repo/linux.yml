@@ -8,3 +8,4 @@ params:
     check-for-windows-drift.bash
     check-proto-files.bash
     check-metrics-documentation.bash
+    check-expiring-certs.bash
