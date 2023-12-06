@@ -1,0 +1,6 @@
+---
+readme: |
+  This task run uptimer. config input is used for providing configFile. It will use uptimer*.json pattern to find the config.
+
+oses:
+  - linux

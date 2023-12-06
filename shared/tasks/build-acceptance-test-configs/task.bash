@@ -39,6 +39,8 @@ function run(){
             cf_networking_acceptance_tests "built-acceptance-test-configs/service-discovery-acceptance-tests.json"
         elif [[ "$entry" == "cpu-entitlement-plugin" ]]; then
             cpu_entitlement_plugin "built-acceptance-test-configs/cpu-entitlement-plugin.json"
+        elif [[ "$entry" == "uptimer-bosh-restart" ]]; then
+            uptimer_bosh_restart "built-acceptance-test-configs/uptimer-bosh-restart.json"
         else
             echo "Unable to generate config for $entry"
             exit 1
@@ -278,6 +280,43 @@ function cpu_entitlement_plugin() {
         "admin_username": $username,
         "ca_cert": $ca_cert
       }' > $file
+}
+
+function uptimer_bosh_restart() {
+    local file="${1?Provide config file}"
+    echo "Creating ${file}"
+    jq -n \
+        --arg deployment_name $(bosh_cf_deployment_name) \
+        --arg admin_password ${CF_ADMIN_PASSWORD} \
+        --arg api "https://api.${CF_SYSTEM_DOMAIN}" \
+        --arg app_domain ${CF_SYSTEM_DOMAIN} \
+        --arg tcp_domain ${TCP_DOMAIN:-" "} \
+        --arg restart_args ${BOSH_RESTART_ARGS} \
+        '{
+           "while": [{
+             "command":"bosh",
+             "command_args":(["--tty", "-n", "-d", $deployment_name, "restart"] + ($restart_args | split(" ")))
+           }],
+           "cf": {
+             "api": $api,
+             "app_domain": $app_domain,
+             "admin_user": "admin",
+             "admin_password": $admin_password,
+             "tcp_domain": $tcp_domain,
+             "available_port": -1,
+             "use_single_app_instance": "true"
+           },
+           "allowed_failures": {
+             "app_pushability": 0,
+             "http_availability": 0,
+             "recent_logs": 0,
+             "streaming_logs": 0,
+             "app_syslog_availability": 0
+           },
+           "optional_tests": {
+             "run_app_syslog_availability": "false"
+           }
+         }' > $file
 }
 
 function cleanup() {
