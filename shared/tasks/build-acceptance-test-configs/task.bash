@@ -304,7 +304,7 @@ function uptimer_bosh_restart() {
              "admin_password": $admin_password,
              "tcp_domain": $tcp_domain,
              "available_port": -1,
-             "use_single_app_instance": "true"
+             "use_single_app_instance": true
            },
            "allowed_failures": {
              "app_pushability": 0,
@@ -314,7 +314,7 @@ function uptimer_bosh_restart() {
              "app_syslog_availability": 0
            },
            "optional_tests": {
-             "run_app_syslog_availability": "false"
+             "run_app_syslog_availability": false
            }
          }' > $file
 }
