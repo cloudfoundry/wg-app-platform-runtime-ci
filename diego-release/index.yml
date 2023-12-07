@@ -57,5 +57,4 @@ opsfiles:
 - grace-opsfile.yml
 - set-rep-max-idle-conns.yml
 - turn-on-debug-mode.yml
-- metric-discovery-nats-instance-group.yml
 - resize-grootfs-store.yml
