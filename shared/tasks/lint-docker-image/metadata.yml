@@ -1,0 +1,11 @@
+---
+readme: |
+  Runs linting for a specified docker-image. The implementation for each linter is located within shared linters directory for the CI e.g. ci/shared/linters/docker-image-validate-label-urls.bash. This script will be called with 2 arguments.
+  1st-Argument -> path to where docker-image is located
+  2nd-Argument -> Whether it should error on detecting failures or not (true or false).
+oses:
+  - linux
+params:
+  LINTERS: (Defaults to 
+    docekr-image-validate-label-urls.bash
+    ) Mulitline list of linters to run within the release

@@ -1,0 +1,13 @@
+---
+platform: linux
+
+inputs:
+  - name: ci
+  - name: docker-image
+
+run:
+  path: ci/shared/tasks/lint-docker-image/task.bash
+
+params:
+  LINTERS: |
+    docekr-image-validate-label-urls.bash
