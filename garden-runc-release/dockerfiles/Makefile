@@ -1,23 +1,23 @@
-all: check-env clean garden-runc-release-rootfs.tar garden-runc-release-fuse-rootfs.tar
+all: check-env clean garden-rootfs.tar garden-fuse.tar
 
-garden-runc-release-rootfs.tar: check-env
-	docker build --build-arg BUSYBOX_VERSION=1.31 -t garden-runc-release-rootfs ./garden-runc-release-rootfs/
-	docker run --name garden-runc-release-rootfs garden-runc-release-rootfs
+garden-rootfs.tar: check-env
+	docker build --build-arg BUSYBOX_VERSION=1.31 -t garden-rootfs ./garden-rootfs/
+	docker run --name garden-rootfs garden-rootfs
 	mkdir -p $(LOCATION)
-	docker export -o $(LOCATION)/garden-runc-release-rootfs.tar garden-runc-release-rootfs  
-	docker rm -f garden-runc-release-rootfs
+	docker export -o $(LOCATION)/garden-rootfs.tar garden-rootfs  
+	docker rm -f garden-rootfs
 
-garden-runc-release-fuse-rootfs.tar: check-env
-	docker build -t garden-runc-release-fuse-rootfs ./garden-runc-release-fuse-rootfs/
-	docker run --name garden-runc-release-fuse-rootfs garden-runc-release-fuse-rootfs
+garden-fuse.tar: check-env
+	docker build -t garden-fuse ./garden-fuse/
+	docker run --name garden-fuse garden-fuse
 	mkdir -p $(LOCATION)
-	docker export -o $(LOCATION)/garden-runc-release-fuse-rootfs.tar garden-runc-release-fuse-rootfs  
-	docker rm -f garden-runc-release-fuse-rootfs
+	docker export -o $(LOCATION)/garden-fuse.tar garden-fuse  
+	docker rm -f garden-fuse
 
 clean: check-env
 	rm -f $(LOCATION)/*.tar
-	docker rm -f garden-runc-release-rootfs
-	docker rm -f garden-runc-release-fuse-rootfs
+	docker rm -f garden-rootfs
+	docker rm -f garden-fuse
 
 check-env:
 ifndef LOCATION
