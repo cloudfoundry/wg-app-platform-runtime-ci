@@ -1,0 +1,6 @@
+---
+readme:
+  This directory contains the dockerfiles needed for diego-release.
+opsfiles:
+  diego-docker-app: App for testing dockerapplifecycle and any test working with Docker
+  diego-inigo-rootfs-ci:  GARDEN_TEST_ROOTFS for inigo test
