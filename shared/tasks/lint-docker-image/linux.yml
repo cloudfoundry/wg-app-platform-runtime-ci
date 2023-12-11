@@ -10,4 +10,4 @@ run:
 
 params:
   LINTERS: |
-    docekr-image-validate-label-urls.bash
+    docker-image-validate-label-urls.bash

@@ -7,5 +7,5 @@ oses:
   - linux
 params:
   LINTERS: (Defaults to 
-    docekr-image-validate-label-urls.bash
+    docker-image-validate-label-urls.bash
     ) Mulitline list of linters to run within the release
