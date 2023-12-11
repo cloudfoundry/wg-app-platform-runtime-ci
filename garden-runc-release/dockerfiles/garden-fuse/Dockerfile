@@ -2,6 +2,8 @@ FROM debian
 
 RUN apt-get update && apt-get -y install \
   libfuse-dev \
+  strace \
+  bc \
   gcc \
   pkg-config
 
