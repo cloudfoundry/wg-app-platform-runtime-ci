@@ -20,7 +20,6 @@ COPY --from=usemem-builder  /usemem /bin/usemem
 RUN echo "BUSYBOX_VERSION: ${BUSYBOX_VERSION}" >  /base-image-version.txt
 
 RUN adduser -D testuser
-RUN adduser -D alice
 
 # copied from cfgarden/empty
 ADD hello hello
