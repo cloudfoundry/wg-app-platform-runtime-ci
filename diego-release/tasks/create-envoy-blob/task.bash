@@ -41,7 +41,7 @@ function copy_file {
   scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /tmp/id_rsa_gcp "pivotal@${ip}:${filename}" "${destination}"
 }
 
-# trap cleanup EXIT // TODO remove; commented out to make sure we save test logs.
+trap cleanup EXIT
 
 ssh-keygen -N "" -f /tmp/id_rsa_gcp
 
