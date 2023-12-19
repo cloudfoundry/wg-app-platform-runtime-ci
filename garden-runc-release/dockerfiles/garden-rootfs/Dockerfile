@@ -45,6 +45,13 @@ RUN mkdir -p /test/foo && \
    touch /test/foo/bar/3
 RUN rm -rf /test/foo/*
 
+# for cfgarden/with-whiteout
+RUN touch file-to-be-deleted
+RUN touch existing-file
+RUN mkdir -p folder
+RUN rm file-to-be-deleted
+RUN rm -rf folder
+
 # copied from cfgarden/overwrite-link
 RUN echo "source!" > /etc/link-source
 RUN echo "WHAT?" > /tmp/symlink
@@ -59,8 +66,8 @@ ENV TEST test-from-dockerfile
 ENV TEST second-test-from-dockerfile:$TEST
 
 # copied from cfgarden/with-user-with-group
-RUN addgroup gardenparty -g 1010
 RUN addgroup gardenparty2 -g 1011
+RUN addgroup gardenparty -g 1010
 RUN adduser -D -G gardenparty alice
 RUN adduser alice gardenparty2
 
