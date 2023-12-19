@@ -32,7 +32,7 @@ function filesystem_permit_device_control() {
   fi
 
   # permit our cgroup to do everything with all devices
-  echo a > "${cgroup_dir}${devices_subdir}/devices.allow"
+  echo a > "${cgroup_dir}${devices_subdir}/devices.allow" || true
 
   umount "$cgroup_dir"
 }
@@ -61,7 +61,7 @@ function filesystem_mount_sysfs() {
 }
 
 function filesystem_mount_storage() {
-  mkdir /mnt/ext4
+  mkdir -p /mnt/ext4
   truncate -s 256M /ext4_volume
   mkfs.ext4 /ext4_volume &> /dev/null
   mount /ext4_volume /mnt/ext4 &> /dev/null
