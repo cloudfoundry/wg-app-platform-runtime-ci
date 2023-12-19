@@ -1,7 +1,7 @@
 all: check-env clean garden-rootfs.tar garden-fuse.tar
 
 garden-rootfs.tar: check-env
-	docker build --build-arg BUSYBOX_VERSION=1.31 -t garden-rootfs ./garden-rootfs/
+	docker build --build-arg BUSYBOX_VERSION=1.26.1 -t garden-rootfs ./garden-rootfs/
 	docker run --name garden-rootfs garden-rootfs
 	mkdir -p $(LOCATION)
 	docker export -o $(LOCATION)/garden-rootfs.tar garden-rootfs  
