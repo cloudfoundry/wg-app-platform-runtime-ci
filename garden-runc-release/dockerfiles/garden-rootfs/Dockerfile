@@ -16,6 +16,8 @@ ARG BUSYBOX_VERSION
 ADD seed /etc/seed
 RUN chmod 0644 /etc/seed
 COPY --from=usemem-builder  /usemem /bin/usemem
+RUN cp /bin/usemem /bin/usemem-with-setuid
+RUN chmod u+s /bin/usemem-with-setuid
 
 RUN echo "BUSYBOX_VERSION: ${BUSYBOX_VERSION}" >  /base-image-version.txt
 
@@ -61,7 +63,7 @@ RUN rm /tmp/symlink && ln -s /etc/link-source /tmp/symlink
 COPY --from=throttled-or-not-builder /throttled-or-not /bin/throttled-or-not
 
 # copied from cfgarden/with-process-env
-ENV PATH /usr/local/bin:/usr/bin:/bin:/from-dockerfile
+ENV PATH $PATH:/from-dockerfile
 ENV TEST test-from-dockerfile
 ENV TEST second-test-from-dockerfile:$TEST
 
