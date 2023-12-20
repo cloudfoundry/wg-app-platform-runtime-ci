@@ -9,6 +9,12 @@ ENV CGO_ENABLED 0
 COPY throttled-or-not .
 RUN go build -o /throttled-or-not /go/src/app/throttled-or-not.go
 
+FROM golang as hello-world
+WORKDIR /go/src/app
+ENV CGO_ENABLED 0
+COPY hello-world.go .
+RUN go build -o /hello-world /go/src/app/hello-world.go
+
 FROM busybox:${BUSYBOX_VERSION}
 
 ARG BUSYBOX_VERSION
@@ -66,7 +72,8 @@ COPY --from=throttled-or-not-builder /throttled-or-not /bin/throttled-or-not
 ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin:/from-dockerfile
 ENV TEST test-from-dockerfile
 ENV TEST second-test-from-dockerfile:$TEST
-RUN mkdir -p /sbin && cp /bin/throttled-or-not /sbin/binary
+RUN mkdir -p /sbin
+COPY --from=hello-world /hello-world /sbin/hello-world
 
 # copied from cfgarden/with-user-with-group
 RUN addgroup gardenparty2 -g 1011
