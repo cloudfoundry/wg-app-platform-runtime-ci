@@ -206,7 +206,7 @@ function allowed_dirs() {
 ^./(shared|${release_list})/tasks/[a-z\-]*$
 ^./(${release_list})/(manifests)$
 ^./(${release_list})/default-params/[a-z\-]*$
-^./(${release_list})/dockerfiles/[a-z\-]*$
+^./(${release_list})/dockerfiles/.*$
 EOF
 )"
 IFS=$'\n'
