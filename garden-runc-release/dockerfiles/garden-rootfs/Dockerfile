@@ -63,15 +63,19 @@ RUN rm /tmp/symlink && ln -s /etc/link-source /tmp/symlink
 COPY --from=throttled-or-not-builder /throttled-or-not /bin/throttled-or-not
 
 # copied from cfgarden/with-process-env
-ENV PATH $PATH:/from-dockerfile
+ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin:/from-dockerfile
 ENV TEST test-from-dockerfile
 ENV TEST second-test-from-dockerfile:$TEST
+RUN mkdir -p /sbin && cp /bin/usemem /sbin/binary
 
 # copied from cfgarden/with-user-with-group
 RUN addgroup gardenparty2 -g 1011
 RUN addgroup gardenparty -g 1010
 RUN adduser -D -G gardenparty alice
 RUN adduser alice gardenparty2
+RUN touch /home/alice/alicesfile
+
+RUN echo "this is a pre-existing dotfile" > /.foo
 
 # copied from cfgarden/with-volume
 RUN mkdir /etc/foo
