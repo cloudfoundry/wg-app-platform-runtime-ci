@@ -66,7 +66,7 @@ COPY --from=throttled-or-not-builder /throttled-or-not /bin/throttled-or-not
 ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin:/from-dockerfile
 ENV TEST test-from-dockerfile
 ENV TEST second-test-from-dockerfile:$TEST
-RUN mkdir -p /sbin && cp /bin/usemem /sbin/binary
+RUN mkdir -p /sbin && cp /bin/throttled-or-not /sbin/binary
 
 # copied from cfgarden/with-user-with-group
 RUN addgroup gardenparty2 -g 1011
