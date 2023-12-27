@@ -1,0 +1,7 @@
+readme: |
+  This task waits for the CF API to come alive on a toolsmiths/shepherd environment. We use this when claiming
+  envs to avoid hours of deployment/compilation waste when shepherd environments have broken DNS.
+oses:
+  - linux
+params: {}
+
