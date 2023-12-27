@@ -84,6 +84,9 @@ function sync_package() {
       if ls ../../src/${package}/*.h >/dev/null 2>&1; then
         echo ${package} | sed -e 's/\(.*\)/  - \1\/*.h # gosub-main-module/g'
       fi
+      if ls ../../src/${package}/*.binpb >/dev/null 2>&1; then
+        echo ${package} | sed -e 's/\(.*\)/  - \1\/*.binpb # gosub-main-module/g'
+      fi
     done
   } > $spec.new
 
