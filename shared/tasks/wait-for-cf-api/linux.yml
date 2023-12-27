@@ -2,6 +2,7 @@
 platform: linux
 
 inputs:
+- name: ci
 - name: toolsmiths-env
 
 params: {}
