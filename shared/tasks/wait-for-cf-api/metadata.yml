@@ -3,5 +3,7 @@ readme: |
   envs to avoid hours of deployment/compilation waste when shepherd environments have broken DNS.
 oses:
   - linux
+inputs:
+   - toolsmiths-env
 params: {}
 
