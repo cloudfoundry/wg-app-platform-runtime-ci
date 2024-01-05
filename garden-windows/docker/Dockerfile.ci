@@ -1,0 +1,88 @@
+FROM ruby:2.7
+
+ARG go_version
+
+ENV bbl_version 7.4.0
+ENV bosh_cli_version 5.4.0
+ENV cf_cli_version 6.44.1
+
+ENV DEP_VERSION v0.4.1
+ENV DEP_DOWNLOAD_URL "https://github.com/golang/dep/releases/download/$DEP_VERSION/dep-linux-amd64"
+ENV DEP_DOWNLOAD_SHA256 31144e465e52ffbc0035248a10ddea61a09bf28b00784fd3fdd9882c8cbb2315
+
+ENV GINKGO_VERSION latest
+
+RUN apt-get update -qq && \
+  apt-get install -qqy --no-install-recommends \
+    apt-utils \
+    build-essential \
+    ca-certificates \
+    curl \
+    dos2unix \
+    g++ \
+    gcc \
+    git \
+    jq \
+    libc6-dev \
+    lsb-release \
+    make \
+    mingw-w64 \
+    nano \
+    pkg-config \
+    rlwrap \
+    rsync \
+    unzip \
+    vim \
+    wget \
+    zip \
+    && rm -rf /var/lib/apt/lists/*
+
+# gcloud
+RUN export CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)" && \
+  echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
+  curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
+  apt-get update -y && apt-get install google-cloud-sdk -y
+
+RUN gem install bundler
+
+# bosh-cli
+RUN \
+  wget https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-${bosh_cli_version}-linux-amd64 --output-document="/usr/bin/bosh" && \
+  chmod +x /usr/bin/bosh
+
+# golang
+RUN \
+  wget -qO- https://dl.google.com/go/go${go_version}.linux-amd64.tar.gz | tar -C /usr/local -xzf -
+
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+
+RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 755 "$GOPATH/bin"
+
+# ginkgo
+RUN go install github.com/onsi/ginkgo/v2/ginkgo@latest
+
+# dep
+RUN curl -fsSL "$DEP_DOWNLOAD_URL" -o /usr/local/bin/dep \
+    && echo "$DEP_DOWNLOAD_SHA256  /usr/local/bin/dep" | sha256sum -c - \
+    && chmod +x /usr/local/bin/dep
+
+# cf-cli
+RUN \
+  cd /tmp && \
+  wget -q -O cf.deb "https://cli.run.pivotal.io/stable?release=debian64&version=${cf_cli_version}&source=github-rel" && \
+  dpkg -i cf.deb && \
+  rm cf.deb
+
+# bbl and dependencies
+RUN \
+  wget https://github.com/cloudfoundry/bosh-bootloader/releases/download/v${bbl_version}/bbl-v${bbl_version}_linux_x86-64 -P /tmp && \
+  mv /tmp/bbl-* /usr/local/bin/bbl && \
+  cd /usr/local/bin && \
+  chmod +x bbl
+
+RUN \
+  wget https://github.com/cloudfoundry/bosh-bootloader/archive/v${bbl_version}.tar.gz -P /tmp && \
+  mkdir -p /var/repos/bosh-bootloader && \
+  tar xvf  /tmp/v${bbl_version}.tar.gz --strip-components=1 -C /var/repos/bosh-bootloader && \
+  rm -rf /tmp/*
