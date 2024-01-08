@@ -1,0 +1,14 @@
+---
+platform: linux
+
+image_resource: {type: docker-image, source: {repository: cloudfoundry/garden-windows-ci}}
+
+inputs:
+- name: ci
+- name: hwc
+
+outputs:
+- name: hwc-rel
+
+run:
+  path: ci/garden-windows/tasks/build-hwc/run

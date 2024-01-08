@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -e
+
+filepath=$(ls artifacts/Web.Config.Transform.Buildpack-*.zip)
+version=$(echo ${filepath} | grep -oP '\d*\.\d*\.\d*')
+
+cat > metadata/metadata <<EOF
+---
+release:
+  version: ".NET Web Config ${version}"
+  release_type: "Minor Release"
+  availability: "Admins Only"
+  eula_slug: "pivotal_software_eula"
+  release_notes_url: "https://docs.pivotal.io/platform/application-service/${TAS_VERSION}/buildpacks/hwc/web-config-transform-buildpack.html"
+  eccn: "5D002"
+  license_exception: "TSU"
+  description: |
+    .NET Framework Web Config Transform Extension Buildpack
+
+    Cloud Native Applications are expected to bring in configurations from external sources like environment variables, config server, etc.
+
+    In applications that run on IIS (e.g. ASP.NET), configuration settings are injected through Web.config files. As per cloud native principles, configuration should stay out of build artifacts. This extension buildpack provides a solution to this problem by using token replacement during ‘cf push’ staging.
+
+    Github page: https://github.com/cloudfoundry-community/web-config-transform-buildpack
+product_files:
+- file: ${filepath}
+EOF
+
+cat metadata/metadata
