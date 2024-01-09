@@ -1,0 +1,8 @@
+---
+- type: replace
+  path: /instance_groups/name=windows2019-cell/jobs/name=groot/provides?/groot/as
+  value: quaternary-groot
+
+- type: replace
+  path: /instance_groups/name=windows2019-cell/jobs/name=windows2019fs/consumes?/groot/from
+  value: quaternary-groot

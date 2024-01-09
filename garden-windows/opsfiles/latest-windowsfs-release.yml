@@ -1,0 +1,6 @@
+---
+- type: replace
+  path: /releases/name=windowsfs?
+  value:
+    name: windowsfs
+    version: latest

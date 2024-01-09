@@ -1,0 +1,5 @@
+---
+- type: replace
+  path: /instance_groups/name=windows-worker/networks
+  value:
+    - name: ((external_worker_network_name))
