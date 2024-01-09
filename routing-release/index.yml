@@ -29,3 +29,4 @@ opsfiles:
 - add-persistent-isolation-segment-router.yml
 - enable-backup-restore.yml
 - disable-bbr-non-routing.yml
+- temp-tls-health-check-compensation.yml
