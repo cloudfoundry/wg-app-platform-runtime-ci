@@ -1,0 +1,8 @@
+---
+readme:
+  This directory contains the shared dockerfiles
+opsfiles:
+  tas-runtime-build: Main image used for testing all tests in this repo that doesn't require a DB
+  tas-runtime-postgres: Build upon tas-runtime-build with postgres
+  tas-runtime-mysql-8.0: Build upon tas-runtime-build with mysql
+  tas-runtime-mysql-5.7: Build from debian image with 5.7-debian tag
