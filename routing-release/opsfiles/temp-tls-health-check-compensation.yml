@@ -8,7 +8,7 @@
   type: replace
   value: ((tcp_router_lb_health_tls.private_key))
 
-- path: /variables/-
+- path: /variables/name=tcp_router_lb_health_tls?
   type: replace
   value:
     name: tcp_router_lb_health_tls
@@ -18,3 +18,11 @@
       common_name: tcp_router_lb_health_tls
       alternative_names:
       - tcp-router.service.cf.internal
+
+- path: /instance_groups/name=iso-seg-router/jobs/name=gorouter/properties/router/status/tls?/certificate
+  type: replace
+  value: ((gorouter_lb_health_tls.certificate))
+
+- path: /instance_groups/name=iso-seg-router/jobs/name=gorouter/properties/router/status/tls?/key
+  type: replace
+  value: ((gorouter_lb_health_tls.private_key))
