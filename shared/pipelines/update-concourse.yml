@@ -1,0 +1,89 @@
+---
+#@ worker_names = ["windows-worker", "worker-diego-windows"]
+
+groups:
+- name: all
+  jobs:
+  - update-concourse-windows-workers
+#@ for worker_name in worker_names:
+  - #@ "bosh-recreate-{}".format(worker_name)
+#@ end
+
+- name: update-windows-workers
+  jobs:
+  - update-concourse-windows-workers
+
+- name: recreate-windows-workers
+  jobs:
+#@ for worker_name in worker_names:
+  - #@ "bosh-recreate-{}".format(worker_name)
+#@ end
+
+resources:
+- name: tas-runtime
+  type: git
+  source:
+    uri: git@github.com:pivotal/tas-runtime
+    branch: main
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: windows-tools-release
+  type: bosh-io-release
+  check_every: '5m'
+  source:
+    repository: cloudfoundry-incubator/windows-tools-release
+
+- name: windows-utilities-release
+  type: bosh-io-release
+  check_every: '5m'
+  source:
+    repository: cloudfoundry-incubator/windows-utilities-release
+
+- name: windows-stemcell
+  type: bosh-io-stemcell
+  source:
+    name: bosh-google-kvm-windows2019-go_agent
+
+- name: cf-deployment-concourse-tasks
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/cf-deployment-concourse-tasks
+    branch: main
+    private_key: ((github-tas-runtime-bot/private-key))
+
+jobs:
+- name: update-concourse-windows-workers
+  plan:
+  - in_parallel:
+    - get: tas-runtime
+    - get: windows-tools-release
+      trigger: true
+      params:
+        tarball: false
+    - get: windows-utilities-release
+      params:
+        tarball: false
+    - get: windows-stemcell
+      params:
+        tarball: false
+  - task: deploy
+    file: tas-runtime/ci/tasks/concourse/update-windows-workers/task.yml
+  - put: tas-runtime
+    params:
+      rebase: true
+      repository: updated-tas-runtime/tas-runtime
+
+#@ for worker_name in worker_names:
+#@   job_and_task_name = "bosh-recreate-{}".format(worker_name)
+- name: #@ job_and_task_name
+  plan:
+  - in_parallel:
+    - get: tas-runtime
+    - get: cf-deployment-concourse-tasks
+  - task: #@ job_and_task_name
+    file: tas-runtime/ci/tasks/concourse/recreate-instance-group/task.yml
+    params:
+      INSTANCE_GROUP_NAME: #@ worker_name
+    input_mapping:
+      bbl-state: tas-runtime
+#@ end

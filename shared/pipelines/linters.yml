@@ -1,0 +1,28 @@
+groups:
+- name: main
+  jobs:
+  - lint-ci
+resources:
+- name: ci
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+- name: tas-runtime-build
+  type: docker-image                             
+  source:                                        
+    repository: cloudfoundry/tas-runtime-build
+    tag: 'latest'
+
+jobs:
+- name: lint-ci
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+        trigger: true
+      - get: tas-runtime-build
+  - task: test-ci-configurations
+    image: tas-runtime-build
+    file: ci/shared/tasks/lint-ci/linux.yml
