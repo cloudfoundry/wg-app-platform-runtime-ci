@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -eux
+
+if [[ "$SKIP_TARBALL" == "true" ]]; then
+  bosh -n create-release --dir=release --timestamp-version
+else
+  pushd release
+  bosh -n create-release --tarball=../release-tarball/release.tgz --timestamp-version
+  popd
+fi

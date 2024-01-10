@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -eu
+
+rsync -a repo/ output-repo
+cp -a ./override-repo/* ./output-repo

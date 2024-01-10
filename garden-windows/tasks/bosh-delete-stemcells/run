@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -eu
+
+. ci/garden-windows/bin/ci_helpers
+
+trap _close_ssh_connection EXIT
+cmd=$(_bosh_socks5_env "$JUMPBOX_IP" "$JUMPBOX_SSH_KEY")
+eval "$cmd"
+
+echo "Trying to delete already uploaded stemcells"
+stemcells=$(bosh stemcells | awk '{print $1 "/" $2}')
+
+if [ -z "$stemcells" ]
+then
+  echo "No stemcells to delete"
+  exit 0
+fi
+
+for stemcell in $stemcells;
+do
+  bosh delete-stemcell -n $stemcell
+done

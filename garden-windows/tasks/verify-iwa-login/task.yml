@@ -1,0 +1,19 @@
+---
+platform: windows
+
+inputs:
+- name: ci
+
+run:
+  path: powershell
+  args:
+  - "-ExecutionPolicy"
+  - "Bypass"
+  - "-File"
+  - ci/garden-windows/tasks/verify-iwa-login/run.ps1
+
+params:
+  IWA_TEST_APP_ROUTE:
+  IWA_DOMAIN:
+  IWA_USERNAME:
+  IWA_PASSWORD:
