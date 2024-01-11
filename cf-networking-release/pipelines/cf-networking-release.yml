@@ -1,0 +1,1057 @@
+#@ load("@ytt:data", "data")
+
+#@ load("ytt-helpers.star", "helpers")
+
+#! Define-Groups
+groups:
+- name: release
+  jobs:
+  - template-tests
+  - unit-and-integration-tests
+  - lint-repo
+  - claim-env
+  - prepare-env
+  - run-cats
+  - run-cf-networking-acceptance-tests
+  - run-service-discovery-acceptance-tests
+  - run-service-discovery-performance-tests
+  - export-release
+  - ship-what
+  - ship-it
+  - unclaim-env
+
+- name: periodics
+  jobs:
+  - bump-dependencies-go-mod
+  - bump-package-golang
+  - bump-healthchecker-in-networking-release
+  - bump-healthchecker-in-silk-release
+
+- name: manual
+  jobs:
+  - release-env-lock
+
+- name: version
+  jobs:
+  - major-bump
+  - minor-bump
+  - patch-bump
+
+
+#! Define-ResourceGroups
+#! toolsmiths
+resource_types:
+- name: shepherd
+  type: registry-image
+  source:
+    repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
+    tag: v1  #! This may be bumped in the future
+
+#! Define-Resources
+resources:
+- name: golang-release-latest
+  type: git
+  icon: github-box
+  source:
+    tag_filter: v*
+    uri: https://github.com/bosh-packages/golang-release.git
+
+- name: cf-networking-repo
+  type: git
+  icon: github-box
+  source:
+    branch:  "develop"
+    uri: git@github.com:cloudfoundry/cf-networking-release.git
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: silk-repo
+  type: git
+  icon: github-box
+  source:
+    branch:  "develop"
+    uri: git@github.com:cloudfoundry/silk-release.git
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: cf-networking-release-branch
+  type: git
+  icon: github-box
+  source:
+    branch: release
+    uri: git@github.com:cloudfoundry/cf-networking-release.git
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: silk-release-branch
+  type: git
+  icon: github-box
+  source:
+    branch: release
+    uri: git@github.com:cloudfoundry/silk-release.git
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: cf-networking-develop-branch-mergeback
+  type: git
+  icon: github-box
+  source:
+    branch: develop
+    uri: git@github.com:cloudfoundry/cf-networking-release.git
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: silk-develop-branch-mergeback
+  type: git
+  icon: github-box
+  source:
+    branch: develop
+    uri: git@github.com:cloudfoundry/silk-release.git
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: ci
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+
+- name: cf-deployment
+  type: git
+  icon: github-box
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/cf-deployment.git
+
+- name: cf-deployment-concourse-tasks
+  type: git
+  icon: github-box
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
+
+- name: cf-acceptance-tests
+  type: git
+  icon: github-box
+  source:
+    branch: release-candidate
+    uri: https://github.com/cloudfoundry/cf-acceptance-tests
+
+- name: healthchecker-release
+  type: git
+  icon: github-box
+  source:
+    uri: git@github.com:cloudfoundry/healthchecker-release.git
+    private_key: ((github-tas-runtime-bot/private-key))
+    branch: release
+    tag_filter: v*
+
+#! TIMERS
+- name: weekly
+  type: time
+  icon: clock
+  source:
+    interval: '168h'  #! 1 week
+
+- name: env
+  type: shepherd
+  source:
+    url: https://v2.shepherd.run
+    service-account-key: ((shepherd-service-account-key))
+    lease:
+      namespace: tas-runtime
+      pool:
+        namespace: official
+        name: cfd
+    compatibility-mode: environments-app
+
+- name: cf-networking-github-release 
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    repository: cf-networking-release
+    owner: cloudfoundry
+  type: github-release
+
+- name: silk-github-release 
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    repository: silk-release
+    owner: cloudfoundry
+  type: github-release
+
+- name: cf-networking-draft-github-release 
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    drafts: true
+    repository: cf-networking-release
+    owner: cloudfoundry
+  type: github-release
+
+- name: silk-draft-github-release 
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    drafts: true
+    repository: silk-release
+    owner: cloudfoundry
+  type: github-release
+
+- name: version
+  type: semver
+  source:
+    driver: gcs
+    bucket: ci-release-versions
+    key: cf-networking-release/version #! One version number manages both cf-networking and silk
+    json_key: ((gcp-tas-runtime-service-account/config-json))
+
+- name: env-lock
+  source:
+    branch: main
+    pool: cf-networking-release-env-lock 
+    private_key: ((github-tas-runtime-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+  type: pool
+
+- name: image
+  type: docker-image                             
+  source:                                        
+    repository: cloudfoundry/tas-runtime-build
+    tag: 'latest'
+
+
+#! Define-Jobs
+jobs:
+- name: bump-dependencies-go-mod
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: cf-networking-repo
+      - get: silk-repo
+      - get: image
+      - get: weekly
+        trigger: true
+  - in_parallel:
+    - do:
+      - task: cf-networking-release-bump-dependencies-go-mod
+        image: image
+        file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+        input_mapping:
+          repo: cf-networking-repo
+        output_mapping:
+          bumped-repo: bumped-cf-networking
+        params:
+          GO_MODS: |
+            src/code.cloudfoundry.org/go.mod
+            src/example-apps/proxy/go.mod
+            src/example-apps/raw-response/go.mod
+            src/example-apps/registry/go.mod
+            src/example-apps/smoke/go.mod
+            src/example-apps/spammer/go.mod
+            src/example-apps/tick/go.mod
+          EXTRA_GO_TAGS: tools
+      - put: cf-networking-repo
+        params:
+          rebase: true
+          repository: bumped-cf-networking
+    - do:
+      - task: silk-release-bump-dependencies-go-mod
+        image: image
+        file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+        input_mapping:
+          repo: silk-repo
+        output_mapping:
+          bumped-repo: bumped-silk
+        params:
+          GO_MODS: src/code.cloudfoundry.org/go.mod
+          EXTRA_GO_TAGS: tools
+      - put: silk-repo
+        params:
+          rebase: true
+          repository: bumped-silk
+
+- name: bump-package-golang
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: cf-networking-repo
+    - get: silk-repo
+    - get: image
+    - get: golang-release-latest
+      trigger: true
+
+  - in_parallel:
+    - do:
+      - task: bumpe-cf-networking-golang-linux
+        file: ci/shared/tasks/bosh-vendor-package/linux.yml
+        image: image
+        input_mapping:
+          package-release: golang-release-latest
+          repo: cf-networking-repo
+        output_mapping:
+          vendored-repo: cf-networking-vendored-repo
+        params:
+          PACKAGE_NAME: golang-1.21-linux
+          GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+      - put: cf-networking-repo
+        params:
+          rebase: true
+          repository: cf-networking-vendored-repo
+    - do:
+      - task: bumpe-silk-golang-linux
+        file: ci/shared/tasks/bosh-vendor-package/linux.yml
+        image: image
+        input_mapping:
+          package-release: golang-release-latest
+          repo: silk-repo
+        output_mapping:
+          vendored-repo: silk-vendored-repo
+        params:
+          PACKAGE_NAME: golang-1.21-linux
+          GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+      - put: silk-repo
+        params:
+          rebase: true
+          repository: silk-vendored-repo
+
+- name: bump-healthchecker-in-networking-release
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: cf-networking-repo
+    - get: image
+    - get: healthchecker-release
+      trigger: true
+  - task: bump-healthchecker
+    file: ci/shared/tasks/bosh-vendor-package/linux.yml
+    image: image
+    input_mapping:
+      repo: cf-networking-repo
+      package-release: healthchecker-release
+    params:
+      PACKAGE_NAME: healthchecker
+      PACKAGE_PREFIX: silk
+      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+  - put: cf-networking-repo
+    params:
+      rebase: true
+      repository: vendored-repo
+
+- name: bump-healthchecker-in-silk-release
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: silk-repo
+    - get: image
+    - get: healthchecker-release
+      trigger: true
+  - task: bump-healthchecker
+    file: ci/shared/tasks/bosh-vendor-package/linux.yml
+    image: image
+    input_mapping:
+      repo: silk-repo
+      package-release: healthchecker-release
+    params:
+      PACKAGE_NAME: healthchecker
+      PACKAGE_PREFIX: cf-networking
+      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+  - put: silk-repo
+    params:
+      rebase: true
+      repository: vendored-repo
+
+- name: template-tests
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: cf-networking-repo
+      trigger: true
+    - get: silk-repo
+      trigger: true
+    - get: image
+  - in_parallel:
+    - do:
+      - task: cf-networking-template-tests
+        image: image
+        file: ci/shared/tasks/run-tests-templates/linux.yml
+        input_mapping:
+          repo: cf-networking-repo
+        timeout: 30m
+    - do:
+      - task: silk-template-tests
+        image: image
+        file: ci/shared/tasks/run-tests-templates/linux.yml
+        input_mapping:
+          repo: silk-repo
+        timeout: 30m
+
+- name: unit-and-integration-tests
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: cf-networking-repo
+      trigger: true
+    - get: silk-repo
+      trigger: true
+    - get: image
+    - get: package-release
+      resource: golang-release-latest
+  - in_parallel:
+    - do:
+      - task: determine-image-tag
+        image: image
+        input_mapping:
+          repo: cf-networking-repo
+        file: ci/shared/tasks/determine-image-tag/linux.yml
+      - load_var: image_tag
+        file: determined-image-tag/tag
+#@ for db in data.values.db_flavors:
+    - do:
+      - task: #@ "determine-image-tag-{}".format(db.image)
+        image: image
+        file: ci/shared/tasks/determine-image-tag/linux.yml
+        input_mapping:
+          repo: cf-networking-repo
+        output_mapping:
+          determined-image-tag: #@ "determined-image-tag-{}".format(db.image)
+        params:
+          IMAGE: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
+      - load_var: #@ "image_tag_{}".format(db.image.replace("-", "_").replace(".", "_"))
+        file: #@ "determined-image-tag-{}/tag".format(db.image)
+#@ end
+  - in_parallel:
+#@ for package in helpers.packages_with_configure_db(data.values.internal_repos):
+#@ for db in data.values.db_flavors:
+    - task: #@ "{}-{}-{}".format(package.repo,package.name,db.image)
+      file: ci/shared/tasks/run-bin-test/linux.yml
+      privileged: #@ helpers.privileged(package)
+      attempts: 3
+      vars:
+        image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
+        image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
+      params:
+        DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
+        DB: #@ db.value
+      input_mapping:
+        repo: #@ package.repo
+#@ end
+#@ end
+#@ for package in helpers.packages_without_configure_db(data.values.internal_repos):
+    - task: #@ "{}-{}".format(package.repo, package.name)
+      file: ci/shared/tasks/run-bin-test/linux.yml
+      privileged: #@ helpers.privileged(package)
+      vars:
+        image_repository: cloudfoundry/tas-runtime-build
+        image_tag: ((.:image_tag))
+      attempts: 3
+      params:
+        DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
+      input_mapping:
+        repo: #@ package.repo
+#@ end
+
+- name: lint-repo
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: silk-repo 
+      trigger: true
+    - get: cf-networking-repo
+      trigger: true
+    - get: image
+  - task: lint-cf-networking
+    file: ci/shared/tasks/lint-repo/linux.yml
+    image: image
+    input_mapping:
+      repo: cf-networking-repo
+  - task: lint-silk
+    file: ci/shared/tasks/lint-repo/linux.yml
+    image: image
+    input_mapping:
+      repo: silk-repo
+
+- name: claim-env
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: cf-networking-repo
+      trigger: true
+      passed:
+        - template-tests
+        - unit-and-integration-tests
+        - lint-repo
+    - get: silk-repo
+      trigger: true
+      passed:
+        - template-tests
+        - unit-and-integration-tests
+        - lint-repo
+    - get: image
+
+    - put: env-lock
+      params:
+       acquire: true
+  - put: env
+    params:
+      action: create
+      duration: 176h
+      resource: env
+      description: "cf-networking pipeline"
+    timeout: 6h
+  - task: wait-for-cf-api
+    file: ci/shared/tasks/wait-for-cf-api/linux.yml
+    input_mapping:
+      toolsmiths-env: env
+    image: image
+
+- name: prepare-env
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: silk-repo
+      passed: [claim-env]
+      trigger: true
+    - get: cf-networking-repo
+      trigger: true
+      passed: [claim-env]
+    - get: image
+    - get: cf-deployment
+    - get: cf-deployment-concourse-tasks
+    - get: env
+      passed: [claim-env]
+      trigger: true
+  - task: prepare-cf-deployment-env
+    image: image
+    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+    input_mapping:
+      repo: cf-networking-repo
+  - task: combine-ops-files
+    file: ci/shared/tasks/combine-assets/linux.yml
+    image: image
+    input_mapping:
+      input-01: cf-deployment
+    params:
+      COPY_ACTIONS: |
+        {ci/cf-networking-release/opsfiles/*.yml,combined-assets}
+        {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
+        {input-01/operations/use-compiled-releases.yml,combined-assets}
+        {input-01/operations/experimental/enable-iptables-logger.yml,combined-assets}
+  - task: combine-acceptance-test-release-files
+    file: ci/shared/tasks/combine-assets/linux.yml
+    image: image
+    input_mapping:
+      input-01: cf-networking-repo
+    output_mapping:
+      combined-assets: acceptance-test-release
+    params:
+      COPY_ACTIONS: |
+        {input-01/src/code.cloudfoundry.org/test/acceptance-test-release/*,combined-assets}
+  - task: upload-dev-releases
+    file: ci/shared/tasks/bosh-upload-dev-releases/linux.yml
+    image: image
+    input_mapping:
+      release-01: cf-networking-repo
+      release-02: silk-repo
+      release-03: acceptance-test-release
+  - task: deploy-cf-deployment
+    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    input_mapping:
+      ops-files: combined-assets
+      vars-files: prepared-env
+      toolsmiths-env: env
+    params:
+      DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
+      FAIL_ON_DOWNTIME: "false"
+      VARS_FILES: vars.yml
+      OPS_FILES: #@ "\n".join(data.values.opsfiles)
+  - task: uptimer-measure-with-cf-networking-and-silk-update
+    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    input_mapping:
+      ops-files: combined-assets
+      release: repo
+      vars-files: prepared-env
+      toolsmiths-env: env
+    params:
+      DEPLOY_WITH_UPTIME_MEASUREMENTS: "true"
+      APP_PUSHABILITY_THRESHOLD: "20"
+      HTTP_AVAILABILITY_THRESHOLD: "20"
+      TCP_AVAILABILITY_THRESHOLD: "20"
+      AVAILABLE_PORT: "-1"
+      TCP_PORT: "1029"
+      FAIL_ON_DOWNTIME: "true"
+      MEASURE_SYSLOG_AVAILABILITY: "false"
+      MEASURE_TCP_AVAILABILITY: "true"
+      RECENT_LOGS_THRESHOLD: "50"
+      STREAMING_LOGS_THRESHOLD: "50"
+      APP_SYSLOG_AVAILABILITY_THRESHOLD: "50"
+      USE_SINGLE_APP_INSTANCE: "false"
+      VARS_FILES: vars.yml
+      OPS_FILES: #@ "\n".join(data.values.opsfiles)
+  - task: open-asg-for-credhub
+    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      INSTANCE_GROUP_NAME: credhub
+      SECURITY_GROUP_NAME: credhub
+  - task: open-asg-for-uaa
+    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      INSTANCE_GROUP_NAME: uaa
+      SECURITY_GROUP_NAME: uaa
+  - task: enable-feature-flags-for-cats
+    file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
+
+- name: run-cats
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: silk-repo
+      passed: [prepare-env]
+      trigger: true
+    - get: cf-networking-repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: cf-deployment-concourse-tasks
+    - get: cf-acceptance-tests
+    - get: cf-deployment
+  - task: create-config
+    image: image
+    file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
+    params:
+      CONFIGS: cats
+      WITH_ISOSEG: false
+      WITH_DYNAMIC_ASG: true
+  - task: cats
+    file: cf-deployment-concourse-tasks/run-cats/task.yml
+    attempts: 2
+    input_mapping:
+      integration-config: built-acceptance-test-configs
+    params:
+      CONFIG_FILE_PATH: cats.json
+
+- name: run-service-discovery-acceptance-tests
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: silk-repo
+      passed: [prepare-env]
+      trigger: true
+    - get: cf-networking-repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: cf-deployment-concourse-tasks
+    - get: cf-acceptance-tests
+    - get: cf-deployment
+    - get: package-release
+      resource: golang-release-latest
+  - task: determine-image-tag
+    image: image
+    file: ci/shared/tasks/determine-image-tag/linux.yml
+    input_mapping:
+      repo: cf-networking-repo
+  - load_var: image_tag
+    file: determined-image-tag/tag
+  - task: create-config
+    image: image
+    file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
+    params:
+      CONFIGS: service-discovery-acceptance-tests
+      WITH_ISOSEG: false 
+      WITH_DYNAMIC_ASG: true
+  - task: service-discovery-acceptance-tests
+    file: ci/shared/tasks/run-bin-test/linux.yml
+    vars:
+      image_repository: cloudfoundry/tas-runtime-build
+      image_tag: ((.:image_tag))
+    attempts: 2
+    input_mapping:
+      repo: cf-networking-repo
+      input-01: built-acceptance-test-configs
+    params:
+      ENVS: |
+        CONFIG=$PWD/input-01/service-discovery-acceptance-tests.json
+        APPS_DIR=$PWD/repo/src/example-apps
+      DIR: src/code.cloudfoundry.org/test/acceptance-sd
+      FLAGS: "--procs=1" #!TODO: acceptance tests can't run in parallel, overwrite default ginkgo flag to run in serial
+
+
+- name: run-cf-networking-acceptance-tests
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: silk-repo
+      passed: [prepare-env]
+      trigger: true
+    - get: cf-networking-repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: cf-deployment-concourse-tasks
+    - get: cf-acceptance-tests
+    - get: cf-deployment
+    - get: package-release
+      resource: golang-release-latest
+  - task: determine-image-tag
+    image: image
+    file: ci/shared/tasks/determine-image-tag/linux.yml
+    input_mapping:
+      repo: cf-networking-repo
+  - load_var: image_tag
+    file: determined-image-tag/tag
+  - task: create-config
+    image: image
+    file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
+    params:
+      CONFIGS: cf-networking-acceptance-tests
+      WITH_ISOSEG: false 
+      WITH_DYNAMIC_ASG: true
+  - task: cf-networking-acceptance-tests
+    file: ci/shared/tasks/run-bin-test/linux.yml
+    vars:
+      image_repository: cloudfoundry/tas-runtime-build
+      image_tag: ((.:image_tag))
+    attempts: 2
+    input_mapping:
+      repo: cf-networking-repo
+      input-01: built-acceptance-test-configs
+    params:
+      ENVS: |
+        CONFIG=$PWD/input-01/cf-networking-acceptance-tests.json
+        APPS_DIR=$PWD/repo/src/example-apps
+      DIR: src/code.cloudfoundry.org/test/acceptance
+      FLAGS: "--procs=1" #!TODO: acceptance tests can't run in parallel, overwrite default ginkgo flag to run in serial
+
+- name: run-service-discovery-performance-tests
+  serial: true
+  plan:
+  - in_parallel:
+    - get: cf-networking-repo
+      passed: [prepare-env]
+      trigger: true
+    - get: silk-repo
+      passed: [prepare-env]
+      trigger: true
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: cf-deployment-concourse-tasks
+    - get: ci
+    - get: image
+  - task: bosh-deploy-performance-sd
+    image: image
+    file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
+    input_mapping:
+      repo: cf-networking-repo
+    params:
+      MANIFEST: ci/cf-networking-release/manifests/performance-sd.yml
+      DEPLOYMENT_NAME: service-discovery-performance-tests
+      ENVS: |
+        DEPLOYMENT_RELEASE_DIR=$PWD/repo
+        NATS_IP=10.0.255.190
+        NATS_PASSWORD=any-password
+        NATS_PORT=4222
+        NATS_MONITORING_PORT=8222
+  - task: service-discovery-performance-tests
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      DEPLOYMENT_NAME: service-discovery-performance-tests
+      ERRAND_NAME: performance-test-sd
+
+- name: export-release
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: silk-repo
+      passed: [prepare-env]
+      trigger: true
+    - get: cf-networking-repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: cf-deployment-concourse-tasks
+  - task: cf-networking-export-release
+    file: ci/shared/tasks/bosh-export-release/linux.yml
+    image: image
+    input_mapping:
+      repo: cf-networking-repo
+  - task: silk-export-release
+    file: ci/shared/tasks/bosh-export-release/linux.yml
+    image: image
+    input_mapping:
+      repo: silk-repo
+
+- name: ship-what
+  plan:
+    - in_parallel:
+        steps:
+        - get: ci
+        - get: silk-repo
+          passed:
+            - run-cats
+            - run-cf-networking-acceptance-tests
+            - run-service-discovery-acceptance-tests
+            - run-service-discovery-performance-tests
+            - export-release
+          trigger: true
+        - get: cf-networking-repo
+          passed:
+            - run-cats
+            - run-cf-networking-acceptance-tests
+            - run-service-discovery-acceptance-tests
+            - run-service-discovery-performance-tests
+            - export-release
+          trigger: true
+        - get: image
+        - get: cf-networking-release-branch
+        - get: silk-release-branch
+        - get: cf-networking-github-release
+        - get: silk-github-release
+        - get: version
+        - get: env
+          passed:
+            - run-cats
+            - run-cf-networking-acceptance-tests
+            - run-service-discovery-acceptance-tests
+            - run-service-discovery-performance-tests
+            - export-release
+          trigger: true
+    - in_parallel:
+        steps:
+        - task: check-safe-to-release-cf-networking
+          image: image
+          file: ci/shared/tasks/check-safe-to-release-repo/linux.yml
+          input_mapping:
+            repo: cf-networking-repo
+            release-repo: cf-networking-release-branch
+        - task: check-safe-to-release-silk
+          image: image
+          file: ci/shared/tasks/check-safe-to-release-repo/linux.yml
+          input_mapping:
+            repo: silk-repo
+            release-repo: silk-release-branch
+    - in_parallel:
+        steps:
+        - task: build-release-notes-cf-networking
+          image: image
+          file: ci/shared/tasks/build-release-notes/linux.yml
+          input_mapping:
+            repo: cf-networking-repo
+            previous-github-release: cf-networking-github-release
+        - task: build-release-notes-silk
+          image: image
+          file: ci/shared/tasks/build-release-notes/linux.yml
+          input_mapping:
+            repo: silk-repo
+            previous-github-release: silk-github-release
+
+- name: ship-it
+  serial: true
+  plan:
+    - in_parallel:
+        steps:
+        - get: ci
+        - get: cf-networking-repo
+          passed: [ ship-what ]
+        - get: silk-repo
+          passed: [ ship-what ]
+        - get: image
+        - get: cf-networking-release-branch
+        - get: silk-release-branch
+        - get: cf-networking-github-release
+        - get: silk-github-release
+        - get: version
+        - get: cf-networking-develop-branch-mergeback
+        - get: silk-develop-branch-mergeback
+    - in_parallel:
+        steps:
+        - task: check-safe-to-release-cf-networking
+          image: image
+          file: ci/shared/tasks/check-safe-to-release-repo/linux.yml
+          input_mapping:
+            repo: cf-networking-repo
+            release-repo: cf-networking-release-branch
+        - task: check-safe-to-release-silk
+          image: image
+          file: ci/shared/tasks/check-safe-to-release-repo/linux.yml
+          input_mapping:
+            repo: silk-repo
+            release-repo: silk-release-branch
+    - in_parallel:
+        steps:
+        - task: build-release-notes-cf-networking
+          image: image
+          file: ci/shared/tasks/build-release-notes/linux.yml
+          input_mapping:
+            repo: cf-networking-repo
+            previous-github-release: cf-networking-github-release
+          output_mapping:
+            built-release-notes: built-cf-networking-release-notes
+        - task: build-release-notes-silk
+          image: image
+          file: ci/shared/tasks/build-release-notes/linux.yml
+          input_mapping:
+            repo: silk-repo
+            previous-github-release: silk-github-release
+          output_mapping:
+            built-release-notes: built-silk-release-notes
+    - in_parallel:
+        steps:
+        - do:
+          - task: bosh-finalize-cf-networking-release
+            image: image
+            file: ci/shared/tasks/bosh-finalize-release/linux.yml
+            input_mapping:
+              repo: cf-networking-repo
+            output_mapping:
+              finalized-release-repo: finalized-cf-networking-release-repo
+              finalized-release-tarball: finalized-cf-networking-release-tarball
+            params:
+              GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+          - put: cf-networking-release-branch
+            params:
+              repository: finalized-cf-networking-release-repo
+              tag: version/number
+              tag_prefix: v
+          - task: merge-cf-networking-release-onto-develop
+            image: image
+            file: ci/shared/tasks/git-merge-branches/linux.yml
+            input_mapping:
+              source-branch: cf-networking-release-branch
+              onto-branch: cf-networking-develop-branch-mergeback
+            output_mapping:
+              merged-branch: cf-networking-merged-branch
+            params:
+              SOURCE_BRANCH_NAME: release
+              ONTO_BRANCH_NAME: develop
+          - put: cf-networking-develop-branch-mergeback
+            params:
+              repository: cf-networking-merged-branch
+          - put: cf-networking-draft-github-release
+            params:
+              name: version/number
+              tag: version/number
+              tag_prefix: v
+              body: built-cf-networking-release-notes/notes.md
+              globs:
+              - finalized-cf-networking-release-tarball/cf-networking-*.tgz
+        - do:
+          - task: bosh-finalize-silk-release
+            image: image
+            file: ci/shared/tasks/bosh-finalize-release/linux.yml
+            input_mapping:
+              repo: silk-repo
+            output_mapping:
+              finalized-release-repo: finalized-silk-release-repo
+              finalized-release-tarball: finalized-silk-release-tarball
+            params:
+              GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+          - put: silk-release-branch
+            params:
+              repository: finalized-silk-release-repo
+              tag: version/number
+              tag_prefix: v
+          - task: merge-silk-release-onto-develop
+            image: image
+            file: ci/shared/tasks/git-merge-branches/linux.yml
+            input_mapping:
+              source-branch: silk-release-branch
+              onto-branch: silk-develop-branch-mergeback
+            output_mapping:
+              merged-branch: silk-merged-branch
+            params:
+              SOURCE_BRANCH_NAME: release
+              ONTO_BRANCH_NAME: develop
+          - put: silk-develop-branch-mergeback
+            params:
+              repository: silk-merged-branch
+          - put: silk-draft-github-release
+            params:
+              name: version/number
+              tag: version/number
+              tag_prefix: v
+              body: built-silk-release-notes/notes.md
+              globs:
+              - finalized-silk-release-tarball/silk-*.tgz
+    - get: next-version
+      resource: version
+      params: {bump: minor}
+    - put: next-version
+      resource: version
+      params: {file: next-version/number}
+
+- name: unclaim-env
+  serial: true
+  plan:
+  - get: env
+    passed: [ship-what]
+    trigger: true
+  - get: env-lock
+  - put: env
+    params:
+      action: release
+      resource: env
+  - params:
+      release: env-lock #! path to the resource in the above get
+    put: env-lock
+
+- name: release-env-lock
+  plan:
+  - get: env-lock
+  ensure:
+    put: env-lock
+    params:
+      release: env-lock #! path to the resource in the above get
+
+#! versioning
+- name: patch-bump
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: patch}
+  - put: version
+    params: {file: version/number}
+
+- name: minor-bump
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: minor}
+  - put: version
+    params: {file: version/number}
+
+- name: major-bump
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: major}
+  - put: version
+    params: {file: version/number}
