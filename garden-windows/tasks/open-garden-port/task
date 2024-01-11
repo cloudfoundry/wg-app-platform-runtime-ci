@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -e
+
+source ci/garden-windows/bin/ci_helpers
+
+eval "$(_bosh_socks5_env "${JUMPBOX_IP}" "${JUMPBOX_SSH_KEY}")"
+
+bosh -d "$DEPLOYMENT" ssh garden-windows -c "netsh advfirewall firewall add rule name=garden$GARDEN_PORT dir=in action=allow protocol=TCP localport=$GARDEN_PORT"
+
+_close_ssh_connection
