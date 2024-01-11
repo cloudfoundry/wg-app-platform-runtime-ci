@@ -195,18 +195,18 @@ function allowed_task_files() {
 
 function allowed_dirs() {
     debug "Running allowed_dirs function"
-    local release_list="garden-runc-release|routing-release|winc-release|nats-release|healthchecker-release|cf-networking-release|silk-release|envoy-nginx-release|cpu-entitlement-plugin|diego-release"
+    local release_list="garden-runc-release|routing-release|winc-release|nats-release|healthchecker-release|cf-networking-release|silk-release|envoy-nginx-release|cpu-entitlement-plugin|diego-release|test-log-emitter-release"
     local dir_patterns
     dir_patterns="$(cat <<EOF
 ^./bin/*$
 ^./examples/(task|pipeline)*$
 ^./examples/repo/(scripts-dir-with-db|scripts-dir-generic)$
 ^./examples/repo/(scripts-dir-with-db|scripts-dir-generic)/docker$
-^./(shared|${release_list})/(helpers|opsfiles|linters|manifests|dockerfiles)$
+^./(shared|${release_list})/(helpers|opsfiles|linters|manifests|dockerfiles|pipelines|bin)$
 ^./(shared|${release_list})/tasks/[a-z\-]*$
 ^./(${release_list})/(manifests)$
 ^./(${release_list})/default-params/[a-z\-]*$
-^./(${release_list})/dockerfiles/.*$
+^./(shared|${release_list})/dockerfiles/.*$
 EOF
 )"
 IFS=$'\n'
