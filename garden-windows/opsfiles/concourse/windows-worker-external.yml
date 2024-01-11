@@ -1,0 +1,10 @@
+---
+- type: replace
+  path: /instance_groups/name=windows-worker/jobs/name=worker-windows/properties/team?
+  value: ((team))
+- type: replace
+  path: /instance_groups/name=windows-worker/jobs/name=worker-windows/properties/worker_gateway/hosts?
+  value: [((tsa_host)):((tsa_port))]
+- type: replace
+  path: /instance_groups/name=windows-worker/jobs/name=worker-windows/properties/worker_gateway/host_public_key?
+  value: ((tsa_host_key.public_key))

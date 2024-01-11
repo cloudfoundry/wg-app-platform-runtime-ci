@@ -1,0 +1,17 @@
+---
+platform: linux
+
+image_resource: {type: docker-image, source: {repository: cloudfoundry/garden-windows-ci}}
+
+inputs:
+  - name: ci
+  - name: repo
+
+outputs:
+  - name: repo_with_commit
+
+run:
+  path: ci/garden-windows/tasks/commit/run
+
+params:
+  MESSAGE:

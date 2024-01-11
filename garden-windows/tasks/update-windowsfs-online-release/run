@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -eu
+
+image_tag=$(cat image-version/version)
+cat release/packages/windows2019fs/packaging \
+  | sed /^\$image_tag/d \
+  | sed "/^\$image_name/ a \$image_tag=\"$image_tag\"" \
+  > packaging.tmp
+cp packaging.tmp release/packages/windows2019fs/packaging
+cp -R release/. bumped-release

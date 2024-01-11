@@ -1,0 +1,6 @@
+---
+- type: replace
+  path: /releases/name=garden-windows?
+  value:
+    name: garden-windows
+    version: latest

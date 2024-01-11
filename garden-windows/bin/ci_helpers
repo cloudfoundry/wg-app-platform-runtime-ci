@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+_bosh_socks5_env() {
+  local ssh_key_dir=$(mktemp -d)
+  echo -n "$2" > "$ssh_key_dir/ssh.key"
+  chmod 600 "$ssh_key_dir/ssh.key"
+
+  local port=$(ruby -e 'require "socket"; puts Addrinfo.tcp("", 0).bind {|s| s.local_address.ip_port }')
+
+  echo "ssh -f -N -o StrictHostKeyChecking=no -o ServerAliveInterval=300 -D $port jumpbox@$1 -i $ssh_key_dir/ssh.key"
+  echo "export BOSH_ALL_PROXY=socks5://localhost:$port"
+}
+
+_close_ssh_connection() {
+  # Kill all ssh connections on exit.
+  # This is needed so that tasks using bbl print-env in a credhub environment
+  # don't hang after the script is finished.
+  pkill ssh || true
+}

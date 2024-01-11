@@ -1,0 +1,21 @@
+---
+image_resource:
+  type: docker-image
+  source:
+    repository: cloudfoundry/garden-windows-ci
+
+platform: linux
+
+inputs:
+- name: ci
+
+params:
+  CF_API:
+  CF_USERNAME:
+  CF_PASSWORD:
+  CF_ORG:
+  TCP_DOMAIN:
+  ROUTER_GROUP: default-tcp
+
+run:
+  path: ci/garden-windows/tasks/create-tcp-domain/run

@@ -1,0 +1,6 @@
+---
+- type: replace
+  path: /releases/name=envoy?
+  value:
+    name: envoy
+    version: latest

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -e -x
+
+go version
+
+pushd hwc
+  ./scripts/build.sh
+popd
+
+cp hwc/hwc-rel/*.exe hwc-rel
+
+tar -c -z -f hwc-rel/hwc.tar.gz -C hwc/hwc-rel .
