@@ -26,27 +26,29 @@ function Verify-Go {
 
 function Verify-GoVersionMatchBoshRelease {
   $dir = $args[0]
-  Push-Location $dir
-  $go_version = $(((go version).Split(" ")[2]).Replace("go",""))
-  $golang_release_dir = Join-Path $(New-TemporaryDirectory) golang-release
-  $package= $(Get-ChildItem "./packages/" -Filter "golang-*windows" -Directory)
-  $package_path= $package.FullName
-  $package_name = $package.Name
-  $spec_lock_value = $(yq .fingerprint "${package_path}/spec.lock")
-  git clone --quiet https://github.com/bosh-packages/golang-release "${golang_release_dir}"
-  Push-Location "${golang_release_dir}"
-  $git_sha = $(git log -S "${spec_lock_value}" --format=format:%H).Split("\n")[0]
-  $bosh_release_go_version = $(git show ${git_sha}:"packages/${package_name}/version")
-  Pop-Location
-  Remove-Item -Recurse -Force $golang_release_dir
+  if (Test-Path -Path "$dir/packages") {
+    Push-Location $dir
+    $go_version = $(((go version).Split(" ")[2]).Replace("go",""))
+    $golang_release_dir = Join-Path $(New-TemporaryDirectory) golang-release
+    $package= $(Get-ChildItem "./packages/" -Filter "golang-*windows" -Directory)
+    $package_path= $package.FullName
+    $package_name = $package.Name
+    $spec_lock_value = $(yq .fingerprint "${package_path}/spec.lock")
+    git clone --quiet https://github.com/bosh-packages/golang-release "${golang_release_dir}"
+    Push-Location "${golang_release_dir}"
+    $git_sha = $(git log -S "${spec_lock_value}" --format=format:%H).Split("\n")[0]
+    $bosh_release_go_version = $(git show ${git_sha}:"packages/${package_name}/version")
+    Pop-Location
+    Remove-Item -Recurse -Force $golang_release_dir
 
-  $go_majorminor = $go_version.Split('.')[0..1] -Join '.'
-  $bosh_go_majorminor = $bosh_release_go_version.Split('.')[0..1] -Join '.'
+    $go_majorminor = $go_version.Split('.')[0..1] -Join '.'
+    $bosh_go_majorminor = $bosh_release_go_version.Split('.')[0..1] -Join '.'
 
-  Pop-Location
-  if ($go_majorminor -ne $bosh_go_majorminor) {
-    Write-Host "Mismatch between windows worker go version ($go_version) and bosh release's go version ($bosh_release_go_version). Please make sure the two match on major and minor"
-    exit 1
+    Pop-Location
+    if ($go_majorminor -ne $bosh_go_majorminor) {
+      Write-Host "Mismatch between windows worker go version ($go_version) and bosh release's go version ($bosh_release_go_version). Please make sure the two match on major and minor"
+      exit 1
+    }
   }
 }
 

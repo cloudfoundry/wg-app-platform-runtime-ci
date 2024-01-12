@@ -1,0 +1,33 @@
+#@data/values
+---
+#@overlay/match missing_ok=True
+
+#! <OPTIONAL> if your pipeline needs to run with DB
+db_flavors:
+- image: postgres
+  value: postgres
+- image: mysql-8.0
+  value: mysql
+- image: mysql-5.7
+  value: mysql
+
+#! <MUST> repo/component/package to test in your repo/release
+internal_repos:
+- name: clock
+  repo: cloudfoundry/clock
+- name: archiver
+  repo: cloudfoundry/archiver
+- name: certsplitter
+  repo: cloudfoundry/certsplitter
+- name: debugserver
+  repo: cloudfoundry/debugserver
+- name: diego-logging-client
+  repo: cloudfoundry/diego-logging-client
+- name: durationjson
+  repo: cloudfoundry/durationjson
+- name: eventhub
+  repo: cloudfoundry/eventhub
+- name: localip
+  repo: cloudfoundry/localip
+- name: tlsconfig
+  repo: cloudfoundry/tlsconfig

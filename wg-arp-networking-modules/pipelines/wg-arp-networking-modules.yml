@@ -1,0 +1,127 @@
+#@ load("@ytt:data", "data")
+#@ load("ytt-helpers.star", "helpers")
+
+#! Define-Groups
+groups:
+- name: test
+  jobs: #@ helpers.packages_names_array(data.values.internal_repos) 
+
+#! Define-Resources
+resources:
+#@ for package in data.values.internal_repos:
+- name: #@ package.name
+  type: git
+  icon: github-box
+  source:
+    branch: main 
+    uri: #@ "git@github.com:{}".format(package.repo)
+    private_key: ((github-tas-runtime-bot/private-key))
+#@ end
+
+- name: ci
+  type: git
+  source:
+    branch: with-windows-fix
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+
+- name: image
+  type: docker-image                             
+  source:                                        
+    repository: cloudfoundry/tas-runtime-build
+    username: ((dockerhub-tasruntime/user))
+    password: ((dockerhub-tasruntime/password))
+    tag: 'latest'
+
+- name: golang-release-latest
+  type: git
+  icon: github-box
+  source:
+    tag_filter: v*
+    uri: https://github.com/bosh-packages/golang-release.git
+
+#! Define-Jobs
+jobs:
+
+#@ for package in helpers.packages_without_configure_db(data.values.internal_repos):
+- name: #@ package.name
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - resource: #@ package.name
+      get: repo
+      trigger: true
+    - get: image
+    - get: package-release
+      resource: golang-release-latest
+  - task: determine-image-tag
+    image: image
+    params:
+      PLUGIN: #@ package.name
+    file: ci/shared/tasks/determine-image-tag/linux.yml
+  - load_var: image_tag
+    file: determined-image-tag/tag
+  - in_parallel:
+    - task: #@ "{}-linux".format(package.name)
+      file: ci/shared/tasks/run-bin-test/linux.yml
+      privileged: #@ helpers.privileged(package)
+      vars:
+        image_repository: cloudfoundry/tas-runtime-build
+        image_tag: ((.:image_tag))
+#@ if helpers.on_windows(package):
+    - task: #@ "{}-windows".format(package.name)
+      file: ci/shared/tasks/run-bin-test/windows.yml
+      privileged: #@ helpers.privileged(package)
+#@ end
+#@ end
+
+#@ for package in helpers.packages_with_configure_db(data.values.internal_repos):
+- name: #@ package.name
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - resource: #@ package.name
+      get: repo
+      trigger: true
+    - get: image
+    - get: package-release
+      resource: golang-release-latest
+  - do:
+    - task: determine-image-tag
+      image: image
+      params:
+        PLUGIN: #@ package.name
+      file: ci/shared/tasks/determine-image-tag/linux.yml
+#@ for db in data.values.db_flavors:
+    - do:
+      - task: #@ "determine-image-tag-{}".format(db.image)
+        image: image
+        file: ci/shared/tasks/determine-image-tag/linux.yml
+        output_mapping:
+          determined-image-tag: #@ "determined-image-tag-{}".format(db.image)
+        params:
+          IMAGE: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
+          PLUGIN: #@ package.name
+      - load_var: #@ "image_tag_{}".format(db.image.replace("-", "_").replace(".", "_"))
+        file: #@ "determined-image-tag-{}/tag".format(db.image)
+#@ end
+  - in_parallel:
+#@ for db in data.values.db_flavors:
+    - task: #@ "{}-{}-linux".format(package.name,db.image)
+      file: ci/shared/tasks/run-bin-test/linux.yml
+      privileged: #@ helpers.privileged(package)
+      vars:
+        image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
+        image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
+      params:
+        DB: #@ db.value
+#@ end
+#@ if helpers.on_windows(package):
+    - task: #@ "{}-mysql-windows".format(package.name)
+      file: ci/shared/tasks/run-bin-test/windows.yml
+      privileged: #@ helpers.privileged(package)
+      params:
+        DB: mysql
+#@ end
+#@ end

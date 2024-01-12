@@ -1,0 +1,21 @@
+#@data/values
+---
+#@overlay/match missing_ok=True
+
+#! <OPTIONAL> if your pipeline needs to run with DB
+db_flavors:
+- image: postgres
+  value: postgres
+- image: mysql-8.0
+  value: mysql
+- image: mysql-5.7
+  value: mysql
+
+#! <MUST> repo/component/package to test in your repo/release
+internal_repos:
+- name: cf-networking-helpers
+  repo: cloudfoundry/cf-networking-helpers
+  on_windows: true
+  configure_db: true
+- name: policy_client
+  repo: cloudfoundry/policy_client

@@ -1,0 +1,29 @@
+#@data/values
+---
+#@overlay/match missing_ok=True
+
+#! <OPTIONAL> if your pipeline needs to run with DB
+db_flavors:
+- image: postgres
+  value: postgres
+- image: mysql-8.0
+  value: mysql
+- image: mysql-5.7
+  value: mysql
+
+#! <MUST> repo/component/package to test in your repo/release
+internal_repos:
+- name: commandrunner
+  repo: cloudfoundry/commandrunner
+  on_windows: true
+- name: cpu-entitlement-admin-plugin
+  repo: cloudfoundry/cpu-entitlement-admin-plugin
+- name: groot
+  repo: cloudfoundry/groot
+  on_windows: true
+  params:
+    DOCKER_REGISTRY_USERNAME: ((dockerhub-tasruntime/user))
+    DOCKER_REGISTRY_PASSWORD: ((dockerhub-tasruntime/password))
+    PRIVATE_DOCKER_IMAGE_URL: docker://cloudfoundry/garden-private-image-test:groot
+- name: hydrator
+  repo: cloudfoundry/hydrator
