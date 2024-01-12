@@ -12,6 +12,17 @@ export FLY_TARGET=runtime
 
 main() {
   local repo=${1:?Provide a repo e.g. shared,cf-networking-release}
+  if [[ "$repo" == "all" ]]; then
+    local pipelines=$(find "$REPO" -name "set-repo-pipeline.bash")
+    for p in ${pipelines}; do
+      eval "$p"
+    done
+  else
+    repo_pipeline ${repo}
+  fi
+}
+
+repo_pipeline() {
   if [[ ! -d "$REPO/$repo" ]]; then
     echo "$REPO/$repo doesn't exist."
     exit 1
