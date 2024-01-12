@@ -1,0 +1,1230 @@
+#@ load("@ytt:data", "data")
+#@ load("ytt-helpers.star", "helpers")
+
+#! Define-Groups
+groups:
+- name: release
+  jobs:
+  - template-tests
+  - unit-and-integration-tests
+  - lint-repo
+  - claim-env
+  - prepare-env
+  - run-cats
+  - run-gatsw
+  - run-gats-with-cpu-throttling
+  - run-gats-with-runc
+  - run-gats-with-containerd
+  - run-gats-with-containerd-for-processes
+  - run-standalone-gdn-gats
+  - export-release
+  - ship-what
+  - ship-it
+  - unclaim-env
+
+- name: periodics
+  jobs:
+  - bump-dependencies-go-mod
+  - bump-package-golang
+
+- name: manual
+  jobs:
+  - release-env-lock
+
+- name: version
+  jobs:
+  - major-bump
+  - minor-bump
+  - patch-bump
+
+
+#! Define-ResourceGroups
+#! toolsmiths
+resource_types:
+- name: shepherd
+  type: registry-image
+  source:
+    repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
+    tag: v1  #! This may be bumped in the future
+
+#! Define-Resources
+resources:
+- name: golang-release-latest
+  type: git
+  icon: github-box
+  source:
+    tag_filter: v*
+    uri: https://github.com/bosh-packages/golang-release.git
+
+- name: repo
+  type: git
+  icon: github-box
+  source:
+    branch: develop
+    uri: git@github.com:cloudfoundry/garden-runc-release.git
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: release-branch 
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/garden-runc-release.git
+    branch: release
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: develop-branch-mergeback
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/garden-runc-release.git
+    branch: develop
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: ci
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+
+- name: cf-deployment
+  type: git
+  icon: github-box
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/cf-deployment.git
+
+- name: garden-ci-artifacts-release
+  type: git
+  icon: github-box
+  source:
+    branch: develop
+    uri: https://github.com/cloudfoundry/garden-ci-artifacts-release.git
+
+- name: winc-release
+  type: git
+  icon: github-box
+  source:
+    branch: release
+    uri: https://github.com/cloudfoundry/winc-release.git
+
+- name: windows-utilities-release
+  type: git
+  icon: github-box
+  source:
+    branch: master
+    uri: https://github.com/cloudfoundry/windows-utilities-release.git
+
+- name: cf-deployment-concourse-tasks
+  type: git
+  icon: github-box
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
+
+- name: cf-acceptance-tests
+  type: git
+  icon: github-box
+  source:
+    branch: release-candidate
+    uri: https://github.com/cloudfoundry/cf-acceptance-tests
+
+- name: updated-go-mod-garden
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/garden.git
+    branch: main
+    private_key: ((github-tas-runtime-bot/private-key))
+
+
+- name: updated-go-mod-guardian
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/guardian.git
+    branch: main
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: updated-go-mod-idmapper
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/idmapper.git
+    branch: main
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: updated-go-mod-grootfs
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/grootfs.git
+    branch: main
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: updated-go-mod-groot
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/groot.git
+    branch: main
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: updated-go-mod-netplugin-shim
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/netplugin-shim.git
+    branch: main
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: updated-go-mod-dontpanic
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/dontpanic.git
+    branch: main
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: updated-go-mod-garden-integration-tests
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/garden-integration-tests.git
+    branch: main
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: updated-go-mod-garden-performance-acceptance-tests
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/garden-performance-acceptance-tests.git
+    branch: main
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: go-version
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: [go-version.json]
+
+#! TIMERS
+- name: weekly
+  type: time
+  icon: clock
+  source:
+    interval: '168h'  #! 1 week
+
+#! Toolsmith pool
+- name: env
+  type: shepherd
+  source:
+    url: https://v2.shepherd.run
+    service-account-key: ((shepherd-service-account-key))
+    lease:
+      namespace: tas-runtime
+      pool:
+        namespace: official
+        name: cfd
+    compatibility-mode: environments-app
+
+- name: github-release
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    repository: garden-runc-release 
+    owner: cloudfoundry
+  type: github-release
+
+- name: draft-github-release 
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    drafts: true
+    repository: garden-runc-release 
+    owner: cloudfoundry
+  type: github-release
+
+- name: version
+  type: semver
+  source:
+    driver: gcs
+    bucket: ci-release-versions
+    key: garden-runc-release/version
+    json_key: ((gcp-tas-runtime-service-account/config-json))
+
+- name: env-lock
+  source:
+    branch: main
+    pool: garden-env-lock 
+    private_key: ((github-tas-runtime-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+  type: pool
+
+- name: image
+  type: docker-image                             
+  source:                                        
+    repository: cloudfoundry/tas-runtime-build
+    tag: 'latest'
+
+- name: garden-runc-release-rootfs
+  type: docker-image                             
+  source:                                        
+    email: tas-journey-runtime-ecosystem@groups.vmware.com
+    username: ((dockerhub-tasruntime/user))
+    password: ((dockerhub-tasruntime/password))
+    repository: cloudfoundry/garden-rootfs
+    tag: latest
+
+- name: garden-runc-release-fuse-rootfs
+  type: docker-image                             
+  source:                                        
+    email: tas-journey-runtime-ecosystem@groups.vmware.com
+    username: ((dockerhub-tasruntime/user))
+    password: ((dockerhub-tasruntime/password))
+    repository: cloudfoundry/garden-fuse
+    tag: latest
+
+- name: artifacts-bucket-gdn
+  type: s3
+  source:
+    bucket: gdn-linux-release
+    versioned_file: gdn-linux-amd64
+    access_key_id: ((aws-s3-svc-gdn-bosh-s3/access-key-id))
+    secret_access_key: ((aws-s3-svc-gdn-bosh-s3/secret-access-key))
+    aws_role_arn: ((aws-s3-svc-gdn-bosh-s3/assume-role))
+
+- name: artifacts-bucket-gdn-arm64
+  type: s3
+  source:
+    bucket: gdn-linux-release
+    versioned_file: gdn-linux-arm64
+    access_key_id: ((aws-s3-svc-gdn-bosh-s3/access-key-id))
+    secret_access_key: ((aws-s3-svc-gdn-bosh-s3/secret-access-key))
+    aws_role_arn: ((aws-s3-svc-gdn-bosh-s3/assume-role))
+
+#! Define-Jobs
+jobs:
+- name: bump-dependencies-go-mod
+  plan:
+  - in_parallel:
+    - get: ci 
+    - get: repo 
+    - get: updated-go-mod-garden
+    - get: updated-go-mod-idmapper
+    - get: updated-go-mod-garden-performance-acceptance-tests
+    - get: updated-go-mod-grootfs
+    - get: updated-go-mod-groot
+    - get: updated-go-mod-guardian
+    - get: updated-go-mod-garden-integration-tests
+    - get: updated-go-mod-dontpanic
+    - get: updated-go-mod-netplugin-shim
+    - get: image
+    - get: weekly
+      trigger: true
+  - do:
+    - task: garden-bump-dependencies-go-mod
+      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+      image: image
+      input_mapping:
+        repo: updated-go-mod-garden
+      params:
+        GO_MODS: go.mod
+    - put: updated-go-mod-garden
+      params:
+        rebase: true
+        repository: bumped-repo
+  - do:
+    - task: garden-performance-acceptance-tests-bump-dependencies-go-mod
+      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+      image: image
+      input_mapping:
+        repo: updated-go-mod-garden-performance-acceptance-tests
+        dep-local-repo-replace-01: updated-go-mod-garden
+      params:
+        GO_MODS: go.mod
+        REPLACE_DIRECTIVES: |
+          dep-local-repo-replace-01:garden
+    - put: updated-go-mod-garden-performance-acceptance-tests
+      params:
+        rebase: true
+        repository: bumped-repo
+  - do:
+    - task: idmapper-bump-dependencies-go-mod
+      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+      image: image
+      input_mapping:
+        repo: updated-go-mod-idmapper
+      params:
+        GO_MODS: go.mod
+    - put: updated-go-mod-idmapper
+      params:
+        rebase: true
+        repository: bumped-repo
+  - do:
+    - task: dontpanic-bump-dependencies-go-mod
+      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+      image: image
+      input_mapping:
+        repo: updated-go-mod-dontpanic
+      params:
+        GO_MODS: go.mod
+    - put: updated-go-mod-dontpanic
+      params:
+        rebase: true
+        repository: bumped-repo
+  - do:
+    - task: grootfs-bump-dependencies-go-mod
+      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+      image: image
+      input_mapping:
+        repo: updated-go-mod-grootfs
+        dep-local-repo-replace-01: updated-go-mod-idmapper
+      params:
+        GO_MODS: go.mod
+        REPLACE_DIRECTIVES: |
+          dep-local-repo-replace-01:idmapper
+    - put: updated-go-mod-grootfs
+      params:
+        rebase: true
+        repository: bumped-repo
+  - do:
+    - task: groot-bump-dependencies-go-mod
+      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+      image: image
+      input_mapping:
+        repo: updated-go-mod-groot
+      params:
+        GO_MODS: go.mod
+    - put: updated-go-mod-groot
+      params:
+        rebase: true
+        repository: bumped-repo
+  - do:
+    - task: guardian-bump-dependencies-go-mod
+      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+      image: image
+      input_mapping:
+        repo: updated-go-mod-guardian
+        dep-local-repo-replace-01: updated-go-mod-garden
+        dep-local-repo-replace-02: updated-go-mod-idmapper
+        dep-local-repo-replace-03: updated-go-mod-grootfs
+      params:
+        GO_MODS: go.mod
+        REPLACE_DIRECTIVES: |
+          dep-local-repo-replace-01:garden
+          dep-local-repo-replace-02:idmapper
+          dep-local-repo-replace-03:grootfs
+    - put: updated-go-mod-guardian
+      params:
+        rebase: true
+        repository: bumped-repo
+  - do:
+    - task: netplugin-shim-bump-dependencies-go-mod
+      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+      image: image
+      input_mapping:
+        repo: updated-go-mod-netplugin-shim
+        dep-local-repo-replace-01: updated-go-mod-garden
+        dep-local-repo-replace-02: updated-go-mod-idmapper
+        dep-local-repo-replace-03: updated-go-mod-grootfs
+        dep-local-repo-replace-04: updated-go-mod-guardian
+      params:
+        GO_MODS: go.mod
+        REPLACE_DIRECTIVES: |
+          dep-local-repo-replace-01:garden
+          dep-local-repo-replace-02:idmapper
+          dep-local-repo-replace-03:grootfs
+          dep-local-repo-replace-04:guardian
+    - put: updated-go-mod-netplugin-shim
+      params:
+        rebase: true
+        repository: bumped-repo
+  - do:
+    - task: garden-integration-tests-bump-dependencies-go-mod
+      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+      image: image
+      input_mapping:
+        repo: updated-go-mod-garden-integration-tests
+        dep-local-repo-replace-01: updated-go-mod-garden
+        dep-local-repo-replace-02: updated-go-mod-idmapper
+        dep-local-repo-replace-03: updated-go-mod-grootfs
+        dep-local-repo-replace-04: updated-go-mod-guardian
+      params:
+        GO_MODS: go.mod
+        REPLACE_DIRECTIVES: |
+          dep-local-repo-replace-01:garden
+          dep-local-repo-replace-02:idmapper
+          dep-local-repo-replace-03:grootfs
+          dep-local-repo-replace-04:guardian
+    - put: updated-go-mod-garden-integration-tests
+      params:
+        rebase: true
+        repository: bumped-repo
+  - do:
+    - task: garden-runc-release-bump-dependencies-go-mod
+      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+      image: image
+      input_mapping:
+        dep-local-repo-replace-01: idmapper
+        dep-local-repo-replace-02: grootfs
+      params:
+        GO_MODS: |
+          src/greenskeeper/go.mod
+          src/thresholder/go.mod
+    - put: repo
+      params:
+        rebase: true
+        repository: bumped-repo
+
+- name: bump-package-golang
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+    - get: image
+    - get: golang-release-latest
+      trigger: true
+    - get: go-version
+      trigger: true
+
+  - task: bump-golang-package-name-linux
+    image: image
+    file: ci/shared/tasks/bump-golang-package-name/linux.yml
+    output_mapping:
+      bumped-repo: bumped-golang-package-name-linux
+    params:
+      PLATFORM: linux
+
+  - task: bump-golang-linux
+    file: ci/shared/tasks/bosh-vendor-package/linux.yml
+    image: image
+    input_mapping:
+      repo: bumped-golang-package-name-linux
+      package-release: golang-release-latest
+    output_mapping:
+      vendored-repo: modified-release-linux
+    params:
+      PACKAGE_NAME: golang-*-linux
+      AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
+      AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+
+  - task: bump-golang-package-name-windows
+    image: image
+    file: ci/shared/tasks/bump-golang-package-name/linux.yml
+    input_mapping:
+      repo: modified-release-linux
+    output_mapping:
+      bumped-repo: bumped-golang-package-name-windows
+    params:
+      PLATFORM: windows
+
+  - task: bump-golang-windows
+    file: ci/shared/tasks/bosh-vendor-package/linux.yml
+    image: image
+    input_mapping:
+      repo: bumped-golang-package-name-windows
+      package-release: golang-release-latest
+    output_mapping:
+      vendored-repo: modified-release-windows
+    params:
+      PACKAGE_NAME: golang-*-windows
+      AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
+      AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+
+  - put: repo
+    params:
+      rebase: true
+      repository: modified-release-windows
+
+- name: template-tests
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+    - get: image
+  - task: template-tests
+    image: image
+    file: ci/shared/tasks/run-tests-templates/linux.yml
+    timeout: 30m
+
+- name: unit-and-integration-tests
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+    - get: image
+    - get: package-release
+      resource: golang-release-latest
+    - get: garden-runc-release-rootfs 
+      params:
+        rootfs: true
+    - get: garden-runc-release-fuse-rootfs 
+      params:
+        rootfs: true
+  - task: determine-image-tag
+    image: image
+    file: ci/shared/tasks/determine-image-tag/linux.yml
+  - load_var: image_tag
+    file: determined-image-tag/tag
+  - in_parallel:
+    - task: build-binaries
+      file: ci/shared/tasks/build-binaries/linux.yml
+      params:
+        DEFAULT_PARAMS: "ci/garden-runc-release/default-params/build-binaries/linux.yml"
+      vars:
+        image_repository: cloudfoundry/tas-runtime-build
+        image_tag: ((.:image_tag))
+  - in_parallel:
+#@ for repo in data.values.internal_repos:
+    - task: #@ "{}".format(repo.name)
+      privileged: #@ helpers.privileged(repo)
+      file: ci/shared/tasks/run-bin-test/linux.yml
+      vars:
+        image_repository: cloudfoundry/tas-runtime-build
+        image_tag: ((.:image_tag))
+      input_mapping:
+        input-01: garden-runc-release-rootfs
+        input-02: garden-runc-release-fuse-rootfs
+      params:
+        ENVS: |
+          DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime/user))
+          DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime/password))
+          GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs.tar
+          GARDEN_FUSE_TEST_ROOTFS=$PWD/input-02/rootfs.tar
+        DIR: #@ "src/{}".format(repo.name)
+#@ if helpers.on_windows(repo):
+    - task: #@ "{}-windows".format(repo.name)
+      file: ci/shared/tasks/run-bin-test/windows.yml
+      privileged: #@ helpers.privileged(repo)
+      params:
+        DIR: #@ "src/{}".format(repo.name)
+#@ end
+#@ end
+
+- name: lint-repo
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+    - get: image
+  - task: lint-repo
+    file: ci/shared/tasks/lint-repo/linux.yml
+    image: image
+
+- name: claim-env
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+      passed:
+        - template-tests
+        - unit-and-integration-tests
+        - lint-repo
+    - get: image
+
+    - put: env-lock
+      params:
+       acquire: true
+    - put: env
+      params:
+        action: create
+        duration: 176h
+        resource: env
+        description: "garden-runc-release pipeline"
+  - task: wait-for-cf-api
+    file: ci/shared/tasks/wait-for-cf-api/linux.yml
+    input_mapping:
+      toolsmiths-env: env
+    image: image
+
+- name: prepare-env
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+      passed: [claim-env]
+    - get: image
+    - get: cf-deployment
+    - get: cf-deployment-concourse-tasks
+    - get: env
+      passed: [claim-env]
+      trigger: true
+  - task: prepare-cf-deployment-env
+    image: image
+    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+  - task: combine-ops-files
+    file: ci/shared/tasks/combine-assets/linux.yml
+    image: image
+    input_mapping:
+      input-01: cf-deployment
+    params:
+      COPY_ACTIONS: |
+        {input-01/operations/use-compiled-releases.yml,combined-assets}
+        {input-01/operations/add-persistent-isolation-segment-diego-cell.yml,combined-assets}
+        {input-01/operations/add-persistent-isolation-segment-router.yml,combined-assets}
+        {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
+        {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
+  - task: deploy-cf-deployment
+    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    input_mapping:
+      ops-files: combined-assets
+      vars-files: prepared-env
+      toolsmiths-env: env
+    params:
+      DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
+      FAIL_ON_DOWNTIME: "false"
+      VARS_FILES: vars.yml
+      OPS_FILES: #@ "\n".join(data.values.opsfiles)
+  - task: uptimer-measure-with-garden-runc-release-update
+    file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
+    input_mapping:
+      ops-files: combined-assets
+      release: repo
+      vars-files: prepared-env
+      toolsmiths-env: env
+    params:
+      DEPLOY_WITH_UPTIME_MEASUREMENTS: "true"
+      APP_PUSHABILITY_THRESHOLD: "20"
+      HTTP_AVAILABILITY_THRESHOLD: "20"
+      TCP_AVAILABILITY_THRESHOLD: "20"
+      AVAILABLE_PORT: "-1"
+      TCP_PORT: "1029"
+      FAIL_ON_DOWNTIME: "true"
+      MEASURE_SYSLOG_AVAILABILITY: "false"
+      MEASURE_TCP_AVAILABILITY: "true"
+      RECENT_LOGS_THRESHOLD: "50"
+      STREAMING_LOGS_THRESHOLD: "50"
+      APP_SYSLOG_AVAILABILITY_THRESHOLD: "50"
+      USE_SINGLE_APP_INSTANCE: "false"
+      VARS_FILES: vars.yml
+      OPS_FILES: #@ "\n".join(data.values.opsfiles)
+  - task: open-asg-for-credhub
+    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      INSTANCE_GROUP_NAME: credhub
+      SECURITY_GROUP_NAME: credhub
+  - task: open-asg-for-uaa
+    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      INSTANCE_GROUP_NAME: uaa
+      SECURITY_GROUP_NAME: uaa
+  - task: enable-feature-flags-for-cats
+    file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
+
+- name: run-cats
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: cf-deployment-concourse-tasks
+    - get: cf-acceptance-tests
+    - get: cf-deployment
+  - task: create-cats-config
+    image: image
+    file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
+    params:
+      CONFIGS: cats
+      WITH_ISOSEG: true
+      WITH_DYNAMIC_ASG: true
+  - task: cats
+    file: cf-deployment-concourse-tasks/run-cats/task.yml
+    attempts: 2
+    input_mapping:
+      integration-config: built-acceptance-test-configs
+    params:
+      CONFIG_FILE_PATH: cats.json
+
+- name: run-standalone-gdn-gats
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: package-release
+      resource: golang-release-latest
+    - get: garden-runc-release-rootfs 
+      params:
+        rootfs: true
+  - task: determine-image-tag
+    image: image
+    file: ci/shared/tasks/determine-image-tag/linux.yml
+  - load_var: image_tag
+    file: determined-image-tag/tag
+  - task: build-binaries-with-musl
+    file: ci/shared/tasks/build-binaries/linux.yml
+    input_mapping:
+      input-01: built-musl
+    params:
+      DEFAULT_PARAMS: "ci/garden-runc-release/default-params/build-binaries/linux.yml"
+      ENVS: WITH_MUSL=true
+    vars:
+      image_repository: cloudfoundry/tas-runtime-build
+      image_tag: ((.:image_tag))
+  - task: release-standalone-gdn
+    file: ci/shared/tasks/run-bin-release-binaries/linux.yml
+    image: image
+    params:
+      DIR: src/guardian
+      OS: |
+        linux
+      ARCH: |
+        amd64
+        arm64
+  - task: run-gats
+    file: ci/shared/tasks/run-bin-test/linux.yml
+    input_mapping:
+      input-01: released-binaries
+      input-02: garden-runc-release-rootfs
+    privileged: true
+    params:
+      DIR: src/garden-integration-tests
+      FUNCTIONS: ci/garden-runc-release/helpers/configure-binaries.bash
+      ENVS: |
+        GDN_BINARY=$PWD/input-01/gdn-linux-amd64
+        GARDEN_TEST_ROOTFS=$PWD/input-02/rootfs.tar
+        GDN_BIND_IP=127.0.0.1
+        GDN_BIND_PORT=7777
+        GDN_DEBUG_PORT=17013
+        ROOTLESS=false
+        CONTAINERD_FOR_PROCESSES_ENABLED=false
+        NESTED=true
+        LIMITS_TEST_URI="docker://busybox"
+    vars:
+      image_repository: cloudfoundry/tas-runtime-build
+      image_tag: ((.:image_tag))
+  - put: artifacts-bucket-gdn
+    params:
+      file: released-binaries/gdn-linux-amd64
+  - put: artifacts-bucket-gdn-arm64
+    params:
+      file: released-binaries/gdn-linux-arm64
+
+- name: run-gatsw
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: package-release
+      resource: golang-release-latest
+    - get: garden-ci-artifacts-release
+    - get: winc-release
+    - get: windows-utilities-release
+    - get: cf-deployment-concourse-tasks
+  - task: upload-windows-stemcell
+    file: ci/shared/tasks/bosh-upload-stemcell/linux.yml
+    image: image
+    params:
+      STEMCELL_URL: https://bosh.io/d/stemcells/bosh-google-kvm-windows2019-go_agent
+  - task: bosh-deploy-gatsw
+    image: image
+    file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
+    input_mapping:
+      release-01: garden-ci-artifacts-release
+      release-02: winc-release
+      release-03: windows-utilities-release
+    params:
+      MANIFEST: ci/shared/manifests/gatsw.yml
+      DEPLOYMENT_NAME: gatsw
+      ENVS: |
+        DEPLOYMENT_GARDEN_RUNC_RELEASE_DIR=$PWD/repo
+        DEPLOYMENT_GARDEN_CI_ARTIFACTS_RELEASE_DIR=$PWD/release-01
+        DEPLOYMENT_WINC_RELEASE_DIR=$PWD/release-02
+        DEPLOYMENT_WINDOWS_UTILITIES_RELEASE_DIR=$PWD/release-03
+  - task: run-gatsw-errand
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      DEPLOYMENT_NAME: gatsw
+      ERRAND_NAME: gats
+
+- name: run-gats-with-cpu-throttling
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: package-release
+      resource: golang-release-latest
+    - get: garden-ci-artifacts-release
+    - get: cf-deployment-concourse-tasks
+  - task: bosh-deploy-gats
+    image: image
+    file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
+    params:
+      MANIFEST: ci/garden-runc-release/manifests/gats.yml
+      DEPLOYMENT_NAME: gats-with-cpu-throttling
+      ENVS: |
+        WITH_BPM=false
+        WITH_ROOTLESS_MODE=false
+        WITH_CONTAINERD_MODE=false
+        WITH_COTAINERD_FOR_PROCESSES_MODE=false
+        WITH_CPU_THROTTLING=true
+  - task: run-gats-errand
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      DEPLOYMENT_NAME: gats-with-cpu-throttling
+      ERRAND_NAME: gats
+
+- name: run-gats-with-runc
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: package-release
+      resource: golang-release-latest
+    - get: garden-ci-artifacts-release
+    - get: cf-deployment-concourse-tasks
+  - task: bosh-deploy-gats
+    image: image
+    file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
+    params:
+      MANIFEST: ci/garden-runc-release/manifests/gats.yml
+      DEPLOYMENT_NAME: gats-with-runc
+      ENVS: |
+        WITH_BPM=false
+        WITH_ROOTLESS_MODE=false
+        WITH_CONTAINERD_MODE=false
+        WITH_COTAINERD_FOR_PROCESSES_MODE=false
+        WITH_CPU_THROTTLING=false
+  - task: run-gats-errand
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      DEPLOYMENT_NAME: gats-with-runc
+      ERRAND_NAME: gats
+  - task: run-gpats-errand
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      DEPLOYMENT_NAME: gats-with-runc
+      ERRAND_NAME: gpats
+
+- name: run-gats-with-containerd
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: package-release
+      resource: golang-release-latest
+    - get: garden-ci-artifacts-release
+    - get: cf-deployment-concourse-tasks
+  - task: bosh-deploy-gats
+    image: image
+    file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
+    params:
+      MANIFEST: ci/garden-runc-release/manifests/gats.yml
+      DEPLOYMENT_NAME: gats-with-containerd
+      ENVS: |
+        WITH_BPM=false
+        WITH_ROOTLESS_MODE=false
+        WITH_CONTAINERD_MODE=true
+        WITH_COTAINERD_FOR_PROCESSES_MODE=false
+        WITH_CPU_THROTTLING=false
+  - task: run-gats-errand
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      DEPLOYMENT_NAME: gats-with-containerd
+      ERRAND_NAME: gats
+  - task: run-gpats-errand
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      DEPLOYMENT_NAME: gats-with-containerd
+      ERRAND_NAME: gpats
+
+- name: run-gats-with-containerd-for-processes
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: package-release
+      resource: golang-release-latest
+    - get: garden-ci-artifacts-release
+    - get: cf-deployment-concourse-tasks
+  - task: bosh-deploy-gats
+    image: image
+    file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
+    params:
+      MANIFEST: ci/garden-runc-release/manifests/gats.yml
+      DEPLOYMENT_NAME: gats-with-containerd-for-processes
+      ENVS: |
+        WITH_BPM=false
+        WITH_ROOTLESS_MODE=false
+        WITH_CONTAINERD_MODE=true
+        WITH_COTAINERD_FOR_PROCESSES_MODE=true
+        WITH_CPU_THROTTLING=false
+  - task: run-gats-errand
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      DEPLOYMENT_NAME: gats-with-containerd-for-processes
+      ERRAND_NAME: gats
+
+- name: export-release
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: cf-deployment-concourse-tasks
+  - task: export-release
+    file: ci/shared/tasks/bosh-export-release/linux.yml
+    image: image
+
+- name: ship-what
+  plan:
+    - in_parallel:
+        steps:
+        - get: ci
+        - get: repo
+          passed:
+            - run-cats
+            - export-release
+            - run-standalone-gdn-gats
+            - run-gatsw
+            - run-gats-with-cpu-throttling
+            - run-gats-with-runc
+            - run-gats-with-containerd
+            - run-gats-with-containerd-for-processes
+          trigger: true
+        - get: image
+        - get: release-branch
+          params:
+            submodules: none
+        - get: github-release
+        - get: version
+        - get: env
+          passed:
+            - run-cats
+            - export-release
+            - run-standalone-gdn-gats
+            - run-gatsw
+            - run-gats-with-cpu-throttling
+            - run-gats-with-runc
+            - run-gats-with-containerd
+            - run-gats-with-containerd-for-processes
+          trigger: true
+
+    - task: check-safe-to-release-repo
+      image: image
+      file: ci/shared/tasks/check-safe-to-release-repo/linux.yml
+      input_mapping:
+        release-repo: release-branch
+
+    - task: build-release-notes-garden-runc-release
+      image: image
+      file: ci/shared/tasks/build-release-notes/linux.yml
+      input_mapping:
+        previous-github-release: github-release
+
+- name: ship-it
+  serial: true
+  plan:
+    - in_parallel:
+        steps:
+        - get: ci
+        - get: repo
+          passed: [ ship-what ]
+        - get: image
+        - get: release-branch
+          params:
+            submodules: none
+        - get: github-release
+        - get: version
+        - get: develop-branch-mergeback
+          params:
+            submodules: none
+        - get: artifacts-bucket-gdn
+          passed: [ run-standalone-gdn-gats ]
+        - get: artifacts-bucket-gdn-arm64
+          passed: [ run-standalone-gdn-gats ]
+
+    - task: check-safe-to-release-branch
+      image: image
+      file: ci/shared/tasks/check-safe-to-release-repo/linux.yml
+      input_mapping:
+        release-repo: release-branch
+
+    - task: build-release-notes-garden-runc-release
+      image: image
+      file: ci/shared/tasks/build-release-notes/linux.yml
+      input_mapping:
+        previous-github-release: github-release
+
+    - task: combine-gdn-binaries
+      file: ci/shared/tasks/combine-assets/linux.yml
+      image: image
+      input_mapping:
+        input-01: artifacts-bucket-gdn
+        input-02: artifacts-bucket-gdn-arm64
+      params:
+        COPY_ACTIONS: |
+          {input-01/gdn-linux-amd64,combined-assets}
+          {input-02/gdn-linux-arm64,combined-assets}
+
+    - task: version-gdn-binaries
+      file: ci/shared/tasks/version-assets/linux.yml
+      image: image
+      input_mapping:
+        assets: combined-assets
+
+    - task: bosh-finalize-release
+      image: image
+      file: ci/shared/tasks/bosh-finalize-release/linux.yml
+      params:
+        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+
+    - put: release-branch
+      params:
+        repository: finalized-release-repo
+        tag: version/number
+        tag_prefix: v
+
+    - task: merge-release-onto-develop
+      image: image
+      file: ci/shared/tasks/git-merge-branches/linux.yml
+      input_mapping:
+        source-branch: release-branch
+        onto-branch: develop-branch-mergeback
+      params:
+        SOURCE_BRANCH_NAME: release
+        ONTO_BRANCH_NAME: develop
+
+    - in_parallel:
+        steps:
+        - put: draft-github-release
+          params:
+            name: version/number
+            tag: version/number
+            tag_prefix: v
+            body: built-release-notes/notes.md
+            globs:
+            - finalized-release-tarball/garden-runc*.tgz
+            - versioned-assets/*
+        - put: develop-branch-mergeback
+          params:
+            repository: merged-branch
+
+    - get: next-version
+      resource: version
+      params: {bump: minor}
+    - put: next-version
+      resource: version
+      params: {file: next-version/number}
+
+- name: unclaim-env
+  serial: true
+  plan:
+  - get: env
+    passed: [ship-what]
+    trigger: true
+  - get: env-lock
+  - put: env
+    params:
+      action: release
+      resource: env
+  - params:
+      release: env-lock #! path to the resource in the above get
+    put: env-lock
+
+- name: release-env-lock
+  plan:
+  - get: env-lock
+  ensure:
+    put: env-lock
+    params:
+      release: env-lock #! path to the resource in the above get
+
+#! versioning
+- name: patch-bump
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: patch}
+  - put: version
+    params: {file: version/number}
+
+- name: minor-bump
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: minor}
+  - put: version
+    params: {file: version/number}
+
+- name: major-bump
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: major}
+  - put: version
+    params: {file: version/number}

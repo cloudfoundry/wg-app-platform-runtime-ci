@@ -1,0 +1,161 @@
+---
+jobs:
+
+- name: diego-inigo-ci-rootfs
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: monthly
+      trigger: true
+    - get: diego-inigo-ci-rootfs-dockerfile
+      trigger: true
+    - get: image
+  - put: diego-inigo-ci-rootfs
+    params:
+      build: diego-inigo-ci-rootfs-dockerfile/diego-release/dockerfiles/diego-inigo-ci-rootfs
+      tag_as_latest: true
+  - task: validate-label-urls
+    file: ci/shared/tasks/lint-docker-image/linux.yml
+    image: image
+    input_mapping:
+      docker-image: diego-inigo-ci-rootfs
+
+- name: diego-docker-app
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: monthly
+      trigger: true
+    - get: diego-docker-app-dockerfile
+      trigger: true
+    - get: image
+  - in_parallel:
+    - put: diego-docker-app
+      params:
+        build: diego-docker-app-dockerfile/diego-release/dockerfiles/diego-docker-app
+        tag_as_latest: true
+    - put: aws-ecr-docker-app
+      params:
+        build: diego-docker-app-dockerfile/diego-release/dockerfiles/diego-docker-app
+        tag_as_latest: true
+  - task: validate-label-urls
+    file: ci/shared/tasks/lint-docker-image/linux.yml
+    image: image
+    input_mapping:
+      docker-image: diego-docker-app
+
+- name: grace
+  serial: true
+  plan:
+  - in_parallel:
+    - get: monthly
+      trigger: true
+    - get: grace
+    - get: ci
+    - get: image
+  - task: release-binaries
+    file: ci/shared/tasks/run-bin-release-binaries/linux.yml
+    image: image
+    input_mapping:
+      repo: grace
+  - put: cloudfoundry-grace-docker
+    params:
+      build: released-binaries/docker
+      tag_as_latest: true
+  - task: validate-label-urls
+    file: ci/shared/tasks/lint-docker-image/linux.yml
+    image: image
+    input_mapping:
+      docker-image: cloudfoundry-grace-docker
+  - put: cloudfoundry-grace-gcs
+    params:
+      file: released-binaries/grace-*.tgz
+      predefined_acl: publicRead
+
+resources:
+- name: diego-inigo-ci-rootfs-dockerfile
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci.git
+    branch: main
+    private_key: ((github-tas-runtime-bot/private-key))
+    paths:
+    - diego-release/dockerfiles/diego-inigo-ci-rootfs/Dockerfile
+
+- name: diego-docker-app-dockerfile
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci.git
+    branch: main
+    private_key: ((github-tas-runtime-bot/private-key))
+    paths:
+    - diego-release/dockerfiles/diego-docker-app/Dockerfile
+    - diego-release/dockerfiles/diego-docker-app/dockerapp.go
+
+- name: grace
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry/grace.git
+    branch: main
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: diego-docker-app
+  type: docker-image
+  source:
+    username: ((dockerhub-tasruntime/user))
+    password: ((dockerhub-tasruntime/password))
+    repository: cloudfoundry/diego-docker-app
+
+- name: aws-ecr-docker-app
+  type: docker-image
+  source:
+    aws_access_key_id: ((aws-ecr-diego-docker-app/access-key-id))
+    aws_secret_access_key: ((aws-ecr-diego-docker-app/secret-access-key))
+    repository: ((aws-ecr-diego-docker-app/ref))
+
+- name: diego-inigo-ci-rootfs
+  type: docker-image
+  source:
+    username: ((dockerhub-tasruntime/user))
+    password: ((dockerhub-tasruntime/password))
+    repository: cloudfoundry/diego-inigo-ci-rootfs
+
+- name: cloudfoundry-grace-docker
+  type: docker-image
+  source:
+    username: ((dockerhub-tasruntime/user))
+    password: ((dockerhub-tasruntime/password))
+    repository: cloudfoundry/grace
+
+- name: image
+  type: registry-image
+  source:
+    username: ((dockerhub-tasruntime/user))
+    password: ((dockerhub-tasruntime/password))
+    repository: cloudfoundry/tas-runtime-build
+
+- name: monthly
+  type: time
+  source: {interval: 720h}
+
+- name: cloudfoundry-grace-gcs
+  type: google-cloud-storage
+  source:
+    bucket: grace-assets
+    regexp: grace-*.tgz
+    json_key: ((gcp-tas-runtime-service-account/config-json))
+
+- name: ci
+  type: git
+  source:
+    branch: main
+    uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci
+    private_key: ((github-tas-runtime-bot/private-key))
+
+resource_types:
+- name: google-cloud-storage
+  type: docker-image
+  source:
+    repository: frodenas/gcs-resource

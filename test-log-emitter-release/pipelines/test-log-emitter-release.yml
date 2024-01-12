@@ -1,0 +1,79 @@
+#@ load("@ytt:data", "data")
+
+#! Define-Groups
+groups:
+- name: periodics
+  jobs:
+  - bump-package-golang
+
+#! Define-Resources
+resources:
+- name: repo
+  type: git
+  icon: github-box
+  source:
+    branch: develop
+    uri: git@github.com:cloudfoundry/test-log-emitter-release.git
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: ci
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+
+- name: golang-release-latest
+  type: git
+  icon: github-box
+  source:
+    tag_filter: v*
+    uri: https://github.com/bosh-packages/golang-release.git
+
+- name: go-version
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: [go-version.json]
+
+- name: image
+  type: docker-image                             
+  source:                                        
+    repository: cloudfoundry/tas-runtime-build
+    username: ((dockerhub-tasruntime/user))
+    password: ((dockerhub-tasruntime/password))
+    tag: 'latest'
+
+#! Define-Jobs
+jobs:
+- name: bump-package-golang
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: go-version
+      trigger: true
+    - get: repo
+    - get: image
+    - get: golang-release-latest
+      trigger: true
+
+  - task: bump-golang-package-name
+    image: image
+    file: ci/shared/tasks/bump-golang-package-name/linux.yml
+    params:
+      PLATFORM: linux
+
+  - task: bump-golang-linux
+    file: ci/shared/tasks/bosh-vendor-package/linux.yml
+    image: image
+    input_mapping:
+      repo: bumped-repo
+      package-release: golang-release-latest
+    params:
+      PACKAGE_NAME: golang-*-linux
+      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+
+  - put: repo
+    params:
+      rebase: true
+      repository: vendored-repo

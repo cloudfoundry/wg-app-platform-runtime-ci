@@ -1,0 +1,94 @@
+---
+jobs:
+- name: garden-rootfs
+  serial: true
+  plan:
+  - in_parallel:
+    - get: monthly
+      trigger: true
+    - get: garden-rootfs-dockerfile
+      trigger: true
+    - get: ci
+    - get: image
+  - put: garden-rootfs
+    params:
+      build: garden-rootfs-dockerfile/garden-runc-release/dockerfiles/garden-rootfs
+      build_args: 
+        BUSYBOX_VERSION: 1.26.1
+  - task: validate-label-urls
+    file: ci/shared/tasks/lint-docker-image/linux.yml
+    image: image
+    input_mapping:
+      docker-image: garden-rootfs
+- name: garden-fuse
+  serial: true
+  plan:
+  - in_parallel:
+    - get: monthly
+      trigger: true
+    - get: garden-fuse-dockerfile
+      trigger: true
+    - get: ci
+    - get: image
+  - put: garden-fuse
+    params:
+      build: garden-fuse-dockerfile/garden-runc-release/dockerfiles/garden-fuse
+  - task: validate-label-urls
+    file: ci/shared/tasks/lint-docker-image/linux.yml
+    image: image
+    input_mapping:
+      docker-image: garden-fuse
+
+resources:
+- name: garden-rootfs
+  type: docker-image
+  source:
+    email: tas-journey-runtime-ecosystem@groups.vmware.com
+    username: ((dockerhub-tasruntime/user))
+    password: ((dockerhub-tasruntime/password))
+    repository: cloudfoundry/garden-rootfs
+    tag: latest
+
+- name: garden-fuse
+  type: docker-image
+  source:
+    email: tas-journey-runtime-ecosystem@groups.vmware.com
+    username: ((dockerhub-tasruntime/user))
+    password: ((dockerhub-tasruntime/password))
+    repository: cloudfoundry/garden-fuse
+    tag: latest
+
+- name: garden-rootfs-dockerfile
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci.git
+    branch: main
+    private_key: ((github-tas-runtime-bot/private-key))
+    paths:
+    - garden-runc-release/dockerfiles/garden-rootfs/Dockerfile
+
+- name: garden-fuse-dockerfile
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci.git
+    branch: main
+    private_key: ((github-tas-runtime-bot/private-key))
+    paths:
+    - garden-runc-release/dockerfiles/garden-fuse/Dockerfile
+
+- name: ci
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+
+- name: image
+  type: registry-image
+  source:
+    username: ((dockerhub-tasruntime/user))
+    password: ((dockerhub-tasruntime/password))
+    repository: cloudfoundry/tas-runtime-build
+
+- name: monthly
+  type: time
+  source: {interval: 720h}

@@ -1,17 +1,14 @@
 #@ load("@ytt:data", "data")
+
 #@ load("ytt-helpers.star", "helpers")
 
-#! Define-Groups
 groups:
 - name: release
   jobs:
-  - template-tests
   - unit-and-integration-tests
   - lint-repo
   - claim-env
-  - prepare-env
-  - run-cats
-  - <REPLACE_ME>
+  - example-app-deployment
   - export-release
   - ship-what
   - ship-it
@@ -34,19 +31,12 @@ groups:
 
 
 #! Define-ResourceGroups
-#! toolsmiths
 resource_types:
-- name: toolsmiths-envs
-  type: docker-image
+- name: shepherd
+  type: registry-image
   source:
-    repository: cftoolsmiths/toolsmiths-envs-resource
-#! shepherd
-#! resource_types:
-#! - name: shepherd
-#!   type: registry-image
-#!   source:
-#!     repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
-#!     tag: v1  #! This may be bumped in the future
+    repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
+    tag: v1  #! This may be bumped in the future
 
 #! Define-Resources
 resources:
@@ -62,20 +52,20 @@ resources:
   icon: github-box
   source:
     branch: develop
-    uri: git@github.com:<REPLACE_ME>
+    uri: git@github.com:cloudfoundry/healthchecker-release
     private_key: ((github-tas-runtime-bot/private-key))
 
 - name: release-branch 
   type: git
   source:
-    uri: git@github.com:cloudfoundry/<REPLACE_ME>.git
+    uri: git@github.com:cloudfoundry/healthchecker-release.git
     branch: release
     private_key: ((github-tas-runtime-bot/private-key))
 
 - name: develop-branch-mergeback
   type: git
   source:
-    uri: git@github.com:cloudfoundry/<REPLACE_ME>.git
+    uri: git@github.com:cloudfoundry/healthchecker-release.git
     branch: develop
     private_key: ((github-tas-runtime-bot/private-key))
 
@@ -84,27 +74,6 @@ resources:
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
-
-- name: cf-deployment
-  type: git
-  icon: github-box
-  source:
-    branch: main
-    uri: https://github.com/cloudfoundry/cf-deployment.git
-
-- name: cf-deployment-concourse-tasks
-  type: git
-  icon: github-box
-  source:
-    branch: main
-    uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
-
-- name: cf-acceptance-tests
-  type: git
-  icon: github-box
-  source:
-    branch: release-candidate
-    uri: https://github.com/cloudfoundry/cf-acceptance-tests
 
 - name: go-version
   type: git
@@ -120,31 +89,22 @@ resources:
   source:
     interval: '168h'  #! 1 week
 
-#! Toolsmith pool
 - name: env
-  type: toolsmiths-envs
+  type: shepherd
   source:
-    api_token: ((toolsmiths-tas-journey-runtime-ecosystem-api-token))
-    pool_name: cf-deployment
-    hostname: environments.toolsmiths.cf-app.com
-
-#! shepherd
-#!- name: env
-#!  type: shepherd
-#!  source:
-#!    url: https://v2.shepherd.run
-#!    service-account-key: ((shepherd-service-account-key))
-#!    lease:
-#!      namespace: tas-runtime
-#!      pool:
-#!        namespace: official
-#!        name: cfd
-#!    compatibility-mode: environments-app
+    url: https://v2.shepherd.run
+    service-account-key: ((shepherd-service-account-key))
+    lease:
+      namespace: tas-runtime
+      pool:
+        namespace: official
+        name: cfd
+    compatibility-mode: environments-app
 
 - name: github-release
   source:
     access_token: ((github-tas-runtime-bot/access-token))
-    repository: <REPLACE_ME>
+    repository: healthchecker-release
     owner: cloudfoundry
   type: github-release
 
@@ -152,7 +112,7 @@ resources:
   source:
     access_token: ((github-tas-runtime-bot/access-token))
     drafts: true
-    repository: <REPLACE_ME>
+    repository: healthchecker-release
     owner: cloudfoundry
   type: github-release
 
@@ -161,13 +121,13 @@ resources:
   source:
     driver: gcs
     bucket: ci-release-versions
-    key: <REPLACE_ME>/version
+    key: healthchecker-release/version
     json_key: ((gcp-tas-runtime-service-account/config-json))
 
 - name: env-lock
   source:
     branch: main
-    pool: <REPLACE_ME>-env-lock 
+    pool: healthchecker-release-env-lock 
     private_key: ((github-tas-runtime-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
   type: pool
@@ -176,6 +136,8 @@ resources:
   type: docker-image                             
   source:                                        
     repository: cloudfoundry/tas-runtime-build
+    username: ((dockerhub-tasruntime/user))
+    password: ((dockerhub-tasruntime/password))
     tag: 'latest'
 
 #! Define-Jobs
@@ -190,12 +152,12 @@ jobs:
       - get: image
       - get: weekly
         trigger: true
-  - task: <REPLACE_ME>-bump-dependencies-go-mod
+  - task: healthchecker-release-bump-dependencies-go-mod
     image: image
     file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
     params:
-      GO_MODS: |
-        <REPLACE_ME>
+      GO_MODS: src/code.cloudfoundry.org/go.mod
+      EXTRA_GO_TAGS: tools
   - put: repo
     params:
       rebase: true
@@ -205,10 +167,10 @@ jobs:
   plan:
   - in_parallel:
     - get: ci
-    - get: repo
-    - get: image
     - get: go-version
       trigger: true
+    - get: repo
+    - get: image
     - get: golang-release-latest
       trigger: true
 
@@ -222,30 +184,16 @@ jobs:
     file: ci/shared/tasks/bosh-vendor-package/linux.yml
     image: image
     input_mapping:
-      repo: bumped-golang-package-name-linux
+      repo: bumped-repo
       package-release: golang-release-latest
     params:
       PACKAGE_NAME: golang-*-linux
-      AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-      AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
 
   - put: repo
     params:
       rebase: true
       repository: vendored-repo
-
-- name: template-tests
-  serial: true
-  plan:
-  - in_parallel:
-    - get: ci
-    - get: repo
-      trigger: true
-    - get: image
-  - task: template-tests
-    image: image
-    file: ci/shared/tasks/run-tests-templates/linux.yml
-    timeout: 30m
 
 - name: unit-and-integration-tests
   serial: true
@@ -262,23 +210,15 @@ jobs:
     file: ci/shared/tasks/determine-image-tag/linux.yml
   - load_var: image_tag
     file: determined-image-tag/tag
-  - task: build-binaries
-    file: ci/shared/tasks/build-binaries/linux.yml
-    params:
-      DEFAULT_PARAMS: "ci/<REPLACE_ME>/default-params/build-binaries/linux.yml"
-    vars:
-      image_repository: cloudfoundry/tas-runtime-build
-      image_tag: ((.:image_tag))
   - in_parallel:
-#@ for repo in data.values.internal_repos:
-    - task: #@ "{}".format(repo)
+#@ for package in helpers.packages_without_configure_db(data.values.internal_repos):
+    - task: #@ package.name
       file: ci/shared/tasks/run-bin-test/linux.yml
       vars:
         image_repository: cloudfoundry/tas-runtime-build
         image_tag: ((.:image_tag))
       params:
-        DIR: #@ "src/code.cloudfoundry.org/{}".format(repo)
-        DEFAULT_PARAMS: "ci/<REPLACE_ME>/default-params/run-bin-test/linux.yml"
+        DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
 #@ end
 
 - name: lint-repo
@@ -301,143 +241,47 @@ jobs:
     - get: repo
       trigger: true
       passed:
-        - template-tests
         - unit-and-integration-tests
         - lint-repo
     - get: image
 
     - put: env-lock
       params:
-       acquire: true
-  - put: env #!Claim env after env-lock is acquired
+        acquire: true
+  - put: env
     params:
-      action: claim
-  #! shepherd
-  #! - put: env
-  #!   params:
-  #!     action: create
-  #!     duration: 176h
-  #!     resource: env
-  #!  timeout: 6h
-  - task: renew-env #! Only applicable for toolsmiths
+      action: create
+      duration: 176h
+      resource: env
+      description: "healthchecker-release pipeline"
+    timeout: 6h
+  - task: wait-for-cf-api
+    file: ci/shared/tasks/wait-for-cf-api/linux.yml
+    input_mapping:
+      toolsmiths-env: env
     image: image
-    file: ci/shared/tasks/renew-toolsmiths/linux.yml
-    params:
-      TOOLSMITHS_API_TOKEN: ((toolsmiths-tas-journey-runtime-ecosystem-api-token))
 
-- name: prepare-env
-  serial: true
-  plan:
-  - in_parallel:
-    - get: ci
-    - get: repo
-      trigger: true
-      passed: [claim-env]
-    - get: image
-    - get: cf-deployment
-    - get: cf-deployment-concourse-tasks
-    - get: env
-      passed: [claim-env]
-      trigger: true
-  - task: prepare-cf-deployment-env
-    image: image
-    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
-    params:
-      FUNCTIONS: "ci/<REPLACE_ME>/helpers/helpers.bash"
-  - task: combine-ops-files
-    file: ci/shared/tasks/combine-assets/linux.yml
-    image: image
-    input_mapping:
-      input-01: cf-deployment
-    params:
-      COPY_ACTIONS: |
-        {input-01/operations/use-compiled-releases.yml,combined-assets}
-        <REPLACE_ME>
-  - task: deploy-cf-deployment
-    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
-    input_mapping:
-      ops-files: combined-assets
-      vars-files: prepared-env
-      toolsmiths-env: env
-    params:
-      DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
-      FAIL_ON_DOWNTIME: "false"
-      VARS_FILES: vars.yml
-      OPS_FILES: #@ "\n".join(data.values.opsfiles)
-  - task: uptimer-measure-with-<REPLACE_ME>-update
-    file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
-    input_mapping:
-      ops-files: combined-assets
-      release: repo
-      vars-files: prepared-env
-      toolsmiths-env: env
-    params:
-      DEPLOY_WITH_UPTIME_MEASUREMENTS: "true"
-      APP_PUSHABILITY_THRESHOLD: "20"
-      HTTP_AVAILABILITY_THRESHOLD: "20"
-      TCP_AVAILABILITY_THRESHOLD: "20"
-      AVAILABLE_PORT: "-1"
-      TCP_PORT: "1029"
-      FAIL_ON_DOWNTIME: "true"
-      MEASURE_SYSLOG_AVAILABILITY: "false"
-      MEASURE_TCP_AVAILABILITY: "true"
-      RECENT_LOGS_THRESHOLD: "50"
-      STREAMING_LOGS_THRESHOLD: "50"
-      APP_SYSLOG_AVAILABILITY_THRESHOLD: "50"
-      USE_SINGLE_APP_INSTANCE: "false"
-      VARS_FILES: vars.yml
-      OPS_FILES: #@ "\n".join(data.values.opsfiles)
-  - task: open-asg-for-credhub
-    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
-    input_mapping:
-      toolsmiths-env: env
-    params:
-      INSTANCE_GROUP_NAME: credhub
-      SECURITY_GROUP_NAME: credhub
-  - task: open-asg-for-uaa
-    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
-    input_mapping:
-      toolsmiths-env: env
-    params:
-      INSTANCE_GROUP_NAME: uaa
-      SECURITY_GROUP_NAME: uaa
-  - task: enable-feature-flags-for-cats
-    file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
-    input_mapping:
-      toolsmiths-env: env
-    params:
-      ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
-
-- name: run-cats
+- name: example-app-deployment
   serial: true
   serial_groups: [acceptance]
   plan:
   - in_parallel:
     - get: ci
     - get: repo
-      passed: [prepare-env]
+      passed: [claim-env]
       trigger: true
     - get: image
     - get: env
-      passed: [prepare-env]
+      passed: [claim-env]
       trigger: true
-    - get: cf-deployment-concourse-tasks
-    - get: cf-acceptance-tests
-    - get: cf-deployment
-  - task: create-cats-config
+  - task: bosh-deploy-example-app
     image: image
-    file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
+    file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
     params:
-      CONFIGS: cats
-      WITH_ISOSEG: true
-      WITH_DYNAMIC_ASG: true
-  - task: cats
-    file: cf-deployment-concourse-tasks/run-cats/task.yml
-    attempts: 2
-    input_mapping:
-      integration-config: built-acceptance-test-configs
-    params:
-      CONFIG_FILE_PATH: cats.json
+      MANIFEST: ci/healthchecker-release/manifests/example-app.yml
+      DEPLOYMENT_NAME: example-app
+      ENVS: |
+        DEPLOYMENT_RELEASE_DIR=$PWD/repo
 
 - name: export-release
   serial: true
@@ -446,16 +290,17 @@ jobs:
   - in_parallel:
     - get: ci
     - get: repo
-      passed: [prepare-env]
+      passed: [example-app-deployment]
       trigger: true
     - get: image
     - get: env
-      passed: [prepare-env]
+      passed: [example-app-deployment]
       trigger: true
-    - get: cf-deployment-concourse-tasks
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
+    params:
+      DEPLOYMENT_NAME: example-app
 
 - name: ship-what
   plan:
@@ -464,8 +309,6 @@ jobs:
         - get: ci
         - get: repo
           passed:
-            - run-cats
-            - <REPLACE_ME>
             - export-release
           trigger: true
         - get: image
@@ -476,8 +319,6 @@ jobs:
         - get: version
         - get: env
           passed:
-            - run-cats
-            - <REPLACE_ME>
             - export-release
           trigger: true
 
@@ -487,7 +328,7 @@ jobs:
       input_mapping:
         release-repo: release-branch
 
-    - task: build-release-notes-<REPLACE_ME>
+    - task: build-release-notes-healthchecker
       image: image
       file: ci/shared/tasks/build-release-notes/linux.yml
       input_mapping:
@@ -517,7 +358,7 @@ jobs:
       input_mapping:
         release-repo: release-branch
 
-    - task: build-release-notes-<REPLACE_ME>
+    - task: build-release-notes-healthchecker
       image: image
       file: ci/shared/tasks/build-release-notes/linux.yml
       input_mapping:
@@ -542,8 +383,8 @@ jobs:
         source-branch: release-branch
         onto-branch: develop-branch-mergeback
       params:
-        SOURCE_BRANCH_NAME: <REPLACE_ME> or release
-        ONTO_BRANCH_NAME: <REPLACE_ME> or develop
+        SOURCE_BRANCH_NAME: release
+        ONTO_BRANCH_NAME: develop
 
     - in_parallel:
         steps:
@@ -554,7 +395,7 @@ jobs:
             tag_prefix: v
             body: built-release-notes/notes.md
             globs:
-            - finalized-release-tarball/<REPLACE_ME>*.tgz
+            - finalized-release-tarball/healthchecker-*.tgz
         - put: develop-branch-mergeback
           params:
             repository: merged-branch
@@ -575,13 +416,8 @@ jobs:
   - get: env-lock
   - put: env
     params:
-      action: unclaim
-      env_file: env/metadata
-  #! shepherd
-  #! - put: env
-  #!   params:
-  #!     action: release
-  #!     resource: env
+      action: release
+      resource: env
   - params:
       release: env-lock #! path to the resource in the above get
     put: env-lock
@@ -589,19 +425,6 @@ jobs:
 - name: release-env-lock
   plan:
   - get: env-lock
-  - try:
-      do:
-      - get: env
-        passed: [claim-env]
-      - put: env
-        params:
-          action: unclaim
-          env_file: env/metadata
-      #!shepherd
-      #! - put: env
-      #!   params:
-      #!     action: release
-      #!     resource: env
   ensure:
     put: env-lock
     params:

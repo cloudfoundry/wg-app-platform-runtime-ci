@@ -1,0 +1,1134 @@
+#@ load("@ytt:data", "data")
+#@ load("ytt-helpers.star", "helpers")
+
+#! Define-Groups
+groups:
+- name: release
+  jobs:
+  - template-tests
+  - unit-and-integration-tests
+  - inigo-mysql-linux
+  - inigo-postgres-linux
+  - inigo-mysql-windows
+  - lint-repo
+  - claim-env
+  - prepare-env
+  - run-cats
+  - run-wats
+  - export-release
+  - run-bosh-restart
+  - run-vizzini
+  - ship-what
+  - ship-it
+  - unclaim-env
+
+- name: periodics
+  jobs:
+  - bump-dependencies-go-mod
+  - bump-golang
+  - bump-dependencies-envoy
+  - create-envoy-pr
+
+- name: manual
+  jobs:
+  - release-env-lock
+
+- name: version
+  jobs:
+  - major-bump
+  - minor-bump
+  - patch-bump
+
+
+#! Define-ResourceGroups
+#! toolsmiths
+resource_types:
+- name: github-pr
+  type: registry-image
+  source:
+    repository: tasruntime/github-pr-instances-resource
+    tag: latest
+
+- name: shepherd
+  type: registry-image
+  source:
+    repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
+    tag: v1  #! This may be bumped in the future
+
+#! Define-Resources
+resources:
+- name: golang-release-latest
+  type: git
+  icon: github-box
+  source:
+    tag_filter: v*
+    uri: https://github.com/bosh-packages/golang-release.git
+
+- name: repo
+  type: git
+  icon: github-box
+  source:
+    branch: develop
+    uri: git@github.com:cloudfoundry/diego-release.git
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: release-branch 
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/diego-release.git
+    branch: release
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: develop-branch-mergeback
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/diego-release.git
+    branch: develop
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: diego-release-envoy-bump
+  type: git
+  source:
+    branch: bump-envoy
+    private_key: ((github-tas-runtime-bot/private-key))
+    uri: git@github.com:cloudfoundry/diego-release.git
+
+- name: ci
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+
+- name: go-version
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: [go-version.json]
+
+- name: cf-deployment
+  type: git
+  icon: github-box
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/cf-deployment.git
+
+- name: cf-deployment-concourse-tasks
+  type: git
+  icon: github-box
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
+
+- name: cf-acceptance-tests
+  type: git
+  icon: github-box
+  source:
+    branch: release-candidate
+    uri: https://github.com/cloudfoundry/cf-acceptance-tests
+
+- name: garden-runc-release
+  type: git
+  icon: github-box
+  source:
+    branch: develop
+    uri: https://github.com/cloudfoundry/garden-runc-release.git
+
+- name: winc-release
+  type: git
+  icon: github-box
+  source:
+    branch: develop
+    uri: https://github.com/cloudfoundry/winc-release.git
+
+- name: envoy-nginx-release
+  type: git
+  icon: github-box
+  source:
+    branch: develop
+    uri: https://github.com/cloudfoundry/envoy-nginx-release.git
+
+- name: envoy-release
+  type: github-release
+  check_every: '5m'
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    owner: envoyproxy
+    repository: envoy
+    tag_filter: "v1.28.*"
+
+- name: routing-release
+  type: git
+  icon: github-box
+  source:
+    branch: develop
+    uri: https://github.com/cloudfoundry/routing-release.git
+
+#! TIMERS
+- name: weekly
+  type: time
+  icon: clock
+  source:
+    interval: '168h'  #! 1 week
+
+- name: env
+  type: shepherd
+  source:
+    url: https://v2.shepherd.run
+    service-account-key: ((shepherd-service-account-key))
+    lease:
+      namespace: tas-runtime
+      pool:
+        namespace: official
+        name: cfd
+    compatibility-mode: environments-app
+
+- name: github-release
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    repository: diego-release
+    owner: cloudfoundry
+  type: github-release
+
+- name: draft-github-release 
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    drafts: true
+    repository: diego-release
+    owner: cloudfoundry
+  type: github-release
+
+- name: version
+  type: semver
+  source:
+    driver: gcs
+    bucket: ci-release-versions
+    key: diego-release/version
+    json_key: ((gcp-tas-runtime-service-account/config-json))
+
+- name: env-lock
+  source:
+    branch: main
+    pool: diego-release-env-lock 
+    private_key: ((github-tas-runtime-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+  type: pool
+
+- name: image
+  type: docker-image                             
+  source:                                        
+    repository: cloudfoundry/tas-runtime-build
+    tag: 'latest'
+
+- name: diego-inigo-ci-rootfs
+  type: docker-image
+  source:
+    email: tas-journey-runtime-ecosystem@groups.vmware.com
+    username: ((dockerhub-tasruntime/user))
+    password: ((dockerhub-tasruntime/password))
+    repository: cloudfoundry/diego-inigo-ci-rootfs
+    tag: latest
+
+#! Define-Jobs
+jobs:
+- name: bump-dependencies-go-mod
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: repo
+      - get: image
+      - get: weekly
+        trigger: true
+  - task: diego-release-bump-dependencies-go-mod
+    image: image
+    file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+    params:
+      GO_MODS: src/code.cloudfoundry.org/go.mod
+      EXTRA_GO_TAGS: |
+        tools
+        modules
+  - put: repo
+    params:
+      rebase: true
+      repository: bumped-repo
+
+- name: bump-golang
+  old_name: bump-package-golang
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: go-version
+        trigger: true
+      - get: image
+      - get: repo
+      - get: golang-release-latest
+        trigger: true
+  - task: bump-golang-package-name-linux
+    image: image
+    file: ci/shared/tasks/bump-golang-package-name/linux.yml
+    output_mapping:
+      bumped-repo: bumped-golang-package-name-linux
+    params:
+      PLATFORM: linux
+  - task: bump-golang-linux
+    file: ci/shared/tasks/bosh-vendor-package/linux.yml
+    image: image
+    input_mapping:
+      repo: bumped-golang-package-name-linux
+      package-release: golang-release-latest
+    output_mapping:
+      vendored-repo: modified-release-linux
+    params:
+      PACKAGE_NAME: golang-*-linux
+      AWS_ACCESS_KEY_ID: ((aws-s3-diego-release-blobs/access-key-id))
+      AWS_SECRET_ACCESS_KEY: ((aws-s3-diego-release-blobs/secret-access-key))
+  - task: bump-golang-package-name-windows
+    image: image
+    file: ci/shared/tasks/bump-golang-package-name/linux.yml
+    input_mapping:
+      repo: modified-release-linux
+    output_mapping:
+      bumped-repo: bumped-golang-package-name-windows
+    params:
+      PLATFORM: windows
+  - task: bump-golang-windows
+    file: ci/shared/tasks/bosh-vendor-package/linux.yml
+    image: image
+    input_mapping:
+      repo: bumped-golang-package-name-windows
+      package-release: golang-release-latest
+    output_mapping:
+      vendored-repo: modified-release-windows
+    params:
+      PACKAGE_NAME: golang-*-windows
+      AWS_ACCESS_KEY_ID: ((aws-s3-diego-release-blobs/access-key-id))
+      AWS_SECRET_ACCESS_KEY: ((aws-s3-diego-release-blobs/secret-access-key))
+  - put: repo
+    params:
+      repository: modified-release-windows
+      rebase: true
+
+- name: bump-dependencies-envoy
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: repo
+      - get: envoy-release
+        trigger: true
+      - get: diego-release-envoy-bump
+  - file: ci/diego-release/tasks/create-envoy-blob/linux.yml
+    task: create-envoy-blob
+    params:
+      GCP_KEY: ((gcp-tas-runtime-service-account/config-json))
+  - file: ci/diego-release/bump-dependencies-envoy/linux.yml
+    params:
+      AWS_ACCESS_KEY_ID: ((aws-s3-diego-release-blobs/access-key-id))
+      AWS_SECRET_ACCESS_KEY: ((aws-s3-diego-release-blobs/secret-access-key))
+    task: bump-dependencies-envoy
+  - params:
+      force: true
+      repository: bumped-repo
+    put: diego-release-envoy-bump
+
+- name: create-envoy-pr
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: diego-release-envoy-bump
+        passed:
+        - bump-dependencies-envoy
+        trigger: true
+  - task: create-pr
+    file: ci/tasks/diego/create-pr/linux.yml
+    image: image
+    input_mapping:
+      repo: diego-release-envoy-bump
+    params:
+      GITHUB_TOKEN: ((github-tas-runtime-bot/access-token))
+      BRANCH: bump-envoy
+
+- name: template-tests
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+    - get: image
+  - task: template-tests
+    image: image
+    file: ci/shared/tasks/run-tests-templates/linux.yml
+    timeout: 30m
+
+- name: unit-and-integration-tests
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+    - get: image
+    - get: package-release
+      resource: golang-release-latest
+  - in_parallel:
+    - do:
+      - task: determine-image-tag
+        image: image
+        file: ci/shared/tasks/determine-image-tag/linux.yml
+      - load_var: image_tag
+        file: determined-image-tag/tag
+#@ for db in data.values.db_flavors:
+    - do:
+      - task: #@ "determine-image-tag-{}".format(db.image)
+        image: image
+        file: ci/shared/tasks/determine-image-tag/linux.yml
+        output_mapping:
+          determined-image-tag: #@ "determined-image-tag-{}".format(db.image)
+        params:
+          IMAGE: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
+      - load_var: #@ "image_tag_{}".format(db.image.replace("-", "_").replace(".", "_"))
+        file: #@ "determined-image-tag-{}/tag".format(db.image)
+#@ end
+  - in_parallel:
+    - task: build-binaries-for-linux
+      file: ci/shared/tasks/build-binaries/linux.yml
+      output_mapping:
+        built-binaries: linux-built-binaries
+      image: image
+      params:
+        DEFAULT_PARAMS: "ci/diego-release/default-params/build-binaries/linux.yml"
+      vars:
+        image_repository: cloudfoundry/tas-runtime-build
+        image_tag: ((.:image_tag))
+    - task: build-binaries-for-windows
+      file: ci/shared/tasks/build-binaries/windows.yml
+      output_mapping:
+        built-binaries: windows-built-binaries
+      params:
+        DEFAULT_PARAMS: "ci/diego-release/default-params/build-binaries/windows.yml"
+  - in_parallel:
+#@ for package in helpers.packages_with_configure_db(data.values.internal_repos):
+#@ for db in data.values.db_flavors:
+    - task: #@ "{}-{}-linux".format(package.name,db.image)
+      file: ci/shared/tasks/run-bin-test/linux.yml
+      privileged: #@ helpers.privileged(package)
+      attempts: 3
+      input_mapping:
+        built-binaries: linux-built-binaries
+      vars:
+        image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
+        image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
+      params:
+        DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
+        DB: #@ db.value
+        DEFAULT_PARAMS: "ci/diego-release/default-params/run-bin-test/linux.yml"
+#@ end
+#@ if helpers.on_windows(package):
+    - task: #@ "{}-mysql-windows".format(package.name)
+      file: ci/shared/tasks/run-bin-test/windows.yml
+      privileged: true #! all windows test with DB required elavated
+      attempts: 3
+      input_mapping:
+        built-binaries: windows-built-binaries
+      params:
+        DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
+        DB: mysql
+        DEFAULT_PARAMS: "ci/diego-release/default-params/run-bin-test/windows.yml"
+#@ end
+#@ end
+  - in_parallel:
+#@ for package in helpers.packages_without_configure_db(data.values.internal_repos):
+    - task: #@ "{}-linux".format(package.name)
+      file: ci/shared/tasks/run-bin-test/linux.yml
+      privileged: #@ helpers.privileged(package)
+      attempts: 3
+      input_mapping:
+        built-binaries: linux-built-binaries
+      vars:
+        image_repository: cloudfoundry/tas-runtime-build
+        image_tag: ((.:image_tag))
+      params:
+        DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
+#@ if helpers.on_windows(package):
+    - task: #@ "{}-windows".format(package.name)
+      file: ci/shared/tasks/run-bin-test/windows.yml
+      privileged: true #! for windows test 
+      attempts: 3
+      input_mapping:
+        built-binaries: windows-built-binaries
+      params:
+        DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
+#@ end
+#@ end
+#@ for db in data.values.db_flavors:
+- name: #@ "inigo-{}-linux".format(db.value)
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+    - get: image
+    - get: package-release
+      resource: golang-release-latest
+    - get: garden-runc-release
+    - get: routing-release
+    - get: diego-inigo-ci-rootfs
+      params:
+        rootfs: true
+  - in_parallel:
+    - do:
+      - task: determine-image-tag
+        image: image
+        file: ci/shared/tasks/determine-image-tag/linux.yml
+      - load_var: image_tag
+        file: determined-image-tag/tag
+    - do:
+      - task: #@ "determine-image-tag-{}".format(db.image)
+        image: image
+        file: ci/shared/tasks/determine-image-tag/linux.yml
+        output_mapping:
+          determined-image-tag: #@ "determined-image-tag-{}".format(db.image)
+        params:
+          IMAGE: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
+      - load_var: #@ "image_tag_{}".format(db.image.replace("-", "_").replace(".", "_"))
+        file: #@ "determined-image-tag-{}/tag".format(db.image)
+  - in_parallel:
+    - task: build-binaries-for-diego-release-linux
+      file: ci/shared/tasks/build-binaries/linux.yml
+      output_mapping:
+        built-binaries: diego-release-linux-built-binaries
+      params:
+        DEFAULT_PARAMS: "ci/diego-release/default-params/build-binaries/linux.yml"
+      vars:
+        image_repository: cloudfoundry/tas-runtime-build
+        image_tag: ((.:image_tag))
+    - task: build-binaries-for-garden-runc-release-linux
+      file: ci/shared/tasks/build-binaries/linux.yml
+      input_mapping:
+        repo: garden-runc-release
+      output_mapping:
+        built-binaries: garden-runc-release-linux-built-binaries
+      params:
+        DEFAULT_PARAMS: "ci/garden-runc-release/default-params/build-binaries/linux.yml"
+      vars:
+        image_repository: cloudfoundry/tas-runtime-build
+        image_tag: ((.:image_tag))
+  - task: combine-built-binaries
+    file: ci/shared/tasks/combine-assets/linux.yml
+    image: image
+    input_mapping:
+      input-01: diego-release-linux-built-binaries
+      input-02: garden-runc-release-linux-built-binaries
+    output_mapping:
+      combined-assets: built-binaries
+    params:
+      COPY_ACTIONS: |
+        {input-01/*,combined-assets}
+        {input-02/*,combined-assets}
+  - in_parallel:
+    - task: #@ "inigo-{}-linux".format(db.value)
+      file: ci/shared/tasks/run-bin-test/linux.yml
+      attempts: 3
+      tags: #@ [ "diego-{}".format(db.value) ]
+      privileged: true
+      input_mapping:
+        built-binaries: built-binaries
+        input-01: routing-release
+        input-02: garden-runc-release
+        input-03: diego-inigo-ci-rootfs
+      vars:
+        image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
+        image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
+      params:
+        DIR: src/code.cloudfoundry.org/inigo
+        DB: #@ db.value
+        FLAGS: |
+          --keep-going
+          --trace
+          -r
+          --fail-on-pending
+          --randomize-all
+          --nodes=4
+          --race
+          --flake-attempts=3
+        ENVS: |
+          INIGO_ECR_AWS_ACCESS_KEY_ID=((aws-ecr-diego-docker-app/access-key-id))
+          INIGO_ECR_AWS_SECRET_ACCESS_KEY=((aws-ecr-diego-docker-app/secret-access-key))
+          INIGO_ECR_IMAGE_REF=((aws-ecr-diego-docker-app/ref))
+          INIGO_ECR_IMAGE_ROOTFS_PATH=((aws-ecr-diego-docker-app/uri))
+          INIGO_ECR_IMAGE_URI=((aws-ecr-diego-docker-app/uri))
+          INIGO_PRIVATE_DOCKER_IMAGE_PASSWORD=((azure-acr-diego/password))
+          INIGO_PRIVATE_DOCKER_IMAGE_REF=((azure-acr-diego/ref))
+          INIGO_PRIVATE_DOCKER_IMAGE_ROOTFS_PATH=((azure-acr-diego/uri))
+          INIGO_PRIVATE_DOCKER_IMAGE_URI=((azure-acr-diego/uri))
+          INIGO_PRIVATE_DOCKER_IMAGE_USERNAME=((azure-acr-diego/username))
+          ROUTING_RELEASE_PATH=$PWD/input-01
+          GARDEN_RUNC_RELEASE_PATH=$PWD/input-02
+          DIEGO_RELEASE_PATH=$PWD/repo
+          GARDEN_TEST_ROOTFS=$PWD/input-03/rootfs.tar
+          DB_USER=root
+          DB_PASSWORD=password
+#@ end
+- name: inigo-mysql-windows
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+    - get: image
+    - get: garden-runc-release
+    - get: winc-release
+    - get: envoy-nginx-release
+  - in_parallel:
+    - task: build-binaries-for-diego-release-windows
+      file: ci/shared/tasks/build-binaries/windows.yml
+      output_mapping:
+        built-binaries: diego-release-windows-built-binaries
+      params:
+        DEFAULT_PARAMS: "ci/diego-release/default-params/build-binaries/windows.yml"
+    - task: build-binaries-for-winc-release-windows
+      file: ci/shared/tasks/build-binaries/windows.yml
+      input_mapping:
+        repo: winc-release
+      output_mapping:
+        built-binaries: winc-release-windows-built-binaries
+      params:
+        FUNCTIONS: ci/winc-release/helpers/build-binaries.ps1
+        MAPPING: |
+          Build-Groot=src/code.cloudfoundry.org/groot-windows
+          Build-Winc-Network=src/code.cloudfoundry.org/winc/cmd/winc-network
+          Build-Winc=src/code.cloudfoundry.org/winc/cmd/winc
+          Build-Nstar=src/nstar
+    - task: build-binaries-for-garden-runc-release-windows
+      file: ci/shared/tasks/build-binaries/windows.yml
+      input_mapping:
+        repo: garden-runc-release
+      output_mapping:
+        built-binaries: garden-runc-release-windows-built-binaries
+      params:
+        FUNCTIONS: ci/garden-runc-release/helpers/build-binaries.ps1
+        MAPPING: |
+          Build-Winit=src/guardian/cmd/winit
+          Build-Gdn=src/guardian/cmd/gdn
+    - task: build-binaries-for-envoy-nginx-release-windows
+      file: ci/shared/tasks/build-binaries/windows.yml
+      input_mapping:
+        repo: envoy-nginx-release
+      output_mapping:
+        built-binaries: envoy-nginx-release-windows-built-binaries
+      params:
+        FUNCTIONS: ci/envoy-nginx-release/helpers/build-binaries.ps1
+        MAPPING: |
+          Build-Proxy=.
+  - task: combine-built-binaries
+    file: ci/shared/tasks/combine-assets/linux.yml
+    image: image
+    input_mapping:
+      input-01: diego-release-windows-built-binaries
+      input-02: winc-release-windows-built-binaries
+      input-03: garden-runc-release-windows-built-binaries
+      input-04: envoy-nginx-release-windows-built-binaries
+    output_mapping:
+      combined-assets: built-binaries
+    params:
+      COPY_ACTIONS: |
+        {input-01/*,combined-assets}
+        {input-02/*,combined-assets}
+        {input-03/*,combined-assets}
+        {input-04/*,combined-assets}
+  - in_parallel:
+    - task: inigo-mysql-windows
+      file: ci/shared/tasks/run-bin-test/windows.yml
+      tags: [ diego-windows ]
+      privileged: true
+      input_mapping:
+        built-binaries: built-binaries
+        input-01: routing-release
+        input-02: garden-runc-release
+        input-03: winc-release
+      params:
+        DIR: src/code.cloudfoundry.org/inigo
+        DB: mysql
+        ENVS: |
+          INIGO_ECR_AWS_ACCESS_KEY_ID=((aws-ecr-diego-docker-app/access-key-id))
+          INIGO_ECR_AWS_SECRET_ACCESS_KEY=((aws-ecr-diego-docker-app/secret-access-key))
+          INIGO_ECR_IMAGE_REF=((aws-ecr-diego-docker-app/ref))
+          INIGO_ECR_IMAGE_ROOTFS_PATH=((aws-ecr-diego-docker-app/uri))
+          INIGO_ECR_IMAGE_URI=((aws-ecr-diego-docker-app/uri))
+          INIGO_PRIVATE_DOCKER_IMAGE_PASSWORD=((azure-acr-diego/password))
+          INIGO_PRIVATE_DOCKER_IMAGE_REF=((azure-acr-diego/ref))
+          INIGO_PRIVATE_DOCKER_IMAGE_ROOTFS_PATH=((azure-acr-diego/uri))
+          INIGO_PRIVATE_DOCKER_IMAGE_URI=((azure-acr-diego/uri))
+          INIGO_PRIVATE_DOCKER_IMAGE_USERNAME=((azure-acr-diego/username))
+          ROUTING_RELEASE_PATH=$PWD/input-01
+          GARDEN_RUNC_RELEASE_PATH=$PWD/input-02
+          WINC_RELEASE_PATH=$PWD/input-03
+          DIEGO_RELEASE_PATH=$PWD/repo
+          GARDEN_TEST_ROOTFS=docker:///cloudfoundry/windows2016fs:2019.0.54
+          DB_USER=diego
+          DB_PASSWORD=diego_password
+        FLAGS: |
+          --keep-going
+          --trace
+          -r
+          --randomize-all
+          --nodes=1
+          --flake-attempts=3
+          --skip-package volman,executor,certauthority
+        FUNCTIONS: |
+          ci/winc-release/helpers/configure-binaries.ps1
+- name: lint-repo
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+    - get: image
+  - task: lint-repo
+    file: ci/shared/tasks/lint-repo/linux.yml
+    params:
+      DEFAULT_PARAMS: ci/diego-release/default-params/lint-repo/linux.yml
+    image: image
+
+- name: claim-env
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+      passed:
+        - template-tests
+        - unit-and-integration-tests
+        - lint-repo
+        - inigo-mysql-linux
+        - inigo-postgres-linux
+        - inigo-mysql-windows
+    - get: image
+
+    - put: env-lock
+      params:
+       acquire: true
+  - put: env
+    params:
+      action: create
+      duration: 176h
+      resource: env
+      description: "diego pipeline"
+  - task: wait-for-cf-api
+    file: ci/shared/tasks/wait-for-cf-api/linux.yml
+    input_mapping:
+      toolsmiths-env: env
+    image: image
+
+- name: prepare-env
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+      passed: [claim-env]
+    - get: image
+    - get: cf-deployment
+    - get: cf-deployment-concourse-tasks
+    - get: env
+      passed: [claim-env]
+      trigger: true
+    - get: package-release
+      resource: golang-release-latest
+  - in_parallel:
+    - task: prepare-cf-deployment-env
+      image: image
+      file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+    - do:
+      - task: determine-image-tag
+        image: image
+        file: ci/shared/tasks/determine-image-tag/linux.yml
+      - load_var: image_tag
+        file: determined-image-tag/tag
+      - task: copy-grace-opsfile
+        file: ci/diego-release/tasks/copy-grace-opsfile/linux.yml
+        vars:
+          image_tag: ((.:image_tag))
+  - task: combine-ops-files
+    file: ci/shared/tasks/combine-assets/linux.yml
+    image: image
+    input_mapping:
+      input-01: cf-deployment
+      input-02: copied-grace-opsfile
+    output_mapping:
+      combined-assets: combined-opsfiles
+    params:
+      COPY_ACTIONS: |
+        {input-01/operations/use-compiled-releases.yml,combined-assets}
+        {input-01/operations/experimental/use-compiled-releases-windows.yml,combined-assets}
+        {input-01/operations/scale-database-cluster.yml,combined-assets}
+        {input-01/operations/windows2019-cell.yml,combined-assets}
+        {input-01/operations/experimental/enable-nginx-routing-integrity-windows2019.yml,combined-assets}
+        {input-01/operations/use-online-windows2019fs.yml,combined-assets}
+        {input-01/operations/disable-dynamic-asgs.yml,combined-assets}
+        {input-01/operations/add-persistent-isolation-segment-diego-cell.yml,combined-assets}
+        {input-01/operations/add-persistent-isolation-segment-router.yml,combined-assets}
+        {input-02/grace-opsfile.yml,combined-assets}
+        {ci/shared/opsfiles/scale-to-HA.yml,combined-assets}
+        {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
+        {ci/diego-release/opsfiles/*,combined-assets}
+  - task: deploy-cf-deployment
+    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    input_mapping:
+      ops-files: combined-opsfiles
+      vars-files: prepared-env
+      toolsmiths-env: env
+    params:
+      DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
+      FAIL_ON_DOWNTIME: "false"
+      VARS_FILES: vars.yml
+      OPS_FILES: #@ "\n".join(data.values.opsfiles)
+  - task: uptimer-measure-with-diego-release-update
+    file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
+    input_mapping:
+      ops-files: combined-opsfiles
+      release: repo
+      vars-files: prepared-env
+      toolsmiths-env: env
+    params:
+      DEPLOY_WITH_UPTIME_MEASUREMENTS: "true"
+      APP_PUSHABILITY_THRESHOLD: "20"
+      HTTP_AVAILABILITY_THRESHOLD: "20"
+      TCP_AVAILABILITY_THRESHOLD: "20"
+      AVAILABLE_PORT: "-1"
+      TCP_PORT: "1029"
+      FAIL_ON_DOWNTIME: "true"
+      MEASURE_SYSLOG_AVAILABILITY: "false"
+      MEASURE_TCP_AVAILABILITY: "true"
+      RECENT_LOGS_THRESHOLD: "50"
+      STREAMING_LOGS_THRESHOLD: "50"
+      APP_SYSLOG_AVAILABILITY_THRESHOLD: "50"
+      USE_SINGLE_APP_INSTANCE: "false"
+      VARS_FILES: vars.yml
+      OPS_FILES: #@ "\n".join(data.values.opsfiles)
+  - task: open-asg-for-credhub
+    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      INSTANCE_GROUP_NAME: credhub
+      SECURITY_GROUP_NAME: credhub
+  - task: open-asg-for-uaa
+    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      INSTANCE_GROUP_NAME: uaa
+      SECURITY_GROUP_NAME: uaa
+  - task: enable-feature-flags-for-cats
+    file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
+
+- name: run-cats
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: cf-deployment-concourse-tasks
+    - get: cf-acceptance-tests
+    - get: cf-deployment
+  - task: create-cats-config
+    image: image
+    file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
+    params:
+      CONFIGS: cats
+      WITH_ISOSEG: true
+      WITH_DYNAMIC_ASG: false
+  - task: cats
+    file: cf-deployment-concourse-tasks/run-cats/task.yml
+    attempts: 2
+    input_mapping:
+      integration-config: built-acceptance-test-configs
+    params:
+      CONFIG_FILE_PATH: cats.json
+
+- name: run-wats
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: cf-deployment-concourse-tasks
+    - get: cf-acceptance-tests
+    - get: cf-deployment
+  - task: create-wats-config
+    image: image
+    file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
+    params:
+      CONFIGS: wats
+      WITH_ISOSEG: true
+      WITH_DYNAMIC_ASG: false
+  - task: wats
+    file: cf-deployment-concourse-tasks/run-cats/task.yml
+    attempts: 2
+    input_mapping:
+      integration-config: built-acceptance-test-configs
+    params:
+      CONFIG_FILE_PATH: wats.json
+      NODES: "4"
+      SKIP_REGEXP: Syslog drain
+
+- name: export-release
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: cf-deployment-concourse-tasks
+  - task: export-release
+    file: ci/shared/tasks/bosh-export-release/linux.yml
+    image: image
+
+- name: run-vizzini
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: cf-deployment-concourse-tasks
+  - task: vizzini
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      DEPLOYMENT_NAME: cf
+      ERRAND_NAME: vizzini
+- name: run-bosh-restart
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: cf-deployment-concourse-tasks
+    - get: cf-deployment
+    - get: image
+  - task: create-uptimer-config
+    image: image
+    file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
+    params:
+      CONFIGS: uptimer-bosh-restart
+      ENVS: |
+        BOSH_RESTART_ARGS=diego-cell
+  - task: uptimer-bosh-restart
+    image: image
+    file: ci/shared/tasks/run-uptimer/linux.yml
+    input_mapping:
+      config: built-acceptance-test-configs
+
+- name: ship-what
+  plan:
+    - in_parallel:
+        steps:
+        - get: ci
+        - get: repo
+          passed:
+            - run-cats
+            - run-wats
+            - export-release
+            - run-vizzini
+            - run-bosh-restart
+          trigger: true
+        - get: image
+        - get: release-branch
+          params:
+            submodules: none
+        - get: github-release
+        - get: version
+        - get: env
+          passed:
+            - run-cats
+            - run-wats
+            - export-release
+            - run-vizzini
+            - run-bosh-restart
+          trigger: true
+
+    - task: check-safe-to-release-repo
+      image: image
+      file: ci/shared/tasks/check-safe-to-release-repo/linux.yml
+      input_mapping:
+        release-repo: release-branch
+
+    - task: build-release-notes-diego-release
+      image: image
+      file: ci/shared/tasks/build-release-notes/linux.yml
+      input_mapping:
+        previous-github-release: github-release
+
+- name: ship-it
+  serial: true
+  plan:
+    - in_parallel:
+        steps:
+        - get: ci
+        - get: repo
+          passed: [ ship-what ]
+        - get: image
+        - get: release-branch
+          params:
+            submodules: none
+        - get: github-release
+        - get: version
+        - get: develop-branch-mergeback
+          params:
+            submodules: none
+
+    - task: check-safe-to-release-branch
+      image: image
+      file: ci/shared/tasks/check-safe-to-release-repo/linux.yml
+      input_mapping:
+        release-repo: release-branch
+
+    - task: build-release-notes-diego-release
+      image: image
+      file: ci/shared/tasks/build-release-notes/linux.yml
+      input_mapping:
+        previous-github-release: github-release
+
+    - task: bosh-finalize-release
+      image: image
+      file: ci/shared/tasks/bosh-finalize-release/linux.yml
+      params:
+        AWS_ACCESS_KEY_ID: ((aws-s3-diego-release-blobs/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-diego-release-blobs/secret-access-key))
+
+    - put: release-branch
+      params:
+        repository: finalized-release-repo
+        tag: version/number
+        tag_prefix: v
+
+    - task: merge-release-onto-develop
+      image: image
+      file: ci/shared/tasks/git-merge-branches/linux.yml
+      input_mapping:
+        source-branch: release-branch
+        onto-branch: develop-branch-mergeback
+      params:
+        SOURCE_BRANCH_NAME: release
+        ONTO_BRANCH_NAME: develop
+
+    - in_parallel:
+        steps:
+        - put: draft-github-release
+          params:
+            name: version/number
+            tag: version/number
+            tag_prefix: v
+            body: built-release-notes/notes.md
+            globs:
+            - finalized-release-tarball/diego*.tgz
+        - put: develop-branch-mergeback
+          params:
+            repository: merged-branch
+
+    - get: next-version
+      resource: version
+      params: {bump: minor}
+    - put: next-version
+      resource: version
+      params: {file: next-version/number}
+
+- name: unclaim-env
+  serial: true
+  plan:
+  - get: env
+    passed: [ship-what]
+    trigger: true
+  - get: env-lock
+  - put: env
+    params:
+      action: release
+      resource: env
+  - params:
+      release: env-lock #! path to the resource in the above get
+    put: env-lock
+
+- name: release-env-lock
+  plan:
+  - get: env-lock
+  ensure:
+    put: env-lock
+    params:
+      release: env-lock #! path to the resource in the above get
+
+#! versioning
+- name: patch-bump
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: patch}
+  - put: version
+    params: {file: version/number}
+
+- name: minor-bump
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: minor}
+  - put: version
+    params: {file: version/number}
+
+- name: major-bump
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: major}
+  - put: version
+    params: {file: version/number}
