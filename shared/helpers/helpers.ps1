@@ -70,8 +70,8 @@ function Verify-Ginkgo {
 }
 
 function Set-TemporaryDirectory {
-    $env:TEMP="D:/var/vcap/data/tmp"
-    $env:TMP="D:/var/vcap/data/tmp"
+    $env:TEMP="D:/tmp"
+    $env:TMP="D:/tmp"
 }
 
 function New-TemporaryDirectory {
