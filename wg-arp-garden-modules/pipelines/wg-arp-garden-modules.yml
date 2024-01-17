@@ -13,7 +13,7 @@ resources:
   type: git
   icon: github-box
   source:
-    branch: main 
+    branch: #@ helpers.on_branch(package)
     uri: #@ "git@github.com:{}".format(package.repo)
     private_key: ((github-tas-runtime-bot/private-key))
 #@ end
@@ -21,7 +21,7 @@ resources:
 - name: ci
   type: git
   source:
-    branch: with-windows-fix
+    branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: image

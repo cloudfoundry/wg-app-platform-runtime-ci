@@ -27,3 +27,10 @@ internal_repos:
     PRIVATE_DOCKER_IMAGE_URL: docker://cloudfoundry/garden-private-image-test:groot
 - name: hydrator
   repo: cloudfoundry/hydrator
+- name: filelock
+  repo: cloudfoundry/filelock
+  on_windows: true
+- name: hwc
+  repo: cloudfoundry/hwc
+  on_branch: develop
+  on_windows: true
