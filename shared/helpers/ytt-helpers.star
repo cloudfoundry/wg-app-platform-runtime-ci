@@ -54,12 +54,13 @@ def packages_names_array(packages = []):
  return l
 end
 
-def with_params(package):
- if hasattr(package, "params"):
-     if package.params:
-         return package.params
-     end
- end
+def on_branch(package):
+    if hasattr(package, "on_branch"):
+        if package.on_branch:
+            return package.on_branch
+        end
+    end
+    return "main"
 end
 
 helpers = struct.make(
@@ -68,6 +69,6 @@ helpers = struct.make(
     packages_names_array=packages_names_array,
     on_windows=on_windows,
     privileged=privileged,
-    with_params=with_params
+    on_branch=on_branch
 )
 
