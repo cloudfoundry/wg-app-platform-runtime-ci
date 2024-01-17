@@ -1,6 +1,0 @@
----
-params:
-  ENVS: |
-    DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime/user))
-    DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime/password))
-    PRIVATE_DOCKER_IMAGE_URL=docker://cloudfoundry/garden-private-image-test:groot

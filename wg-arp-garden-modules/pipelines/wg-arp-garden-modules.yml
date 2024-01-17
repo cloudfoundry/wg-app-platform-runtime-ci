@@ -69,13 +69,19 @@ jobs:
         image_repository: cloudfoundry/tas-runtime-build
         image_tag: ((.:image_tag))
       params:
-        DEFAULT_PARAMS: "ci/wg-arp-garden-modules/default-params/build-binaries/linux.yml"
+        ENVS: |
+          DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime/user))
+          DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime/password))
+          PRIVATE_DOCKER_IMAGE_URL=docker://cloudfoundry/garden-private-image-test:groot
 #@ if helpers.on_windows(package):
     - task: #@ "{}-windows".format(package.name)
       file: ci/shared/tasks/run-bin-test/windows.yml
       privileged: #@ helpers.privileged(package)
       params:
-        DEFAULT_PARAMS: "ci/wg-arp-garden-modules/default-params/build-binaries/linux.yml"
+        ENVS: |
+          DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime/user))
+          DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime/password))
+          PRIVATE_DOCKER_IMAGE_URL=docker://cloudfoundry/garden-private-image-test:groot
 #@ end
 #@ end
 
@@ -119,7 +125,10 @@ jobs:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
-        DEFAULT_PARAMS: "ci/wg-arp-garden-modules/default-params/build-binaries/linux.yml"
+        ENVS: |
+          DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime/user))
+          DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime/password))
+          PRIVATE_DOCKER_IMAGE_URL=docker://cloudfoundry/garden-private-image-test:groot
         DB: #@ db.value
 #@ end
 #@ if helpers.on_windows(package):
@@ -127,7 +136,10 @@ jobs:
       file: ci/shared/tasks/run-bin-test/windows.yml
       privileged: #@ helpers.privileged(package)
       params:
-        DEFAULT_PARAMS: "ci/wg-arp-garden-modules/default-params/build-binaries/linux.yml"
+        ENVS: |
+          DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime/user))
+          DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime/password))
+          PRIVATE_DOCKER_IMAGE_URL=docker://cloudfoundry/garden-private-image-test:groot
         DB: mysql
 #@ end
 #@ end
