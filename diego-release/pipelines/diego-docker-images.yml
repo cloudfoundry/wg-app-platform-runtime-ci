@@ -60,10 +60,18 @@ jobs:
     image: image
     input_mapping:
       repo: grace
+  - task: print-go-version-tag
+    image: image
+    file: ci/shared/tasks/build-golang-version-tags/linux.yml
+    params:
+      IMAGE: tas-runtime-build
+    output_mapping:
+      tag_file: tag
   - put: cloudfoundry-grace-docker
     params:
       build: released-binaries/docker
       tag_as_latest: true
+      additional_tags: tag/tag
   - task: validate-label-urls
     file: ci/shared/tasks/lint-docker-image/linux.yml
     image: image
