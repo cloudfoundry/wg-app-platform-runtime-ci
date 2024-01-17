@@ -6,6 +6,7 @@ if ([System.IO.File]::Exists($env:DEFAULT_PARAMS)) {
     Debug "Extract-Default-Params-For-Task with values from ${env:DEFAULT_PARAMS}"
     Extract-Default-Params-For-Task "$env:DEFAULT_PARAMS"
 }
+$env:TASK_NAME="$(Get-Random)"
 
 function Run
 {
