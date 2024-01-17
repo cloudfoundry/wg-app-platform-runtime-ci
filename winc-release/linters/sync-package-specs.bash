@@ -15,12 +15,12 @@ function run() {
 
   pushd "${repo_path}" > /dev/null
 
-  sync_package winc                  -app  code.cloudfoundry.org/winc/cmd/winc
-  sync_package winc-network-hns-acls -app  code.cloudfoundry.org/winc/cmd/winc-network
-  sync_package groot                 -app  code.cloudfoundry.org/groot-windows
-  sync_package diff-exporter         -app  code.cloudfoundry.org/diff-exporter
-  sync_package cert-injector         -app  code.cloudfoundry.org/cert-injector
-  sync_package certsplitter-fs       -app  code.cloudfoundry.org/certsplitter/cmd/certsplitter
+  GOOS=windows sync_package winc                  -app  code.cloudfoundry.org/winc/cmd/winc
+  GOOS=windows sync_package winc-network-hns-acls -app  code.cloudfoundry.org/winc/cmd/winc-network
+  GOOS=windows sync_package groot                 -app  code.cloudfoundry.org/groot-windows
+  GOOS=windows sync_package diff-exporter         -app  code.cloudfoundry.org/diff-exporter
+  GOOS=windows sync_package cert-injector         -app  code.cloudfoundry.org/cert-injector
+  GOOS=windows sync_package certsplitter-fs       -app  code.cloudfoundry.org/certsplitter/cmd/certsplitter
 
   wait
 
