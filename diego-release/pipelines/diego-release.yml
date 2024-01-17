@@ -289,6 +289,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ((aws-s3-diego-release-blobs/secret-access-key))
   - task: bump-golang-package-name-windows
     image: image
+    tags: [ diego-windows ]
     file: ci/shared/tasks/bump-golang-package-name/linux.yml
     input_mapping:
       repo: modified-release-linux
@@ -298,6 +299,7 @@ jobs:
       PLATFORM: windows
   - task: bump-golang-windows
     file: ci/shared/tasks/bosh-vendor-package/linux.yml
+    tags: [ diego-windows ]
     image: image
     input_mapping:
       repo: bumped-golang-package-name-windows
@@ -410,6 +412,7 @@ jobs:
         image_repository: cloudfoundry/tas-runtime-build
         image_tag: ((.:image_tag))
     - task: build-binaries-for-windows
+      tags: [ diego-windows ]
       file: ci/shared/tasks/build-binaries/windows.yml
       output_mapping:
         built-binaries: windows-built-binaries
@@ -435,6 +438,7 @@ jobs:
 #@ if helpers.on_windows(package):
     - task: #@ "{}-mysql-windows".format(package.name)
       file: ci/shared/tasks/run-bin-test/windows.yml
+      tags: [ diego-windows ]
       privileged: true #! all windows test with DB required elavated
       attempts: 3
       input_mapping:
@@ -461,6 +465,7 @@ jobs:
 #@ if helpers.on_windows(package):
     - task: #@ "{}-windows".format(package.name)
       file: ci/shared/tasks/run-bin-test/windows.yml
+      tags: [ diego-windows ]
       privileged: true #! for windows test 
       attempts: 3
       input_mapping:
@@ -593,12 +598,14 @@ jobs:
   - in_parallel:
     - task: build-binaries-for-diego-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
+      tags: [ diego-windows ]
       output_mapping:
         built-binaries: diego-release-windows-built-binaries
       params:
         DEFAULT_PARAMS: "ci/diego-release/default-params/build-binaries/windows.yml"
     - task: build-binaries-for-winc-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
+      tags: [ diego-windows ]
       input_mapping:
         repo: winc-release
       output_mapping:
@@ -612,6 +619,7 @@ jobs:
           Build-Nstar=src/nstar
     - task: build-binaries-for-garden-runc-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
+      tags: [ diego-windows ]
       input_mapping:
         repo: garden-runc-release
       output_mapping:
@@ -623,6 +631,7 @@ jobs:
           Build-Gdn=src/guardian/cmd/gdn
     - task: build-binaries-for-envoy-nginx-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
+      tags: [ diego-windows ]
       input_mapping:
         repo: envoy-nginx-release
       output_mapping:
@@ -633,6 +642,7 @@ jobs:
           Build-Proxy=.
   - task: combine-built-binaries
     file: ci/shared/tasks/combine-assets/linux.yml
+    tags: [ diego-windows ]
     image: image
     input_mapping:
       input-01: diego-release-windows-built-binaries
