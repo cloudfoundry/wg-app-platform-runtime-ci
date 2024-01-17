@@ -195,7 +195,7 @@ function allowed_task_files() {
 
 function allowed_dirs() {
     debug "Running allowed_dirs function"
-    local release_list="garden-runc-release|routing-release|winc-release|nats-release|healthchecker-release|cf-networking-release|silk-release|envoy-nginx-release|cpu-entitlement-plugin|diego-release|test-log-emitter-release"
+    local release_list="garden-runc-release|routing-release|winc-release|nats-release|healthchecker-release|cf-networking-release|silk-release|envoy-nginx-release|cpu-entitlement-plugin|diego-release|test-log-emitter-release|windows-tools-release"
     local dir_patterns
     dir_patterns="$(cat <<EOF
 ^./bin/*$

@@ -21,7 +21,7 @@ resources:
 - name: ci
   type: git
   source:
-    branch: with-windows-fix
+    branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: image
