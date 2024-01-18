@@ -55,11 +55,6 @@ jobs:
     - get: grace
     - get: ci
     - get: image
-  - task: release-binaries
-    file: ci/shared/tasks/run-bin-release-binaries/linux.yml
-    image: image
-    input_mapping:
-      repo: grace
   - task: print-go-version-tag
     image: image
     file: ci/shared/tasks/build-golang-version-tags/linux.yml
@@ -67,6 +62,12 @@ jobs:
       IMAGE: tas-runtime-build
     output_mapping:
       tag_file: tag
+  - task: release-binaries
+    file: ci/shared/tasks/run-bin-release-binaries/linux.yml
+    image: image
+    input_mapping:
+      repo: grace
+      version: tag
   - put: cloudfoundry-grace-docker
     params:
       build: released-binaries/docker
