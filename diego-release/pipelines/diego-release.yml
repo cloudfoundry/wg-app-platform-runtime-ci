@@ -642,7 +642,6 @@ jobs:
           Build-Proxy=.
   - task: combine-built-binaries
     file: ci/shared/tasks/combine-assets/linux.yml
-    tags: [ diego-windows ]
     image: image
     input_mapping:
       input-01: diego-release-windows-built-binaries
