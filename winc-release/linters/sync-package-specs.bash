@@ -55,23 +55,21 @@ function sync_package() {
       base_pkg="$(echo $package | cut -f2- -d /)"
       if [ -d "../../../src/code.cloudfoundry.org/${src_dir}/vendor/${package}" ]; then
         package="code.cloudfoundry.org/${src_dir}/vendor/${package}"
-      else
-        package="code.cloudfoundry.org/${base_pkg}"
       fi
       echo ${package} | sed -e 's/\(.*\)/  - \1\/*.go # gosub/g'
-      if ls ../../src/${package}/*.s >/dev/null 2>&1; then
+      if ls ../../../src/${package}/*.s >/dev/null 2>&1; then
         echo ${package} | sed -e 's/\(.*\)/  - \1\/*.s # gosub/g'
       fi
-      if ls ../../src/${package}/*.h >/dev/null 2>&1; then
+      if ls ../../../src/${package}/*.h >/dev/null 2>&1; then
         echo ${package} | sed -e 's/\(.*\)/  - \1\/*.h # gosub/g'
       fi
-      if ls ../../src/${package}/*.c >/dev/null 2>&1; then
+      if ls ../../../src/${package}/*.c >/dev/null 2>&1; then
         echo ${package} | sed -e 's/\(.*\)/  - \1\/*.c # gosub/g'
       fi
-      if ls ../../src/${package}/Makefile >/dev/null 2>&1; then
+      if ls ../../../src/${package}/Makefile >/dev/null 2>&1; then
         echo ${package} | sed -e 's/\(.*\)/  - \1\/Makefile # gosub/g'
       fi
-      if ls ../../src/${package}/*.binpb >/dev/null 2>&1; then
+      if ls ../../../src/${package}/*.binpb >/dev/null 2>&1; then
         echo ${package} | sed -e 's/\(.*\)/  - \1\/*.binpb # gosub/g'
       fi
     done
