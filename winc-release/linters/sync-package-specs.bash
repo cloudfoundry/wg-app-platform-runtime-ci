@@ -54,9 +54,9 @@ function sync_package() {
       repo=$(echo ${2} | cut -f1-3 -d/)
       base_pkg="$(echo $package | cut -f2- -d /)"
       if [ -d "../../../src/code.cloudfoundry.org/${src_dir}/vendor/${package}" ]; then
-        package="${src_dir}/vendor/${package}"
+        package="code.cloudfoundry.org/${src_dir}/vendor/${package}"
       else
-        package="${base_pkg}"
+        package="code.cloudfoundry.org/${base_pkg}"
       fi
       echo ${package} | sed -e 's/\(.*\)/  - \1\/*.go # gosub/g'
       if ls ../../src/${package}/*.s >/dev/null 2>&1; then
