@@ -16,7 +16,7 @@ if [[ ! -f "${oras_tarball}" ]]; then
 fi
 
 tar -xzvf "${oras_tarball}"
-oras_cli="oras*_linux_amd64/oras"
+oras_cli="oras-cli/oras*_linux_amd64/oras"
 if [[ ! -x "${oras_cli}" ]]; then
   echo "Error: oras CLI was not found executable at '${oras_cli}'" >&2
   exit 1

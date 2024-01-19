@@ -4,7 +4,7 @@ platform: linux
 inputs:
 - name: ci
 - name: dockerfile
-- name: oras
+- name: oras-cli
 
 outputs: []
 
