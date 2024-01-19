@@ -32,4 +32,5 @@ function Build-Proxy
 
         $PS1FILE='$env:PROXY_BINARY="$PWD/{0}"' -f "$BuiltDir/proxy/envoy.exe"
         Set-Content -Path "$Target/run.ps1" -Value $PS1FILE -Encoding Asci
+        Clean-GoCache
 }

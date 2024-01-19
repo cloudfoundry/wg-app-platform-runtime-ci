@@ -43,6 +43,7 @@ $env:GROOT_IMAGE_STORE="\var\vcap\data\tmp\groot"
 $env:GROOT_CONFIG="$PWD/{1}"
 $env:GROOT_QUOTA_DLL="$PWD/{2}"' -f "$BuiltDir\groot-windows\run.exe", "$BuiltDir/groot-windows/config.yml", "$BuiltDir/groot-windows/quota.dll"
         Set-Content -Path "$Target/run.ps1" -Value $PS1FILE -Encoding Asci
+        Clean-GoCache
 }
 
 function Build-Winc-Network
@@ -77,6 +78,7 @@ function Build-Winc-Network
 $env:WINC_NETWORK_CONFIG="$PWD/{1}"
 $env:WINC_NETWORK_LOG_FILE="$PWD/{2}"' -f "$BuiltDir/winc-network/run.exe","$BuiltDir/winc-network/config.json", "$BuiltDir/winc-network/out.log"
         Set-Content -Path "$Target/run.ps1" -Value $PS1FILE -Encoding Asci
+        Clean-GoCache
 }
 
 function Build-Winc
@@ -107,6 +109,7 @@ function Build-Winc
     Pop-Location
         $PS1FILE='$env:WINC_BINARY="$PWD/{0}"' -f "$BuiltDir/winc/run.exe"
         Set-Content -Path "$Target/run.ps1" -Value $PS1FILE -Encoding Asci
+        Clean-GoCache
 }
 
 function Build-Nstar
@@ -136,6 +139,7 @@ function Build-Nstar
     Pop-Location
         $PS1FILE='$env:NSTAR_BINARY="$PWD/{0}"' -f "$BuiltDir/nstar/run.exe"
         Set-Content -Path "$Target/run.ps1" -Value $PS1FILE -Encoding Asci
+        Clean-GoCache
 }
 
 function Build-Diff-Exporter
@@ -165,4 +169,5 @@ function Build-Diff-Exporter
     Pop-Location
         $PS1FILE='$env:DIFF_EXPORTER_BINARY="$PWD/{0}"' -f "$BuiltDir/diff-exporter/run.exe"
         Set-Content -Path "$Target/run.ps1" -Value $PS1FILE -Encoding Asci
+        Clean-GoCache
 }
