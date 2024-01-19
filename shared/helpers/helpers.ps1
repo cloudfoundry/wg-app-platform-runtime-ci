@@ -69,6 +69,13 @@ function Verify-Ginkgo {
   Pop-Location
 }
 
+function Clean-GoCache{
+  go.exe clean -cache
+  if ($LastExitCode -ne 0) {
+    exit 1
+  }
+}
+
 function Set-TemporaryDirectory {
     $env:TEMP="/var/vcap/data/tmp"
     $env:TMP="/var/vcap/data/tmp"

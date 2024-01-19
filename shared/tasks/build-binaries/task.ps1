@@ -21,6 +21,7 @@ function Run
         Write-Host "Executing: $Function -Source $Source -Target $Target"
         & $Function -Source $Source -Target "$Target"
     }
+    Clean-GoCache
 }
 
 Run
