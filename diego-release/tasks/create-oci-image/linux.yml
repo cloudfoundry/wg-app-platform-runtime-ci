@@ -1,0 +1,16 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+- name: dockerfile
+- name: oras
+
+outputs: []
+
+run:
+  path: ci/diego-release/tasks/create-oci-image/task.bash
+
+params:
+  IMAGE_NAME: cloudfoundry/diego-oras-oci:latest
+  DOCKERFILE_PATH: dockerfile/

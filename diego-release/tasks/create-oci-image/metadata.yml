@@ -1,0 +1,9 @@
+---
+readme: |
+   Create an OCI image and push it to dockerhub
+oses:
+  - linux
+params:
+  IMAGE_NAME: name of the docker image to create.
+  DOCKERFILE_PATH: path to the Dockerfile from the root of the build directory
+  ORAS_CLI_PATH: path to the oras cli from the root of the build directory

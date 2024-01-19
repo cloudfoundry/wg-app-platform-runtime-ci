@@ -46,6 +46,30 @@ jobs:
     input_mapping:
       docker-image: diego-docker-app
 
+- name: diego-oras-oci-app
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: monthly
+      trigger: true
+    - get: diego-docker-app-dockerfile
+      trigger: true
+    - get: oras-cli
+      params:
+        globs:
+          - *_linux_amd64.tar.gz
+  - task: build-oci-image
+    file: ci/diego-release/tasks/build-oci-image/linux.yml
+    image: docker:dind
+    input_mapping:
+      dockerfile: diego-docker-app-dockerfile
+  # - task: validate-label-urls
+  #   file: ci/shared/tasks/lint-docker-image/linux.yml
+  #   image: image
+  #   input_mapping:
+  #     docker-image: diego-docker-app
+
 - name: grace
   serial: true
   plan:
@@ -92,6 +116,25 @@ resources:
     private_key: ((github-tas-runtime-bot/private-key))
     paths:
     - diego-release/dockerfiles/diego-inigo-ci-rootfs/Dockerfile
+
+- name: diego-oras-oci-app-dockerfile
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci.git
+    branch: main
+    private_key: ((github-tas-runtime-bot/private-key))
+    paths:
+    - diego-release/dockerfiles/diego-oras-oci-app/Dockerfile
+    - diego-release/dockerfiles/diego-oras-oci-app/dockerapp.go
+- name: oras-cli
+  type: github-release
+  source:
+  check_every: '1d'
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    owner: oras-project
+    repository: oras
+
 
 - name: diego-docker-app-dockerfile
   type: git
