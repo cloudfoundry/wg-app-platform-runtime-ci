@@ -63,6 +63,8 @@ jobs:
     file: ci/diego-release/tasks/create-oci-image/linux.yml
     input_mapping:
       dockerfile: diego-docker-app-dockerfile
+    params:
+      DOCKERFILE_PATH: dockerfile/diego-release/dockerfiles/diego-docker-app
   # - task: validate-label-urls
   #   file: ci/shared/tasks/lint-docker-image/linux.yml
   #   image: image
