@@ -17,7 +17,7 @@ fi
 
 tar -xzvf "${oras_tarball[0]}" -C oras-cli
 oras_cli="oras-cli/oras"
-if [[ -x "${oras_cli}" ]]; then
+if [[ ! -x "${oras_cli}" ]]; then
   echo "Error: oras CLI was not found executable at '${oras_cli}'" >&2
   exit 1
 fi
