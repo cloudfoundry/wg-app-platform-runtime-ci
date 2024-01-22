@@ -9,7 +9,7 @@ if [[ ! -f "${DOCKERFILE}" ]]; then
   exit 1
 fi
 
-oras_tarball=(*_linux_amd64.tar.gz)
+oras_tarball=(oras-cli/*_linux_amd64.tar.gz)
 if [[ ! -f "${oras_tarball[0]}" ]]; then
   echo "Error: No tarballs matching oras-cli/*_linux_amd64.tar.gz found" >&2
   exit 1
