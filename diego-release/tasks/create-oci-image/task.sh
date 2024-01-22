@@ -1,29 +1,29 @@
-#!/bin/bash
+#!/bin/sh
 
 set -e -x
 
 DOCKERFILE="${DOCKERFILE_PATH%/Dockerfile}/Dockerfile"
 
-if [[ ! -f "${DOCKERFILE}" ]]; then
+if ! test -f "${DOCKERFILE}"; then
   echo "Error: ${DOCKERFILE} was not found" >&2
   exit 1
 fi
 
 oras_tarball="oras/*_linux_amd64.tar.gz"
-if [[ ! -f "${oras_tarball}" ]]; then
+if ! test -f "${oras_tarball}"; then
   echo "Error: No tarballs matching oras/*_linux_amd64.tar.gz found" >&2
   exit 1
 fi
 
 tar -xzvf "${oras_tarball}"
 oras_cli="oras-cli/oras*_linux_amd64/oras"
-if [[ ! -x "${oras_cli}" ]]; then
+if ! test -x "${oras_cli}"; then
   echo "Error: oras CLI was not found executable at '${oras_cli}'" >&2
   exit 1
 fi
 
 basedir=$(dirname "${DOCKERFILE}")
-pushd "${basedir}"
+cd "${basedir}"
 
 docker buildx build . --file Dockerfile --output type=oci,dest=./image.oci.tar -t "${IMAGE_NAME}" 'linux/amd64'
 "${oras_cli}"cp --from-oci-layout ./image.oci.tar:latest "docker.io/${IMAGE_NAME}"
