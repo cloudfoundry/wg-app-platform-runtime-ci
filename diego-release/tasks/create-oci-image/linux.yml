@@ -9,7 +9,7 @@ inputs:
 outputs: []
 
 run:
-  path: ci/diego-release/tasks/create-oci-image/task.sh
+  path: ci/diego-release/tasks/create-oci-image/task.bash
 
 params:
   IMAGE_NAME: cloudfoundry/diego-oci-app:latest
