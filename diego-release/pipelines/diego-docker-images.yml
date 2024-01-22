@@ -56,6 +56,10 @@ jobs:
     - get: diego-docker-app-dockerfile
       trigger: true
     - get: image
+    - get: docker-buildx
+      params:
+        globs:
+          - "*linux-amd64"
     - get: oras-cli
       params:
         globs:
@@ -63,6 +67,7 @@ jobs:
   - task: build-oci-image
     file: ci/diego-release/tasks/create-oci-image/linux.yml
     image: image
+    privileged: true
     input_mapping:
       dockerfile: diego-docker-app-dockerfile
     params:
@@ -128,6 +133,13 @@ resources:
     owner: oras-project
     repository: oras
 
+- name: docker-buildx
+  type: github-release
+    check_everyL '24h'
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    owner: docker
+    repository: buildx
 
 - name: diego-docker-app-dockerfile
   type: git
