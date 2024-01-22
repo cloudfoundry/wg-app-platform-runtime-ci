@@ -16,7 +16,7 @@ if [[ ! -f "${oras_tarball[0]}" ]]; then
 fi
 
 tar -xzvf "${oras_tarball[0]}" -C oras-cli
-oras_cli="oras-cli/oras"
+oras_cli=$(realpath oras-cli/oras)
 if [[ ! -x "${oras_cli}" ]]; then
   echo "Error: oras CLI was not found executable at '${oras_cli}'" >&2
   exit 1
@@ -35,6 +35,8 @@ trap stop_docker EXIT
 basedir=$(dirname "${DOCKERFILE}")
 pushd "${basedir}" >/dev/null
 
-docker buildx build . --file Dockerfile --output type=oci,dest=./image.oci.tar -t "${IMAGE_NAME}" --platform  'linux/amd64'
-"${oras_cli}"cp --from-oci-layout ./image.oci.tar:latest "docker.io/${IMAGE_NAME}"
+docker login -u "${DOCKERHUB_USERNAME}" -p "${DOCKERHUB_PASSWORD}"
+docker buildx create \ --name container \ --driver=docker-container
+docker buildx build . --file Dockerfile --builder container --output type=oci,dest=./image.oci.tar -t "${IMAGE_NAME}" --platform  'linux/amd64'
+"${oras_cli}" cp --from-oci-layout ./image.oci.tar:latest "docker.io/${IMAGE_NAME}"
 docker buildx imagetools create "docker.io/${IMAGE_NAME}" --tag "docker.io/${IMAGE_NAME}"

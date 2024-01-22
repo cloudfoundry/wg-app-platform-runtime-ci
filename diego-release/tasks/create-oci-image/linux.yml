@@ -13,6 +13,8 @@ run:
   path: ci/diego-release/tasks/create-oci-image/task.bash
 
 params:
-  IMAGE_NAME: cloudfoundry/diego-oci-app:latest
+  IMAGE_NAME: cloudfoundry/diego-docker-app:oci
   DOCKERFILE_PATH: dockerfile/
   DOCKER_VERSION: 24.0.7
+  DOCKERHUB_USERNAME:
+  DOCKERHUB_PASSWORD:
