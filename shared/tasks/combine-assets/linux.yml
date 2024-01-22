@@ -15,6 +15,18 @@ inputs:
   optional: true
 - name: input-06
   optional: true
+- name: input-07
+  optional: true
+- name: input-08
+  optional: true
+- name: input-09
+  optional: true
+- name: input-10
+  optional: true
+- name: input-11
+  optional: true
+- name: input-12
+  optional: true
 
 outputs:
 - name: combined-assets
