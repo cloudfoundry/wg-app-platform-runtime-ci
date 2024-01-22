@@ -9,14 +9,14 @@ if ! test -f "${DOCKERFILE}"; then
   exit 1
 fi
 
-oras_tarball=$(ls oras/*_linux_amd64.tar.gz)
+oras_tarball="oras/*_linux_amd64.tar.gz"
 if ! test -f "${oras_tarball}"; then
   echo "Error: No tarballs matching oras/*_linux_amd64.tar.gz found" >&2
   exit 1
 fi
 
 tar -xzvf "${oras_tarball}"
-oras_cli=$(ls oras-cli/oras*_linux_amd64/oras)
+oras_cli="oras-cli/oras*_linux_amd64/oras"
 if ! test -x "${oras_cli}"; then
   echo "Error: oras CLI was not found executable at '${oras_cli}'" >&2
   exit 1
