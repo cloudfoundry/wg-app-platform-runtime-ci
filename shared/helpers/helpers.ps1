@@ -100,7 +100,7 @@ Function Expand-Envs
     Debug "Expand-Envs Starting"
     ForEach ($entry in "$env:ENVS".Split("`r`n",[System.StringSplitOptions]::RemoveEmptyEntries))
     {
-      $items=$entry.Split("=")
+      $items=($entry -split "=",2)
         $key=$items[0]
         $value=$items[1]
         Write-Host "Setting env $key"
