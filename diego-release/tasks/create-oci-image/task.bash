@@ -31,6 +31,6 @@ download_docker "${DOCKER_VERSION}" /tmp/docker
 start_docker
 trap stop_docker EXIT
 
-docker buildx build . --file Dockerfile --output type=oci,dest=./image.oci.tar -t "${IMAGE_NAME}" --platform  'linux/amd64'
+docker buildx build . --output type=oci,dest=./image.oci.tar -t "${IMAGE_NAME}" --platform  'linux/amd64'
 "${oras_cli}"cp --from-oci-layout ./image.oci.tar:latest "docker.io/${IMAGE_NAME}"
 docker buildx imagetools create "docker.io/${IMAGE_NAME}" --tag "docker.io/${IMAGE_NAME}"
