@@ -1,0 +1,843 @@
+#@ load("@ytt:data", "data")
+#@ load("ytt-helpers.star", "helpers")
+
+#! Define-Groups
+groups:
+- name: release
+  jobs:
+  - template-tests
+  - unit-and-integration-tests
+  - lint-repo
+  - claim-env
+  - prepare-env
+  - run-wats
+  - run-gatsw
+  - export-release
+  - ship-what
+  - ship-it
+  - unclaim-env
+
+- name: periodics
+  jobs:
+  - bump-dependencies-go-mod
+  - bump-package-golang
+
+- name: manual
+  jobs:
+  - release-env-lock
+
+- name: version
+  jobs:
+  - major-bump
+  - minor-bump
+  - patch-bump
+
+
+#! Define-ResourceTypes
+resource_types:
+- name: bosh-deployment
+  type: docker-image
+  source:
+    repository: cloudfoundry/bosh-deployment-resource
+    username: ((dockerhub-tasruntime/user))
+    password: ((dockerhub-tasruntime/password))
+
+
+#! Define-Resources
+resources:
+- name: golang-release-latest
+  type: git
+  icon: github-box
+  source:
+    tag_filter: v*
+    uri: https://github.com/bosh-packages/golang-release.git
+
+- name: repo
+  type: git
+  icon: github-box
+  source:
+    branch:  develop
+    uri: git@github.com:cloudfoundry/winc-release
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: release-branch 
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/winc-release.git
+    branch: release
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: develop-branch-mergeback
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/winc-release.git
+    branch: develop
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: ci
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+
+- name: cf-deployment
+  type: git
+  icon: github-box
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/cf-deployment.git
+
+- name: cf-deployment-concourse-tasks
+  type: git
+  icon: github-box
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
+
+- name: cf-acceptance-tests
+  type: git
+  icon: github-box
+  source:
+    branch: release-candidate
+    uri: https://github.com/cloudfoundry/cf-acceptance-tests
+
+- name: go-version
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: [go-version.json]
+
+- name: updated-go-mod-diff-exporter
+  type: git
+  source:
+    branch: main
+    uri: git@github.com:cloudfoundry/diff-exporter.git
+    private_key: ((github-tas-runtime-bot/private-key))
+- name: updated-go-mod-groot-windows
+  type: git
+  source:
+    branch: main
+    uri: git@github.com:cloudfoundry/groot-windows.git
+    private_key: ((github-tas-runtime-bot/private-key))
+- name: updated-go-mod-winc
+  type: git
+  source:
+    branch: main
+    uri: git@github.com:cloudfoundry/winc.git
+    private_key: ((github-tas-runtime-bot/private-key))
+- name: updated-go-mod-certsplitter
+  type: git
+  source:
+    branch: main
+    uri: git@github.com:cloudfoundry/certsplitter.git
+    private_key: ((github-tas-runtime-bot/private-key))
+- name: updated-go-mod-cert-injector
+  type: git
+  source:
+    branch: main
+    uri: git@github.com:cloudfoundry/cert-injector.git
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: garden-ci-artifacts-release
+  type: git
+  icon: github-box
+  source:
+    branch: develop
+    uri: https://github.com/cloudfoundry/garden-ci-artifacts-release.git
+
+- name: garden-runc-release
+  type: git
+  icon: github-box
+  source:
+    branch: release
+    uri: https://github.com/cloudfoundry/garden-runc-release.git
+
+- name: windows-utilities-release
+  type: git
+  icon: github-box
+  source:
+    branch: master
+    uri: https://github.com/cloudfoundry/windows-utilities-release.git
+      
+#! Environments
+- name: env
+  type: git
+  source:
+    branch: master
+    private_key: ((github-tas-runtime-bot/private-key))
+    uri: git@github.com:pivotal/garden-windows-environments
+
+#! TIMERS
+- name: weekly
+  type: time
+  icon: clock
+  source:
+    interval: '168h'  #! 1 week
+
+- name: github-release
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    repository: winc-release
+    owner: cloudfoundry
+  type: github-release
+
+- name: draft-github-release 
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    drafts: true
+    repository: winc-release
+    owner: cloudfoundry
+  type: github-release
+
+- name: version
+  type: semver
+  source:
+    access_key_id: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
+    secret_access_key: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
+    assume_role_arn: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+    bucket: winc-release
+    initial_version: 0.0.0
+    key: version
+    region_name: us-east-1
+
+- name: env-lock
+  source:
+    branch: main
+    pool: winc-release-env-lock 
+    private_key: ((github-tas-runtime-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+  type: pool
+
+- name: image
+  type: docker-image                             
+  source:                                        
+    repository: cloudfoundry/tas-runtime-build
+    tag: 'latest'
+
+- name: pesto-cf-deployment
+  type: bosh-deployment
+  source:
+    deployment: cf
+    client: ((gcp-garden-windows-env-pesto/bosh-client-id))
+    client_secret: ((gcp-garden-windows-env-pesto/bosh-client-secret))
+    ca_cert: ((gcp-garden-windows-env-pesto/bosh-ca-cert))
+    target: ((gcp-garden-windows-env-pesto/bosh-env))
+    jumpbox_url: ((gcp-garden-windows-env-pesto/jumpbox-ip)):22
+    jumpbox_ssh_key: ((gcp-garden-windows-env-pesto/jumpbox-ssh-key))
+
+- name: linux-stemcell
+  type: bosh-io-stemcell
+  source:
+    name: bosh-google-kvm-ubuntu-jammy-go_agent
+
+- name: windows-stemcell
+  type: bosh-io-stemcell
+  source:
+    name: bosh-google-kvm-windows2019-go_agent
+
+#! Define-Jobs
+jobs:
+- name: bump-dependencies-go-mod
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: repo
+      - get: image
+      - get: updated-go-mod-cert-injector
+      - get: updated-go-mod-certsplitter
+      - get: updated-go-mod-diff-exporter
+      - get: updated-go-mod-groot-windows
+      - get: updated-go-mod-winc
+      - get: weekly
+        trigger: true
+  - do:
+    - task: cert-injector-bump-dependencies-go-mod
+      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+      image: image
+      input_mapping:
+        repo: updated-go-mod-cert-injector
+      params:
+        GO_MODS: go.mod
+        GOOS: windows
+    - put: updated-go-mod-cert-injector
+      params:
+        rebase: true
+        repository: bumped-repo
+  - do:
+    - task: certsplitter-bump-dependencies-go-mod
+      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+      image: image
+      input_mapping:
+        repo: updated-go-mod-certsplitter
+      params:
+        GO_MODS: go.mod
+        GOOS: windows
+    - put: updated-go-mod-certsplitter
+      params:
+        rebase: true
+        repository: bumped-repo
+  - do:
+    - task: diff-exporter-bump-dependencies-go-mod
+      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+      image: image
+      input_mapping:
+        repo: updated-go-mod-diff-exporter
+      params:
+        GO_MODS: go.mod
+        GOOS: windows
+    - put: updated-go-mod-diff-exporter
+      params:
+        rebase: true
+        repository: bumped-repo
+  - do:
+    - task: groot-windows-bump-dependencies-go-mod
+      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+      image: image
+      input_mapping:
+        repo: updated-go-mod-groot-windows
+      params:
+        GO_MODS: go.mod
+        GOOS: windows
+    - put: updated-go-mod-groot-windows
+      params:
+        rebase: true
+        repository: bumped-repo
+  - do:
+    - task: winc-bump-dependencies-go-mod
+      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+      image: image
+      input_mapping:
+        repo: updated-go-mod-winc
+      params:
+        GO_MODS: go.mod
+        GOOS: windows
+    - put: updated-go-mod-winc
+      params:
+        rebase: true
+        repository: bumped-repo
+  - do:
+    - task: winc-release-bump-dependencies-go-mod
+      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+      image: image
+      params:
+        GO_MODS: src/code.cloudfoundry.org/nstar
+        GOOS: windows
+    - put: repo
+      params:
+        rebase: true
+        repository: bumped-repo
+
+- name: bump-package-golang
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+    - get: image
+    - get: go-version
+      trigger: true
+    - get: golang-release-latest
+      trigger: true
+
+  - task: bump-golang-package-name
+    image: image
+    file: ci/shared/tasks/bump-golang-package-name/linux.yml
+    params:
+      PLATFORM: windows
+
+  - task: bump-golang-windows
+    file: ci/shared/tasks/bosh-vendor-package/linux.yml
+    image: image
+    input_mapping:
+      repo: bumped-repo
+      package-release: golang-release-latest
+    params:
+      PACKAGE_NAME: golang-*-windows
+      AWS_ACCESS_KEY_ID: ((aws-s3-867058893013-svc-gdn-win-bosh-s3/access-key-id))
+      AWS_SECRET_ACCESS_KEY: ((aws-s3-867058893013-svc-gdn-win-bosh-s3/secret-access-key))
+      AWS_ASSUME_ROLE_ARN: ((aws-s3-867058893013-svc-gdn-win-bosh-s3/assume-role))
+
+  - put: repo
+    params:
+      rebase: true
+      repository: vendored-repo
+
+- name: template-tests
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+    - get: image
+  - task: template-tests
+    image: image
+    file: ci/shared/tasks/run-tests-templates/linux.yml
+    timeout: 30m
+
+- name: unit-and-integration-tests
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+    - get: image
+    - get: package-release
+      resource: golang-release-latest
+  - task: build-binaries
+    file: ci/shared/tasks/build-binaries/windows.yml
+    params:
+      FUNCTIONS: ci/winc-release/helpers/build-binaries.ps1
+      MAPPING: |
+        Build-Groot=src/code.cloudfoundry.org/groot-windows
+        Build-Winc-Network=src/code.cloudfoundry.org/winc/cmd/winc-network
+        Build-Winc=src/code.cloudfoundry.org/winc/cmd/winc
+  - in_parallel:
+#@ for package in data.values.internal_repos:
+    - task: #@ "{}".format(package.name)
+      file: ci/shared/tasks/run-bin-test/windows.yml
+      params:
+        FUNCTIONS: ci/winc-release/helpers/configure-binaries.ps1
+        DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
+        ENVS: |
+          WINC_TEST_ROOTFS=docker:///cloudfoundry/windows2016fs:2019
+#@ end
+
+- name: lint-repo
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+    - get: image
+  - task: lint-repo
+    file: ci/shared/tasks/lint-repo/linux.yml
+    image: image
+
+- name: claim-env
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+      passed:
+        - template-tests
+        - unit-and-integration-tests
+        - lint-repo
+    - get: env
+    - get: image
+
+    - put: env-lock
+      params:
+       acquire: true
+
+- name: prepare-env
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+      passed: [claim-env]
+    - get: image
+    - get: cf-deployment
+    - get: cf-deployment-concourse-tasks
+    - get: env
+      trigger: true
+      passed: [claim-env]
+    - get: linux-stemcell
+    - get: windows-stemcell
+  - put: pesto-cf-deployment
+    attempts: 3
+    params:
+      manifest: cf-deployment/cf-deployment.yml
+      stemcells:
+      - linux-stemcell/*.tgz
+      vars_files:
+      - env/pesto/cf/vars.yml
+      cleanup: true
+    get_params:
+      skip_export: true
+  - task: create-toolsmiths-env
+    file: ci/shared/tasks/combine-assets/linux.yml
+    image: image
+    input_mapping:
+      input-01: env
+    output_mapping:
+      combined-assets: pesto-env
+    params:
+      COPY_ACTIONS: |
+        {input-01/pesto/metadata,combined-assets}
+  - task: prepare-cf-deployment-env
+    image: image
+    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+    input_mapping:
+      env: pesto-env
+  - task: combine-ops-files
+    file: ci/shared/tasks/combine-assets/linux.yml
+    image: image
+    input_mapping:
+      input-01: cf-deployment
+    params:
+      COPY_ACTIONS: |
+        {input-01/operations/scale-to-one-az.yml,combined-assets}
+        {input-01/operations/windows2019-cell.yml,combined-assets}
+        {input-01/operations/use-online-windows2019fs.yml,combined-assets}
+        {input-01/operations/use-latest-windows2019-stemcell.yml,combined-assets}
+        {input-01/operations/experimental/enable-nginx-routing-integrity-windows2019.yml,combined-assets}
+        {ci/winc-release/opsfiles/latest-winc.yml,combined-assets}
+        {ci/winc-release/opsfiles/scale-down-windows2019.yml,combined-assets}
+        {ci/winc-release/opsfiles/enable-rdp-2019.yml,combined-assets}
+        {ci/winc-release/opsfiles/decrease-rep-evacuation-timeout.yml,combined-assets}
+        {ci/winc-release/opsfiles/use-2-azs-for-router.yml,combined-assets}
+        {ci/winc-release/opsfiles/enable-windows-auth.yml,combined-assets}
+        {ci/winc-release/opsfiles/enable-windows-tcp-routes.yml,combined-assets}
+        {ci/winc-release/opsfiles/add-dc-to-security-groups.yml,combined-assets}
+        {ci/winc-release/opsfiles/windows2019-cell-with-static-ip.yml,combined-assets}
+  - put: pesto-cf-deployment
+    attempts: 3
+    params:
+      manifest: cf-deployment/cf-deployment.yml
+      stemcells:
+      - linux-stemcell/*.tgz
+      - windows-stemcell/*.tgz
+      releases:
+      - prepared-env/winc-release*.tgz
+      ops_files: #@ ["combined-assets/{0}".format(i) for i in data.values.opsfiles]
+      vars_files:
+      - env/pesto/cf/vars.yml
+    get_params:
+      skip_export: true
+  - task: open-asg-for-credhub
+    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+    input_mapping:
+      toolsmiths-env: pesto-env
+    params:
+      INSTANCE_GROUP_NAME: credhub
+      SECURITY_GROUP_NAME: credhub
+  - task: open-asg-for-uaa
+    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+    input_mapping:
+      toolsmiths-env: pesto-env
+    params:
+      INSTANCE_GROUP_NAME: uaa
+      SECURITY_GROUP_NAME: uaa
+  - task: enable-feature-flags-for-wats
+    file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
+    input_mapping:
+      toolsmiths-env: pesto-env
+    params:
+      ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
+
+- name: run-wats
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: cf-deployment-concourse-tasks
+    - get: cf-acceptance-tests
+    - get: cf-deployment
+  - task: create-toolsmiths-env
+    file: ci/shared/tasks/combine-assets/linux.yml
+    image: image
+    input_mapping:
+      input-01: env
+    output_mapping:
+      combined-assets: pesto-env
+    params:
+      COPY_ACTIONS: |
+        {input-01/pesto/metadata,combined-assets}
+  - task: create-wats-config
+    image: image
+    file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
+    input_mapping:
+      env: pesto-env
+    params:
+      CONFIGS: wats
+      WITH_ISOSEG: true
+      WITH_DYNAMIC_ASG: false
+  - task: wats
+    file: cf-deployment-concourse-tasks/run-cats/task.yml
+    attempts: 2
+    input_mapping:
+      integration-config: built-acceptance-test-configs
+    params:
+      CONFIG_FILE_PATH: wats.json
+      NODES: 4
+      SKIP_REGEXP: Syslog Drain
+
+- name: run-gatsw
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: package-release
+      resource: golang-release-latest
+    - get: garden-ci-artifacts-release
+    - get: garden-runc-release
+    - get: windows-utilities-release
+    - get: cf-deployment-concourse-tasks
+  - task: create-toolsmiths-env
+    file: ci/shared/tasks/combine-assets/linux.yml
+    image: image
+    input_mapping:
+      input-01: env
+    output_mapping:
+      combined-assets: pesto-env
+    params:
+      COPY_ACTIONS: |
+        {input-01/pesto/metadata,combined-assets}
+  - task: upload-windows-stemcell
+    file: ci/shared/tasks/bosh-upload-stemcell/linux.yml
+    image: image
+    input_mapping:
+      env: pesto-env
+    params:
+      STEMCELL_URL: https://bosh.io/d/stemcells/bosh-google-kvm-windows2019-go_agent
+  - task: bosh-deploy-gatsw
+    image: image
+    file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
+    input_mapping:
+      release-01: garden-ci-artifacts-release
+      release-02: garden-runc-release
+      release-03: windows-utilities-release
+      env: pesto-env
+    params:
+      MANIFEST: ci/shared/manifests/gatsw.yml
+      DEPLOYMENT_NAME: gatsw
+      ENVS: |
+        DEPLOYMENT_GARDEN_RUNC_RELEASE_DIR=$PWD/release-02
+        DEPLOYMENT_GARDEN_CI_ARTIFACTS_RELEASE_DIR=$PWD/release-01
+        DEPLOYMENT_WINC_RELEASE_DIR=$PWD/repo
+        DEPLOYMENT_WINDOWS_UTILITIES_RELEASE_DIR=$PWD/release-03
+  - task: run-gatsw-errand
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    input_mapping:
+      toolsmiths-env: pesto-env
+    params:
+      DEPLOYMENT_NAME: gatsw
+      ERRAND_NAME: gats
+- name: export-release
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: cf-deployment-concourse-tasks
+  - task: create-toolsmiths-env
+    file: ci/shared/tasks/combine-assets/linux.yml
+    image: image
+    input_mapping:
+      input-01: env
+    output_mapping:
+      combined-assets: pesto-env
+    params:
+      COPY_ACTIONS: |
+        {input-01/pesto/metadata,combined-assets}
+  - task: export-release
+    file: ci/shared/tasks/bosh-export-release/linux.yml
+    image: image
+    input_mapping:
+      env: pesto-env
+    params:
+      OS: windows
+
+- name: ship-what
+  plan:
+    - in_parallel:
+        steps:
+        - get: ci
+        - get: repo
+          passed:
+            - run-wats
+            - export-release
+          trigger: true
+        - get: image
+        - get: release-branch
+          params:
+            submodules: none
+        - get: github-release
+        - get: version
+        - get: env
+          passed:
+            - run-wats
+            - export-release
+          trigger: true
+
+    - task: check-safe-to-release-repo
+      image: image
+      file: ci/shared/tasks/check-safe-to-release-repo/linux.yml
+      input_mapping:
+        release-repo: release-branch
+
+    - task: build-release-notes-winc-release
+      image: image
+      file: ci/shared/tasks/build-release-notes/linux.yml
+      input_mapping:
+        previous-github-release: github-release
+
+- name: ship-it
+  serial: true
+  plan:
+    - in_parallel:
+        steps:
+        - get: ci
+        - get: repo
+          passed: [ ship-what ]
+        - get: image
+        - get: release-branch
+          params:
+            submodules: none
+        - get: github-release
+        - get: version
+        - get: develop-branch-mergeback
+          params:
+            submodules: none
+
+    - task: check-safe-to-release-branch
+      image: image
+      file: ci/shared/tasks/check-safe-to-release-repo/linux.yml
+      input_mapping:
+        release-repo: release-branch
+
+    - task: build-release-notes-winc-release
+      image: image
+      file: ci/shared/tasks/build-release-notes/linux.yml
+      input_mapping:
+        previous-github-release: github-release
+
+    - task: bosh-finalize-release
+      image: image
+      file: ci/shared/tasks/bosh-finalize-release/linux.yml
+      params:
+        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+
+    - put: release-branch
+      params:
+        repository: finalized-release-repo
+        tag: version/number
+        tag_prefix: v
+
+    - task: merge-release-onto-develop
+      image: image
+      file: ci/shared/tasks/git-merge-branches/linux.yml
+      input_mapping:
+        source-branch: release-branch
+        onto-branch: develop-branch-mergeback
+      params:
+        SOURCE_BRANCH_NAME: release
+        ONTO_BRANCH_NAME: develop
+
+    - in_parallel:
+        steps:
+        - put: draft-github-release
+          params:
+            name: version/number
+            tag: version/number
+            tag_prefix: v
+            body: built-release-notes/notes.md
+            globs:
+            - finalized-release-tarball/winc*.tgz
+        - put: develop-branch-mergeback
+          params:
+            repository: merged-branch
+
+    - get: next-version
+      resource: version
+      params: {bump: minor}
+    - put: next-version
+      resource: version
+      params: {file: next-version/number}
+
+- name: unclaim-env
+  serial: true
+  plan:
+  - get: env
+    passed: [ship-what]
+    trigger: true
+  - get: env-lock
+  - put: env
+    params:
+      action: unclaim
+      env_file: env/metadata
+  #! shepherd
+  #! - put: env
+  #!   params:
+  #!     action: release
+  #!     resource: env
+  - params:
+      release: env-lock #! path to the resource in the above get
+    put: env-lock
+
+- name: release-env-lock
+  plan:
+  - get: env-lock
+  - try:
+      do:
+      - get: env
+        passed: [claim-env]
+      - put: env
+        params:
+          action: unclaim
+          env_file: env/metadata
+      #!shepherd
+      #! - put: env
+      #!   params:
+      #!     action: release
+      #!     resource: env
+  ensure:
+    put: env-lock
+    params:
+      release: env-lock #! path to the resource in the above get
+
+#! versioning
+- name: patch-bump
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: patch}
+  - put: version
+    params: {file: version/number}
+
+- name: minor-bump
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: minor}
+  - put: version
+    params: {file: version/number}
+
+- name: major-bump
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: major}
+  - put: version
+    params: {file: version/number}
