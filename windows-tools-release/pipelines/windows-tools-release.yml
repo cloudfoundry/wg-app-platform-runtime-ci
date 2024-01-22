@@ -1,0 +1,225 @@
+#@ load("@ytt:data", "data")
+#@ load("ytt-helpers.star", "helpers")
+
+#! Define-Groups
+groups:
+- name: release
+  jobs:
+  - ship-what
+  - ship-it
+
+- name: periodics
+  jobs:
+  - bump-package-golang
+
+#! Define-Resources
+resources:
+- name: golang-release-latest
+  type: git
+  icon: github-box
+  source:
+    tag_filter: v*
+    uri: https://github.com/bosh-packages/golang-release.git
+
+- name: repo
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/windows-tools-release.git
+    branch: develop
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: release-branch
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/windows-tools-release.git
+    branch: release
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: develop-branch-mergeback
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/windows-tools-release.git
+    branch: develop
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: ci
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+
+- name: github-release
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    repository: windows-tools-release
+    owner: cloudfoundry
+  type: github-release
+
+- name: draft-github-release
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    drafts: true
+    repository: windows-tools-release
+    owner: cloudfoundry
+  type: github-release
+
+- name: version
+  type: semver
+  source:
+    driver: gcs
+    bucket: ci-release-versions
+    key: windows-tools-release/version
+    json_key: ((gcp-tas-runtime-service-account/config-json))
+
+- name: go-version
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: [go-version.json]
+
+- name: image
+  type: docker-image
+  source:
+    repository: cloudfoundry/tas-runtime-build
+    tag: 'latest'
+
+#! Define-Jobs
+jobs:
+- name: bump-package-golang
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+    - get: image
+    - get: go-version
+      trigger: true
+    - get: golang-release-latest
+      trigger: true
+
+  - task: bump-golang-package-name
+    image: image
+    file: ci/shared/tasks/bump-golang-package-name/linux.yml
+    params:
+      PLATFORM: windows
+
+  - task: bump-golang-windows
+    file: ci/shared/tasks/bosh-vendor-package/linux.yml
+    image: image
+    input_mapping:
+      repo: bumped-repo
+      package-release: golang-release-latest
+    params:
+      PACKAGE_NAME: golang-*-windows
+      AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
+      AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
+      AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+
+  - put: repo
+    params:
+      rebase: true
+      repository: vendored-repo
+- name: ship-what
+  plan:
+    - in_parallel:
+        steps:
+        - get: ci
+        - get: repo
+          trigger: true
+        - get: image
+        - get: release-branch
+          params:
+            submodules: none
+        - get: github-release
+        - get: version
+
+    - task: check-safe-to-release-repo
+      image: image
+      file: ci/shared/tasks/check-safe-to-release-repo/linux.yml
+      input_mapping:
+        release-repo: release-branch
+
+    - task: build-release-notes-windows-tools-release
+      image: image
+      file: ci/shared/tasks/build-release-notes/linux.yml
+      input_mapping:
+        previous-github-release: github-release
+      params:
+        BOSH_IO_ORG: cloudfoundry-incubator
+
+- name: ship-it
+  serial: true
+  plan:
+    - in_parallel:
+        steps:
+        - get: ci
+        - get: repo
+          passed: [ ship-what ]
+        - get: image
+        - get: release-branch
+          params:
+            submodules: none
+        - get: github-release
+        - get: version
+        - get: develop-branch-mergeback
+          params:
+            submodules: none
+
+    - task: check-safe-to-release-branch
+      image: image
+      file: ci/shared/tasks/check-safe-to-release-repo/linux.yml
+      input_mapping:
+        release-repo: release-branch
+
+    - task: build-release-notes-windows-tools-release
+      image: image
+      file: ci/shared/tasks/build-release-notes/linux.yml
+      input_mapping:
+        previous-github-release: github-release
+      params:
+        BOSH_IO_ORG: cloudfoundry-incubator
+
+    - task: bosh-finalize-release
+      image: image
+      file: ci/shared/tasks/bosh-finalize-release/linux.yml
+      params:
+        AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+
+    - put: release-branch
+      params:
+        repository: finalized-release-repo
+        tag: version/number
+        tag_prefix: v
+
+    - task: merge-release-onto-develop
+      image: image
+      file: ci/shared/tasks/git-merge-branches/linux.yml
+      input_mapping:
+        source-branch: release-branch
+        onto-branch: develop-branch-mergeback
+      params:
+        SOURCE_BRANCH_NAME:  release
+        ONTO_BRANCH_NAME: develop
+
+    - in_parallel:
+        steps:
+        - put: draft-github-release
+          params:
+            name: version/number
+            tag: version/number
+            tag_prefix: v
+            body: built-release-notes/notes.md
+            globs:
+            - finalized-release-tarball/windows-tools-*.tgz
+        - put: develop-branch-mergeback
+          params:
+            repository: merged-branch
+
+    - get: next-version
+      resource: version
+      params: {bump: minor}
+    - put: next-version
+      resource: version
+      params: {file: next-version/number}
