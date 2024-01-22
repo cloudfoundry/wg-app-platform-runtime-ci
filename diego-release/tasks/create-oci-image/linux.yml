@@ -5,6 +5,7 @@ inputs:
 - name: ci
 - name: dockerfile
 - name: oras-cli
+- name: docker-buildx
 
 outputs: []
 

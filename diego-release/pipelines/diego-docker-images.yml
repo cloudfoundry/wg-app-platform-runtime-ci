@@ -135,7 +135,7 @@ resources:
 
 - name: docker-buildx
   type: github-release
-    check_everyL '24h'
+  check_every: '24h'
   source:
     access_token: ((github-tas-runtime-bot/access-token))
     owner: docker
