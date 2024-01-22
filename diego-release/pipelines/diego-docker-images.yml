@@ -72,7 +72,7 @@ jobs:
       dockerfile: diego-docker-app-dockerfile
     params:
       DOCKERFILE_PATH: dockerfile/diego-release/dockerfiles/diego-docker-app
-      DOCKERHUB_USER: ((dockerhub-tasruntime/user))
+      DOCKERHUB_USERNAME: ((dockerhub-tasruntime/user))
       DOCKERHUB_PASSWORD: ((dockerhub-tasruntime/password))
 
   # - task: validate-label-urls

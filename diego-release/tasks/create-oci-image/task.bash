@@ -36,7 +36,7 @@ basedir=$(dirname "${DOCKERFILE}")
 pushd "${basedir}" >/dev/null
 
 docker login -u "${DOCKERHUB_USERNAME}" -p "${DOCKERHUB_PASSWORD}"
-docker buildx create \ --name container \ --driver=docker-container
+docker buildx create --name container --driver=docker-container
 docker buildx build . --file Dockerfile --builder container --output type=oci,dest=./image.oci.tar -t "${IMAGE_NAME}" --platform  'linux/amd64'
 "${oras_cli}" cp --from-oci-layout ./image.oci.tar:latest "docker.io/${IMAGE_NAME}"
 docker buildx imagetools create "docker.io/${IMAGE_NAME}" --tag "docker.io/${IMAGE_NAME}"
