@@ -24,9 +24,6 @@ fi
 
 . ci/shared/helpers/run-docker-in-concourse.sh
 
-basedir=$(dirname "${DOCKERFILE}")
-pushd "${basedir}" >/dev/null
-
 mkdir -p /usr/local/lib/docker/cli-plugins
 cp docker-buildx/buildx-*.linux-amd64 /usr/local/lib/docker/cli-plugins/docker-buildx
 chmod 755 /usr/local/lib/docker/cli-plugins/docker-buildx
@@ -34,6 +31,9 @@ chmod 755 /usr/local/lib/docker/cli-plugins/docker-buildx
 download_docker "${DOCKER_VERSION}" /tmp/docker
 start_docker
 trap stop_docker EXIT
+
+basedir=$(dirname "${DOCKERFILE}")
+pushd "${basedir}" >/dev/null
 
 docker buildx build . --file Dockerfile --output type=oci,dest=./image.oci.tar -t "${IMAGE_NAME}" --platform  'linux/amd64'
 "${oras_cli}"cp --from-oci-layout ./image.oci.tar:latest "docker.io/${IMAGE_NAME}"
