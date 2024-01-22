@@ -28,7 +28,7 @@ basedir=$(dirname "${DOCKERFILE}")
 pushd "${basedir}" >/dev/null
 
 mkdir -p /usr/local/lib/docker/cli-plugins
-cp docker-buildx/buildx-*-linux-amd64 /usr/local/lib/docker/cli-plugins/docker-buildx
+cp docker-buildx/buildx-*.linux-amd64 /usr/local/lib/docker/cli-plugins/docker-buildx
 chmod 755 /usr/local/lib/docker/cli-plugins/docker-buildx
 
 download_docker "${DOCKER_VERSION}" /tmp/docker
