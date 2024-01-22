@@ -15,7 +15,7 @@ image_resource:
     tag: dind
 
 run:
-  path: ci/diego-release/tasks/create-oci-image/task.bash
+  path: ci/diego-release/tasks/create-oci-image/task.sh
 
 params:
   IMAGE_NAME: cloudfoundry/diego-oras-oci:latest
