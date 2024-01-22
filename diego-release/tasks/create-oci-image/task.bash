@@ -1,29 +1,35 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e -x
 
 DOCKERFILE="${DOCKERFILE_PATH%/Dockerfile}/Dockerfile"
 
-if ! test -f "${DOCKERFILE}"; then
+if [[ ! -f "${DOCKERFILE}" ]]; then
   echo "Error: ${DOCKERFILE} was not found" >&2
   exit 1
 fi
 
-oras_tarball=$(find oras-cli -name "*_linux_amd64.tar.gz" | head)
-if ! test -f "${oras_tarball}"; then
+oras_tarball=(*_linux_amd64.tar.gz)
+if [[ ! -f "${oras_tarball[0]}" ]]; then
   echo "Error: No tarballs matching oras-cli/*_linux_amd64.tar.gz found" >&2
   exit 1
 fi
 
-tar -xzvf "${oras_tarball}" -C oras-cli
+tar -xzvf "${oras_tarball[0]}" -C oras-cli
 oras_cli="oras-cli/oras"
-if ! test -x "${oras_cli}"; then
+if [[ -x "${oras_cli}" ]]; then
   echo "Error: oras CLI was not found executable at '${oras_cli}'" >&2
   exit 1
 fi
 
+. ci/shared/helpers/run-docker-in-concourse.sh
+
 basedir=$(dirname "${DOCKERFILE}")
-cd "${basedir}"
+pushd "${basedir}" >/dev/null
+
+download_docker "${DOCKER_VERSION}" /tmp/docker
+start_docker
+trap stop_docker EXIT
 
 docker buildx build . --file Dockerfile --output type=oci,dest=./image.oci.tar -t "${IMAGE_NAME}" --platform  'linux/amd64'
 "${oras_cli}"cp --from-oci-layout ./image.oci.tar:latest "docker.io/${IMAGE_NAME}"

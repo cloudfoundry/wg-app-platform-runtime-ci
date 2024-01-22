@@ -55,12 +55,14 @@ jobs:
       trigger: true
     - get: diego-docker-app-dockerfile
       trigger: true
+    - get: image
     - get: oras-cli
       params:
         globs:
           - "*_linux_amd64.tar.gz"
   - task: build-oci-image
     file: ci/diego-release/tasks/create-oci-image/linux.yml
+    image: image
     input_mapping:
       dockerfile: diego-docker-app-dockerfile
     params:

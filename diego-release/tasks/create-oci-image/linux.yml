@@ -8,15 +8,10 @@ inputs:
 
 outputs: []
 
-image_resource:
-  type: registry-image
-  source:
-    repository: docker
-    tag: dind
-
 run:
   path: ci/diego-release/tasks/create-oci-image/task.sh
 
 params:
-  IMAGE_NAME: cloudfoundry/diego-oras-oci:latest
+  IMAGE_NAME: cloudfoundry/diego-oci-app:latest
   DOCKERFILE_PATH: dockerfile/
+  DOCKER_VERSION: 24.0.7

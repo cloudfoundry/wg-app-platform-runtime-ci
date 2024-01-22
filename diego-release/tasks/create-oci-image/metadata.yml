@@ -7,3 +7,4 @@ params:
   IMAGE_NAME: name of the docker image to create.
   DOCKERFILE_PATH: path to the Dockerfile from the root of the build directory
   ORAS_CLI_PATH: path to the oras cli from the root of the build directory
+  DOCKER_VERSION: version of docker to download + start
