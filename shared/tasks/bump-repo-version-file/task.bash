@@ -19,7 +19,7 @@ function run(){
 
     if [[ $(git status --porcelain) ]]; then
         git add -A .
-        git commit -m "[ci skip] Bump Version to ${VERSION}"
+        git commit -m "Bump Version to ${VERSION}"
     fi
     rsync -a $PWD/ "../bumped-repo"
     popd > /dev/null
