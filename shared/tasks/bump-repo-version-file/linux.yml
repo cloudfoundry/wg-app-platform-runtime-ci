@@ -12,4 +12,4 @@ params:
   BUMP_ACTION:
 
 run:
-  path: ci/shared/tasks/bumped-repo/task.bash
+  path: ci/shared/tasks/bump-repo-version-file/task.bash
