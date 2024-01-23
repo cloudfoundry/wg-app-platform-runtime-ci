@@ -9,3 +9,5 @@
           ((credhub_tls.ca))
           ((uaa_ssl.ca))
     release: windowsfs
+    version: create
+    url: file://release

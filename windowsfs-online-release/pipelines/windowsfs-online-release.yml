@@ -211,41 +211,19 @@ jobs:
     params:
       COPY_ACTIONS: |
         {input-01/operations/use-compiled-releases.yml,combined-assets}
-        {input-01/operations/use-compiled-releases-windows.yml,combined-assets}
+        {input-01/operations/experimental/use-compiled-releases-windows.yml,combined-assets}
         {input-01/operations/windows2019-cell.yml,combined-assets}
         {ci/windowsfs-online-release/opsfiles/use-windowsfs-online-release.yml,combined-assets}
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
     input_mapping:
       ops-files: combined-assets
+      release: repo
       vars-files: prepared-env
       toolsmiths-env: env
     params:
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
       FAIL_ON_DOWNTIME: "false"
-      VARS_FILES: vars.yml
-      OPS_FILES: #@ "\n".join(data.values.opsfiles)
-  - task: uptimer-measure-with-windowsfs-online-release-update
-    file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
-    input_mapping:
-      ops-files: combined-assets
-      release: repo
-      vars-files: prepared-env
-      toolsmiths-env: env
-    params:
-      DEPLOY_WITH_UPTIME_MEASUREMENTS: "true"
-      APP_PUSHABILITY_THRESHOLD: "20"
-      HTTP_AVAILABILITY_THRESHOLD: "20"
-      TCP_AVAILABILITY_THRESHOLD: "20"
-      AVAILABLE_PORT: "-1"
-      TCP_PORT: "1029"
-      FAIL_ON_DOWNTIME: "true"
-      MEASURE_SYSLOG_AVAILABILITY: "false"
-      MEASURE_TCP_AVAILABILITY: "true"
-      RECENT_LOGS_THRESHOLD: "50"
-      STREAMING_LOGS_THRESHOLD: "50"
-      APP_SYSLOG_AVAILABILITY_THRESHOLD: "50"
-      USE_SINGLE_APP_INSTANCE: "false"
       VARS_FILES: vars.yml
       OPS_FILES: #@ "\n".join(data.values.opsfiles)
   - task: open-asg-for-credhub
