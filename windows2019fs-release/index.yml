@@ -1,0 +1,9 @@
+#@data/values
+---
+#@overlay/match missing_ok=True
+
+opsfiles:
+- use-compiled-releases.yml
+- use-compiled-releases-windows.yml
+- windows2019-cell.yml
+- use-offline-windows2019fs.yml

@@ -1,0 +1,453 @@
+#@ load("@ytt:data", "data")
+#@ load("ytt-helpers.star", "helpers")
+
+#! Define-Groups
+groups:
+- name: release
+  jobs:
+  - bump-windows2019fs-release
+  - claim-env
+  - prepare-env
+  - run-wats
+  - export-release
+  - ship-what
+  - ship-it
+  - unclaim-env
+
+resource_types:
+- name: shepherd
+  type: registry-image
+  source:
+    repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
+    tag: v1  #! This may be bumped in the future
+
+#! Define-Resources
+resources:
+- name: windows2016fs
+  type: git
+  source:
+    branch: with-oss-ci-export
+    uri: https://github.com/cloudfoundry/windows2016fs.git
+    paths: [ 2019/IMAGE_TAG ]
+
+- name: repo
+  type: git
+  source:
+    branch: with-oss-ci-export
+    uri: git@github.com:cloudfoundry/windows2019fs-release.git
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: release-branch 
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/windows2019fs-release.git
+    branch: release
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: develop-branch-mergeback
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/windows2019fs-release.git
+    branch: develop
+    private_key: ((github-tas-runtime-bot/private-key))
+    
+- name: ci
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+
+- name: env-lock
+  source:
+    branch: main
+    pool: windows2019fs-release-env-lock 
+    private_key: ((github-tas-runtime-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+  type: pool
+
+- name: cf-deployment
+  type: git
+  icon: github-box
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/cf-deployment.git
+
+- name: cf-deployment-concourse-tasks
+  type: git
+  icon: github-box
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
+
+- name: cf-acceptance-tests
+  type: git
+  icon: github-box
+  source:
+    branch: release-candidate
+    uri: https://github.com/cloudfoundry/cf-acceptance-tests
+
+
+- name: image
+  type: docker-image                             
+  source:                                        
+    repository: cloudfoundry/tas-runtime-build
+    tag: 'latest'
+
+- name: env
+  type: shepherd
+  source:
+    url: https://v2.shepherd.run
+    service-account-key: ((shepherd-service-account-key))
+    lease:
+      namespace: tas-runtime
+      pool:
+        namespace: official
+        name: cfd
+    compatibility-mode: environments-app
+
+- name: github-release
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    repository: windows2019fs-release
+    owner: cloudfoundry
+  type: github-release
+
+- name: draft-github-release 
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    drafts: true
+    repository: windows2019fs-release
+    owner: cloudfoundry
+  type: github-release
+
+- name: version
+  type: semver
+  source:
+    driver: gcs
+    bucket: ci-release-versions
+    key: windows2019fs-release//version
+    json_key: ((gcp-tas-runtime-service-account/config-json))
+    initial_version: 2.47.0
+
+#! Define-Jobs
+jobs:
+- name: bump-windows2019fs-release
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+    - get: windows2016fs
+      trigger: true
+    - get: image
+  - task: combine-assets
+    file: ci/shared/tasks/combine-assets/linux.yml
+    image: image
+    input_mapping:
+      input-01: windows2016fs
+    output_mapping:
+      combined-assets: version
+    params:
+      COPY_ACTIONS: |
+        {input-01/2019/IMAGE_TAG,combined-assets/version}
+  - task: build-binaries
+    tags: [ diego-windows ]
+    file: ci/shared/tasks/build-binaries/windows.yml
+    params:
+      DEFAULT_PARAMS: "ci/windows2019fs-release/default-params/build-binaries/windows.yml"
+  - task: bump-repo-windows2016fs-version
+    file: ci/shared/tasks/bump-repo-version-file/linux.yml
+    image: image
+    params:
+      BUMP_ACTION: |
+        blob_version=$(grep windows2019fs windowsfs-release/config/blobs.yml |  grep -o '[0-9]\+.[0-9]\+.[0-9]\+')
+        mkdir -p blobs/windows2019fs
+        $dir/hydrate download -image cloudfoundry/windows2016fs -outputDir blobs/windows2019fs -tag ${VERSION}
+
+        bosh remove-blob "windows2019fs/windows2016fs-$blob_version.tgz"
+        bosh add-blob "blobs/windows2019fs/windows2016fs-${VERSION}.tgz" "windows2019fs/windows2016fs-${VERSION}.tgz"
+
+        rm "blobs/windows2019fs/windows2016fs-${VERSION}.tgz"
+  - put: repo
+    params:
+      rebase: true
+      repository: bumped-repo
+
+- name: claim-env
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+      passed:
+        - bump-windows2019fs-release
+    - get: image
+    - put: env-lock
+      params:
+       acquire: true
+  - put: env
+    params:
+      action: create
+      duration: 176h
+      resource: env
+    timeout: 6h
+
+- name: prepare-env
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+      passed: [claim-env]
+    - get: image
+    - get: cf-deployment
+    - get: cf-deployment-concourse-tasks
+    - get: env
+      passed: [claim-env]
+      trigger: true
+  - task: prepare-cf-deployment-env
+    image: image
+    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+  - task: combine-ops-files
+    file: ci/shared/tasks/combine-assets/linux.yml
+    image: image
+    input_mapping:
+      input-01: cf-deployment
+    params:
+      COPY_ACTIONS: |
+        {input-01/operations/use-compiled-releases.yml,combined-assets}
+        {input-01/operations/use-compiled-releases-windows.yml,combined-assets}
+        {input-01/operations/windows2019-cell.yml,combined-assets}
+        {input-01/operations/use-offline-windows2019fs.yml,combined-assets}
+  - task: deploy-cf-deployment
+    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    input_mapping:
+      ops-files: combined-assets
+      vars-files: prepared-env
+      toolsmiths-env: env
+    params:
+      DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
+      FAIL_ON_DOWNTIME: "false"
+      VARS_FILES: vars.yml
+      OPS_FILES: #@ "\n".join(data.values.opsfiles)
+  - task: uptimer-measure-with-windows2019fs-release-update
+    file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
+    input_mapping:
+      ops-files: combined-assets
+      release: repo
+      vars-files: prepared-env
+      toolsmiths-env: env
+    params:
+      DEPLOY_WITH_UPTIME_MEASUREMENTS: "true"
+      APP_PUSHABILITY_THRESHOLD: "20"
+      HTTP_AVAILABILITY_THRESHOLD: "20"
+      TCP_AVAILABILITY_THRESHOLD: "20"
+      AVAILABLE_PORT: "-1"
+      TCP_PORT: "1029"
+      FAIL_ON_DOWNTIME: "true"
+      MEASURE_SYSLOG_AVAILABILITY: "false"
+      MEASURE_TCP_AVAILABILITY: "true"
+      RECENT_LOGS_THRESHOLD: "50"
+      STREAMING_LOGS_THRESHOLD: "50"
+      APP_SYSLOG_AVAILABILITY_THRESHOLD: "50"
+      USE_SINGLE_APP_INSTANCE: "false"
+      VARS_FILES: vars.yml
+      OPS_FILES: #@ "\n".join(data.values.opsfiles)
+  - task: open-asg-for-credhub
+    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      INSTANCE_GROUP_NAME: credhub
+      SECURITY_GROUP_NAME: credhub
+  - task: open-asg-for-uaa
+    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      INSTANCE_GROUP_NAME: uaa
+      SECURITY_GROUP_NAME: uaa
+  - task: enable-feature-flags-for-cats
+    file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
+
+- name: run-wats
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: cf-deployment-concourse-tasks
+    - get: cf-acceptance-tests
+    - get: cf-deployment
+  - task: create-cats-config
+    image: image
+    file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
+    params:
+      CONFIGS: wats
+      WITH_ISOSEG: true
+      WITH_DYNAMIC_ASG: true
+  - task: cats
+    file: cf-deployment-concourse-tasks/run-cats/task.yml
+    attempts: 2
+    input_mapping:
+      integration-config: built-acceptance-test-configs
+    params:
+      CONFIG_FILE_PATH: wats.json
+
+- name: export-release
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: cf-deployment-concourse-tasks
+  - task: export-release
+    file: ci/shared/tasks/bosh-export-release/linux.yml
+    image: image
+    params:
+      OS: windows
+
+- name: ship-what
+  plan:
+    - in_parallel:
+        steps:
+        - get: ci
+        - get: repo
+          passed:
+            - run-wats
+            - export-release
+          trigger: true
+        - get: image
+        - get: release-branch
+          params:
+            submodules: none
+        - get: github-release
+        - get: version
+        - get: env
+          passed:
+            - run-wats
+            - export-release
+          trigger: true
+
+    - task: check-safe-to-release-repo
+      image: image
+      file: ci/shared/tasks/check-safe-to-release-repo/linux.yml
+      input_mapping:
+        release-repo: release-branch
+
+    - task: build-release-notes-windows2019fs-release
+      image: image
+      file: ci/shared/tasks/build-release-notes/linux.yml
+      input_mapping:
+        previous-github-release: github-release
+
+- name: ship-it
+  serial: true
+  plan:
+    - in_parallel:
+        steps:
+        - get: ci
+        - get: repo
+          passed: [ ship-what ]
+        - get: image
+        - get: release-branch
+          params:
+            submodules: none
+        - get: github-release
+        - get: version
+        - get: develop-branch-mergeback
+          params:
+            submodules: none
+
+    - task: check-safe-to-release-branch
+      image: image
+      file: ci/shared/tasks/check-safe-to-release-repo/linux.yml
+      input_mapping:
+        release-repo: release-branch
+
+    - task: build-release-notes-windows2019fs-release
+      image: image
+      file: ci/shared/tasks/build-release-notes/linux.yml
+      input_mapping:
+        previous-github-release: github-release
+
+    - task: bosh-finalize-release
+      image: image
+      file: ci/shared/tasks/bosh-finalize-release/linux.yml
+      params:
+        AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+
+    - put: release-branch
+      params:
+        repository: finalized-release-repo
+        tag: version/number
+        tag_prefix: v
+
+    - task: merge-release-onto-develop
+      image: image
+      file: ci/shared/tasks/git-merge-branches/linux.yml
+      input_mapping:
+        source-branch: release-branch
+        onto-branch: develop-branch-mergeback
+      params:
+        SOURCE_BRANCH_NAME: release
+        ONTO_BRANCH_NAME: develop
+
+    - in_parallel:
+        steps:
+        - put: draft-github-release
+          params:
+            name: version/number
+            tag: version/number
+            tag_prefix: v
+            body: built-release-notes/notes.md
+            globs:
+            - finalized-release-tarball/windowsfs-*.tgz
+        - put: develop-branch-mergeback
+          params:
+            repository: merged-branch
+
+    - get: next-version
+      resource: version
+      params: {bump: minor}
+    - put: next-version
+      resource: version
+      params: {file: next-version/number}
+
+- name: unclaim-env
+  serial: true
+  plan:
+  - get: env
+    passed: [ship-what]
+    trigger: true
+  - get: env-lock
+  - put: env
+    params:
+      action: release
+      resource: env
+  - params:
+      release: env-lock #! path to the resource in the above get
+    put: env-lock

@@ -1,0 +1,6 @@
+---
+params:
+  MAPPING: |
+    build_hydrator=src/code.cloudfoundry.org/hydrator/cmd/hydrate
+  FUNCTIONS: ci/windows2019fs-release/helpers/build-binaries.bash
+
