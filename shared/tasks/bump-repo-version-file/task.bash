@@ -10,6 +10,8 @@ source "$THIS_FILE_DIR/../../../shared/helpers/git-helpers.bash"
 unset THIS_FILE_DIR
 
 function run(){
+    git_configure_author
+    git_configure_safe_directory
     export VERSION=$(cat version/version)
     pushd repo > /dev/null
 
