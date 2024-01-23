@@ -1,0 +1,7 @@
+---
+readme: |
+  This task will bump repo's version-file with BUMP_ACTION
+oses:
+  - linux
+params:
+  BUMP_ACTION: Multiline action that will be evaluated
