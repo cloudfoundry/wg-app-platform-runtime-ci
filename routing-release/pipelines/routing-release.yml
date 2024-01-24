@@ -482,6 +482,7 @@ jobs:
     params:
       COPY_ACTIONS: |
         {ci/routing-release/opsfiles/disable-bbr-non-routing.yml,combined-assets}
+        {ci/routing-release/opsfiles/temp-tls-health-check-compensation.yml,combined-assets}
         {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
         {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
         {ci/shared/opsfiles/add-smoke-tests.yml,combined-assets}
