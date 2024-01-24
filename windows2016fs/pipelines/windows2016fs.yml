@@ -1,0 +1,186 @@
+#! Define-Groups
+groups:
+- name: release
+  jobs:
+  - build-test-push-windows2016fs
+
+resource_types:
+- name: command-runner
+  type: docker-image
+  source:
+    repository: cloudfoundrydevelopers/command-runner-resource
+    tag: latest
+
+#! Define-Resources
+resources:
+- name: windowsservercore-2019
+  type: docker-image
+  source:
+    repository: mcr.microsoft.com/windows/servercore
+    tag: "1809-amd64"
+
+- name: repo
+  type: git
+  source:
+    branch: with-oss-ci-export
+    uri: git@github.com:cloudfoundry/windows2016fs.git
+    private_key: ((github-tas-runtime-bot/private-key))
+#! Git for Windows Release
+
+- name: git-setup
+  type: github-release
+  check_every: '5m'
+  source:
+    user: git-for-windows
+    repository: git
+    access_token: ((github-tas-runtime-bot/access-token))
+
+#!  version management
+- name: vcredist-ucrt
+  type: command-runner
+  source:
+    version_key: "url"
+    check_command: "curl --location --silent --write-out %{url_effective} --request HEAD https://aka.ms/vs/16/release/vc_redist.x64.exe"
+    in_command:    "curl --location --silent --fail --output $1/vcredist-ucrt.x64.exe https://aka.ms/vs/16/release/vc_redist.x64.exe"
+- name: vcredist-ucrt-x86
+  type: command-runner
+  source:
+    version_key: "url"
+    check_command: "curl --location --silent --write-out %{url_effective} --request HEAD https://aka.ms/vs/16/release/vc_redist.x86.exe"
+    in_command:    "curl --location --silent --fail --output $1/vcredist-ucrt.x86.exe https://aka.ms/vs/16/release/vc_redist.x86.exe"
+- name: vcredist-2010
+  type: command-runner
+  source:
+    version_key: "2010-hardcoded-url"
+    check_command: "echo https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe"
+    in_command:    "curl --silent --fail --output $1/vcredist-2010.x64.exe https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe"
+- name: vcredist-2010-x86
+  type: command-runner
+  source:
+    version_key: "2010-hardcoded-url"
+    check_command: "echo https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe"
+    in_command:    "curl --silent --fail --output $1/vcredist-2010.x86.exe https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe"
+- name: dotnet-48-installer
+  type: command-runner
+  source:
+    version_key: "dotnet-installer-hardcoded-url"
+    check_command: "echo https://download.visualstudio.microsoft.com/download/pr/014120d7-d689-4305-befd-3cb711108212/0fd66638cde16859462a6243a4629a50/ndp48-x86-x64-allos-enu.exe"
+    in_command:    "curl --silent --fail --output $1/dotnet-48-installer.exe https://download.visualstudio.microsoft.com/download/pr/014120d7-d689-4305-befd-3cb711108212/0fd66638cde16859462a6243a4629a50/ndp48-x86-x64-allos-enu.exe"
+- name: rewrite-msi
+  type: command-runner
+  source:
+    version_key: "rewrite-msi-url"
+    check_command: "echo https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi"
+    in_command:    "curl --silent --fail --output $1/rewrite.msi https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi"
+
+
+- name: ci
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+
+- name: version
+  type: semver
+  source:
+    access_key_id: ((aws-s3-867058893013-svc-gdn-win-bosh-s3/access-key-id))
+    secret_access_key: ((aws-s3-867058893013-svc-gdn-win-bosh-s3/secret-access-key))
+    assume_role_arn: ((aws-s3-867058893013-svc-gdn-win-bosh-s3/assume-role))
+    bucket: windows2019fs
+    initial_version: 2019.0.1
+    key: image-version
+    region_name: us-east-1
+
+- name: image
+  type: docker-image                             
+  source:                                        
+    repository: cloudfoundry/tas-runtime-build
+    tag: 'latest'
+
+#! Define-Jobs
+jobs:
+- name: build-test-push-windows2016fs
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+    - get: image
+    - get: windowsservercore-2019
+      trigger: true
+      params:
+        save: false
+        rootfs: false
+        skip_download: true
+    - get: git-setup
+      params:
+        globs: [Git-*-64-bit.exe]
+    - get: vcredist-ucrt
+      trigger: true
+    - get: vcredist-ucrt-x86
+      trigger: true
+    - get: vcredist-2010
+      trigger: true
+    - get: vcredist-2010-x86
+      trigger: true
+    - get: dotnet-48-installer
+      trigger: true
+    - get: rewrite-msi
+      trigger: true
+    - get: version
+      params: {bump: patch}
+  - task: combine-assets
+    file: ci/shared/tasks/combine-assets/linux.yml
+    image: image
+    input_mapping:
+      input-01: git-setup
+      input-02: vcredist-ucrt
+      input-03: vcredist-ucrt-x86
+      input-04: vcredist-2010-x86
+      input-05: vcredist-2010
+      input-06: dotnet-48-installer
+      input-07: rewrite-msi
+      input-08: repo
+    params:
+      COPY_ACTIONS: |
+        {input-01/Git-*-64-bit.exe,combined-assets}
+        {input-02/vcredis*.exe,combined-assets}
+        {input-03/vcredis*.exe,combined-assets}
+        {input-04/vcredis*.exe,combined-assets}
+        {input-05/vcredis*.exe,combined-assets}
+        {input-06/dotnet-48-installer.exe,combined-assets}
+        {input-07/rewrite.msi,combined-assets}
+        {input-08/2019/Dockerfile,combined-assets}
+  - task: build-test-push-windows2016fs
+    file: ci/shared/tasks/run-bin-test/windows.yml
+    input_mapping:
+      built-binaries: combined-assets
+      input-01: windowsservercore-2019
+      input-02: version
+    params:
+      ENVS: |
+        UPSTREAM_IMAGE_DIGEST=$PWD/input-01/digest
+        VERSION_NUMBER=$PWD/input-02/number
+        BUILT_BINARIES=$PWD/built-binaries
+        IMAGE_NAME=cloudfoundry/windows2016fs
+        DOCKER_USERNAME=((dockerhub-tasruntime/user))
+        DOCKER_PASSWORD=((dockerhub-tasruntime/password))
+        OS_VERSION="2019"
+        SHARE_IP=((azure-storage-acct-gardenwindowzcismb/ip))
+        SHARE_FQDN=((azure-storage-acct-gardenwindowzcismb/fqdn))
+        SHARE_NAME=((azure-storage-acct-gardenwindowzcismb/name))
+        SHARE_USERNAME=((azure-storage-acct-gardenwindowzcismb/username))
+        SHARE_PASSWORD=((azure-storage-acct-gardenwindowzcismb/password))
+  - put: version
+    params:
+      file: version/version
+  - task: bump-repo-windows2016fs-version
+    file: ci/shared/tasks/bump-repo-version-file/linux.yml
+    image: image
+    params:
+      BUMP_ACTION: |
+        echo ${VERSION} > 2019/IMAGE_TAG
+  - put: repo
+    params:
+      rebase: true
+      repository: bumped-repo
