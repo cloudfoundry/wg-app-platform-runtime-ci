@@ -12,9 +12,8 @@ resources:
 - name: image
   type: docker-image                             
   source:                                        
-    repository: cloudfoundry/image
+    repository: cloudfoundry/tas-runtime-build
     tag: 'latest'
-
 - name: late-at-night
   type: time
   icon: clock
@@ -34,5 +33,4 @@ jobs:
       - get: ci
       - get: image
   - task: go-clean-cache
-    image: image
     file: ci/shared/tasks/go-clean-cache/windows.yml
