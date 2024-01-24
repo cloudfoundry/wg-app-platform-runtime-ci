@@ -14,6 +14,11 @@ groups:
   - ship-it
   - unclaim-env
 
+- name: periodics
+  jobs:
+  - bump-dependencies-go-mod
+  - bump-package-golang
+
 resource_types:
 - name: shepherd
   type: registry-image
@@ -129,6 +134,13 @@ resources:
     json_key: ((gcp-tas-runtime-service-account/config-json))
     initial_version: 2.47.0
 
+- name: go-version
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: [go-version.json]
+
 - name: golang-release-latest
   type: git
   icon: github-box
@@ -136,8 +148,66 @@ resources:
     tag_filter: v*
     uri: https://github.com/bosh-packages/golang-release.git
 
+- name: weekly
+  type: time
+  icon: clock
+  source:
+    interval: '168h'  #! 1 week
+
 #! Define-Jobs
 jobs:
+- name: bump-dependencies-go-mod
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: repo
+      - get: image
+      - get: weekly
+        trigger: true
+  - task: windows2019fs-release-bump-dependencies-go-mod
+    image: image
+    file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+  - put: repo
+    params:
+      rebase: true
+      repository: bumped-repo
+
+- name: bump-package-golang
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+    - get: image
+    - get: go-version
+      trigger: true
+    - get: golang-release-latest
+      trigger: true
+
+  - task: bump-golang-package-name
+    image: image
+    file: ci/shared/tasks/bump-golang-package-name/linux.yml
+    params:
+      PLATFORM: windows
+
+  - task: bump-golang-linux
+    file: ci/shared/tasks/bosh-vendor-package/linux.yml
+    image: image
+    input_mapping:
+      repo: bumped-repo
+      package-release: golang-release-latest
+    params:
+      PACKAGE_NAME: golang-*-windows
+      AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
+      AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
+      AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+
+  - put: repo
+    params:
+      rebase: true
+      repository: vendored-repo
+
 - name: bump-windows2019fs-release
   serial: true
   plan:
