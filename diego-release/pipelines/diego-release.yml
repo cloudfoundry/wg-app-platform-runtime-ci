@@ -616,7 +616,7 @@ jobs:
           Build-Groot=src/code.cloudfoundry.org/groot-windows
           Build-Winc-Network=src/code.cloudfoundry.org/winc/cmd/winc-network
           Build-Winc=src/code.cloudfoundry.org/winc/cmd/winc
-          Build-Nstar=src/nstar
+          Build-Nstar=src/code.cloudfoundry.org/nstar
     - task: build-binaries-for-garden-runc-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
       tags: [ diego-windows ]
