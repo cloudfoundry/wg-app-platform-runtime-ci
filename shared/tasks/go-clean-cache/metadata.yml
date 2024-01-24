@@ -1,0 +1,5 @@
+---
+readme: |
+  This taske will clean go-cache on an interval on windows
+oses:
+  - windows

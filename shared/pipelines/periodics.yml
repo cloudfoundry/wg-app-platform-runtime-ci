@@ -1,0 +1,38 @@
+groups:
+- name: main
+  jobs:
+  - go-clean-cache-windows
+
+resources:
+- name: ci
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+- name: image
+  type: docker-image                             
+  source:                                        
+    repository: cloudfoundry/image
+    tag: 'latest'
+
+- name: late-at-night
+  type: time
+  icon: clock
+  source:
+    start: 11:00 PM
+    stop: 11:30 PM
+    location: America/New_York
+
+jobs:
+- name: go-clean-cache
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: late-at-night
+        trigger: true
+      - get: ci
+      - get: image
+  - task: go-clean-cache
+    image: image
+    file: ci/shared/tasks/go-clean-cache/windows.yml

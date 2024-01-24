@@ -27,7 +27,6 @@ function Build-Winit
     Pop-Location
     $PS1FILE='$env:WINIT_BINARY="$PWD/{0}"' -f "$BuiltDir/winit/run.exe"
         Set-Content -Path "$Target/run.ps1" -Value $PS1FILE -Encoding Asci
-        Clean-GoCache
 }
 
 function Build-Gdn
@@ -62,5 +61,4 @@ $env:GDN_ERR_LOG_FILE="$PWD/{2}"
 $env:GDN_BIND_IP="127.0.0.1"
 $env:GDN_BIND_PORT=8888' -f "$BuiltDir/gdn/run.exe", "$BuiltDir/gdn/out.log", "$BuiltDir/gdn/err.log"
         Set-Content -Path "$Target/run.ps1" -Value $PS1FILE -Encoding Asci
-        Clean-GoCache
 }

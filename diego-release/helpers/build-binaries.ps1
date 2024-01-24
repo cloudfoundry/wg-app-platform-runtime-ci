@@ -27,5 +27,4 @@ function Build-Nats-Server
 
     $PS1FILE='$env:NATS_SERVER_BINARY="$PWD/{0}"' -f "$BuiltDir\nats-server\run.exe" 
         Set-Content -Path "$Target/run.ps1" -Value $PS1FILE -Encoding Asci
-        Clean-GoCache
 }
