@@ -325,7 +325,6 @@ jobs:
       - get: image
       - get: envoy-release
         trigger: true
-      - get: diego-release-envoy-bump
   - file: ci/diego-release/tasks/create-envoy-blob/linux.yml
     task: create-envoy-blob
     image: image
