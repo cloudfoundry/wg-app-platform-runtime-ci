@@ -1,0 +1,5 @@
+---
+readme: |
+  This task will pull the correct docker-image to build HOTFIX metadata for release-notes
+oses:
+  - windows
