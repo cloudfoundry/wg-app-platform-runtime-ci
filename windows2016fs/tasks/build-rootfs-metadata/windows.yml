@@ -14,4 +14,4 @@ run:
   - "-ExecutionPolicy"
   - "Bypass"
   - "-File"
-  - ci/windows2016fs/tasks/build-rootfs-metadata/run.ps1
+  - ci/windows2016fs/tasks/build-rootfs-metadata/task.ps1
