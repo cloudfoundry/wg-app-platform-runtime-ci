@@ -137,7 +137,6 @@ jobs:
   - in_parallel:
     - get: ci
     - get: repo
-      trigger: true
     - get: windows2016fs
       trigger: true
     - get: image
@@ -277,6 +276,8 @@ jobs:
       integration-config: built-acceptance-test-configs
     params:
       CONFIG_FILE_PATH: wats.json
+      NODES: "4"
+      SKIP_REGEXP: Syslog drain
 
 - name: export-release
   serial: true

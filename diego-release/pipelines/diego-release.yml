@@ -322,14 +322,17 @@ jobs:
       steps:
       - get: ci
       - get: repo
+      - get: image
       - get: envoy-release
         trigger: true
       - get: diego-release-envoy-bump
   - file: ci/diego-release/tasks/create-envoy-blob/linux.yml
     task: create-envoy-blob
+    image: image
     params:
       GCP_KEY: ((gcp-tas-runtime-service-account/config-json))
   - file: ci/diego-release/bump-dependencies-envoy/linux.yml
+    image: image
     params:
       AWS_ACCESS_KEY_ID: ((aws-s3-diego-release-blobs/access-key-id))
       AWS_SECRET_ACCESS_KEY: ((aws-s3-diego-release-blobs/secret-access-key))
