@@ -270,7 +270,7 @@ jobs:
       CONFIGS: wats
       WITH_ISOSEG: true
       WITH_DYNAMIC_ASG: true
-  - task: cats
+  - task: wats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     attempts: 2
     input_mapping:
