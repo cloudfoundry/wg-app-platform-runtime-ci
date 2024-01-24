@@ -1,6 +1,8 @@
 ---
 readme: |
   This task will bump repo's version-file with BUMP_ACTION
+extra_inputs:
+  built-binaries: (Optional) This will optionally take built-binaries (chained with build-binaries task) that have corresponding source files (run.bash) to be used at runtime.
 oses:
   - linux
 params:

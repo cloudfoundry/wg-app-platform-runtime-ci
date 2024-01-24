@@ -13,6 +13,18 @@ function run(){
     git_configure_author
     git_configure_safe_directory
     export VERSION=$(cat version/version)
+
+    if [[ -d "built-binaries" ]]; then
+        IFS=$'\n'
+        for entry in $(find built-binaries -name "*.bash");
+        do
+            echo "Sourcing: $entry"
+            debug "$(cat $entry)"
+            source "${entry}"
+        done
+        unset IFS
+    fi
+
     pushd repo > /dev/null
 
     eval "${BUMP_ACTION}"
