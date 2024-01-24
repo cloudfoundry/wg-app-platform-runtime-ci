@@ -9,8 +9,6 @@ source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
 source "$THIS_FILE_DIR/../../../shared/helpers/git-helpers.bash"
 unset THIS_FILE_DIR
 
-: "GO_MODS: ${GO_MODS:?Need to set GO_MODS}"
-
 export CURRENT_DIR="$PWD"
 
 function git_diff_pretty() {
@@ -56,7 +54,7 @@ function run() {
 
   expand_functions
 
-  for entry in ${GO_MODS}
+  for entry in ${GO_MODS:-""}
   do
 
     dir_name=$(dirname "$entry")
