@@ -73,7 +73,6 @@ resources:
     check_command: "echo https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi"
     in_command:    "curl --silent --fail --output $1/rewrite.msi https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi"
 
-
 - name: ci
   type: git
   source:
@@ -171,16 +170,29 @@ jobs:
         SHARE_NAME=((azure-storage-acct-gardenwindowzcismb/name))
         SHARE_USERNAME=((azure-storage-acct-gardenwindowzcismb/username))
         SHARE_PASSWORD=((azure-storage-acct-gardenwindowzcismb/password))
-  - put: version
-    params:
-      file: version/version
+  - task: build-rootfs-metadata
+    file: ci/windows2016fs/tasks/build-rootfs-metadata/windows.yml
   - task: bump-repo-windows2016fs-version
     file: ci/shared/tasks/bump-repo-version-file/linux.yml
     image: image
     params:
       BUMP_ACTION: |
         echo ${VERSION} > 2019/IMAGE_TAG
-  - put: repo
+  - task: add-kb-metadata
+    file: ci/shared/tasks/combine-assets/linux.yml
+    input_mapping:
+      input-01: bumped-repo
+      input-02: built-metadata
     params:
-      rebase: true
-      repository: bumped-repo
+      COPY_ACTIONS: |
+        {input-01/*,combined-assets}
+        {input-02/kb-metadata,combined-assets/2019/kb-metadata}
+  - in_parallel:
+    - do:
+      - put: repo
+        params:
+          rebase: true
+          repository: combined-assets
+      - put: version
+        params:
+          file: version/version

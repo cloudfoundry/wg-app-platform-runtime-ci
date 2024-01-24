@@ -3,6 +3,8 @@ trap { $host.SetShouldExit(1) }
 
 $version=(cat version/version)
 
+New-Item -ItemType Directory -Path "$PWD\built-metadata" -Force
+
 docker run `
   -v "$PWD\built-metadata:c:\built-metadata" `
   -w c:\built-metadata`
@@ -13,7 +15,7 @@ if ($LASTEXITCODE -ne 0) {
   throw "failed to build metadata"
 }
 
-Write-Output "$env:IMAGE_NAME:$version"
+Write-Output "cloudfoundry/windows2016fs:$version"
 Get-Content "$PWD\built-metadata\kb-metadata"
 
 
