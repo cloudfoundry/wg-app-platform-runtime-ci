@@ -54,7 +54,7 @@ function run() {
 
   expand_functions
 
-  for entry in ${GO_MODS:-""}
+  for entry in ${GO_MODS:-}
   do
 
     dir_name=$(dirname "$entry")
