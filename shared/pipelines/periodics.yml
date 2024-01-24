@@ -24,7 +24,7 @@ resources:
     location: America/New_York
 
 jobs:
-- name: go-clean-cache
+- name: go-clean-cache-windows
   serial: true
   plan:
   - in_parallel:
