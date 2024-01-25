@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-
-set -ex
-
-cp image-version/version windows2016fs/$OS_VERSION/IMAGE_TAG
-cp -r windows2016fs/. windows2016fs-updated

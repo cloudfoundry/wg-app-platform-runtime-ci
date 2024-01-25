@@ -1,6 +1,0 @@
----
-- path: /releases/name=diego?
-  type: replace
-  value:
-    name: diego
-    version: latest

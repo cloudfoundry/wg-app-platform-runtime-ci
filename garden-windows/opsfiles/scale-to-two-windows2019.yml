@@ -1,5 +1,0 @@
----
-# Use this to create multiple windows2019 cells
-- type: replace
-  path: /instance_groups/name=windows2019-cell/instances
-  value: 2

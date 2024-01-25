@@ -1,5 +1,0 @@
----
-- type: replace
-  path: /instance_groups/name=windows2019-cell/jobs/name=rep_windows/properties/diego/rep/placement_tags?
-  value:
-  - "windows2019"

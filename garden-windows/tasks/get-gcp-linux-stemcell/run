@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-set -eux
-
-version=$(bosh int --path '/stemcells/os=ubuntu-jammy/version' ${bosh_manifest_path})
-cd stemcell
-curl -Lo "light-bosh-stemcell-${version}-google-kvm-ubuntu-jammy.tgz" \
-    "https://bosh.io/d/stemcells/bosh-google-kvm-ubuntu-jammy-go_agent?v=${version}"

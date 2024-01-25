@@ -1,7 +1,0 @@
----
-- type: replace
-  path: /instance_groups/name=windows2019-cell/instances
-  value: 1
-- type: replace
-  path: /instance_groups/name=windows2019-cell/azs
-  value: [ z1 ]
