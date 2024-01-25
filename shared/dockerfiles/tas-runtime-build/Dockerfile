@@ -10,6 +10,7 @@ RUN \
     curl \
     dnsutils \
     dnsmasq \
+    dos2unix \
     file \
     flex \
     gettext \
