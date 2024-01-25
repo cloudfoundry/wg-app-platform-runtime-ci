@@ -53,6 +53,12 @@ function run(){
   bosh_io_resources="$(get_bosh_io_resources "${BOSH_IO_ORG}" "${repo_name}" "${new_version}")"
   popd > /dev/null
 
+  local extra_metadata
+  if [[ -d extra-metadata ]] && [[ -f extra-metadata/* ]]; then
+    extra_metadata=$(cat extra_metadata/*)
+  fi
+
+
   cat >> built-release-notes/notes.md <<EOF
 ## Changes
 
@@ -65,6 +71,7 @@ ${spec_diff}
 **Full Changelog**: https://github.com/${GITHUB_ORG}/${repo_name}/compare/${old_version}...${new_tag_version}
 
 ${bosh_io_resources}
+${extra_metadata:-}
 EOF
 
 

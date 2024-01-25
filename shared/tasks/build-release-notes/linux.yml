@@ -8,6 +8,8 @@ inputs:
   - name: version
   - name: released-binaries
     optional: true
+  - name: extra-metadata
+    optional: true
 
 outputs:
   - name: built-release-notes
