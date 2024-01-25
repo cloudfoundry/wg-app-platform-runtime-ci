@@ -330,7 +330,7 @@ jobs:
     image: image
     params:
       GCP_KEY: ((gcp-tas-runtime-service-account/config-json))
-  - file: ci/diego-release/bump-dependencies-envoy/linux.yml
+  - file: ci/diego-release/tasks/bump-dependencies-envoy/linux.yml
     image: image
     params:
       AWS_ACCESS_KEY_ID: ((aws-s3-diego-release-blobs/access-key-id))
