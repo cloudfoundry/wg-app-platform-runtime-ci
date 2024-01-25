@@ -11,9 +11,9 @@ docker run `
   --rm `
   "cloudfoundry/windows2016fs:$version" `
   "powershell" "-Command" "Get-Hotfix | Select HotFixID,InstalledOn,Description,InstalledBy > kb-metadata"
-# if ($LASTEXITCODE -ne 0) {
-#   throw "failed to build metadata"
-# }
+if ($LASTEXITCODE -ne 0) {
+  throw "failed to build metadata"
+}
 
-Write-Output "cloudfoundry/windows2016fs:$version"
+Add-Content -Path "$PWD\built-metadata\kb-metadata" -Value "Image:cloudfoundry/windows2016fs:$version"
 Get-Content "$PWD\built-metadata\kb-metadata"
