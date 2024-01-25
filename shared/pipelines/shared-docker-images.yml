@@ -2,9 +2,9 @@ resources:
 - name: daily
   type: time
   source:
-    location: America/New_York
-    start: "03:00"
-    stop: "04:00"
+    location: America/New_York # Timezone with the first people to wake up
+    start: '03:00'             # 6 Hours before the "official" start of the workday
+    stop: '04:00'
 - name: ci
   type: git
   source:
