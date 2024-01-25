@@ -1,0 +1,13 @@
+---
+readme:
+  This directory contains the opsfiles needed for winc-release.
+opsfiles:
+  add-dc-to-security-groups.yml: Add Domain Controller for IWA tests
+  decrease-rep-evacuation-timeout.yml: <TODO> copied over and don't know why we are doing this
+  enable-rdp-2019.yml: Enable RDP for debug
+  enable-windows-auth.yml: for IWA tests
+  enable-windows-tcp-routes.yml: for IWA tests
+  latest-winc.yml: because we are using pesto, we have to have this opsfile for latest winc
+  scale-down-windows2019.yml: for IWA tests. Can be removed after this story www.pivotaltracker.com/story/show/186684047
+  use-2-azs-for-router.yml: <TODO> copied over and don't know why we are doing this
+  windows2019-cell-with-static-ip.yml: for IWA test. We need a static IP so that this would be the only cell talking to Domain Controller

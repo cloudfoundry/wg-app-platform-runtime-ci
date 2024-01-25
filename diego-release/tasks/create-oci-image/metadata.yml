@@ -6,7 +6,6 @@ oses:
 params:
   IMAGE_NAME: name of the docker image to create.
   DOCKERFILE_PATH: path to the Dockerfile from the root of the build directory
-  ORAS_CLI_PATH: path to the oras cli from the root of the build directory
   DOCKER_VERSION: version of docker to download + start
   DOCKERHUB_USERNAME: username to use to connect to dockerhub with
   DOCKERHUB_PASSWORD: password for the dockerhub user

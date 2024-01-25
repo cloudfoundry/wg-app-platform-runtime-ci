@@ -179,7 +179,7 @@ function allowed_task_files() {
         task.bash
         task.ps1
     )
-    for filepath in $(find . -ipath "*tasks/*/*" -type f)
+    for filepath in $(find . -ipath "*tasks/*/*" -type f | grep -Ev "ipv6-vm.tf")
     do
         local file
         file=$(basename "${filepath}")
@@ -195,11 +195,11 @@ function allowed_task_files() {
 
 function allowed_dirs() {
     debug "Running allowed_dirs function"
-    local release_list="garden-runc-release|routing-release|winc-release|nats-release|healthchecker-release|cf-networking-release|silk-release|envoy-nginx-release|cpu-entitlement-plugin|diego-release|test-log-emitter-release|windows-tools-release"
+    local release_list="garden-runc-release|routing-release|winc-release|nats-release|healthchecker-release|cf-networking-release|silk-release|envoy-nginx-release|cpu-entitlement-plugin|diego-release|test-log-emitter-release|windows-tools-release|windows2019fs-release|windowsfs-online-release|windows2016fs|wg-arp-garden-modules|wg-arp-diego-modules|wg-arp-networking-modules"
     local dir_patterns
     dir_patterns="$(cat <<EOF
 ^./bin/*$
-^./examples/(task|pipelines)*$
+^./examples/(task|pipeline)*$
 ^./examples/repo/(scripts-dir-with-db|scripts-dir-generic)$
 ^./examples/repo/(scripts-dir-with-db|scripts-dir-generic)/docker$
 ^./(shared|${release_list})/(helpers|opsfiles|linters|manifests|dockerfiles|pipelines|bin)$
