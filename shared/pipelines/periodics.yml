@@ -32,5 +32,10 @@ jobs:
         trigger: true
       - get: ci
       - get: image
-  - task: go-clean-cache
-    file: ci/shared/tasks/go-clean-cache/windows.yml
+  - in_parallel:
+    - do:
+    - task: go-clean-cache-on-windows-worker
+      file: ci/shared/tasks/go-clean-cache/windows.yml
+    - task: go-clean-cache-on-diego-windows-worker
+      tags: [ diego-windows ]
+      file: ci/shared/tasks/go-clean-cache/windows.yml
