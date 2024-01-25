@@ -292,7 +292,7 @@ jobs:
         {input-01/operations/use-compiled-releases.yml,combined-assets}
         {input-01/operations/experimental/use-compiled-releases-windows.yml,combined-assets}
         {input-01/operations/windows2019-cell.yml,combined-assets}
-        {ci/windowsfs-online-release/opsfiles/use-windowsfs-online-release.yml,combined-assets}
+        {input-01/operations/use-online-windows2019fs.yml,combined-assets}
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping:

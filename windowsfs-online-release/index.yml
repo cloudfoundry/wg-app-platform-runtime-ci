@@ -6,4 +6,4 @@ opsfiles:
 - use-compiled-releases.yml
 - use-compiled-releases-windows.yml
 - windows2019-cell.yml
-- use-windowsfs-online-release.yml
+- use-online-windows2019fs.yml
