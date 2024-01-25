@@ -54,7 +54,7 @@ function run(){
   popd > /dev/null
 
   local extra_metadata
-  if [[ -d extra-metadata ]] && [[ -f extra-metadata/* ]]; then
+  if [[ -d extra-metadata ]] && [[ $(compgen -G extra-metadata/*) ]]; then
     extra_metadata=$(cat extra_metadata/*)
   fi
 
