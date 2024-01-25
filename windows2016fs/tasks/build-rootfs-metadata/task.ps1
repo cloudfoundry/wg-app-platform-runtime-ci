@@ -7,6 +7,7 @@ New-Item -ItemType Directory -Path "$PWD\built-metadata" -Force
 
 docker run `
   -v "$PWD\built-metadata:c:\built-metadata" `
+  -w c:\built-metadata `
   --rm `
   "cloudfoundry/windows2016fs:$version" `
   "powershell" "-Command" "Get-Hotfix | Select HotFixID,InstalledOn,Description,InstalledBy > kb-metadata"
