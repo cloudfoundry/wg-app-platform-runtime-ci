@@ -172,27 +172,32 @@ jobs:
         SHARE_PASSWORD=((azure-storage-acct-gardenwindowzcismb/password))
   - task: build-rootfs-metadata
     file: ci/windows2016fs/tasks/build-rootfs-metadata/windows.yml
-  - task: bump-repo-windows2016fs-version
-    file: ci/shared/tasks/bump-repo-version-file/linux.yml
-    image: image
-    params:
-      BUMP_ACTION: |
-        echo ${VERSION} > 2019/IMAGE_TAG
   - task: add-kb-metadata
     file: ci/shared/tasks/combine-assets/linux.yml
+    image: image
     input_mapping:
-      input-01: bumped-repo
+      input-01: repo
       input-02: built-metadata
     params:
       COPY_ACTIONS: |
+        {input-01/.[^.]*,combined-assets}
         {input-01/*,combined-assets}
         {input-02/kb-metadata,combined-assets/2019/kb-metadata}
+  - task: bump-repo-windows2016fs-version
+    file: ci/shared/tasks/bump-repo-version-file/linux.yml
+    image: image
+    input_mapping:
+      repo: combined-assets
+    params:
+      BUMP_ACTION: |
+        echo ${VERSION} > 2019/IMAGE_TAG
+        dos2unix 2019/kb-metadata
   - in_parallel:
     - do:
       - put: repo
         params:
           rebase: true
-          repository: combined-assets
+          repository: bumped-repo
       - put: version
         params:
           file: version/version

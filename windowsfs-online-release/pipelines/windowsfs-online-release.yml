@@ -294,7 +294,7 @@ jobs:
         {input-01/operations/windows2019-cell.yml,combined-assets}
         {ci/windowsfs-online-release/opsfiles/use-windowsfs-online-release.yml,combined-assets}
   - task: deploy-cf-deployment
-    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping:
       ops-files: combined-assets
       release: repo
