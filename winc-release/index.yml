@@ -7,10 +7,8 @@ internal_repos:
 - name: cert-injector
 - name: certsplitter
 - name: diff-exporter
-  privileged: true
 - name: groot-windows
 - name: winc
-  privileged: true
 
 #! <OPTIONAL> set to a list of opsfile if pipeline needs to update cf-deployment
 opsfiles:

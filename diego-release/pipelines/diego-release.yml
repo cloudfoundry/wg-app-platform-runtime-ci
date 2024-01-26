@@ -155,7 +155,7 @@ resources:
     access_token: ((github-tas-runtime-bot/access-token))
     owner: envoyproxy
     repository: envoy
-    tag_filter: "v1.28.*"
+    tag_filter: "v1.29.*"
 
 - name: routing-release
   type: git

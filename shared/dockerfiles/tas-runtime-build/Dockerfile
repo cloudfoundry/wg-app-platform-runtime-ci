@@ -36,6 +36,7 @@ RUN \
     libyaml-dev \
     lsof \
     mercurial \
+    mingw-w64 \
     netcat \
     netcat-openbsd \
     net-tools \

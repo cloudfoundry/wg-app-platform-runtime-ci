@@ -186,8 +186,7 @@ jobs:
           passed: [hwc]
         - get: hwc-version
         - get: hwc-develop-branch-mergeback
-    - put: hwc-version
-      params: {bump: major}
+        - get: image
     - task: release-binaries
       file: ci/shared/tasks/run-bin-release-binaries/linux.yml
       image: image
@@ -219,4 +218,5 @@ jobs:
         tag: hwc-version/number
         globs:
           - released-binaries/*
-
+    - put: hwc-version
+      params: {bump: major}
