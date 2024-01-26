@@ -5,6 +5,9 @@
 groups:
 - name: test
   jobs: #@ helpers.packages_names_array(data.values.internal_repos) 
+- name: release
+  jobs:
+    - release-hwc
 
 #! Define-Resources
 resources:
@@ -38,6 +41,38 @@ resources:
   source:
     tag_filter: v*
     uri: https://github.com/bosh-packages/golang-release.git
+
+- name: hwc-release-branch 
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/hwc.git
+    branch: release
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: hwc-develop-branch-mergeback
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/hwc.git
+    branch: develop
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: hwc-version
+  type: semver
+  source:
+    bucket: hwc-release
+    key: versions/hwc-version
+    access_key_id: ((aws-s3-867058893013-svc-gdn-win-bosh-s3/access-key-id))
+    secret_access_key: ((aws-s3-867058893013-svc-gdn-win-bosh-s3/secret-access-key))
+    assume_role_arn: ((aws-s3-867058893013-svc-gdn-win-bosh-s3/assume-role))
+    initial_version: "1.0.0"
+
+- name: hwc-github-release
+  type: github-release
+  check_every: '5m'
+  source:
+    user: cloudfoundry
+    repository: hwc
+    access_token: ((github-tas-runtime-bot/access-token))
 
 #! Define-Jobs
 jobs:
@@ -143,3 +178,46 @@ jobs:
         DB: mysql
 #@ end
 #@ end
+- name: release-hwc
+  serial: true
+  plan:
+    - in_parallel:
+        - get: ci
+        - get: hwc
+          passed: [hwc]
+        - get: hwc-version
+        - get: hwc-develop-branch-mergeback
+    - put: hwc-version
+      params: {bump: major}
+    - task: release-binaries
+      file: ci/shared/tasks/run-bin-release-binaries/linux.yml
+      image: image
+      input_mapping:
+        version: hwc-version
+        repo: hwc
+      params:
+        OS: windows
+        ARCH: |
+          amd64
+          386
+    - put: hwc-release-branch
+      params:
+        repository: repo
+        tag: hwc-version/number
+        tag_prefix: v
+    - task: merge-release-onto-develop
+      image: image
+      file: ci/shared/tasks/git-merge-branches/linux.yml
+      input_mapping:
+        source-branch: hwc-release-branch
+        onto-branch: hwc-develop-branch-mergeback
+      params:
+        SOURCE_BRANCH_NAME: release
+        ONTO_BRANCH_NAME: develop
+    - put: hwc-github-release
+      params:
+        name: hwc-version/number
+        tag: hwc-version/number
+        globs:
+          - released-binaries/*
+
