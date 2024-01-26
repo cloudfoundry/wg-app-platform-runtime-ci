@@ -182,7 +182,7 @@ jobs:
   plan:
     - in_parallel:
         - get: ci
-        - get: hwc
+        - get: hwc-release-branch
           passed: [hwc]
         - get: hwc-version
         - get: hwc-develop-branch-mergeback
@@ -192,7 +192,7 @@ jobs:
       image: image
       input_mapping:
         version: hwc-version
-        repo: hwc
+        repo: hwc-release-branch
       params:
         OS: windows
         ARCH: |
