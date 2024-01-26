@@ -323,7 +323,7 @@ jobs:
       file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
       image: image
       params:
-        GO_MODS: src/code.cloudfoundry.org/nstar
+        GO_MODS: src/code.cloudfoundry.org/nstar/go.mod
         GOOS: windows
     - put: repo
       params:
@@ -399,6 +399,7 @@ jobs:
 #@ for package in data.values.internal_repos:
     - task: #@ "{}".format(package.name)
       file: ci/shared/tasks/run-bin-test/windows.yml
+      privileged: #@ helpers.privileged(package)
       params:
         FUNCTIONS: ci/winc-release/helpers/configure-binaries.ps1
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
