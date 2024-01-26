@@ -35,14 +35,14 @@ resources:
 - name: windows2016fs
   type: git
   source:
-    branch: with-oss-ci-export
+    branch: main
     uri: https://github.com/cloudfoundry/windows2016fs.git
     paths: [ 2019/IMAGE_TAG ]
 
 - name: repo
   type: git
   source:
-    branch: with-oss-ci-export
+    branch: develop
     uri: git@github.com:cloudfoundry/windowsfs-online-release.git
     private_key: ((github-tas-runtime-bot/private-key))
 
