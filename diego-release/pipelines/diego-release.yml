@@ -347,12 +347,13 @@ jobs:
   - in_parallel:
       steps:
       - get: ci
+      - get: image
       - get: diego-release-envoy-bump
         passed:
         - bump-dependencies-envoy
         trigger: true
   - task: create-pr
-    file: ci/tasks/diego/create-pr/linux.yml
+    file: ci/shared/tasks/create-pr/linux.yml
     image: image
     input_mapping:
       repo: diego-release-envoy-bump

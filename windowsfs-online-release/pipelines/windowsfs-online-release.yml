@@ -136,7 +136,7 @@ resources:
     bucket: ci-release-versions
     key: windowsfs-online-release//version
     json_key: ((gcp-tas-runtime-service-account/config-json))
-    initial_version: 2.47.0
+    initial_version: 2.62.0
 
 - name: go-version
   type: git

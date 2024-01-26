@@ -395,16 +395,15 @@ jobs:
         Build-Groot=src/code.cloudfoundry.org/groot-windows
         Build-Winc-Network=src/code.cloudfoundry.org/winc/cmd/winc-network
         Build-Winc=src/code.cloudfoundry.org/winc/cmd/winc
-  - in_parallel:
 #@ for package in data.values.internal_repos:
-    - task: #@ "{}".format(package.name)
-      file: ci/shared/tasks/run-bin-test/windows.yml
-      privileged: #@ helpers.privileged(package)
-      params:
-        FUNCTIONS: ci/winc-release/helpers/configure-binaries.ps1
-        DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
-        ENVS: |
-          WINC_TEST_ROOTFS=docker:///cloudfoundry/windows2016fs:2019
+  - task: #@ "{}".format(package.name)
+    file: ci/shared/tasks/run-bin-test/windows.yml
+    privileged: #@ helpers.privileged(package)
+    params:
+      FUNCTIONS: ci/winc-release/helpers/configure-binaries.ps1
+      DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
+      ENVS: |
+        WINC_TEST_ROOTFS=docker:///cloudfoundry/windows2016fs:2019
 #@ end
 
 - name: lint-repo

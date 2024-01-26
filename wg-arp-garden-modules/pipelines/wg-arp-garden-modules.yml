@@ -119,7 +119,6 @@ jobs:
           PRIVATE_DOCKER_IMAGE_URL=docker://cloudfoundry/garden-private-image-test:groot
 #@ end
 #@ end
-
 #@ for package in helpers.packages_with_configure_db(data.values.internal_repos):
 - name: #@ package.name
   serial: true
