@@ -8,8 +8,6 @@ REPO="$DIR/.."
 export -f fly_login
 export -f fly_pipeline
 
-export FLY_TARGET=runtime
-
 main() {
   local repo=${1:?Provide a repo e.g. shared,cf-networking-release}
   if [[ "$repo" == "all" ]]; then

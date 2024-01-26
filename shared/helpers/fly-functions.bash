@@ -6,7 +6,7 @@ fly_pipeline() {
 
   ytt "${@}" > "${yttRenderedConfigFilePath}"
 
-  fly --target "${FLY_TARGET}" set-pipeline \
+  fly --target "${FLY_TEAM}" set-pipeline \
     --team "${FLY_TEAM}" \
     --pipeline "${pipelineName}" \
     --config "${yttRenderedConfigFilePath}"
@@ -14,6 +14,6 @@ fly_pipeline() {
 }
 
 fly_login() {
-  fly --target "${FLY_TARGET}" sync
-  fly --target "${FLY_TARGET}" status || fly --target "${FLY_TARGET}" login --open-browser
+  fly --target "${FLY_TEAM}" sync
+  fly --target "${FLY_TEAM}" status || fly --target "${FLY_TEAM}" login --open-browser
 }
