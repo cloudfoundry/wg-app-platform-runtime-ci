@@ -239,7 +239,7 @@ jobs:
           | sed /^\$image_tag/d \
           | sed "/^\$image_name/ a \$image_tag=\"${VERSION}\"" \
           > packaging.tmp
-        cp packaging.tmp packages/windows2019fs/packaging
+        mv packaging.tmp packages/windows2019fs/packaging
   - put: repo
     params:
       rebase: true
