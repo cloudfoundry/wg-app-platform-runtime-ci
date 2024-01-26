@@ -276,6 +276,9 @@ jobs:
     - put: env-lock
       params:
        acquire: true
+    - get: windows2016fs
+      passed:
+        - bump-windows2019fs-release
   - put: env
     params:
       action: create
@@ -298,6 +301,7 @@ jobs:
       passed: [claim-env]
       trigger: true
     - get: windows2016fs
+      passed: [claim-env]
     - get: package-release
       resource: golang-release-latest
   - task: determine-image-tag
@@ -395,6 +399,8 @@ jobs:
     - get: env
       passed: [prepare-env]
       trigger: true
+    - get: windows2016fs
+      passed: [prepare-env]
     - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests
     - get: cf-deployment
@@ -428,6 +434,8 @@ jobs:
     - get: env
       passed: [prepare-env]
       trigger: true
+    - get: windows2016fs
+      passed: [prepare-env]
     - get: cf-deployment-concourse-tasks
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
@@ -456,12 +464,27 @@ jobs:
             - run-wats
             - export-release
           trigger: true
+        - get: windows2016fs
+          passed:
+            - run-wats
+            - export-release
 
     - task: check-safe-to-release-repo
       image: image
       file: ci/shared/tasks/check-safe-to-release-repo/linux.yml
       input_mapping:
         release-repo: release-branch
+
+    - task: extract-metadata
+      file: ci/shared/tasks/combine-assets/linux.yml
+      image: image
+      input_mapping:
+        input-01: windows2016fs
+      output_mapping:
+        combined-assets: extra-metadata
+      params:
+        COPY_ACTIONS: |
+          {input-01/2019/kb-metadata,combined-assets}
 
     - task: build-release-notes-windows2019fs-release
       image: image
@@ -486,12 +509,25 @@ jobs:
         - get: develop-branch-mergeback
           params:
             submodules: none
+        - get: windows2016fs
+          passed: [ ship-what ]
 
     - task: check-safe-to-release-branch
       image: image
       file: ci/shared/tasks/check-safe-to-release-repo/linux.yml
       input_mapping:
         release-repo: release-branch
+
+    - task: extract-metadata
+      file: ci/shared/tasks/combine-assets/linux.yml
+      image: image
+      input_mapping:
+        input-01: windows2016fs
+      output_mapping:
+        combined-assets: extra-metadata
+      params:
+        COPY_ACTIONS: |
+          {input-01/2019/kb-metadata,combined-assets}
 
     - task: build-release-notes-windows2019fs-release
       image: image

@@ -55,7 +55,7 @@ function run(){
 
   local extra_metadata
   if [[ -d extra-metadata ]] && [[ $(compgen -G extra-metadata/*) ]]; then
-    extra_metadata=$(cat extra_metadata/*)
+    extra_metadata=$(cat extra-metadata/*)
   fi
 
 
