@@ -41,6 +41,10 @@ groups:
 #! Define-ResourceGroups
 #! toolsmiths
 resource_types:
+- name: gcs
+  type: registry-image
+  source:
+    repository: frodenas/gcs-resource
 - name: shepherd
   type: registry-image
   source:
@@ -273,22 +277,18 @@ resources:
     tag: latest
 
 - name: artifacts-bucket-gdn
-  type: s3
+  type: gcs
   source:
     bucket: gdn-linux-release
+    json_key: ((gcp-tas-runtime-service-account/config-json))
     versioned_file: gdn-linux-amd64
-    access_key_id: ((aws-s3-svc-gdn-bosh-s3/access-key-id))
-    secret_access_key: ((aws-s3-svc-gdn-bosh-s3/secret-access-key))
-    aws_role_arn: ((aws-s3-svc-gdn-bosh-s3/assume-role))
 
 - name: artifacts-bucket-gdn-arm64
-  type: s3
+  type: gcs
   source:
-    bucket: gdn-linux-release
     versioned_file: gdn-linux-arm64
-    access_key_id: ((aws-s3-svc-gdn-bosh-s3/access-key-id))
-    secret_access_key: ((aws-s3-svc-gdn-bosh-s3/secret-access-key))
-    aws_role_arn: ((aws-s3-svc-gdn-bosh-s3/assume-role))
+    bucket: gdn-linux-release
+    json_key: ((gcp-tas-runtime-service-account/config-json))
 
 #! Define-Jobs
 jobs:
