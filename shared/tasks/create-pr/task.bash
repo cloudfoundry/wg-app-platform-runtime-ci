@@ -20,7 +20,7 @@ function run(){
     set -e
 
     if [ "$PR_EXIT_CODE" -eq 1 ]; then
-        echo "PR could not be created because one already exists."
+        echo "PR could not be created."
 
         gh pr list --head "${BRANCH}" --jq .[0].title --json title | grep "${title}"
         if [ "$?" -eq 1 ]; then
