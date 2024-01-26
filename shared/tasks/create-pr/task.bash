@@ -22,7 +22,7 @@ function run(){
     if [ "$PR_EXIT_CODE" -eq 1 ]; then
         echo "PR could not be created because one already exists."
 
-        gh pr list --head "${BRANCH}" --jq .[0].title --json title | grep "${TITLE}"
+        gh pr list --head "${BRANCH}" --jq .[0].title --json title | grep "${title}"
         if [ "$?" -eq 1 ]; then
             echo "The existing PR is stale. Deleting old PR in favor of the new one."
 
