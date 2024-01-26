@@ -136,7 +136,7 @@ resources:
     bucket: ci-release-versions
     key: windows2019fs-release//version
     json_key: ((gcp-tas-runtime-service-account/config-json))
-    initial_version: 2.47.0
+    initial_version: 2.62.0
 
 - name: go-version
   type: git
@@ -535,17 +535,16 @@ jobs:
       input_mapping:
         previous-github-release: github-release
 
-    - task: bosh-finalize-release
+    - task: add-version-file-to-release
+      file: ci/shared/tasks/bump-repo-version-file/linux.yml
       image: image
-      file: ci/shared/tasks/bosh-finalize-release/linux.yml
       params:
-        AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
-        AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+        BUMP_ACTION: |
+          echo -n "${VERSION}" > VERSION
 
     - put: release-branch
       params:
-        repository: finalized-release-repo
+        repository: bumped-repo
         tag: version/number
         tag_prefix: v
 
@@ -567,8 +566,6 @@ jobs:
             tag: version/number
             tag_prefix: v
             body: built-release-notes/notes.md
-            globs:
-            - finalized-release-tarball/windowsfs-*.tgz
         - put: develop-branch-mergeback
           params:
             repository: merged-branch
