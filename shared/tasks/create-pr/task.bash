@@ -10,6 +10,7 @@ function create_pr() {
 }
 
 function run(){
+    push repo > /dev/null
     local title=$(git show "origin/$BRANCH" --pretty=format:"%s" --no-patch)
     local description=$(git show "origin/$BRANCH" --pretty=format:"%b" --no-patch)
 
@@ -34,6 +35,7 @@ else
     echo "The existing PR is identical. No need to create a new PR."
         fi
     fi
+    popd > /dev/null
 }
 
 run "$@"
