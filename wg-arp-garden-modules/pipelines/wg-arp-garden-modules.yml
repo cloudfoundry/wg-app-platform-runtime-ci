@@ -61,9 +61,9 @@ resources:
   source:
     bucket: hwc-release
     key: versions/hwc-version
-    access_key_id: ((aws-s3-867058893013-svc-gdn-win-bosh-s3/access-key-id))
-    secret_access_key: ((aws-s3-867058893013-svc-gdn-win-bosh-s3/secret-access-key))
-    assume_role_arn: ((aws-s3-867058893013-svc-gdn-win-bosh-s3/assume-role))
+    access_key_id: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
+    secret_access_key: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
+    assume_role_arn: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
     initial_version: "1.0.0"
 
 - name: hwc-github-release

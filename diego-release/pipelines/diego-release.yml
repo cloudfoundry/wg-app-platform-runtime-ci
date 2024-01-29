@@ -290,7 +290,7 @@ jobs:
   - task: bump-golang-package-name-windows
     image: image
     tags: [ diego-windows ]
-    file: ci/shared/tasks/bump-golang-package-name/linux.yml
+    file: ci/shared/tasks/bump-golang-package-name/windows.yml
     input_mapping:
       repo: modified-release-linux
     output_mapping:
