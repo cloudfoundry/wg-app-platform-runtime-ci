@@ -25,7 +25,6 @@ code.cloudfoundry.org/routing-acceptance-tests
 code.cloudfoundry.org/routing-api
 code.cloudfoundry.org/routing-api-cli
 code.cloudfoundry.org/routing-info
-gosub
 EOF
 
 cat /tmp/packages | xargs -s 1048576 gosub sync --force-https=true
