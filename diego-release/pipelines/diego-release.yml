@@ -289,8 +289,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ((aws-s3-diego-release-blobs/secret-access-key))
   - task: bump-golang-package-name-windows
     image: image
-    tags: [ diego-windows ]
-    file: ci/shared/tasks/bump-golang-package-name/windows.yml
+    file: ci/shared/tasks/bump-golang-package-name/linux.yml
     input_mapping:
       repo: modified-release-linux
     output_mapping:
@@ -299,7 +298,6 @@ jobs:
       PLATFORM: windows
   - task: bump-golang-windows
     file: ci/shared/tasks/bosh-vendor-package/linux.yml
-    tags: [ diego-windows ]
     image: image
     input_mapping:
       repo: bumped-golang-package-name-windows
