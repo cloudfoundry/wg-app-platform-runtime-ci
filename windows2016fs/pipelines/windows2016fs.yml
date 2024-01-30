@@ -82,9 +82,9 @@ resources:
 - name: version
   type: semver
   source:
-    access_key_id: ((aws-s3-867058893013-svc-gdn-win-bosh-s3/access-key-id))
-    secret_access_key: ((aws-s3-867058893013-svc-gdn-win-bosh-s3/secret-access-key))
-    assume_role_arn: ((aws-s3-867058893013-svc-gdn-win-bosh-s3/assume-role))
+    access_key_id: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
+    secret_access_key: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
+    assume_role_arn: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
     bucket: windows2019fs
     initial_version: 2019.0.1
     key: image-version
