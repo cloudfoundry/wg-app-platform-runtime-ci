@@ -42,7 +42,11 @@ resource_types:
     repository: cloudfoundry/bosh-deployment-resource
     username: ((dockerhub-tasruntime/user))
     password: ((dockerhub-tasruntime/password))
-
+- name: cf-cli-resource
+  type: registry-image
+  source:
+    repository: nulldriver/cf-cli-resource
+    tag: latest
 
 #! Define-Resources
 resources:
@@ -717,8 +721,7 @@ jobs:
       passed: [prepare-env]
       trigger: true
   - task: verify-iwa-login
-    file: ci/winc-release/tasks/verify-iwa-login/linux.yml
-    image: image
+    file: ci/winc-release/tasks/verify-iwa-login/windows.yml
     params:
       IWA_TEST_APP_ROUTE: tcp.pesto.cf-app.com:1030/auth
       IWA_DOMAIN: ((gcp-garden-windows-env-pesto/iwa-domain))
