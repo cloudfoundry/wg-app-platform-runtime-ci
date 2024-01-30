@@ -115,17 +115,11 @@ jobs:
       params:
         globs: [Git-*-64-bit.exe]
     - get: vcredist-ucrt
-      trigger: true
     - get: vcredist-ucrt-x86
-      trigger: true
     - get: vcredist-2010
-      trigger: true
     - get: vcredist-2010-x86
-      trigger: true
     - get: dotnet-48-installer
-      trigger: true
     - get: rewrite-msi
-      trigger: true
     - get: version
       params: {bump: patch}
   - task: combine-assets
