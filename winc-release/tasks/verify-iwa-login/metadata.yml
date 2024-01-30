@@ -1,0 +1,11 @@
+---
+readme: |
+  This task verify IWA for users to login to Domain Controller
+oses:
+  - windows
+params:
+  IWA_TEST_APP_ROUTE: FQDN for app e.g hello.foundation.cf-app.com:1030/auth
+  IWA_DOMAIN: Active Directory Domain
+  IWA_USERNAME: User's Username
+  IWA_PASSWORD: User's Password
+
