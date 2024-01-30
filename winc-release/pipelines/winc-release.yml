@@ -13,6 +13,7 @@ groups:
   - run-wats
   - run-gatsw
   - export-release
+  - verify-iwa-login
   - ship-what
   - ship-it
   - unclaim-env
@@ -236,6 +237,14 @@ resources:
   source:
     name: bosh-google-kvm-windows2019-go_agent
 
+- name: pesto-cf-cli
+  type: cf-cli-resource
+  source:
+    api: api.pesto.cf-app.com
+    username: admin
+    password: ((gcp-garden-windows-env-pesto/cf-admin-password))
+    cf_cli_version: 8
+    skip_cert_check: true
 #! Define-Jobs
 jobs:
 - name: bump-dependencies-go-mod
@@ -533,6 +542,31 @@ jobs:
       toolsmiths-env: pesto-env
     params:
       ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
+  - put: pesto-cf-cli
+    params:
+      commands:
+        - command: create-org
+          org: iwa-org
+        - command: create-space
+          org: iwa-org
+          space: iwa-space
+  - put: pesto-cf-cli
+    params:
+      commands:
+        - command: push
+          org: iwa-org
+          space: iwa-space
+          path: repo/src/WindowsAuth
+          manifest:
+            applications:
+            - name: iwa-test-app
+              memory: 1G
+              stack: windows
+              buildpacks:
+                - hwc_buildpack
+              routes:
+                - route: tcp.pesto.cf-app.com:1030
+                  protocol: tcp
 
 - name: run-wats
   serial: true
@@ -669,6 +703,28 @@ jobs:
     params:
       OS: windows
 
+- name: verify-iwa-login
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+  - task: verify-iwa-login
+    file: ci/winc-release/tasks/verify-iwa-login/linux.yml
+    image: image
+    params:
+      IWA_TEST_APP_ROUTE: tcp.pesto.cf-app.com:1030/auth
+      IWA_DOMAIN: ((gcp-garden-windows-env-pesto/iwa-domain))
+      IWA_USERNAME: ((gcp-garden-windows-env-pesto/iwa-username))
+      IWA_PASSWORD: ((gcp-garden-windows-env-pesto/iwa-password))
+
 - name: ship-what
   plan:
     - in_parallel:
@@ -678,6 +734,7 @@ jobs:
           passed:
             - run-wats
             - export-release
+            - verify-iwa-login
           trigger: true
         - get: image
         - get: release-branch
@@ -689,6 +746,7 @@ jobs:
           passed:
             - run-wats
             - export-release
+            - verify-iwa-login
           trigger: true
 
     - task: check-safe-to-release-repo
