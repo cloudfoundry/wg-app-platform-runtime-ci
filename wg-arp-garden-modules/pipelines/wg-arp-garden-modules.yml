@@ -104,6 +104,9 @@ jobs:
         image_repository: cloudfoundry/tas-runtime-build
         image_tag: ((.:image_tag))
       params:
+#@ if hasattr(package, "params") and hasattr(package.params, "FLAGS"):
+        FLAGS: #@ "{}".format(package.params.FLAGS)
+#@ end
         ENVS: |
           DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime/user))
           DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime/password))
@@ -159,6 +162,9 @@ jobs:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
+#@ if hasattr(package, "params") and hasattr(package.params, "FLAGS"):
+        FLAGS: #@ "{}".format(package.params.FLAGS)
+#@ end
         ENVS: |
           DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime/user))
           DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime/password))

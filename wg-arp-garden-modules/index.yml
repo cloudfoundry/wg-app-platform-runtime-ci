@@ -18,6 +18,17 @@ internal_repos:
   on_windows: true
 - name: cpu-entitlement-admin-plugin
   repo: cloudfoundry/cpu-entitlement-admin-plugin
+  params:
+    FLAGS: |
+      --skip-package e2e
+      --keep-going
+      --trace
+      -r
+      --fail-on-pending
+      --randomize-all
+      --nodes=7
+      --race
+      --timeout 20m
 - name: groot
   repo: cloudfoundry/groot
   on_windows: true
