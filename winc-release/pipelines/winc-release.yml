@@ -473,6 +473,8 @@ jobs:
       - linux-stemcell/*.tgz
       vars_files:
       - env/pesto/cf/vars.yml
+      vars:
+        cf_admin_password: ((gcp-garden-windows-env-pesto/cf-admin-password))
       cleanup: true
     get_params:
       skip_export: true
@@ -522,6 +524,8 @@ jobs:
       releases:
       - prepared-env/winc-release*.tgz
       ops_files: #@ ["combined-assets/{0}".format(i) for i in data.values.opsfiles]
+      vars:
+        cf_admin_password: ((gcp-garden-windows-env-pesto/cf-admin-password))
       vars_files:
       - env/pesto/cf/vars.yml
     get_params:
