@@ -22,9 +22,10 @@ function run(){
     local release_name=$(bosh_release_name)
     popd > /dev/null
 
-    local release=$(release="${release_name}" yq '.releases | .[] | select(.name==env(release)) | .version' "${cf_manifest}")
+    local release_version=$(release="${release_name}" yq '.releases | .[] | select(.name==env(release)) | .version' "${cf_manifest}")
     local stemcell=$(bosh stemcells --json | jq -r --arg os "${OS}" '.Tables[].Rows[] | select(.os | contains($os)) | select(.version | contains("*")) | .os + "/" + .version' | tr -d "*" | sort -V | tail -1)
 
+    local release="${release_name}/${release_version}"
 
     debug "Running 'bosh export-release -d ${DEPLOYMENT_NAME} ${release} ${stemcell}'"
     bosh export-release -d "${DEPLOYMENT_NAME}" "${release}" "${stemcell}"
