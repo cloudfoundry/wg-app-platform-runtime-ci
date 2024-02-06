@@ -31,6 +31,11 @@ function run(){
     bosh export-release -d "${DEPLOYMENT_NAME}" "${release}" "${stemcell}"
 }
 
+function cleanup() {
+    rm -rf "${task_tmp_dir}"
+}
+
 task_tmp_dir="$(mktemp -d -t 'XXXX-task-tmp-dir')"
+trap cleanup EXIT
 trap 'err_reporter $LINENO' ERR
 run $task_tmp_dir "$@"
