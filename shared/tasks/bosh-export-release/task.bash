@@ -11,6 +11,7 @@ unset THIS_FILE_DIR
 
 
 function run(){
+    set -x
     local task_tmp_dir="${1:?provide temp dir for task}"
     shift 1
 
