@@ -16,7 +16,7 @@ function run(){
 
     bosh_target
     local cf_manifest="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-cf.yml')"
-    bosh_manifest > "${cf_manifest}"
+    bosh -d "$DEPLOYMENT_NAME" manifest > "${cf_manifest}"
 
     pushd repo > /dev/null
     local release_name=$(bosh_release_name)
