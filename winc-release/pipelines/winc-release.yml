@@ -570,11 +570,11 @@ jobs:
             - name: iwa-test-app
               memory: 1G
               stack: windows
+              instances: 2
               buildpacks:
                 - hwc_buildpack
               routes:
-                - route: tcp.pesto.cf-app.com:1030
-                  protocol: tcp
+                - route: windows-auth.pesto.cf-app.com
 
 - name: run-wats
   serial: true
