@@ -23,6 +23,10 @@ function run(){
     popd > /dev/null
 
     local release_version=$(release="${release_name}" yq '.releases | .[] | select(.name==env(release)) | .version' "${cf_manifest}")
+    if [ "$release_version" == "latest" ]; then
+        release_version=$(bosh releases --json | release="${release_name}" jq -r '.Tables[0].Rows[] | select(.name==env.release) | .version' | grep '\*' | cut -d'*' -f1)
+    fi
+
     local stemcell=$(bosh stemcells --json | jq -r --arg os "${OS}" '.Tables[].Rows[] | select(.os | contains($os)) | select(.version | contains("*")) | .os + "/" + .version' | tr -d "*" | sort -V | tail -1)
 
     local release="${release_name}/${release_version}"
