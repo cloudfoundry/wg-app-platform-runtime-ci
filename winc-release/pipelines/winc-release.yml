@@ -780,7 +780,7 @@ jobs:
             - run-gatsw
             - export-release
             - verify-iwa-login
-              #! FIXME: uncomment this when verify-iwa-login-gorouter is green           - verify-iwa-login-gorouter 
+            - verify-iwa-login-gorouter 
           trigger: true
         - get: image
         - get: release-branch
@@ -794,7 +794,7 @@ jobs:
             - run-gatsw
             - export-release
             - verify-iwa-login
-              #! FIXME: uncomment this when verify-iwa-login-gorouter is green           - verify-iwa-login-gorouter 
+            - verify-iwa-login-gorouter 
           trigger: true
 
     - task: check-safe-to-release-repo
