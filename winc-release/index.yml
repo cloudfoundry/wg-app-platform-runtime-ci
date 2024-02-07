@@ -26,3 +26,5 @@ opsfiles:
 - enable-windows-tcp-routes.yml
 - add-dc-to-security-groups.yml
 - windows2019-cell-with-static-ip.yml
+- use-latest-routing-release.yml
+- enable-sticky-sessions-for-auth-negotiate.yml

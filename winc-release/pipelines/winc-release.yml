@@ -14,6 +14,7 @@ groups:
   - run-gatsw
   - export-release
   - verify-iwa-login
+  - verify-iwa-login-gorouter
   - ship-what
   - ship-it
   - unclaim-env
@@ -157,6 +158,13 @@ resources:
   source:
     branch: release
     uri: https://github.com/cloudfoundry/garden-runc-release.git
+
+- name: routing-release
+  type: git
+  icon: github-box
+  source:
+    branch: develop
+    uri: https://github.com/cloudfoundry/routing-release.git
 
 - name: windows-utilities-release
   type: git
@@ -465,6 +473,7 @@ jobs:
       passed: [claim-env]
     - get: linux-stemcell
     - get: windows-stemcell
+    - get: routing-release
   - put: pesto-cf-deployment
     attempts: 3
     params:
@@ -514,6 +523,13 @@ jobs:
         {ci/winc-release/opsfiles/enable-windows-tcp-routes.yml,combined-assets}
         {ci/winc-release/opsfiles/add-dc-to-security-groups.yml,combined-assets}
         {ci/winc-release/opsfiles/windows2019-cell-with-static-ip.yml,combined-assets}
+        {ci/winc-release/opsfiles/use-latest-routing-release.yml,combined-assets}
+        {ci/winc-release/opsfiles/enable-sticky-sessions-for-auth-negotiate.yml,combined-assets}
+  - task: upload-dev-releases
+    file: ci/shared/tasks/bosh-upload-dev-releases/linux.yml
+    image: image
+    input_mapping:
+      release-01: routing-release
   - put: pesto-cf-deployment
     attempts: 3
     params:
@@ -732,6 +748,27 @@ jobs:
       IWA_USERNAME: ((gcp-garden-windows-env-pesto/iwa-username))
       IWA_PASSWORD: ((gcp-garden-windows-env-pesto/iwa-password))
 
+- name: verify-iwa-login-gorouter
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+  - task: verify-iwa-login
+    file: ci/winc-release/tasks/verify-iwa-login/windows.yml
+    params:
+      IWA_TEST_APP_ROUTE: windows-auth.pesto.cf-app.com/auth
+      IWA_DOMAIN: ((gcp-garden-windows-env-pesto/iwa-domain))
+      IWA_USERNAME: ((gcp-garden-windows-env-pesto/iwa-username))
+      IWA_PASSWORD: ((gcp-garden-windows-env-pesto/iwa-password))
+
 - name: ship-what
   plan:
     - in_parallel:
@@ -740,8 +777,10 @@ jobs:
         - get: repo
           passed:
             - run-wats
+            - run-gatsw
             - export-release
             - verify-iwa-login
+              #! FIXME: uncomment this when verify-iwa-login-gorouter is green           - verify-iwa-login-gorouter 
           trigger: true
         - get: image
         - get: release-branch
@@ -752,8 +791,10 @@ jobs:
         - get: env
           passed:
             - run-wats
+            - run-gatsw
             - export-release
             - verify-iwa-login
+              #! FIXME: uncomment this when verify-iwa-login-gorouter is green           - verify-iwa-login-gorouter 
           trigger: true
 
     - task: check-safe-to-release-repo

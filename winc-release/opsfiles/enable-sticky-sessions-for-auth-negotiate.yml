@@ -1,0 +1,4 @@
+---
+- path: /instance_groups/name=router/jobs/name=gorouter/properties/router/sticky_sessions_for_auth_negotiate?
+  type: replace
+  value: true
