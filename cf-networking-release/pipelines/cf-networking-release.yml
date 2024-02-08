@@ -324,7 +324,7 @@ jobs:
       package-release: healthchecker-release
     params:
       PACKAGE_NAME: healthchecker
-      PACKAGE_PREFIX: silk
+      PACKAGE_PREFIX: cf-networking
       GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
   - put: cf-networking-repo
     params:
@@ -347,7 +347,7 @@ jobs:
       package-release: healthchecker-release
     params:
       PACKAGE_NAME: healthchecker
-      PACKAGE_PREFIX: cf-networking
+      PACKAGE_PREFIX: silk
       GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
   - put: silk-repo
     params:
