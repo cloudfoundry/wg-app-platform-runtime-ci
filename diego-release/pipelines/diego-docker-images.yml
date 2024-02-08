@@ -11,6 +11,8 @@ jobs:
     - get: diego-inigo-ci-rootfs-dockerfile
       trigger: true
     - get: image
+    - get: go-version
+      trigger: true
   - put: diego-inigo-ci-rootfs
     params:
       build: diego-inigo-ci-rootfs-dockerfile/diego-release/dockerfiles/diego-inigo-ci-rootfs
@@ -31,6 +33,8 @@ jobs:
     - get: diego-docker-app-dockerfile
       trigger: true
     - get: image
+    - get: go-version
+      trigger: true
   - in_parallel:
     - put: diego-docker-app
       params:
@@ -64,6 +68,8 @@ jobs:
       params:
         globs:
           - "*_linux_amd64.tar.gz"
+    - get: go-version
+      trigger: true
   - task: build-oci-image
     file: ci/diego-release/tasks/create-oci-image/linux.yml
     image: image
@@ -90,6 +96,8 @@ jobs:
     - get: grace
     - get: ci
     - get: image
+    - get: go-version
+      trigger: true
   - task: print-go-version-tag
     image: image
     file: ci/shared/tasks/build-golang-version-tags/linux.yml
@@ -213,6 +221,14 @@ resources:
     branch: main
     uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci
     private_key: ((github-tas-runtime-bot/private-key))
+
+- name: go-version
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths:
+    - go-version.json
 
 resource_types:
 - name: google-cloud-storage
