@@ -6,6 +6,9 @@ groups:
 - name: test
   jobs: #@ helpers.packages_names_array(data.values.internal_repos) 
 
+- name: periodics
+  jobs: #@ helpers.packages_names_array(data.values.internal_repos,"bump-dependencies-")
+
 #! Define-Resources
 resources:
 #@ for package in data.values.internal_repos:
@@ -38,6 +41,13 @@ resources:
   source:
     tag_filter: v*
     uri: https://github.com/bosh-packages/golang-release.git
+
+#! TIMERS
+- name: weekly
+  type: time
+  icon: clock
+  source:
+    interval: '168h'  #! 1 week
 
 #! Define-Jobs
 jobs:
@@ -124,4 +134,27 @@ jobs:
       params:
         DB: mysql
 #@ end
+#@ end
+
+#@ for package in data.values.internal_repos:
+- name: #@ "bump-dependencies-{}".format(package.name)
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - resource: #@ package.name
+        get: repo
+      - get: image
+      - get: weekly
+        trigger: true
+  - task: #@ "bump-dependencies-{}".format(package.name)
+    image: image
+    file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+    params:
+      GO_MODS: go.mod
+  - put: #@ package.name
+    params:
+      rebase: true
+      repository: bumped-repo
 #@ end
