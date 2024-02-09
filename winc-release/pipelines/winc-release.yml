@@ -530,6 +530,7 @@ jobs:
     image: image
     input_mapping:
       release-01: routing-release
+      env: pesto-env
   - put: pesto-cf-deployment
     attempts: 3
     params:
