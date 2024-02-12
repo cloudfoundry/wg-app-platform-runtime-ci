@@ -199,6 +199,7 @@ function allowed_dirs() {
     local dir_patterns
     dir_patterns="$(cat <<EOF
 ^./bin/*$
+^./.github/*$
 ^./examples/(task|pipeline)*$
 ^./examples/repo/(scripts-dir-with-db|scripts-dir-generic)$
 ^./examples/repo/(scripts-dir-with-db|scripts-dir-generic)/docker$
@@ -210,7 +211,7 @@ function allowed_dirs() {
 EOF
 )"
 IFS=$'\n'
-for entry in $(find . -type f | grep -Ev "index.yml|README.md|NOTICE|CODEOWNERS|LICENSE|.git|go-version.json" | xargs dirname | uniq)
+for entry in $(find . -type f | grep -Ev "index.yml|README.md|NOTICE|CODEOWNERS|CONTRIBUTING.md|LICENSE|.git|go-version.json" | xargs dirname | uniq)
 do
     local matched=false
     for pattern in $dir_patterns

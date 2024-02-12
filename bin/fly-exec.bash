@@ -18,7 +18,7 @@ function run() {
     local task_definition
     shift 2
 
-    local target=${FLY_TARGET:-runtime}
+    local target=${FLY_TARGET:-shared}
     fly_status "${target}"
 
     local os ci_dir
