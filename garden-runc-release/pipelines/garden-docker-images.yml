@@ -4,7 +4,7 @@ jobs:
   serial: true
   plan:
   - in_parallel:
-    - get: monthly
+    - get: http-golang-download
       trigger: true
     - get: garden-rootfs-dockerfile
       trigger: true
@@ -24,7 +24,7 @@ jobs:
   serial: true
   plan:
   - in_parallel:
-    - get: monthly
+    - get: http-golang-download
       trigger: true
     - get: garden-fuse-dockerfile
       trigger: true
@@ -89,6 +89,17 @@ resources:
     password: ((dockerhub-tasruntime/password))
     repository: cloudfoundry/tas-runtime-build
 
-- name: monthly
-  type: time
-  source: {interval: 720h}
+- name: http-golang-download
+  type: command-runner
+  source:
+    version_key: "latest-golang"
+    check_command: "echo https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"
+    in_command:    "curl --silent --fail --output $1/golang.tgz https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"
+
+resource_types:
+- name: command-runner
+  type: docker-image
+  source:
+    repository: cloudfoundrydevelopers/command-runner-resource
+    tag: latest
+

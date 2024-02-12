@@ -1,10 +1,10 @@
-resources:
-- name: daily
-  type: time
+resource_types:
+- name: command-runner
+  type: docker-image
   source:
-    location: America/New_York # Timezone with the first people to wake up
-    start: '03:00'             # 6 Hours before the "official" start of the workday
-    stop: '04:00'
+    repository: cloudfoundrydevelopers/command-runner-resource
+    tag: latest
+resources:
 - name: ci
   type: git
   source:
@@ -138,12 +138,18 @@ resources:
     password: ((dockerhub-tasruntime/password))
     repository: mysql
     tag: 5.7-debian
+- name: http-golang-download
+  type: command-runner
+  source:
+    version_key: "latest-golang"
+    check_command: "echo https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"
+    in_command:    "curl --silent --fail --output $1/golang.tgz https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"
 jobs:
 - name: build-build-image
   serial: true
   plan:
   - in_parallel:
-    - get: daily
+    - get: http-golang-download
       trigger: true
     - get: build-dockerfile
       trigger: true

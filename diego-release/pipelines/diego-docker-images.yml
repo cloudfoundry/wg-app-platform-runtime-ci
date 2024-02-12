@@ -6,7 +6,7 @@ jobs:
   plan:
   - in_parallel:
     - get: ci
-    - get: monthly
+    - get: http-golang-download
       trigger: true
     - get: diego-inigo-ci-rootfs-dockerfile
       trigger: true
@@ -28,7 +28,7 @@ jobs:
   plan:
   - in_parallel:
     - get: ci
-    - get: monthly
+    - get: http-golang-download
       trigger: true
     - get: diego-docker-app-dockerfile
       trigger: true
@@ -55,7 +55,7 @@ jobs:
   plan:
   - in_parallel:
     - get: ci
-    - get: monthly
+    - get: http-golang-download
       trigger: true
     - get: diego-docker-app-dockerfile
       trigger: true
@@ -91,7 +91,7 @@ jobs:
   serial: true
   plan:
   - in_parallel:
-    - get: monthly
+    - get: http-golang-download
       trigger: true
     - get: grace
     - get: ci
@@ -204,10 +204,6 @@ resources:
     password: ((dockerhub-tasruntime/password))
     repository: cloudfoundry/tas-runtime-build
 
-- name: monthly
-  type: time
-  source: {interval: 720h}
-
 - name: cloudfoundry-grace-gcs
   type: google-cloud-storage
   source:
@@ -230,8 +226,20 @@ resources:
     paths:
     - go-version.json
 
+- name: http-golang-download
+  type: command-runner
+  source:
+    version_key: "latest-golang"
+    check_command: "echo https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"
+    in_command:    "curl --silent --fail --output $1/golang.tgz https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"
+
 resource_types:
 - name: google-cloud-storage
   type: docker-image
   source:
     repository: frodenas/gcs-resource
+- name: command-runner
+  type: docker-image
+  source:
+    repository: cloudfoundrydevelopers/command-runner-resource
+    tag: latest
