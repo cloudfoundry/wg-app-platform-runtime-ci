@@ -6,6 +6,9 @@ set -eu
 . ci/shared/helpers/bosh-helpers.bash
 . ci/shared/helpers/cf-helpers.bash
 
+TASK_NAME="$(basename "$(dirname "${BASH_SOURCE[0]}")")"
+export TASK_NAME
+
 bosh_target
 cf_target
 cf_create_tcp_domain
