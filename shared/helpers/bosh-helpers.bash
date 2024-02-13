@@ -62,7 +62,7 @@ function bosh_get_password_from_credhub() {
 function bosh_configure_private_yml() {
     set +x
     local private_yml="${1?Provide private yml path}"
-    if [[ -n "${GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY}" ]]; then
+    if [[ -n "${GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY}" && "${GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY}" != "null"  ]]; then
         debug "Using GCP"
         local formatted_key="$(sed 's/^/      /' <(echo "${GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY}"))"
         cat > "$private_yml" <<EOF
@@ -90,7 +90,6 @@ EOF
 EOF
         fi
     fi
-    set -x
 }
 
 function bosh_release_name() {
