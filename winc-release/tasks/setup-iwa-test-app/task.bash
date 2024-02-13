@@ -6,6 +6,7 @@ set -eu
 . ci/shared/helpers/bosh-helpers.bash
 . ci/shared/helpers/cf-helpers.bash
 
+bosh_target
 cf_target
 cf_create_tcp_domain
 
