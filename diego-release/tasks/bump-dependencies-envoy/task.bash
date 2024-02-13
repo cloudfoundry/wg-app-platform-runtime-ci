@@ -25,7 +25,8 @@ function run() {
     exit 0
   fi
 
-  bosh_configure_private_yml
+  local private_yml="./config/private.yml"
+  bosh_configure_private_yml $private_yml
 
   bosh remove-blob proxy/envoy-${old_envoy_version}.tgz
   bosh add-blob ../envoy-binary/envoy.tgz proxy/envoy-${new_envoy_version}.tgz
