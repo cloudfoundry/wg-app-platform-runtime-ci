@@ -2,9 +2,9 @@
 
 set -eu
 
-. ci/helpers/helpers.bash
-. ci/helpers/bosh-helpers.bash
-. ci/helpers/cf-helpers.bash
+. ci/shared/helpers/helpers.bash
+. ci/shared/helpers/bosh-helpers.bash
+. ci/shared/helpers/cf-helpers.bash
 
 cf_target
 cf_create_tcp_domain
