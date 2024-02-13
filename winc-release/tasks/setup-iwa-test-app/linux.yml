@@ -4,6 +4,7 @@ platform: linux
 inputs:
 - name: ci
 - name: env
+- name: repo
 
 run:
   path: ci/winc-release/tasks/setup-iwa-test-app/task.bash 
