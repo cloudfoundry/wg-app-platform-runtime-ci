@@ -249,14 +249,6 @@ resources:
   source:
     name: bosh-google-kvm-windows2019-go_agent
 
-- name: pesto-cf-cli
-  type: cf-cli-resource
-  source:
-    api: api.pesto.cf-app.com
-    username: admin
-    password: ((gcp-garden-windows-env-pesto/cf-admin-password))
-    cf_cli_version: 8
-    skip_cert_check: true
 #! Define-Jobs
 jobs:
 - name: bump-dependencies-go-mod
@@ -521,7 +513,6 @@ jobs:
         {ci/winc-release/opsfiles/use-2-azs-for-router.yml,combined-assets}
         {ci/winc-release/opsfiles/enable-windows-auth.yml,combined-assets}
         {ci/winc-release/opsfiles/enable-windows-tcp-routes.yml,combined-assets}
-        {ci/winc-release/opsfiles/add-dc-to-security-groups.yml,combined-assets}
         {ci/winc-release/opsfiles/windows2019-cell-with-static-ip.yml,combined-assets}
         {ci/winc-release/opsfiles/use-latest-routing-release.yml,combined-assets}
         {ci/winc-release/opsfiles/enable-sticky-sessions-for-auth-negotiate.yml,combined-assets}
@@ -567,31 +558,19 @@ jobs:
       toolsmiths-env: pesto-env
     params:
       ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
-  - put: pesto-cf-cli
+  - task: deploy-and-setup-iwa-test-app
+    file: wg-app-platform-runtime-ci/tasks/setup-iwa-test-app/task.yml
+    image: image
+    input_mapping:
+      env: pesto-env
     params:
-      commands:
-        - command: create-org
-          org: iwa-org
-        - command: create-space
-          org: iwa-org
-          space: iwa-space
-  - put: pesto-cf-cli
-    params:
-      commands:
-        - command: push
-          org: iwa-org
-          space: iwa-space
-          path: repo/src/WindowsAuth
-          manifest:
-            applications:
-            - name: iwa-test-app
-              memory: 1G
-              stack: windows
-              instances: 2
-              buildpacks:
-                - hwc_buildpack
-              routes:
-                - route: windows-auth.pesto.cf-app.com
+      APP_NAME: iwa-test-app
+      APP_HOSTNAME: windows-auth
+      APP_TCP_PORT: 1030
+      APP_DOMAIN: pesto.cf-app.com
+      APP_ORG: iwa-org
+      APP_SPACE: iwa-space
+      AD_SUBNET: 10.1.0.0/24
 
 - name: run-wats
   serial: true

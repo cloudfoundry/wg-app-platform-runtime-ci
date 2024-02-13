@@ -1,7 +1,0 @@
----
-- type: replace
-  path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/security_group_definitions/name=public_networks/rules/-
-  value:
-    destination: ((iwa_dc_ips))
-    protocol: all
-

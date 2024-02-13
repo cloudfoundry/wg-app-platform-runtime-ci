@@ -1,0 +1,13 @@
+---
+readme: |
+  This task pushes and sets up the iwa-test-app for IWA validation
+oses:
+  - linux
+params:
+  AD_SUBNET: CIDR definition for the subnet housing the AD Domain Controllers
+  APP_DOMAIN: HTTP domain for the cf app to have a route created in
+  APP_NAME: name of the cf app to create
+  APP_TCP_PORT: port for the cf app's tcp route
+  APP_HOSTNAME: hostname for the cf app's route
+  APP_ORG: org to put the app in
+  APP_SPACE: space to put the app in

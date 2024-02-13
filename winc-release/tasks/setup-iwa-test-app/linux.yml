@@ -1,0 +1,18 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+- name: env
+
+run:
+  path: ci/winc-release/tasks/setup-iwa-test-app/task.bash 
+
+params:
+  AD_SUBNET:
+  APP_DOMAIN:
+  APP_NAME:
+  APP_TCP_PORT:
+  APP_HOSTNAME:
+  APP_ORG:
+  APP_SPACE:
