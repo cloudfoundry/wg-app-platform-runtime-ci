@@ -24,7 +24,7 @@ cf_command bind-staging-security-group active-directory-domain-controllers
 cf_command bind-running-security-group active-directory-domain-controllers
 
 cf_command create-org "${APP_ORG}"
-cf_command create-space -o "${APP_ORG}" -s "${APP_SPACE}"
+cf_command create-space -o "${APP_ORG}" "${APP_SPACE}"
 cf_command target -o "${APP_ORG}" -s "${APP_SPACE}"
 cf_command push "${APP_DOMAIN}" -m 1g -s windows -i 2 -b hwc_buildpack -p repo/src/WindowsAuth --no-route
 cf_command map_route "${APP_DOMAIN}" "${APP_DOMAIN}" -n "${APP_HOSTNAME}"
