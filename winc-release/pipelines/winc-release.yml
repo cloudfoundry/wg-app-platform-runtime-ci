@@ -559,10 +559,10 @@ jobs:
     params:
       ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
   - task: deploy-and-setup-iwa-test-app
-    file: ci/tasks/setup-iwa-test-app/task.yml
+    file: ci/winc-release/tasks/setup-iwa-test-app/linux.yml
     image: image
     input_mapping:
-      toolsmiths-env: pesto-env
+      env: pesto-env
     params:
       APP_NAME: iwa-test-app
       APP_HOSTNAME: windows-auth
