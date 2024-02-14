@@ -22,7 +22,7 @@ function run() {
   popd > /dev/null
 
   pushd repo > /dev/null
-  bosh_configure_private_yml
+  bosh_configure_private_yml "./config/private.yml"
   bosh sync-blobs
 
   local repo_name=$(git_get_remote_name)
@@ -32,6 +32,7 @@ function run() {
   fi
 
   bosh upload-blobs
+  rm -rf ./config/private.yml
 
   if [[ $(git status --porcelain) ]]; then
     git add -A .
