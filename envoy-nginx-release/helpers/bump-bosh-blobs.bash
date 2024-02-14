@@ -15,6 +15,7 @@ function run() {
     local blob=${3:?Provide a path to new blob}
 
     if [[ "$bosh_blob_path" == 'envoy-nginx/envoy-nginx-*.zip' ]]; then
+        set +x
         echo "Bumping nginx blob"
         pushd "${blob}" > /dev/null
         local version=$(git_get_latest_tag | cut -d'-' -f2)
