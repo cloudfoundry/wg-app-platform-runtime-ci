@@ -15,12 +15,12 @@ function run() {
     local blob=${3:?Provide a path to new blob}
 
     if [[ "$bosh_blob_path" == 'envoy-nginx/envoy-nginx-*.zip' ]]; then
-        set +x
         echo "Bumping nginx blob"
         pushd "${blob}" > /dev/null
         local version=$(git_get_latest_tag | cut -d'-' -f2)
         popd > /dev/null
 
+        pushd "${repo_path}" > /dev/null
         curl --silent --fail --output nginx.zip "https://nginx.org/download/nginx-${version}.zip"
         unzip -j nginx.zip nginx-*/nginx.exe
         local zip_name="envoy-nginx-${version}.zip"
@@ -30,6 +30,7 @@ function run() {
         bosh remove-blob "${full_blob_path}"
         bosh add-blob "${zip_name}" "$(dirname "${bosh_blob_path}")/${zip_name}" 
         rm -rf "${zip_name}" nginx.zip nginx.exe
+        popd > /dev/null
     fi
 }
 
