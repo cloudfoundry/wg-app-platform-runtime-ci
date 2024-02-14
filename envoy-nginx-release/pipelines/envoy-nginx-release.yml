@@ -19,6 +19,7 @@ groups:
   jobs:
   - bump-dependencies-go-mod
   - bump-package-golang
+  - bump-bosh-blobs
 
 - name: manual
   jobs:
@@ -161,6 +162,13 @@ resources:
     repository: cloudfoundry/tas-runtime-build
     tag: 'latest'
 
+- name: nginx
+  type: git
+  icon: github-box
+  source:
+    uri: https://github.com/nginx/nginx
+    tag_filter: release-*
+
 #! Define-Jobs
 jobs:
 - name: bump-dependencies-go-mod
@@ -216,6 +224,33 @@ jobs:
     params:
       rebase: true
       repository: modified-release
+
+- name: bump-bosh-blobs
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: repo
+      - get: image
+      - get: nginx
+        params:
+          fetch_tags: true
+        trigger: true
+  - task: nginx-bump-bosh-blob
+    image: image
+    file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+    input_mapping:
+      blob: nginx
+    params:
+      BLOB_PATH: envoy-nginx/envoy-nginx-*.zip
+      AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
+      AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
+      AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+  - put: repo
+    params:
+      rebase: true
+      repository: bumped-repo
 
 - name: unit-and-integration-tests
   serial: true

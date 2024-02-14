@@ -1,0 +1,10 @@
+---
+readme: |
+  This task bumps a given bosh blob
+oses:
+  - linux
+params:
+  BOSH_BLOB_PATH: regex path to a blob
+  AWS_ACCESS_KEY_ID: creds for S3 blobstore
+  AWS_SECRET_ACCESS_KEY: creds for S3 blobstore
+  AWS_ASSUME_ROLE_ARN: creds for S3 blobstore

@@ -54,3 +54,6 @@ function git_error_when_diff() {
     fi
 }
 
+function git_get_latest_tag() {
+    git describe --tags --abbrev=0
+}

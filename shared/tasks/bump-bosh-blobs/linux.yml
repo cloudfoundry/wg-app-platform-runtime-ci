@@ -1,0 +1,16 @@
+---
+platform: linux
+
+inputs:
+  - name: ci
+  - name: repo
+  - name: blob
+
+outputs:
+  - name: bumped-repo
+
+params:
+  BOSH_BLOB_PATH:
+
+run:
+  path: ci/shared/tasks/bump-bosh-blobs/task.bash
