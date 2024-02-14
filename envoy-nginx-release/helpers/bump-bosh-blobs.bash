@@ -20,7 +20,7 @@ function run() {
         local version=$(git_get_latest_tag | cut -d'-' -f2)
         popd > /dev/null
         curl --silent --fail --output nginx.zip "https://nginx.org/download/nginx-${version}.zip"
-        unzip -j nginx.zip nginx.exe nginx.exe
+        unzip -j nginx.zip nginx-*/nginx.exe
         local zip_name="envoy-nginx-${version}.zip"
         zip "${zip_name}" nginx.exe
         pushd "${repo_path}" > /dev/null
