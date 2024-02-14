@@ -62,7 +62,7 @@ function bosh_get_password_from_credhub() {
 function bosh_configure_private_yml() {
     set +x
     local private_yml="${1?Provide private yml path}"
-    if [[ -n "${GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY}" && "${GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY}" != "null"  ]]; then
+    if [[ -v "${GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY}" && "${GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY:-null}" != "null"  ]]; then
         debug "Using GCP"
         local formatted_key="$(sed 's/^/      /' <(echo "${GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY}"))"
         cat > "$private_yml" <<EOF
@@ -74,7 +74,7 @@ blobstore:
 ${formatted_key}
 EOF
 
-    elif [[ -n ${AWS_ACCESS_KEY_ID} ]]; then
+    elif [[ -v ${AWS_ACCESS_KEY_ID} ]]; then
         debug "Using AWS Access Key"
         cat > "$private_yml" <<EOF
 ---
@@ -83,7 +83,7 @@ blobstore:
     secret_access_key: "${AWS_SECRET_ACCESS_KEY}"
     access_key_id: "${AWS_ACCESS_KEY_ID}"
 EOF
-        if [[ -n "${AWS_ASSUME_ROLE_ARN}" ]]; then
+        if [[ -v "${AWS_ASSUME_ROLE_ARN}" ]]; then
             debug "Using AWS Role ARN"
             cat >> "$private_yml" <<EOF
     assume_role_arn: "${AWS_ASSUME_ROLE_ARN}"
