@@ -25,12 +25,11 @@ function run() {
         local zip_name="envoy-nginx-${version}.zip"
         zip "${zip_name}" nginx.exe
 
-        pushd "${repo_path}" > /dev/null
-        local full_blob_path="$(ls blobs/${bosh_blob_path})"
-        bosh remove-blob "${full_blob_path}"
-        bosh add-blob "${zip_name}" "$(dirname "${bosh_blob_path}")/${zip_name}" 
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname "${bosh_blob_path}")
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${zip_name}" ${dir_name}/${zip_name}" 
         rm -rf "${zip_name}" nginx.zip nginx.exe
-        popd > /dev/null
     fi
 }
 
