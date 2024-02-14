@@ -243,7 +243,7 @@ jobs:
     input_mapping:
       blob: nginx
     params:
-      BLOB_PATH: envoy-nginx/envoy-nginx-*.zip
+      BOSH_BLOB_PATH: envoy-nginx/envoy-nginx-*.zip
       AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
       AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
       AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
