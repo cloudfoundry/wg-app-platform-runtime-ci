@@ -1,8 +1,6 @@
 ---
 readme: |
   This task will delete and clean-up deployment.
-extra_inputs:
-  release-*: (Optional) Generic release (git resource) to be created in manifest. Manifest can have `version:create` with variable path. The content in this release can then be mapped via ENV variable.
 oses:
   - linux
 params:
