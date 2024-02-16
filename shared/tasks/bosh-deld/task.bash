@@ -15,7 +15,7 @@ function run(){
     shift 1
 
     bosh_target
-    bosh -d ${DEPLOYMENT_NAME} deld --force
+    echo 'y' | bosh -d ${DEPLOYMENT_NAME} deld --force
     echo 'y' | bosh clean-up --all
 }
 
