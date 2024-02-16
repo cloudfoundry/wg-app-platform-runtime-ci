@@ -14,7 +14,6 @@ groups:
   - run-gatsw
   - export-release
   - verify-iwa-login
-  - verify-iwa-login-gorouter
   - ship-what
   - ship-it
   - unclaim-env
@@ -723,27 +722,6 @@ jobs:
   - task: verify-iwa-login
     file: ci/winc-release/tasks/verify-iwa-login/windows.yml
     params:
-      IWA_TEST_APP_ROUTE: tcp.pesto.cf-app.com:1030/auth
-      IWA_DOMAIN: ((gcp-garden-windows-env-pesto/iwa-domain))
-      IWA_USERNAME: ((gcp-garden-windows-env-pesto/iwa-username))
-      IWA_PASSWORD: ((gcp-garden-windows-env-pesto/iwa-password))
-
-- name: verify-iwa-login-gorouter
-  serial: true
-  serial_groups: [acceptance]
-  plan:
-  - in_parallel:
-    - get: ci
-    - get: repo
-      passed: [prepare-env]
-      trigger: true
-    - get: image
-    - get: env
-      passed: [prepare-env]
-      trigger: true
-  - task: verify-iwa-login
-    file: ci/winc-release/tasks/verify-iwa-login/windows.yml
-    params:
       IWA_TEST_APP_ROUTE: windows-auth.pesto.cf-app.com/auth
       IWA_DOMAIN: ((gcp-garden-windows-env-pesto/iwa-domain))
       IWA_USERNAME: ((gcp-garden-windows-env-pesto/iwa-username))
@@ -760,7 +738,6 @@ jobs:
             - run-gatsw
             - export-release
             - verify-iwa-login
-            - verify-iwa-login-gorouter 
           trigger: true
         - get: image
         - get: release-branch
@@ -774,7 +751,6 @@ jobs:
             - run-gatsw
             - export-release
             - verify-iwa-login
-            - verify-iwa-login-gorouter 
           trigger: true
 
     - task: check-safe-to-release-repo
@@ -865,10 +841,30 @@ jobs:
 - name: unclaim-env
   serial: true
   plan:
-  - get: env
-    passed: [ship-what]
-    trigger: true
-  - get: env-lock
+  - in_parallel:
+    - get: env
+      passed: [ship-what]
+      trigger: true
+    - get: env-lock
+    - get: image
+
+  - task: create-toolsmiths-env
+    file: ci/shared/tasks/combine-assets/linux.yml
+    image: image
+    input_mapping:
+      input-01: env
+    output_mapping:
+      combined-assets: pesto-env
+    params:
+      COPY_ACTIONS: |
+        {input-01/pesto/metadata,combined-assets}
+  - task: bosh-deld
+    image: image
+    file: ci/shared/tasks/bosh-deld/linux.yml
+    input_mapping:
+      env: pesto-env
+    params:
+      DEPLOYMENT_NAME: cf
   - params:
       release: env-lock #! path to the resource in the above get
     put: env-lock
