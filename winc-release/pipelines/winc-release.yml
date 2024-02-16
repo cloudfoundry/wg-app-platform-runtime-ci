@@ -645,13 +645,6 @@ jobs:
     params:
       COPY_ACTIONS: |
         {input-01/pesto/metadata,combined-assets}
-  - task: upload-windows-stemcell
-    file: ci/shared/tasks/bosh-upload-stemcell/linux.yml
-    image: image
-    input_mapping:
-      env: pesto-env
-    params:
-      STEMCELL_URL: https://bosh.io/d/stemcells/bosh-google-kvm-windows2019-go_agent
   - task: bosh-deploy-gatsw
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -675,6 +668,13 @@ jobs:
     params:
       DEPLOYMENT_NAME: gatsw
       ERRAND_NAME: gats
+  - task: bosh-deld
+    image: image
+    file: ci/shared/tasks/bosh-deld/linux.yml
+    input_mapping:
+      env: pesto-env
+    params:
+      DEPLOYMENT_NAME: gatsw
 - name: export-release
   serial: true
   serial_groups: [acceptance]
