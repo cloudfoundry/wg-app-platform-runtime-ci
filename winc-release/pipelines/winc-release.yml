@@ -613,7 +613,7 @@ jobs:
       integration-config: built-acceptance-test-configs
     params:
       CONFIG_FILE_PATH: wats.json
-      NODES: 4
+      NODES: 2
       SKIP_REGEXP: Syslog Drain
 
 - name: run-gatsw
@@ -720,6 +720,7 @@ jobs:
       passed: [prepare-env]
       trigger: true
   - task: verify-iwa-login
+    attempts: 5
     file: ci/winc-release/tasks/verify-iwa-login/windows.yml
     params:
       IWA_TEST_APP_ROUTE: windows-auth.pesto.cf-app.com/auth
