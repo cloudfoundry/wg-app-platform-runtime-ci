@@ -848,6 +848,8 @@ jobs:
       trigger: true
     - get: env-lock
     - get: image
+    - get: ci
+      passed: [ship-what]
 
   - task: create-toolsmiths-env
     file: ci/shared/tasks/combine-assets/linux.yml
