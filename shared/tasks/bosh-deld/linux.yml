@@ -3,7 +3,6 @@ platform: linux
 
 inputs:
   - name: ci
-  - name: repo
   - name: env
 
 params:
