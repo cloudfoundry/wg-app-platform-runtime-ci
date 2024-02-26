@@ -8,6 +8,9 @@
 ARG MYSQL_URI
 FROM ${MYSQL_URI}
 
+LABEL org.cloudfoundry.tas-runtime-mysql-5.7.dockerfile.url="https://github.com/cloudfoundry/wg-app-platform-runtime-ci/blob/main/shared/dockerfiles/tas-runtime-mysql-5.7/Dockerfile"
+LABEL org.cloudfoundry.tas-runtime-mysql-5.7.notes.md="Build from debian image with 5.7-debian tag"
+
 ENV DEBIAN_FRONTEND noninteractive
 
 # install build dependencies

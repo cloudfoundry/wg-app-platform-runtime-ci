@@ -17,6 +17,10 @@ RUN go build -o /hello-world /go/src/app/hello-world.go
 
 FROM busybox:${BUSYBOX_VERSION}
 
+LABEL org.cloudfoundry.garden-rootfs.dockerfile.url="https://github.com/cloudfoundry/wg-app-platform-runtime-ci/blob/main/garden-runc-release/dockerfiles/garden-rootfs/Dockerfile"
+LABEL org.cloudfoundry.garden-rootfs.notes.md="Used by garden-runc-release \
+"
+
 ARG BUSYBOX_VERSION
 
 ADD seed /etc/seed
@@ -87,7 +91,3 @@ RUN echo "this is a pre-existing dotfile" > /.foo
 # copied from cfgarden/with-volume
 RUN mkdir /etc/foo
 VOLUME /etc/foo
-
-LABEL org.cloudfoundry.garden-rootfs.dockerfile.url="https://github.com/cloudfoundry/wg-app-platform-runtime-ci/blob/main/garden-runc-release/dockerfiles/garden-rootfs/Dockerfile"
-LABEL org.cloudfoundry.garden-rootfs.notes.md="Used by garden-runc-release \
-"

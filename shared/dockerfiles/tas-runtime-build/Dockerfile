@@ -1,5 +1,8 @@
 FROM ubuntu:jammy
 
+LABEL org.cloudfoundry.tas-runtime-build.dockerfile.url="https://github.com/cloudfoundry/wg-app-platform-runtime-ci/blob/main/shared/dockerfiles/tas-runtime-build/Dockerfile"
+LABEL org.cloudfoundry.tas-runtime-build.notes.md="Main image used for testing all tests in this repo that doesn't require a DB"
+
 RUN \
   export DEBIAN_FRONTEND=noninteractive && \
   apt-get update -y && apt-get install --assume-yes --no-install-recommends \

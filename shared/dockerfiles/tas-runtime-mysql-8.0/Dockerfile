@@ -9,6 +9,9 @@ ARG MYSQL_MAJOR_VERSION
 # MYSQL_VERSION needs to come from https://github.com/docker-library/mysql/blob/master/versions.json#L41 ultimately
 ARG MYSQL_VERSION
 
+LABEL org.cloudfoundry.tas-runtime-mysql-8.0.dockerfile.url="https://github.com/cloudfoundry/wg-app-platform-runtime-ci/blob/main/shared/dockerfiles/tas-runtime-mysql-8.0/Dockerfile"
+LABEL org.cloudfoundry.tas-runtime-mysql-8.0.notes.md="Build upon tas-runtime-build with mysql"
+
 ### The following section is taken and modified from https://github.com/docker-library/mysql/ ###
 #
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added

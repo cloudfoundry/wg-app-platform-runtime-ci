@@ -5,6 +5,9 @@ ARG BUILD_URI
 
 FROM ${BUILD_URI} AS build
 
+LABEL org.cloudfoundry.tas-runtime-postgres.dockerfile.url="https://github.com/cloudfoundry/wg-app-platform-runtime-ci/blob/main/shared/dockerfiles/tas-runtime-postgres/Dockerfile"
+LABEL org.cloudfoundry.tas-runtime-postgres.notes.md="Build upon tas-runtime-build with postgres"
+
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
   g++ \

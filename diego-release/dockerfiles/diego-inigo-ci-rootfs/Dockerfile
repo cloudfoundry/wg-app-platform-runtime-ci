@@ -1,5 +1,10 @@
 FROM ubuntu:jammy
 
+LABEL org.cloudfoundry.diego-inigo-ci-rootfs.dockerfile.url="https://github.com/cloudfoundry/wg-app-platform-runtime-ci/blob/main/diego-release/dockerfiles/diego-inigo-ci-rootfs/Dockerfile"
+LABEL org.cloudfoundry.diego-inigo-ci-rootfs.notes.md="Used by diego-release within \
+code.cloudfoundry.org/inigo \
+"
+
 # jq: for stupid simple bash servers
 # curl: for hitting test servers
 # git: for testing git buildpacks
@@ -18,8 +23,3 @@ RUN \
 RUN useradd -m testuser
 
 RUN useradd -m vcap
-
-LABEL org.cloudfoundry.diego-inigo-ci-rootfs.dockerfile.url="https://github.com/cloudfoundry/wg-app-platform-runtime-ci/blob/main/diego-release/dockerfiles/diego-inigo-ci-rootfs/Dockerfile"
-LABEL org.cloudfoundry.diego-inigo-ci-rootfs.notes.md="Used by diego-release within \
-code.cloudfoundry.org/inigo \
-"
