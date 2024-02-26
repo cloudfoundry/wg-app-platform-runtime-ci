@@ -5,6 +5,12 @@ RUN go build -o /dockerapp /tmp/dockerapp.go
 
 FROM busybox
 
+LABEL org.cloudfoundry.diego-docker-app.dockerfile.url="https://github.com/cloudfoundry/wg-app-platform-runtime-ci/blob/main/diego-release/dockerfiles/diego-docker-app/Dockerfile"
+LABEL org.cloudfoundry.diego-docker-app.notes.md="Used by diego-release within \
+code.cloudfoundry.org/dockerapplifecycle \
+code.cloudfoundry.org/ecrhelper \
+"
+
 ENV VCAP_APPLICATION {}
 ENV BAD_QUOTE \'
 ENV BAD_SHELL \$1
@@ -22,10 +28,5 @@ RUN adduser -D vcap
 # set user to 'nobody' so that it is non-root
 USER 65534
 
-LABEL org.cloudfoundry.diego-docker-app.dockerfile.url="https://github.com/cloudfoundry/wg-app-platform-runtime-ci/blob/main/diego-release/dockerfiles/diego-docker-app/Dockerfile"
-LABEL org.cloudfoundry.diego-docker-app.notes.md="Used by diego-release within \
-code.cloudfoundry.org/dockerapplifecycle \
-code.cloudfoundry.org/ecrhelper \
-"
 
 CMD ["dockerapp"]
