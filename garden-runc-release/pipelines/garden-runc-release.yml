@@ -978,6 +978,7 @@ jobs:
     params:
       DEPLOYMENT_NAME: gats-with-containerd
       ERRAND_NAME: gats
+      INSTANCE: gats
   - task: run-gpats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
@@ -985,6 +986,7 @@ jobs:
     params:
       DEPLOYMENT_NAME: gats-with-containerd
       ERRAND_NAME: gpats
+      INSTANCE: gpats
 
 - name: run-gats-with-containerd-for-processes
   serial: true
