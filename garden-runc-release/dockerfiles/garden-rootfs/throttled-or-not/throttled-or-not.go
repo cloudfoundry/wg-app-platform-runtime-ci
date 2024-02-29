@@ -4,9 +4,9 @@ import (
 	"container/ring"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"math"
 	"net/http"
+	"os"
 	"runtime"
 	"strconv"
 	"strings"
@@ -123,7 +123,7 @@ func pingHandler(w http.ResponseWriter, r *http.Request) {
 func cpuCgroupHandler(w http.ResponseWriter, r *http.Request) {
 	var contents []byte
 	var err error
-	if contents, err = ioutil.ReadFile("/proc/self/cgroup"); err != nil {
+	if contents, err = os.ReadFile("/proc/self/cgroup"); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
