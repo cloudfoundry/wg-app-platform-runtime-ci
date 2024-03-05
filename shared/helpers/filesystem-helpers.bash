@@ -2,10 +2,14 @@
 # break out of bosh-lite device limitations
 function filesystem_permit_device_control() {
   local devices_mount_info
-  devices_mount_info="$( cat /proc/self/cgroup | grep devices )"
+  if ! devices_mount_info="$( cat /proc/self/cgroup | grep devices )"; then
+    echo "No devices mount info found in cgroup. Is this running in a container?" >&2
+    return
+  fi
 
   if [ -z "$devices_mount_info" ]; then
     # cgroups not set up; must not be in a container
+    echo "No devices mount info found in cgroup. Is this running in a container?" >&2
     return
   fi
 
@@ -38,7 +42,10 @@ function filesystem_permit_device_control() {
 }
 
 function filesystem_create_loop_devices() {
-  set +e
+  if set -p -o errexit | grep "shopt -o errexit" >/dev/null; then
+    re_enableerrexit=1
+    set +e
+  fi
   LOOP_CONTROL=/dev/loop-control
   if [ ! -c $LOOP_CONTROL ]; then
     mknod $LOOP_CONTROL c 10 237
@@ -50,7 +57,9 @@ function filesystem_create_loop_devices() {
   for i in $( seq 0 "$amt" ); do
     mknod -m 0660 "/dev/loop${i}" b 7 "$i"
   done &> /dev/null 2>&1
+  if [[ "$re_enableerrexit" == "1" ]]; then
   set -e
+  fi
 }
 
 # workaround until Concourse's garden sets this up for us
