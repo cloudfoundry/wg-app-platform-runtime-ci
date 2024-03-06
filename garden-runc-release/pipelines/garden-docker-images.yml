@@ -43,7 +43,7 @@ resources:
 - name: garden-rootfs
   type: docker-image
   source:
-    email: tas-journey-runtime-ecosystem@groups.vmware.com
+    email: tas-runtime.pdl+tas-runtime-bot@broadcom.com
     username: ((dockerhub-tasruntime/user))
     password: ((dockerhub-tasruntime/password))
     repository: cloudfoundry/garden-rootfs
@@ -52,7 +52,7 @@ resources:
 - name: garden-fuse
   type: docker-image
   source:
-    email: tas-journey-runtime-ecosystem@groups.vmware.com
+    email: tas-runtime.pdl+tas-runtime-bot@broadcom.com
     username: ((dockerhub-tasruntime/user))
     password: ((dockerhub-tasruntime/password))
     repository: cloudfoundry/garden-fuse
