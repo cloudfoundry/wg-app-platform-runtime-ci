@@ -1,6 +1,6 @@
 function git_configure_author(){
     git config --global user.name "${GIT_COMMIT_USERNAME:=App Platform Runtime Working Group CI Bot}"
-    git config --global user.email "${GIT_COMMIT_EMAIL:=app+platform+runtime+wg+ci@vmware.com}"
+    git config --global user.email "${GIT_COMMIT_EMAIL:=tas-runtime.pdl+tas-runtime-bot@broadcom.com}"
 }
 
 function git_get_remote_name() {
