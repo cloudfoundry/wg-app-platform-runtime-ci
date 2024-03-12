@@ -2,10 +2,7 @@
 # break out of bosh-lite device limitations
 function filesystem_permit_device_control() {
   local devices_mount_info
-  if ! devices_mount_info="$( cat /proc/self/cgroup | grep devices )"; then
-    echo "No devices mount info found in cgroup. Is this running in a container?" >&2
-    return
-  fi
+  devices_mount_info="$( cat /proc/self/cgroup | grep devices )"
 
   if [ -z "$devices_mount_info" ]; then
     # cgroups not set up; must not be in a container
