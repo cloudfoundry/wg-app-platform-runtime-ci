@@ -31,3 +31,5 @@ internal_repos:
   repo: cloudfoundry/localip
 - name: tlsconfig
   repo: cloudfoundry/tlsconfig
+- name: bytefmt
+  repo: cloudfoundry/bytefmt
