@@ -39,6 +39,7 @@ function filesystem_permit_device_control() {
 }
 
 function filesystem_create_loop_devices() {
+  local re_enableerrexit
   re_enableerrexit=0
   if set -p -o errexit | grep "set -o errexit" >/dev/null; then
     re_enableerrexit=1
