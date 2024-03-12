@@ -40,7 +40,7 @@ function filesystem_permit_device_control() {
 
 function filesystem_create_loop_devices() {
   re_enableerrexit=0
-  if set -p -o errexit | grep "shopt -o errexit" >/dev/null; then
+  if set -p -o errexit | grep "set -o errexit" >/dev/null; then
     re_enableerrexit=1
     set +e
   fi
