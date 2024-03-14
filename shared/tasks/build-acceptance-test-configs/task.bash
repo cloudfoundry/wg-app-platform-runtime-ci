@@ -66,7 +66,7 @@ function cats() {
     "include_detect": true,
     "include_deployments": true,
     "include_docker": true,
-    "include_http2_routing": false,
+    "include_http2_routing": true,
     "include_internet_dependent": true,
     "include_routing_isolation_segments": ${WITH_ISOSEG},
     "include_isolation_segments": ${WITH_ISOSEG},
