@@ -18,7 +18,10 @@ function run() {
 
   pushd blob > /dev/null
   local blob="${PWD}"
-  local blob_name=$(git_get_remote_name)
+  local blob_name=$(git_get_remote_name) #if git repo resource
+  if [[ -z "${blob_name}" ]]; then
+    blob_name=$(cat url) #if github release resource
+  fi
   popd > /dev/null
 
   pushd repo > /dev/null
