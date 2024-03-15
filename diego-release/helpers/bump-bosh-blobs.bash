@@ -31,7 +31,7 @@ function run() {
         local blob_name="$(basename blobs/${bosh_blob_path})"
         local dir_name="$(dirname ${bosh_blob_path})"
         bosh remove-blob "${dir_name}/${blob_name}"
-        bosh add-blob "${tgz_name}" "${blob}/${blob_name}"
+        bosh add-blob "${tgz_name}" "${blob}/${tgz_name}"
     fi
 }
 
