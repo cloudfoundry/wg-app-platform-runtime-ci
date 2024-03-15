@@ -17,7 +17,7 @@ function run() {
     if [[ "$bosh_blob_path" == 'jq/jq-*-linux-amd64.tgz' ]]; then
         echo "Bumping jq blob"
         pushd "${blob}" > /dev/null
-        local version=$(cat version | tr -d 'jq')
+        local version=$(cat version | tr -d 'jq-')
         local tgz_name="jq-${version}-linux-amd64.tgz"
         mv jq-linux-amd64 jq
         tar czvf "${tgz_name}" jq
