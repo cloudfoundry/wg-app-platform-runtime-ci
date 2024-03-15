@@ -20,9 +20,14 @@ function run() {
         local version=$(git_get_latest_tag | cut -d'-' -f2)
         popd > /dev/null
 
+        local zip_name="envoy-nginx-${version}.zip"
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$zip_name") ]]; then
+            echo "$zip_name already exists, skippping"
+            return
+        fi
+
         curl --silent --fail --output nginx.zip "https://nginx.org/download/nginx-${version}.zip"
         unzip -j nginx.zip nginx-*/nginx.exe
-        local zip_name="envoy-nginx-${version}.zip"
         zip "${zip_name}" nginx.exe
 
         local blob_name="$(basename blobs/${bosh_blob_path})"
