@@ -56,7 +56,7 @@ function run() {
         local tgz_name="winpty-${version}.tgz"
         unzip winpty-*.zip
         mv ./x64/bin/winpty* .
-        tar czvf "${tgz_name}" LICENSE winpty.dll winpty.exe
+        tar czvf "${tgz_name}" LICENSE winpty.dll winpty-agent.exe
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
