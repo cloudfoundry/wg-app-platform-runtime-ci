@@ -19,11 +19,10 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(cat version | tr -d 'v')
         local exe_name="yq-${version}-windows-amd64.exe"
-        tar czvf "${exe_name}" "yq-${version}-windows-amd64.exe"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
-            echo "$tgz_name already exists, skippping"
+            echo "$exe_name already exists, skippping"
             return
         fi
 
