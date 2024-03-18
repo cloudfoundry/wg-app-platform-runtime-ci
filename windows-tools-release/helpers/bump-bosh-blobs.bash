@@ -21,7 +21,7 @@ function run() {
         local exe_name="yq-${version}-windows-amd64.exe"
         popd > /dev/null
 
-        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$exe_name") ]]; then
             echo "$exe_name already exists, skippping"
             return
         fi
