@@ -49,6 +49,25 @@ function run() {
         local dir_name="$(dirname ${bosh_blob_path})"
         bosh remove-blob "${dir_name}/${blob_name}"
         bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
+    elif [[ "$bosh_blob_path" == 'winpty/winpty-*.tgz' ]]; then
+        echo "Bumping winpty blob"
+        pushd "${blob}" > /dev/null
+        local version=$(cat version | tr -d 'winpty ')
+        local tgz_name="winpty-${version}.tgz"
+        unzip winpty-*.zip
+        mv ./x64/bin/winpty* .
+        tar czvf "${tgz_name}" LICENSE winpty.dll winpty.exe
+        popd > /dev/null
+
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
+            echo "$tgz_name already exists, skippping"
+            return
+        fi
+
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname ${bosh_blob_path})"
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
     fi
 }
 
