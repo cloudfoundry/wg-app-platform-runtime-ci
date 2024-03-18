@@ -19,6 +19,7 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(cat version | tr -d 'v')
         local exe_name="yq-${version}-windows-amd64.exe"
+        mv yq_windows_amd64.exe "${exe_name}"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$exe_name") ]]; then
