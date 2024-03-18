@@ -21,6 +21,8 @@ function run() {
   local blob_name=$(git_get_remote_name) #if git repo resource
   if [[ -z "${blob_name}" ]]; then
     blob_name=$(cat url) #if github release resource
+  elif [[ -z "${blob_name}" ]]; then
+    blob_name=$(cat filename) # if s3 resource
   fi
   popd > /dev/null
 
@@ -34,15 +36,15 @@ function run() {
     "../ci/${repo_name}/helpers/bump-bosh-blobs.bash" "${PWD}" "${BOSH_BLOB_PATH}" "${blob}" 
   fi
 
-  bosh upload-blobs
-  rm -rf ./config/private.yml
+  # bosh upload-blobs
+  # rm -rf ./config/private.yml
 
   if [[ $(git status --porcelain) ]]; then
     git add -A .
     git commit -m "Bump ${blob_name}"
   fi
 
-  rsync -av $PWD/ "$CURRENT_DIR/bumped-repo"
+  rsync -a $PWD/ "$CURRENT_DIR/bumped-repo"
   popd > /dev/null
 }
 
