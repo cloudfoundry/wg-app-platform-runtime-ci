@@ -26,6 +26,7 @@ groups:
   jobs:
   - bump-dependencies-go-mod
   - bump-golang
+  - bump-bosh-blobs
   - bump-dependencies-envoy
   - create-envoy-pr
 
@@ -230,6 +231,25 @@ resources:
     repository: cloudfoundry/diego-inigo-ci-rootfs
     tag: latest
 
+- name: jq
+  type: github-release
+  source:
+    owner: jqlang
+    repository: jq
+
+- name: tar
+  type: s3
+  source:
+    bucket: bosh-windows-dependencies
+    regexp: tar-(.*).exe
+
+- name: winpty
+  type: github-release
+  source:
+    owner: rprichard
+    repository: winpty
+    order_by: time
+
 #! Define-Jobs
 jobs:
 - name: bump-dependencies-go-mod
@@ -312,6 +332,69 @@ jobs:
     params:
       repository: modified-release-windows
       rebase: true
+
+- name: bump-bosh-blobs
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: repo
+      - get: image
+      - get: jq
+        params:
+          globs:
+          - jq-linux-amd64 
+        trigger: true
+      - get: tar
+        trigger: true
+      - get: winpty
+        params:
+          globs:
+          - winpty-*-msvc2015.zip 
+        trigger: true
+  - do:
+    - task: bump-bosh-blob-jq
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: jq
+      params:
+        BOSH_BLOB_PATH: jq/jq-*-linux-amd64.tgz 
+        AWS_ACCESS_KEY_ID: ((aws-s3-diego-release-blobs/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-diego-release-blobs/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-tar
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: tar
+      params:
+        BOSH_BLOB_PATH: tar/tar-*.tgz
+        AWS_ACCESS_KEY_ID: ((aws-s3-diego-release-blobs/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-diego-release-blobs/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-winpty
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: winpty
+      params:
+        BOSH_BLOB_PATH: winpty/winpty-*.tgz
+        AWS_ACCESS_KEY_ID: ((aws-s3-diego-release-blobs/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-diego-release-blobs/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
 
 - name: bump-dependencies-envoy
   serial: true

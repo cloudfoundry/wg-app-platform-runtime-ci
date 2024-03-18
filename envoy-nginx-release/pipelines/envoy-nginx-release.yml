@@ -237,20 +237,21 @@ jobs:
         params:
           fetch_tags: true
         trigger: true
-  - task: nginx-bump-bosh-blob
-    image: image
-    file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-    input_mapping:
-      blob: nginx
-    params:
-      BOSH_BLOB_PATH: envoy-nginx/envoy-nginx-*.zip
-      AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
-      AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
-      AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
-  - put: repo
-    params:
-      rebase: true
-      repository: bumped-repo
+  - do:
+    - task: nginx-bump-bosh-blob
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: nginx
+      params:
+        BOSH_BLOB_PATH: envoy-nginx/envoy-nginx-*.zip
+        AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+    - put: repo
+      params:
+        rebase: true
+        repository: bumped-repo
 
 - name: unit-and-integration-tests
   serial: true
