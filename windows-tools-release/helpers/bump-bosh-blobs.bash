@@ -154,8 +154,8 @@ function run() {
         echo "Bumping ginkgo blob"
         pushd "${blob}" > /dev/null
         local version=$(cat version)
-        local exe_name="ginkgo-${version}.exe"
-        git clone https://github.com/onsi/ginkgo --branch $version
+        local exe_name="ginkgo-v${version}.exe"
+        git clone https://github.com/onsi/ginkgo --branch "v${version}"
         pushd "ginkgo" > /dev/null
         GOOS=windows go build -o "../${exe_name}" .
         popd > /dev/null
