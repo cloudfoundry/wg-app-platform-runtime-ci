@@ -121,6 +121,7 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(shasum -a256 VC_redist.x64.exe | cut -d' ' -f1)
         local zip_name="vc_redist-${version}.zip"
+        mv vcredist-ucrt.x64.exe VC_redist.x64.exe
         zip "${zip_name}" VC_redist.x64.exe
         popd > /dev/null
 
