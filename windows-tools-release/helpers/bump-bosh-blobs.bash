@@ -48,6 +48,42 @@ function run() {
         local dir_name="$(dirname ${bosh_blob_path})"
         bosh remove-blob "${dir_name}/${blob_name}"
         bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
+    elif [[ "$bosh_blob_path" == 'mingw/x86_64-*-release-posix-seh-ucrt-*-*.7z' ]]; then
+        echo "Bumping mingw64 blob"
+        pushd "${blob}" > /dev/null
+        local version=$(cat version | cut -d'-' -f1)
+        local rt_version=$(cat version | cut -d'-' -f2)
+        local rev_version=$(cat version | cut -d'-' -f3)
+        local tgz_name="x86_64-${version}-release-posix-seh-ucrt-${rt_version}-${rev_version}.7z"
+        popd > /dev/null
+
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
+            echo "$tgz_name already exists, skippping"
+            return
+        fi
+
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname ${bosh_blob_path})"
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
+    elif [[ "$bosh_blob_path" == 'mingw/i686-*-release-win32-dwarf-ucrt-*-*.7z' ]]; then
+        echo "Bumping mingw686 blob"
+        pushd "${blob}" > /dev/null
+        local version=$(cat version | cut -d'-' -f1)
+        local rt_version=$(cat version | cut -d'-' -f2)
+        local rev_version=$(cat version | cut -d'-' -f3)
+        local tgz_name="i686-${version}-release-win32-dwarf-ucrt-${rt_version}-${rev_version}.7z"
+        popd > /dev/null
+
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
+            echo "$tgz_name already exists, skippping"
+            return
+        fi
+
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname ${bosh_blob_path})"
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
     fi
 }
 
