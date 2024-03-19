@@ -19,10 +19,12 @@ function run() {
   pushd blob > /dev/null
   local blob="${PWD}"
   local blob_name=$(git_get_remote_name) #if git repo resource
-  if [[ -z "${blob_name}" ]]; then
+  if [[ -z "${blob_name}" && -f url ]]; then
     blob_name=$(cat url) #if github release resource
-  elif [[ -z "${blob_name}" ]]; then
+  elif [[ -z "${blob_name}" && -f filename ]]; then
     blob_name=$(cat filename) # if s3 resource
+  else
+    blob_name=$(ls --format=commas)
   fi
   popd > /dev/null
 
