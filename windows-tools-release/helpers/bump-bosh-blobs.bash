@@ -150,6 +150,26 @@ function run() {
         local dir_name="$(dirname ${bosh_blob_path})"
         bosh remove-blob "${dir_name}/${blob_name}"
         bosh add-blob "${blob}/${zip_name}" "${dir_name}/${zip_name}"
+    elif [[ "$bosh_blob_path" == 'ginkgo/ginkgo-*.exe' ]]; then
+        echo "Bumping ginkgo blob"
+        pushd "${blob}" > /dev/null
+        local version=$(cat version)
+        local exe_name="ginkgo-${version}.exe"
+        git clone https://github.com/onsi/ginkgo --branch $version
+        pushd "ginkgo" > /dev/null
+        GOOS=windows go build -o "../${exe_name}" .
+        popd > /dev/null
+        popd > /dev/null
+
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$exe_name") ]]; then
+            echo "$exe_name already exists, skippping"
+            return
+        fi
+
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname ${bosh_blob_path})"
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${blob}/${exe_name}" "${dir_name}/${exe_name}"
     fi
 }
 
