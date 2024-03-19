@@ -84,6 +84,22 @@ function run() {
         local dir_name="$(dirname ${bosh_blob_path})"
         bosh remove-blob "${dir_name}/${blob_name}"
         bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
+    elif [[ "$bosh_blob_path" == 'bosh-cli/bosh-cli-*-windows-amd64.exe' ]]; then
+        echo "Bumping bosh-cli blob"
+        pushd "${blob}" > /dev/null
+        local version=$(cat version | tr -d 'v')
+        local exe_name="bosh-cli-${version}-windows-amd64.exe"
+        popd > /dev/null
+
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$exe_name") ]]; then
+            echo "$exe_name already exists, skippping"
+            return
+        fi
+
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname ${bosh_blob_path})"
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${blob}/${exe_name}" "${dir_name}/${exe_name}"
     fi
 }
 
