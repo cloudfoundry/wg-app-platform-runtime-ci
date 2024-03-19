@@ -11,6 +11,14 @@ groups:
 - name: periodics
   jobs:
   - bump-package-golang
+  - bump-bosh-blobs
+
+resource_types:
+- name: command-runner
+  type: docker-image
+  source:
+    repository: cloudfoundrydevelopers/command-runner-resource
+    tag: latest
 
 #! Define-Resources
 resources:
@@ -84,6 +92,55 @@ resources:
     repository: cloudfoundry/tas-runtime-build
     tag: 'latest'
 
+- name: yq
+  type: github-release
+  source:
+    owner: mikefarah
+    repository: yq
+
+- name: staticcheck
+  type: github-release
+  source:
+    owner: dominikh
+    repository: go-tools
+
+- name: mingw
+  type: github-release
+  source:
+    owner: niXman
+    repository: mingw-builds-binaries
+
+- name: bosh-cli
+  type: github-release
+  source:
+    owner: cloudfoundry
+    repository: bosh-cli
+
+- name: git-cli
+  type: github-release
+  source:
+    owner: git-for-windows
+    repository: git
+
+- name: vcredist-ucrt
+  type: command-runner
+  source:
+    version_key: "url"
+    check_command: "curl --location --silent --write-out %{url_effective} --request HEAD https://aka.ms/vs/17/release/vc_redist.x64.exe"
+    in_command:    "curl --location --silent --fail --output $1/vcredist-ucrt.x64.exe https://aka.ms/vs/17/release/vc_redist.x64.exe"
+
+- name: cmake
+  type: github-release
+  source:
+    owner: Kitware
+    repository: CMake
+
+- name: ginkgo
+  type: github-release
+  source:
+    owner: onsi
+    repository: ginkgo
+
 #! Define-Jobs
 jobs:
 - name: bump-package-golang
@@ -119,6 +176,150 @@ jobs:
     params:
       rebase: true
       repository: vendored-repo
+
+- name: bump-bosh-blobs
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: repo
+      - get: image
+      - get: yq
+        params:
+          globs:
+          - yq_windows_amd64.exe 
+        trigger: true
+      - get: staticcheck
+        params:
+          globs:
+          - staticcheck_windows_amd64.tar.gz
+        trigger: true
+      - get: mingw
+        params:
+          globs:
+          - x86_64-*-release-posix-seh-ucrt-*.7z
+          - i686-*-release-win32-dwarf-ucrt-*.7z
+        trigger: true
+      - get: bosh-cli
+        params:
+          globs:
+          - bosh-cli-*-windows-amd64.exe
+        trigger: true
+      - get: git-cli
+        params:
+          globs:
+          - Git-*-64-bit.exe
+        trigger: true
+      - get: vcredist-ucrt
+        trigger: true
+      - get: cmake
+        params:
+          globs:
+          - cmake-*-windows-x86_64.zip 
+        trigger: true
+      - get: ginkgo
+        trigger: true
+  - do:
+    - task: bump-bosh-blob-yq
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: yq
+      params:
+        BOSH_BLOB_PATH: yq/yq-*-windows-amd64.exe 
+        AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+  - do:
+    - task: bump-bosh-blob-staticcheck
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: staticcheck
+      params:
+        BOSH_BLOB_PATH: staticcheck/staticcheck-*-windows-amd64.tar.gz
+        AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+  - do:
+    - task: bump-bosh-blob-mingw-x64
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: mingw
+      params:
+        BOSH_BLOB_PATH: mingw/x86_64-*-release-posix-seh-ucrt-*-*.7z
+        AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+  - do:
+    - task: bump-bosh-blob-mingw-i686
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: mingw
+      params:
+        BOSH_BLOB_PATH: mingw/i686-*-release-win32-dwarf-ucrt-*-*.7z
+        AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+  - do:
+    - task: bump-bosh-blob-bosh-cli
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: bosh-cli
+      params:
+        BOSH_BLOB_PATH: bosh-cli/bosh-cli-*-windows-amd64.exe
+        AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+  - do:
+    - task: bump-bosh-blob-git-cli
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: git-cli
+      params:
+        BOSH_BLOB_PATH: git/Git-*-64-bit.exe
+        AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+  - do:
+    - task: bump-bosh-blob-vcredist-ucrt
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: vcredist-ucrt
+      params:
+        BOSH_BLOB_PATH: vc_redist/vc_redist-*.zip
+        AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+  - do:
+    - task: bump-bosh-blob-cmake
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: cmake
+      params:
+        BOSH_BLOB_PATH: cmake/cmake-*-windows-x86_64.zip
+        AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+  - do:
+    - task: bump-bosh-blob-ginkgo
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: ginkgo
+      params:
+        BOSH_BLOB_PATH: ginkgo/ginkgo-*.exe
+        AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+
 - name: ship-what
   plan:
     - in_parallel:
