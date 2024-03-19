@@ -134,6 +134,22 @@ function run() {
         local dir_name="$(dirname ${bosh_blob_path})"
         bosh remove-blob "${dir_name}/${blob_name}"
         bosh add-blob "${blob}/${zip_name}" "${dir_name}/${zip_name}"
+    elif [[ "$bosh_blob_path" == 'cmake/cmake-*-windows-x86_64.zip' ]]; then
+        echo "Bumping cmake blob"
+        pushd "${blob}" > /dev/null
+        local version=$(cat version | tr -d 'v')
+        local zip_name="cmake-${version}-windows-x86_64.zip"
+        popd > /dev/null
+
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$zip_name") ]]; then
+            echo "$zip_name already exists, skippping"
+            return
+        fi
+
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname ${bosh_blob_path})"
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${blob}/${zip_name}" "${dir_name}/${zip_name}"
     fi
 }
 
