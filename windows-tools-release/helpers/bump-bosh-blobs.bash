@@ -116,6 +116,23 @@ function run() {
         local dir_name="$(dirname ${bosh_blob_path})"
         bosh remove-blob "${dir_name}/${blob_name}"
         bosh add-blob "${blob}/${exe_name}" "${dir_name}/${exe_name}"
+    elif [[ "$bosh_blob_path" == 'vc_redist/vc_redist-*.zip' ]]; then
+        echo "Bumping vc_redist blob"
+        pushd "${blob}" > /dev/null
+        local version=$(shasum -a256 VC_redist.x64.exe | cut -d' ' -f1)
+        local zip_name="vc_redist-${version}.zip"
+        zip "${zip_name}" VC_redist.x64.exe
+        popd > /dev/null
+
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$zip_name") ]]; then
+            echo "$zip_name already exists, skippping"
+            return
+        fi
+
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname ${bosh_blob_path})"
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${blob}/${zip_name}" "${dir_name}/${zip_name}"
     fi
 }
 
