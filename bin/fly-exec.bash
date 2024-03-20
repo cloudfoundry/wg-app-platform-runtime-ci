@@ -75,7 +75,8 @@ function cleanup() {
 
 task_tmp_dir="$(mktemp -d -t 'XXXX-task-tmp-dir')"
 trap cleanup EXIT
-if [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
+set +u
+if [[ "$1" == "-h" || "$1" == "--help" || -z "$1" ]]; then
     echo "
     Fly execute a task: e.g. 'fly-exec.bash <task-name> <-i input-01=/tmp/input -o output-02=/tmp/output>'
 
@@ -100,4 +101,5 @@ if [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
     "
     exit
 fi
+set -u
 run "$task_tmp_dir" "$@"
