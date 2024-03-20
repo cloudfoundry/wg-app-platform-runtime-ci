@@ -231,6 +231,10 @@ jobs:
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
   - do:
     - task: bump-bosh-blob-staticcheck
       image: image
@@ -242,6 +246,10 @@ jobs:
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
   - do:
     - task: bump-bosh-blob-mingw-x64
       image: image
@@ -253,6 +261,10 @@ jobs:
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
   - do:
     - task: bump-bosh-blob-mingw-i686
       image: image
@@ -264,6 +276,10 @@ jobs:
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
   - do:
     - task: bump-bosh-blob-bosh-cli
       image: image
@@ -275,6 +291,10 @@ jobs:
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
   - do:
     - task: bump-bosh-blob-git-cli
       image: image
@@ -286,6 +306,10 @@ jobs:
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
   - do:
     - task: bump-bosh-blob-vcredist-ucrt
       image: image
@@ -297,6 +321,10 @@ jobs:
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
   - do:
     - task: bump-bosh-blob-cmake
       image: image
@@ -308,6 +336,10 @@ jobs:
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
   - do:
     - task: bump-bosh-blob-ginkgo
       image: image
@@ -319,6 +351,10 @@ jobs:
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
 
 - name: ship-what
   plan:

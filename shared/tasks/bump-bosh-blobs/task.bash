@@ -38,8 +38,8 @@ function run() {
     "../ci/${repo_name}/helpers/bump-bosh-blobs.bash" "${PWD}" "${BOSH_BLOB_PATH}" "${blob}" 
   fi
 
-  # bosh upload-blobs
-  # rm -rf ./config/private.yml
+  bosh upload-blobs
+  rm -rf ./config/private.yml
 
   if [[ $(git status --porcelain) ]]; then
     git add -A .
