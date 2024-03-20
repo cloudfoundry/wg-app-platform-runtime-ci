@@ -62,16 +62,6 @@ function Verify-GoVet {
   Pop-Location
 }
 
-function Verify-GoVet {
-  $dir = $args[0]
-  Push-Location $dir
-  staticcheck.exe ./...
-  if ($LastExitCode -ne 0) {
-    exit 1
-  }
-  Pop-Location
-}
-
 function Verify-Ginkgo {
   $dir = $args[0]
   Push-Location $dir

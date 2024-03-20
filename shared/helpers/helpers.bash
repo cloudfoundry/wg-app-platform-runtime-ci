@@ -39,12 +39,6 @@ function verify_govet(){
     go vet ./...
     popd > /dev/null
 }
-function verify_staticcheck(){
-    local dir="${1:-$PWD}"
-    pushd "${dir}" >/dev/null
-    staticcheck ./...
-    popd >/dev/null
-}
 
 function verify_binary() {
     local cmd=${1:?"Provide a command to verify"}

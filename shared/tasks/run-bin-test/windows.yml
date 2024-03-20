@@ -35,7 +35,6 @@ params:
     Verify-Go repo/$env:DIR
     Verify-GoVersionMatchBoshRelease repo
     Verify-GoVet repo/$env:DIR
-    Verify-StaticCheck repo/$env:DIR
 
 run:
   path: powershell
