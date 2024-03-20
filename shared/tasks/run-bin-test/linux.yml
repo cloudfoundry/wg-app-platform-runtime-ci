@@ -42,5 +42,6 @@ params:
     verify_go_version_match_bosh_release repo
     verify_gofmt repo/$DIR
     verify_govet repo/$DIR
+    verify_staticcheck repo/$DIR
 run:
   path: ci/shared/tasks/run-bin-test/task.bash
