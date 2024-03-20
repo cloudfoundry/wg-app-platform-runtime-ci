@@ -39,4 +39,5 @@ params:
       Verifying if go version matches with bosh's package # when ran against repositories that are not bosh release, it will skip this check
       Verifying if go fmt is passing
       Verifying if go vet is passing
+      Verifying if staticcheck is passing
     ) Verify helper functions to run for a give test.
