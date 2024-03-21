@@ -21,13 +21,13 @@ function run() {
   local blob_name
   if [[ -f url ]]; then
     blob_name=$(cat url) #if github release resource
-  elif [[ -z "${blob_name}" && -f filename ]]; then
+  elif [[ -f filename ]]; then
     blob_name=$(cat filename) # if s3 resource
-  elif [[ -z "${blob_name}" && -f version ]]; then
+  elif [[ -f version ]]; then
     blob_name="$(dirname ${BOSH_BLOB_PATH}) to $(cat version)" # if gitlab release resource
-  elif [[ -z "${blob_name}" && -d .git ]]; then
+  elif [[ -d .git ]]; then
     blob_name="$(dirname ${BOSH_BLOB_PATH}) to $(git describe --tags --abbrev=0)" # if git resource
-  elif [[ -z "${blob_name}" ]]; then
+  elif [[ "${blob_name:-empty}" == "empty" ]]; then
     blob_name="$(dirname ${BOSH_BLOB_PATH}) $(ls --format=commas)"
   fi
   popd > /dev/null
