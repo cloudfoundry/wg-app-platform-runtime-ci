@@ -52,7 +52,7 @@ function run() {
         echo "Bumping automake blob"
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
-        local tgz_name="automake{version}.tar.gz"
+        local tgz_name="automake-${version}.tar.gz"
         wget "https://ftp.gnu.org/gnu/automake/automake-${version}.tar.gz" -o "${tgz_name}"
         popd > /dev/null
 
