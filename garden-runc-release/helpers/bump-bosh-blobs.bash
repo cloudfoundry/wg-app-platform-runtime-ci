@@ -19,7 +19,26 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(cat version | tr -d 'v')
         local tgz_name="apparmor-${version}.tar.gz"
-        wget https://gitlab.com/apparmor/apparmor/-/archive/v${version}/apparmor-v${version}.tar.gz -o ${tgz_name}
+        wget "https://gitlab.com/apparmor/apparmor/-/archive/v${version}/apparmor-v${version}.tar.gz" -o "${tgz_name}"
+        popd > /dev/null
+
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
+            echo "$tgz_name already exists, skippping"
+            return
+        fi
+
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname ${bosh_blob_path})"
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
+    fi
+
+    if [[ "$bosh_blob_path" == 'autoconf/autoconf-*.tar.gz' ]]; then
+        echo "Bumping autoconf blob"
+        pushd "${blob}" > /dev/null
+        local version=$(cat version | tr -d '[a-z]')
+        local tgz_name="autoconf-${version}.tar.gz"
+        wget "https://ftp.gnu.org/gnu/autoconf/autoconf-${version}.tar.gz" -o "${tgz_name}"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
