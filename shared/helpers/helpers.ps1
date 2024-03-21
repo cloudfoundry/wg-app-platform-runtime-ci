@@ -62,7 +62,7 @@ function Verify-GoVet {
   Pop-Location
 }
 
-function Verify-GoVet {
+function Verify-StaticCheck {
   $dir = $args[0]
   Push-Location $dir
   staticcheck.exe ./...
