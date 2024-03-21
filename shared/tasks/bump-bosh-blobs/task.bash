@@ -18,7 +18,7 @@ function run() {
 
   pushd blob > /dev/null
   local blob="${PWD}"
-  local blob_name=$(git_get_remote_name) #if git repo resource
+  local blob_name
   if [[ -z "${blob_name}" && -f url ]]; then
     blob_name=$(cat url) #if github release resource
   elif [[ -z "${blob_name}" && -f filename ]]; then
@@ -28,7 +28,7 @@ function run() {
   elif [[ -z "${blob_name}" && -d .git ]]; then
     blob_name="$(dirname ${BOSH_BLOB_PATH}) to $(git describe --tags --abbrev=0)" # if git resource
   elif [[ -z "${blob_name}" ]]; then
-    blob_name=$(ls --format=commas)
+    blob_name="$(dirname ${BOSH_BLOB_PATH}) $(ls --format=commas)"
   fi
   popd > /dev/null
 
