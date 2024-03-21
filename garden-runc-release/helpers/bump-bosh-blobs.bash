@@ -70,8 +70,8 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d 'v')
         local tgz_name="busybox-${version}.tar.gz"
-        wget "https://git.busybox.net/busybox/snapshot/busybox-${version}.tar.bz2" -o "busybox.tar.bz2"
-        bunzip2 -c -d busybox.tar.bz2 | gzip -v9 > ${tgz_name}
+        wget "https://git.busybox.net/busybox/snapshot/busybox-${version}.tar.bz2"
+        bunzip2 -c -d "busybox-${version}.tar.bz2" | gzip -v9 > ${tgz_name}
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
