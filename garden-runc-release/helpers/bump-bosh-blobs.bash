@@ -36,7 +36,7 @@ function run() {
     if [[ "$bosh_blob_path" == 'autoconf/autoconf-*.tar.gz' ]]; then
         echo "Bumping autoconf blob"
         pushd "${blob}" > /dev/null
-        local version=$(cat version | tr -d '[a-z]')
+        local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
         local tgz_name="autoconf-${version}.tar.gz"
         wget "https://ftp.gnu.org/gnu/autoconf/autoconf-${version}.tar.gz" -o "${tgz_name}"
         popd > /dev/null

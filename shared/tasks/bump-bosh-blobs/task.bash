@@ -25,6 +25,8 @@ function run() {
     blob_name=$(cat filename) # if s3 resource
   elif [[ -z "${blob_name}" && -f version ]]; then
     blob_name="$(dirname ${BOSH_BLOB_PATH}) to $(cat version)" # if gitlab release resource
+  elif [[ -z "${blob_name}" && -d '.git' ]]; then
+    blob_name="$(dirname ${BOSH_BLOB_PATH}) to $(git describe --tags --abbrev=0)" # if git resource
   else
     blob_name=$(ls --format=commas)
   fi
