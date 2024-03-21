@@ -53,7 +53,7 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d 'v')
         local tgz_name="automake-${version}.tar.gz"
-        wget "https://ftp.gnu.org/gnu/automake/automake-${version}.tar.gz" -o "${tgz_name}"
+        wget "https://ftp.gnu.org/gnu/automake/automake-${version}.tar.gz" -o "${tgz_name}" 2>&1
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
