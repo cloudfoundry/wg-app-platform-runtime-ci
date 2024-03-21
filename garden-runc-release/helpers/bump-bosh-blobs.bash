@@ -19,6 +19,7 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(cat version | tr -d 'v')
         local tgz_name="apparmor-${version}.tar.gz"
+        wget https://gitlab.com/apparmor/apparmor/-/archive/v${version}/apparmor-v${version}.tar.gz -o ${tgz_name}
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
