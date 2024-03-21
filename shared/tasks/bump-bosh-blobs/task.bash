@@ -19,7 +19,7 @@ function run() {
   pushd blob > /dev/null
   local blob="${PWD}"
   local blob_name
-  if [[ -z "${blob_name}" && -f url ]]; then
+  if [[ -f url ]]; then
     blob_name=$(cat url) #if github release resource
   elif [[ -z "${blob_name}" && -f filename ]]; then
     blob_name=$(cat filename) # if s3 resource
