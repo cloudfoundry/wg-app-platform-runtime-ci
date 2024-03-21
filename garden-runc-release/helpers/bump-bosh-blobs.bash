@@ -51,7 +51,7 @@ function run() {
     elif [[ "$bosh_blob_path" == 'automake/automake-*.tar.gz' ]]; then
         echo "Bumping automake blob"
         pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
+        local version=$(git describe --tags --abbrev=0 | tr -d 'v')
         local tgz_name="automake-${version}.tar.gz"
         wget "https://ftp.gnu.org/gnu/automake/automake-${version}.tar.gz" -o "${tgz_name}"
         popd > /dev/null
