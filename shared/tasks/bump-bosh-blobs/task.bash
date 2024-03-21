@@ -23,6 +23,8 @@ function run() {
     blob_name=$(cat url) #if github release resource
   elif [[ -z "${blob_name}" && -f filename ]]; then
     blob_name=$(cat filename) # if s3 resource
+  elif [[ -z "${blob_name}" && -f version ]]; then
+    blob_name="$(dirname "${BOSH_BLOB_PATH}) to $(cat version)" # if gitlab release resource
   else
     blob_name=$(ls --format=commas)
   fi
