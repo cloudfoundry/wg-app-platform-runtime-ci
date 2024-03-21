@@ -34,7 +34,7 @@ function run() {
 
   pushd repo > /dev/null
   bosh_configure_private_yml "./config/private.yml"
-  bosh sync-blobs
+  bosh sync-blobs 1>/dev/null
 
   local repo_name=$(git_get_remote_name)
 
