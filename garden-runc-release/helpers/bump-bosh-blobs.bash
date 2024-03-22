@@ -138,7 +138,7 @@ function run() {
     elif [[ "$bosh_blob_path" == 'libseccomp/libseccomp-*.tar.gz' ]]; then
         echo "Bumping libseccomp blob"
         pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
+        local version=$(cat version)
         local tgz_name="libseccomp-${version}.tar.gz"
         popd > /dev/null
 
