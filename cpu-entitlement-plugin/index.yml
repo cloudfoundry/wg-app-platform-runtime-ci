@@ -8,3 +8,4 @@ opsfiles:
 - enable-cpu-throttling.yml
 - grootfs-direct-io.yml
 - single-diego-cell.yml
+- emit-legacy-cpu-metrics.yml
