@@ -101,7 +101,7 @@ function run() {
         local dir_name="$(dirname ${bosh_blob_path})"
         bosh remove-blob "${dir_name}/${blob_name}"
         bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
-    elif [[ "$bosh_blob_path" == 'iptables/iptables-*.tar.bz' ]]; then
+    elif [[ "$bosh_blob_path" == 'iptables/iptables-*.tar.bz2' ]]; then
         echo "Bumping iptables blob"
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
