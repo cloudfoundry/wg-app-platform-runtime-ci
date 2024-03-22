@@ -19,7 +19,7 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(cat version | tr -d 'v')
         local tgz_name="apparmor-${version}.tar.gz"
-        wget "https://gitlab.com/apparmor/apparmor/-/archive/v${version}/apparmor-v${version}.tar.gz" -o "${tgz_name}"
+        wget "https://gitlab.com/apparmor/apparmor/-/archive/v${version}/apparmor-v${version}.tar.gz" -O "${tgz_name}"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
@@ -36,7 +36,7 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
         local tgz_name="autoconf-${version}.tar.gz"
-        wget "https://ftp.gnu.org/gnu/autoconf/autoconf-${version}.tar.gz" -o "${tgz_name}"
+        wget "https://ftp.gnu.org/gnu/autoconf/autoconf-${version}.tar.gz" -O "${tgz_name}"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
@@ -53,7 +53,7 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d 'v')
         local tgz_name="automake-${version}.tar.gz"
-        wget "https://ftp.gnu.org/gnu/automake/automake-${version}.tar.gz" -o "${tgz_name}"
+        wget "https://ftp.gnu.org/gnu/automake/automake-${version}.tar.gz" -O "${tgz_name}"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
@@ -89,7 +89,7 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
         local tgz_name="gperf-${version}.tar.gz"
-        wget "http://ftp.gnu.org/pub/gnu/gperf/gperf-${version}.tar.gz" -o "${tgz_name}"
+        wget  -O "${tgz_name}" "http://ftp.gnu.org/pub/gnu/gperf/gperf-${version}.tar.gz"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
