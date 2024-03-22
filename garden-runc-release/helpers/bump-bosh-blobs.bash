@@ -69,7 +69,8 @@ function run() {
         echo "Bumping busybox blob"
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d 'v')
-        local tgz_name="busybox-${version}.tar.gz"
+        local blob_version=$(echo ${version} | sed s/_/./g)
+        local tgz_name="busybox-${blob_version}.tar.gz"
         wget "https://git.busybox.net/busybox/snapshot/busybox-${version}.tar.bz2"
         bunzip2 -c -d "busybox-${version}.tar.bz2" | gzip -v9 > ${tgz_name}
         popd > /dev/null
