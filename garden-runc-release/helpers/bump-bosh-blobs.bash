@@ -106,7 +106,24 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
         local tgz_name="iptables-${version}.tar.xz"
-        wget  -o "${tgz_name}" "https://netfilter.org/projects/iptables/files/$tgz_name"
+        wget  -o "${tgz_name}" "https://netfilter.org/projects/iptables/files/iptables-${version}.tar.xz"
+        popd > /dev/null
+
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
+            echo "$tgz_name already exists, skippping"
+            return
+        fi
+
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname ${bosh_blob_path})"
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
+    elif [[ "$bosh_blob_path" == 'iptables/libmnl-*.tar.bz2' ]]; then
+        echo "Bumping libmnl blob"
+        pushd "${blob}" > /dev/null
+        local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]-')
+        local tgz_name="libmnl-${version}.tar.bz2"
+        wget  -o "${tgz_name}" "https://www.netfilter.org/projects/libmnl/files/libmnl-${version}.tar.bz2"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
