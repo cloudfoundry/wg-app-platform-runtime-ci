@@ -89,7 +89,24 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
         local tgz_name="gperf-${version}.tar.gz"
-        wget  -O "${tgz_name}" "http://ftp.gnu.org/pub/gnu/gperf/gperf-${version}.tar.gz"
+        wget  -o "${tgz_name}" "http://ftp.gnu.org/pub/gnu/gperf/gperf-${version}.tar.gz"
+        popd > /dev/null
+
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
+            echo "$tgz_name already exists, skippping"
+            return
+        fi
+
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname ${bosh_blob_path})"
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
+    elif [[ "$bosh_blob_path" == 'iptables/iptables-*.tar.bz' ]]; then
+        echo "Bumping iptables blob"
+        pushd "${blob}" > /dev/null
+        local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
+        local tgz_name="iptables-${version}.tar.xz"
+        wget  -o "${tgz_name}" "https://netfilter.org/projects/iptables/files/$tgz_name"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
