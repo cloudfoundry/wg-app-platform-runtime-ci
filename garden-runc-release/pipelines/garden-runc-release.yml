@@ -26,6 +26,7 @@ groups:
   jobs:
   - bump-dependencies-go-mod
   - bump-package-golang
+  - bump-bosh-blobs
 
 - name: manual
   jobs:
@@ -50,6 +51,10 @@ resource_types:
   source:
     repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
     tag: v1  #! This may be bumped in the future
+- name: gitlab-release
+  type: registry-image
+  source:
+    repository: orangeopensource/gitlab-release-resource
 
 #! Define-Resources
 resources:
@@ -290,6 +295,66 @@ resources:
     bucket: gdn-linux-release
     json_key: ((gcp-tas-runtime-service-account/config-json))
 
+- name: apparmor
+  type: gitlab-release
+  source:
+    repository: apparmor/apparmor
+    tag_filter: v2.*
+
+- name: autoconf
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/autotools-mirror/autoconf
+    tag_filter: v*
+
+- name: automake
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/autotools-mirror/automake
+    tag_regex: ^v([0-9]|[1-9][0-9]*)\.([0-9]|[1-9][0-9]*)\.([0-9]|[1-9][0-9]*)$
+
+- name: busybox
+  type: git
+  source:
+    branch: 1_36_stable
+    uri: https://git.busybox.net/busybox
+
+- name: gperf
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/jwinarske/gperf
+    tag_filter: v*
+
+- name: iptables
+  type: git
+  source:
+    branch: master
+    uri: https://git.netfilter.org/iptables
+    tag_filter: v*
+
+- name: libmnl
+  type: git
+  source:
+    branch: master
+    uri: https://git.netfilter.org/libmnl
+    tag_filter: libmnl*
+
+- name: libseccomp
+  type: github-release
+  source:
+    owner: seccomp
+    repository: libseccomp
+
+- name: libtool
+  type: git
+  source:
+    branch: master
+    uri: https://git.savannah.gnu.org/git/libtool.git
+    tag_filter: v*
+
 #! Define-Jobs
 jobs:
 - name: bump-dependencies-go-mod
@@ -523,6 +588,142 @@ jobs:
     params:
       rebase: true
       repository: modified-release-windows
+
+- name: bump-bosh-blobs
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: repo
+      - get: image
+      - get: apparmor
+        trigger: true
+      - get: autoconf
+        params:
+          fetch_tags: true
+        trigger: true
+      - get: automake
+        params:
+          fetch_tags: true
+        trigger: true
+      - get: busybox
+        params:
+          fetch_tags: true
+        trigger: true
+      - get: gperf
+        params:
+          fetch_tags: true
+        trigger: true
+      - get: iptables
+        params:
+          fetch_tags: true
+        trigger: true
+      - get: libmnl
+        params:
+          fetch_tags: true
+        trigger: true
+      - get: libseccomp
+        params:
+          globs:
+          - libseccomp-*.tar.gz 
+        trigger: true
+      - get: libtool
+        params:
+          fetch_tags: true
+        trigger: true
+
+  - do:
+    - task: bump-bosh-blob-apparmor
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: apparmor
+      params:
+        BOSH_BLOB_PATH: apparmor/apparmor-*.tar.gz
+        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+  - do:
+    - task: bump-bosh-blob-autoconf
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: autoconf
+      params:
+        BOSH_BLOB_PATH: autoconf/autoconf-*.tar.gz
+        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+  - do:
+    - task: bump-bosh-blob-automake
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: automake
+      params:
+        BOSH_BLOB_PATH: automake/automake-*.tar.gz
+        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+  - do:
+    - task: bump-bosh-blob-busybox
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: busybox
+      params:
+        BOSH_BLOB_PATH: busybox/busybox-*.tar.gz
+        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+
+  - do:
+    - task: bump-bosh-blob-gperf
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: gperf
+      params:
+        BOSH_BLOB_PATH: gperf/gperf-*.tar.gz
+        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+  - do:
+    - task: bump-bosh-blob-iptables
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: iptables
+      params:
+        BOSH_BLOB_PATH: iptables/iptables-*.tar.bz2
+        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+  - do:
+    - task: bump-bosh-blob-libmnl
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: libmnl
+      params:
+        BOSH_BLOB_PATH: iptables/libmnl-*.tar.bz2
+        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+  - do:
+    - task: bump-bosh-blob-libseccomp
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: libseccomp
+      params:
+        BOSH_BLOB_PATH: libseccomp/libseccomp-*.tar.gz
+        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+  - do:
+    - task: bump-bosh-blob-libtool
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: libtool
+      params:
+        BOSH_BLOB_PATH: libtool/libtool-*.tar.gz
+        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
 
 - name: template-tests
   serial: true
