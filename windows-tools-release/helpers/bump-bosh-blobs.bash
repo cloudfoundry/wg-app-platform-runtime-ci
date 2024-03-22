@@ -157,7 +157,7 @@ function run() {
         local exe_name="ginkgo-v${version}.exe"
         git clone https://github.com/onsi/ginkgo --branch "v${version}"
         pushd "ginkgo" > /dev/null
-        GOOS=windows go build -O "../${exe_name}" .
+        GOOS=windows go build -o "../${exe_name}" .
         popd > /dev/null
         popd > /dev/null
 
