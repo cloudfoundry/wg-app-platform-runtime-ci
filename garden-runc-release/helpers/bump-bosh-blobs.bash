@@ -257,8 +257,9 @@ function run() {
         echo "Bumping util-linux blob"
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]-')
+        local major_minor_version="$(echo ${version} | cut -d'.' -f1,2)"
         local tgz_name="util-linux-${version}.tar.gz"
-        wget  -O "${tgz_name}" "https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v${version}/util-linux-${version}.tar.gz"
+        wget  -O "${tgz_name}" "https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v${major_minor_version}/util-linux-${version}.tar.gz"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
