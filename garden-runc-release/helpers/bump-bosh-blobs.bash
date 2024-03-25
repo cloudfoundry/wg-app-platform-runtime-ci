@@ -173,7 +173,7 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
         local tgz_name="libtool-${version}.tar.gz"
-        wget  -o "${tgz_name}" "https://ftp.wayne.edu/libtool/libtool-${version}.tar.gz"
+        wget  -o "${tgz_name}" "https://ftp.wayne.edu/gnu/libtool/libtool-${version}.tar.gz"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
