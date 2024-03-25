@@ -241,7 +241,7 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(cat version)
         local tgz_name="tini-${version}.tar.gz"
-        mv "v${version}.tar.gz" "${tgz_name}"
+        wget  -O "${tgz_name}" "https://github.com/krallin/tini/archive/refs/tags/v${version}.tar.gz"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
