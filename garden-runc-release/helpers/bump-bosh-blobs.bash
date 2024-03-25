@@ -17,7 +17,7 @@ function run() {
     if [[ "$bosh_blob_path" == 'apparmor/apparmor-*.tar.gz' ]]; then
         echo "Bumping apparmor blob"
         pushd "${blob}" > /dev/null
-        local version=$(cat version | tr -d 'v')
+        local version=$(git describe --tags --abbrev=0 | tr -d 'v')
         local tgz_name="apparmor-${version}.tar.gz"
         wget "https://gitlab.com/apparmor/apparmor/-/archive/v${version}/apparmor-v${version}.tar.gz" -O "${tgz_name}"
         popd > /dev/null
