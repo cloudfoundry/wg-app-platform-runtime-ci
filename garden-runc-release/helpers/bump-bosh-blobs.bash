@@ -206,7 +206,7 @@ function run() {
         echo "Bumping pkg-config blob"
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
-        local tgz_name="libtool-${version}.tar.gz"
+        local tgz_name="pkg-config-${version}.tar.gz"
         wget  -O "${tgz_name}" "https://pkgconfig.freedesktop.org/releases/pkg-config-${version}.tar.gz"
         popd > /dev/null
 
