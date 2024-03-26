@@ -51,10 +51,11 @@ resource_types:
   source:
     repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
     tag: v1  #! This may be bumped in the future
-- name: gitlab-release
-  type: registry-image
+- name: command-runner
+  type: docker-image
   source:
-    repository: orangeopensource/gitlab-release-resource
+    repository: cloudfoundrydevelopers/command-runner-resource
+    tag: latest
 
 #! Define-Resources
 resources:
@@ -69,7 +70,7 @@ resources:
   type: git
   icon: github-box
   source:
-    branch: develop
+    branch: fix-packaging-scripts
     uri: git@github.com:cloudfoundry/garden-runc-release.git
     private_key: ((github-tas-runtime-bot/private-key))
 
@@ -295,12 +296,6 @@ resources:
     bucket: gdn-linux-release
     json_key: ((gcp-tas-runtime-service-account/config-json))
 
-- name: apparmor
-  type: gitlab-release
-  source:
-    repository: apparmor/apparmor
-    tag_filter: v2.*
-
 - name: autoconf
   type: git
   source:
@@ -342,9 +337,17 @@ resources:
     uri: https://git.netfilter.org/libmnl
     tag_filter: libmnl*
 
+- name: libnftnl
+  type: git
+  source:
+    branch: master
+    uri: https://git.netfilter.org/libnftnl
+    tag_filter: libnftnl-*
+
 - name: libseccomp
   type: github-release
   source:
+    access_token: ((github-tas-runtime-bot/access-token))
     owner: seccomp
     repository: libseccomp
 
@@ -354,6 +357,55 @@ resources:
     branch: master
     uri: https://git.savannah.gnu.org/git/libtool.git
     tag_filter: v*
+
+- name: musl
+  type: git
+  source:
+    branch: master
+    uri: https://git.musl-libc.org/git/musl
+    tag_filter: v*
+
+- name: pkg-config
+  type: git
+  source:
+    branch: master
+    uri: https://gitlab.freedesktop.org/pkg-config/pkg-config.git
+    tag_filter: pkg-config-*
+
+- name: tar
+  type: git
+  source:
+    branch: master
+    uri: https://git.savannah.gnu.org/git/tar.git
+    tag_filter: v*
+
+- name: tini
+  type: github-release
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    owner: krallin
+    repository: tini
+
+- name: util-linux
+  type: git
+  source:
+    branch: stable/v2.39
+    uri: https://github.com/util-linux/util-linux.git
+    tag_regex: ^v([0-9]|[1-9][0-9]*)\.([0-9]|[1-9][0-9]*)\.([0-9]|[1-9][0-9]*)$
+
+- name: xfs-progs
+  type: git
+  source:
+    branch: master
+    uri: https://git.kernel.org/pub/scm/fs/xfs/xfsprogs-dev.git
+    tag_filter: v*
+
+- name: zlib
+  type: github-release
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    owner: madler
+    repository: zlib
 
 #! Define-Jobs
 jobs:
@@ -597,8 +649,6 @@ jobs:
       - get: ci
       - get: repo
       - get: image
-      - get: apparmor
-        trigger: true
       - get: autoconf
         params:
           fetch_tags: true
@@ -623,6 +673,10 @@ jobs:
         params:
           fetch_tags: true
         trigger: true
+      - get: libnftnl
+        params:
+          fetch_tags: true
+        trigger: true
       - get: libseccomp
         params:
           globs:
@@ -632,17 +686,33 @@ jobs:
         params:
           fetch_tags: true
         trigger: true
+      - get: musl
+        params:
+          fetch_tags: true
+        trigger: true
+      - get: pkg-config
+        params:
+          fetch_tags: true
+        trigger: true
+      - get: tar
+        params:
+          fetch_tags: true
+        trigger: true
+      - get: tini
+        trigger: true
+      - get: util-linux
+        params:
+          fetch_tags: true
+        trigger: true
+      - get: xfs-progs
+        params:
+          fetch_tags: true
+        trigger: true
+      - get: zlib
+        params:
+          globs: [ zlib-*.tar.gz ]
+        trigger: true
 
-  - do:
-    - task: bump-bosh-blob-apparmor
-      image: image
-      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-      input_mapping:
-        blob: apparmor
-      params:
-        BOSH_BLOB_PATH: apparmor/apparmor-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
   - do:
     - task: bump-bosh-blob-autoconf
       image: image
@@ -653,6 +723,10 @@ jobs:
         BOSH_BLOB_PATH: autoconf/autoconf-*.tar.gz
         AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
   - do:
     - task: bump-bosh-blob-automake
       image: image
@@ -663,6 +737,10 @@ jobs:
         BOSH_BLOB_PATH: automake/automake-*.tar.gz
         AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
   - do:
     - task: bump-bosh-blob-busybox
       image: image
@@ -673,6 +751,10 @@ jobs:
         BOSH_BLOB_PATH: busybox/busybox-*.tar.gz
         AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
 
   - do:
     - task: bump-bosh-blob-gperf
@@ -684,6 +766,10 @@ jobs:
         BOSH_BLOB_PATH: gperf/gperf-*.tar.gz
         AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
   - do:
     - task: bump-bosh-blob-iptables
       image: image
@@ -691,9 +777,13 @@ jobs:
       input_mapping:
         blob: iptables
       params:
-        BOSH_BLOB_PATH: iptables/iptables-*.tar.bz2
+        BOSH_BLOB_PATH: iptables/iptables-*.tar.xz
         AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
   - do:
     - task: bump-bosh-blob-libmnl
       image: image
@@ -704,6 +794,24 @@ jobs:
         BOSH_BLOB_PATH: iptables/libmnl-*.tar.bz2
         AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-libnftnl
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: libnftnl
+      params:
+        BOSH_BLOB_PATH: iptables/libnftnl-*.tar.xz
+        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
   - do:
     - task: bump-bosh-blob-libseccomp
       image: image
@@ -714,6 +822,10 @@ jobs:
         BOSH_BLOB_PATH: libseccomp/libseccomp-*.tar.gz
         AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
   - do:
     - task: bump-bosh-blob-libtool
       image: image
@@ -724,6 +836,110 @@ jobs:
         BOSH_BLOB_PATH: libtool/libtool-*.tar.gz
         AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-musl
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: musl
+      params:
+        BOSH_BLOB_PATH: musl/musl-*.tar.gz
+        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-pkg-config
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: pkg-config
+      params:
+        BOSH_BLOB_PATH: pkg-config/pkg-config-*.tar.gz
+        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+
+  - do:
+    - task: bump-bosh-blob-tar
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: tar
+      params:
+        BOSH_BLOB_PATH: tar/tar-*.tar.xz
+        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-tini
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: tini
+      params:
+        BOSH_BLOB_PATH: tini/tini-*.tar.gz
+        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-util-linux
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: util-linux
+      params:
+        BOSH_BLOB_PATH: util-linux/util-linux-*.tar.gz
+        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-xfs-progs
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: xfs-progs
+      params:
+        BOSH_BLOB_PATH: xfs-progs/xfsprogs-*.tar.gz
+        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-zlib
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: zlib
+      params:
+        BOSH_BLOB_PATH: zlib/zlib-*.tar.gz
+        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+
 
 - name: template-tests
   serial: true
