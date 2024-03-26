@@ -14,24 +14,7 @@ function run() {
     local bosh_blob_path=${2:?Provide a regex path for bosh-blob}
     local blob=${3:?Provide a path to new blob}
 
-    if [[ "$bosh_blob_path" == 'apparmor/apparmor-*.tar.gz' ]]; then
-        echo "Bumping apparmor blob"
-        pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | tr -d 'v')
-        local tgz_name="apparmor-${version}.tar.gz"
-        wget "https://gitlab.com/apparmor/apparmor/-/archive/v${version}/apparmor-v${version}.tar.gz" -O "${tgz_name}"
-        popd > /dev/null
-
-        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
-            echo "$tgz_name already exists, skippping"
-            return
-        fi
-
-        local blob_name="$(basename blobs/${bosh_blob_path})"
-        local dir_name="$(dirname ${bosh_blob_path})"
-        bosh remove-blob "${dir_name}/${blob_name}"
-        bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
-    elif [[ "$bosh_blob_path" == 'autoconf/autoconf-*.tar.gz' ]]; then
+    if [[ "$bosh_blob_path" == 'autoconf/autoconf-*.tar.gz' ]]; then
         echo "Bumping autoconf blob"
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
@@ -101,7 +84,7 @@ function run() {
         local dir_name="$(dirname ${bosh_blob_path})"
         bosh remove-blob "${dir_name}/${blob_name}"
         bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
-    elif [[ "$bosh_blob_path" == 'iptables/iptables-*.tar.bz2' ]]; then
+    elif [[ "$bosh_blob_path" == 'iptables/iptables-*.tar.xz' ]]; then
         echo "Bumping iptables blob"
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
@@ -293,7 +276,7 @@ function run() {
         echo "Bumping xfs-progs blob"
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]-')
-        local tgz_name="xfs-progs-${version}.tar.gz"
+        local tgz_name="xfsprogs-${version}.tar.gz"
         wget  -O "${tgz_name}" "https://mirrors.edge.kernel.org/pub/linux/utils/fs/xfs/xfsprogs/xfsprogs-${version}.tar.gz"
         popd > /dev/null
 
