@@ -172,7 +172,7 @@ function run() {
         echo "Bumping musl blob"
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
-        local tgz_name="libtool-${version}.tar.gz"
+        local tgz_name="musl-${version}.tar.gz"
         wget  -O "${tgz_name}" "https://musl.libc.org/releases/musl-${version}.tar.gz"
         popd > /dev/null
 
