@@ -252,12 +252,14 @@ resources:
 - name: seven-zip
   type: github-release
   source:
+    access_token: ((github-tas-runtime-bot/access-token))
     owner: ip7z
     repository: 7zip
 
 - name: mingw
   type: github-release
   source:
+    access_token: ((github-tas-runtime-bot/access-token))
     owner: niXman
     repository: mingw-builds-binaries
 
