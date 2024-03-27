@@ -8,3 +8,4 @@ params:
   AWS_ACCESS_KEY_ID: creds for S3 blobstore
   AWS_SECRET_ACCESS_KEY: creds for S3 blobstore
   AWS_ASSUME_ROLE_ARN: creds for S3 blobstore
+  GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: creds for GCP blobstore

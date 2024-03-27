@@ -26,6 +26,7 @@ groups:
   - bump-package-golang
   - bump-package-healthchecker
   - bump-package-cf-cli
+  - bump-bosh-blobs
 
 - name: manual
   jobs:
@@ -242,6 +243,19 @@ resources:
     password: ((dockerhub-tasruntime/password))
     tag: 'latest'
 
+- name: jq
+  type: github-release
+  source:
+    owner: jqlang
+    repository: jq
+
+- name: haproxy
+  type: git
+  source:
+    uri: https://git.haproxy.org/git/haproxy-2.8.git
+    tag_filter: v*
+    
+
 jobs:
 - name: bump-dependencies-go-mod
   serial: true
@@ -340,6 +354,42 @@ jobs:
     params:
       rebase: true
       repository: vendored-repo
+
+- name: bump-bosh-blobs
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: repo
+      - get: image
+      - get: jq
+        params:
+          globs:
+          - jq-linux-amd64 
+        trigger: true
+      - get: haproxy
+        params:
+          fetch_tags: true
+        trigger: true
+  - do:
+    - task: bump-bosh-blob-jq
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: jq
+      params:
+        BOSH_BLOB_PATH: jq/jq-*-linux-amd64.tgz 
+        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+  - do:
+    - task: bump-bosh-blob-haproxy
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: haproxy
+      params:
+        BOSH_BLOB_PATH: haproxy/haproxy-*.tar.gz 
+        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
 
 - name: template-tests
   serial: true

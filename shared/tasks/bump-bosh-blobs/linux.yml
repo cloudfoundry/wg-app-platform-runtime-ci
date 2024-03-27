@@ -14,6 +14,6 @@ params:
   AWS_ACCESS_KEY_ID:
   AWS_SECRET_ACCESS_KEY:
   AWS_ASSUME_ROLE_ARN:
-
+  GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY:
 run:
   path: ci/shared/tasks/bump-bosh-blobs/task.bash
