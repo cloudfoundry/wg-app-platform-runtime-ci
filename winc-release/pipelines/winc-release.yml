@@ -62,7 +62,7 @@ resources:
   type: git
   icon: github-box
   source:
-    branch:  develop
+    branch:  with-7zip
     uri: git@github.com:cloudfoundry/winc-release
     private_key: ((github-tas-runtime-bot/private-key))
 
@@ -420,6 +420,10 @@ jobs:
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
   - do:
     - task: bump-bosh-blob-7zip
       image: image
@@ -431,6 +435,10 @@ jobs:
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
 - name: template-tests
   serial: true
   plan:
