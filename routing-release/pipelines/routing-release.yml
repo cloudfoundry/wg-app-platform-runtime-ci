@@ -381,6 +381,10 @@ jobs:
       params:
         BOSH_BLOB_PATH: jq/jq-*-linux-amd64.tgz 
         GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
   - do:
     - task: bump-bosh-blob-haproxy
       image: image
@@ -390,6 +394,10 @@ jobs:
       params:
         BOSH_BLOB_PATH: haproxy/haproxy-*.tar.gz 
         GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
 
 - name: template-tests
   serial: true
