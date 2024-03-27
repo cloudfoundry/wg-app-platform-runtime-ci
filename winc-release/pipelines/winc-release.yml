@@ -249,7 +249,7 @@ resources:
   source:
     name: bosh-google-kvm-windows2019-go_agent
 
-- name: 7zip
+- name: seven-zip
   type: github-release
   source:
     owner: ip7z
@@ -402,7 +402,7 @@ jobs:
           globs:
           - x86_64-*-release-posix-seh-ucrt-*.7z
         trigger: true
-      - get: 7zip
+      - get: seven-zip
         params:
           globs:
           - 7z*.msi
@@ -423,7 +423,7 @@ jobs:
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
-        blob: 7zip
+        blob: seven-zip
       params:
         BOSH_BLOB_PATH: 7zip/7z*.msi 
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))

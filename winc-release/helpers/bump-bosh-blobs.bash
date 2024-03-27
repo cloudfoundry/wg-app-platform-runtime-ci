@@ -35,7 +35,7 @@ function run() {
     elif [[ "$bosh_blob_path" == '7zip/7z*.msi' ]]; then
         echo "Bumping 7zip blob"
         pushd "${blob}" > /dev/null
-        local version=$(cat version)
+        local version=$(cat version| tr -d "\.")
         local tgz_name="7z${version}.msi"
         popd > /dev/null
 
