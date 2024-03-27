@@ -22,6 +22,7 @@ groups:
   jobs:
   - bump-dependencies-go-mod
   - bump-package-golang
+  - bump-bosh-blobs
 
 - name: manual
   jobs:
@@ -248,6 +249,18 @@ resources:
   source:
     name: bosh-google-kvm-windows2019-go_agent
 
+- name: 7zip
+  type: github-release
+  source:
+    owner: ip7z
+    repository: 7zip
+
+- name: mingw
+  type: github-release
+  source:
+    owner: niXman
+    repository: mingw-builds-binaries
+
 #! Define-Jobs
 jobs:
 - name: bump-dependencies-go-mod
@@ -376,6 +389,46 @@ jobs:
       rebase: true
       repository: vendored-repo
 
+- name: bump-bosh-blobs
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: repo
+      - get: image
+      - get: mingw
+        params:
+          globs:
+          - x86_64-*-release-posix-seh-ucrt-*.7z
+        trigger: true
+      - get: 7zip
+        params:
+          globs:
+          - 7z*.msi
+        trigger: true
+  - do:
+    - task: bump-bosh-blob-mingw
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: mingw
+      params:
+        BOSH_BLOB_PATH: mingw/x86_64-*-release-posix-seh-ucrt-*-*.7z 
+        AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+  - do:
+    - task: bump-bosh-blob-7zip
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: 7zip
+      params:
+        BOSH_BLOB_PATH: 7zip/7z*.msi 
+        AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
 - name: template-tests
   serial: true
   plan:
