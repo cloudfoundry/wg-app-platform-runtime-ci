@@ -393,13 +393,6 @@ resources:
     uri: https://github.com/util-linux/util-linux.git
     tag_regex: ^v([0-9]|[1-9][0-9]*)\.([0-9]|[1-9][0-9]*)\.([0-9]|[1-9][0-9]*)$
 
-- name: xfs-progs
-  type: git
-  source:
-    branch: master
-    uri: https://git.kernel.org/pub/scm/fs/xfs/xfsprogs-dev.git
-    tag_filter: v*
-
 - name: zlib
   type: github-release
   source:
@@ -704,10 +697,6 @@ jobs:
         params:
           fetch_tags: true
         trigger: true
-      - get: xfs-progs
-        params:
-          fetch_tags: true
-        trigger: true
       - get: zlib
         params:
           globs: [ zlib-*.tar.gz ]
@@ -905,20 +894,6 @@ jobs:
         blob: util-linux
       params:
         BOSH_BLOB_PATH: util-linux/util-linux-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
-    - put: repo
-      params:
-       rebase: true
-       repository: bumped-repo
-  - do:
-    - task: bump-bosh-blob-xfs-progs
-      image: image
-      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-      input_mapping:
-        blob: xfs-progs
-      params:
-        BOSH_BLOB_PATH: xfs-progs/xfsprogs-*.tar.gz
         AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
     - put: repo
