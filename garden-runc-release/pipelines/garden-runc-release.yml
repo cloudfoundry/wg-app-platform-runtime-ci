@@ -1013,12 +1013,12 @@ jobs:
     - put: env-lock
       params:
        acquire: true
-    - put: env
-      params:
-        action: create
-        duration: 176h
-        resource: env
-        description: "garden-runc-release pipeline"
+  - put: env
+    params:
+      action: create
+      duration: 176h
+      resource: env
+      description: "garden-runc-release pipeline"
   - task: wait-for-cf-api
     file: ci/shared/tasks/wait-for-cf-api/linux.yml
     input_mapping:
