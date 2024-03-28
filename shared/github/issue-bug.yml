@@ -1,5 +1,3 @@
----
-#THIS IS SYNCED from https://github.com/cloudfoundry/wg-app-platform-runtime-ci/tree/-/shared/github
 name: Bug
 description: Report a defect, such as a bug or regression.
 title: "Start the title with a verb (e.g. Change header styles). Use the imperative mood in the title (e.g. Fix, not Fixed or Fixes header styles)"
@@ -42,3 +40,5 @@ body:
       description: Please enter the version
     validations:
       required: true
+
+#THIS IS SYNCED from https://github.com/cloudfoundry/wg-app-platform-runtime-ci/tree/-/shared/github

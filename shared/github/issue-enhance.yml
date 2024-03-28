@@ -1,5 +1,3 @@
----
-#THIS IS SYNCED from https://github.com/cloudfoundry/wg-app-platform-runtime-ci/tree/-/shared/github
 name: Enhance
 description: Propose an enhancement or new feature.
 title: "Start the title with a verb (e.g. Change header styles). Use the imperative mood in the title (e.g. Fix, not Fixed or Fixes header styles)"
@@ -51,3 +49,4 @@ body:
         - [ ] code.cloudfoundry.org/bbs for links
         - [x] cloudfoundry/rep#123 for issues/prs
 
+#THIS IS SYNCED from https://github.com/cloudfoundry/wg-app-platform-runtime-ci/tree/-/shared/github
