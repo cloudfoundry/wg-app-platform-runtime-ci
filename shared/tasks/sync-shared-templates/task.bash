@@ -19,7 +19,7 @@ function run() {
   cp -r ci/shared/github/issue-bug.yml "repo/${DIR}/.github/ISSUE_TEMPLATE"
   cp -r ci/shared/github/issue-enhance.yml "repo/${DIR}/.github/ISSUE_TEMPLATE"
   cp -r ci/shared/github/config.yml "repo/${DIR}/.github/ISSUE_TEMPLATE"
-  cp -r ci/shared/github/PULL_REQUEST_TEMPLATE.yml "repo/${DIR}/.github"
+  cp -r ci/shared/github/PULL_REQUEST_TEMPLATE.md "repo/${DIR}/.github"
 
   if [[ $(git status --porcelain) ]]; then
     git add -A .

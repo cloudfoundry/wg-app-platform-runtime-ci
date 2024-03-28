@@ -42,14 +42,20 @@ def privileged(package):
     return False
 end
 
-def packages_names_array(packages = [], prefix = ""):
+def packages_names_array(packages = [], prefixes = []):
     l = []
  for p in packages:
      if hasattr(p, "name"):
          if p.name:
-             l.append(prefix + p.name)
-     end
-   end
+            if len(prefixes) == 0:
+                l.append(p.name)
+            else:
+                for prefix in prefixes:
+                    l.append(prefix + p.name)
+                end
+            end
+        end
+    end
  end
  return l
 end
