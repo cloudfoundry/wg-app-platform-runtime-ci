@@ -27,7 +27,7 @@ function run() {
     git commit -m "Sync shared github issue/PR templates"
   fi
 
-  rsync -a $PWD "$CURRENT_DIR/synced-repo"
+  rsync -a $PWD/ "$CURRENT_DIR/synced-repo"
 
   popd > /dev/null
 }
