@@ -26,8 +26,7 @@ function run() {
     git commit -m "Sync shared github issue/PR templates"
   fi
 
-  rsync -a $PWD/ "$CURRENT_DIR/synced-repo"
-  popd > /dev/null
+  rsync -a $PWD/repo "$CURRENT_DIR/synced-repo"
 }
 
 trap 'err_reporter $LINENO' ERR
