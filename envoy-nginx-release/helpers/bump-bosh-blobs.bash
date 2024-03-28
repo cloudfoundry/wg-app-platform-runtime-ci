@@ -35,6 +35,9 @@ function run() {
         bosh remove-blob "${dir_name}/${blob_name}"
         bosh add-blob "${zip_name}" "${dir_name}/${zip_name}" 
         rm -rf "${zip_name}" nginx.zip nginx.exe
+    else
+        echo "can't find ${bosh_blob_path}"
+        exit 1
     fi
 }
 
