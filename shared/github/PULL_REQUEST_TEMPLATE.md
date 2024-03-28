@@ -1,3 +1,4 @@
+<!-- THIS IS SYNCED from https://github.com/cloudfoundry/wg-app-platform-runtime-ci/tree/-/shared/github -->
 - [ ] Read the [Contributing document](../blob/-/CONTRIBUTING.md).
 
 Summary

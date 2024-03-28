@@ -1,0 +1,7 @@
+---
+readme: |
+  This task adds and updates the shared github templates across repos
+oses:
+  - linux
+params:
+  DIR: The path of the repo that is getting updated within a release
