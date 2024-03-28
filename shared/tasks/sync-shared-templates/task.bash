@@ -16,10 +16,10 @@ function run() {
   git_configure_safe_directory
  
   pushd repo > /dev/null
-  mkdir -p "${DIR}/.github"
-  cp -r ../ci/shared/github/issue-bug.yml "${DIR}/.github/ISSUE_TEMPLATE"
-  cp -r ../ci/shared/github/issue-enhance.yml "${DIR}/.github/ISSUE_TEMPLATE"
-  cp -r ../ci/shared/github/config.yml "${DIR}/.github/ISSUE_TEMPLATE"
+  mkdir -p "${DIR}/.github/ISSUE_TEMPLATE"
+  cp -r ../ci/shared/github/issue-bug.yml "${DIR}/.github/ISSUE_TEMPLATE/"
+  cp -r ../ci/shared/github/issue-enhance.yml "${DIR}/.github/ISSUE_TEMPLATE/"
+  cp -r ../ci/shared/github/config.yml "${DIR}/.github/ISSUE_TEMPLATE/"
   cp -r ../ci/shared/github/PULL_REQUEST_TEMPLATE.md "${DIR}/.github"
 
   if [[ $(git status --porcelain) ]]; then
