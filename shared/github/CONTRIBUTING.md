@@ -53,3 +53,9 @@ Running Tests
 - `./scripts/create-docker-container.bash`: This will create a docker container with appropriate mounts.
 - `./scripts/test-in-docker-locally.bash`: Create docker container and run all tests and setup in a single script.
   - `./scripts/test-in-docker-locally.bash <package> <sub-package>`: For running tests under a specific package and/or sub-package
+
+When inside docker container:
+
+- `/repo/scripts/docker/test.bash`: This will run all tests in this release
+- `/repo/scripts/docker/test.bash <package>`: This will only run a package's tests
+- `/repo/scripts/docker/test.bash <package> <sub-package>`: This will only run sub-package tests for package
