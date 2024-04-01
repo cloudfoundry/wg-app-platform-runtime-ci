@@ -26,6 +26,8 @@ groups:
   - bump-package-golang
   - bump-healthchecker-in-networking-release
   - bump-healthchecker-in-silk-release
+  - sync-dot-github-dir-in-networking-release
+  - sync-dot-github-dir-in-silk-release
 
 - name: manual
   jobs:
@@ -188,6 +190,14 @@ resources:
     repository: silk-release
     owner: cloudfoundry
   type: github-release
+
+- name: shared-templates
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: 
+      - shared/github
 
 - name: version
   type: semver
@@ -353,6 +363,48 @@ jobs:
     params:
       rebase: true
       repository: vendored-repo
+
+- name: sync-dot-github-dir-in-networking-release
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get:  cf-networking-repo
+      - get: shared-templates
+        trigger: true
+  - do:
+    - task: sync-dot-github-dir
+      file: ci/shared/tasks/sync-dot-github-dir/linux.yml
+      image: image
+      input_mapping:
+        repo: cf-networking-repo
+    - put: cf-networking-repo
+      params:
+       rebase: true
+       repository: synced-repo
+
+- name: sync-dot-github-dir-in-silk-release
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get:  silk-repo
+      - get: shared-templates
+        trigger: true
+  - do:
+    - task: sync-dot-github-dir
+      file: ci/shared/tasks/sync-dot-github-dir/linux.yml
+      image: image
+      input_mapping:
+        repo: silk-repo
+    - put: silk-repo
+      params:
+       rebase: true
+       repository: synced-repo
 
 - name: template-tests
   serial: true
