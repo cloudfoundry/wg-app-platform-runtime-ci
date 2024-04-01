@@ -1,4 +1,4 @@
-- [ ] Read the [Contributing document](../blob/-/CONTRIBUTING.md).
+- [ ] Read the [Contributing document](../blob/-/.github/CONTRIBUTING.md).
 
 Summary
 ---------------
