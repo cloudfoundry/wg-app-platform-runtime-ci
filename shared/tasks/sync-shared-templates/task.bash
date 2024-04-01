@@ -65,7 +65,7 @@ These templates are synced from [these shared templates](https://github.com/clou
 Each pipeline will contain a \`sync-shared-templates-*\` job for updating the content of these files.
 If you would like to modify these, please change them in the shared group.
 It's also possible to override the templates on pipeline's parent directory by introducing a custom
-template in \'\$PARENT_TEMPLATE_DIR/github/FILENAME\` in CI repo
+template in \`\$PARENT_TEMPLATE_DIR/github/FILENAME\` in CI repo
 EOF
 
   if [[ $(git status --porcelain) ]]; then

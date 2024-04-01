@@ -56,10 +56,10 @@ Running Tests
   - `./scripts/test-in-docker-locally.bash <package> <sub-package>`: For running tests under a specific package and/or sub-package
 
 > [!TIP]
-> If Running tests for this release requires a DB flavor. The above scripts will default to mysql DB. Set DB environment variable for alternate DBs. Valid Options: mysql-8.0(or mysql),mysql-5.7,postgres
+> If Running tests for this repo requires a DB flavor. The above scripts will default to mysql DB. Set DB environment variable for alternate DBs. Valid Options: mysql-8.0(or mysql),mysql-5.7,postgres
 
 When inside docker container:
 
-- `/repo/scripts/docker/test.bash`: This will run all tests in this release
+- `/repo/scripts/docker/test.bash`: This will run all tests in this repo
 - `/repo/scripts/docker/test.bash <package>`: This will only run a package's tests
 - `/repo/scripts/docker/test.bash <package> <sub-package>`: This will only run sub-package tests for package
