@@ -9,7 +9,7 @@ outputs:
   - name: synced-repo 
 
 run:
-  path: ci/shared/tasks/sync-shared-templates/task.bash
+  path: ci/shared/tasks/sync-dot-github-dir/task.bash
 
 params:
   DIR: .
