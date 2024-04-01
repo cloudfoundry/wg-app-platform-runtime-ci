@@ -18,6 +18,7 @@ function run() {
   local CI_DIR="$PWD/ci"
  
   pushd repo > /dev/null
+  rm -rf "${DIR}/.github"
   mkdir -p "${DIR}/.github/ISSUE_TEMPLATE"
 
   if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/issue-bug.yml" ]]; then
@@ -45,20 +46,22 @@ function run() {
   fi
 
   if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/CONTRIBUTING.md" ]]; then
-    cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/CONTRIBUTING.md" "${DIR}/"
+    cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/CONTRIBUTING.md" "${DIR}/.github"
   else
-    cp -r "${CI_DIR}/shared/github/CONTRIBUTING.md" "${DIR}/"
+    cp -r "${CI_DIR}/shared/github/CONTRIBUTING.md" "${DIR}/.github"
     if [[ ! -f "${DIR}/scripts/create-docker-container.bash" ]]; then
       echo "Missing required files in CONTRIBUTING.md"
       exit 1
     fi
   fi
-
-
   cat > "${DIR}/.github/TEMPLATE-README.md" << EOF
+
+> [!IMPORTANT]
+> Content in this directory is managed by the CI task \`sync-shared-templates\`.
+
 Changing templates
 ---------------
-These templates are synced from [these shared tempaltes](https://github.com/cloudfoundry/wg-app-platform-runtime-ci/tree/main/shared/github).
+These templates are synced from [these shared templates](https://github.com/cloudfoundry/wg-app-platform-runtime-ci/tree/main/shared/github).
 Each pipeline will contain a \`sync-shared-templates-*\` job for updating the content of these files.
 If you would like to modify these, please change them in the shared group.
 It's also possible to override the templates on pipeline's parent directory by introducing a custom
