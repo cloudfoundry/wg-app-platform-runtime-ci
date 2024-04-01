@@ -6,7 +6,7 @@ groups:
 - name: test
   jobs: #@ helpers.packages_names_array(data.values.internal_repos) 
 - name: periodics
-  jobs: #@ helpers.packages_names_array(data.values.internal_repos,["bump-dependencies-","sync-shared-templates-"])
+  jobs: #@ helpers.packages_names_array(data.values.internal_repos,["bump-dependencies-","sync-dot-github-dir-"])
 
 #! Define-Resources
 resources:
@@ -60,7 +60,7 @@ resources:
 jobs:
 
 #@ for repo in data.values.internal_repos:
-- name: #@ "sync-shared-templates-{}".format(repo.name)
+- name: #@ "sync-dot-github-dir-{}".format(repo.name)
   serial: true
   plan:
   - in_parallel:
@@ -71,8 +71,8 @@ jobs:
       - get: shared-templates
         trigger: true
   - do:
-    - task: #@ "sync-shared-templates-{}".format(repo.name)
-      file: ci/shared/tasks/sync-shared-templates/linux.yml
+    - task: sync-dot-github-dir
+      file: ci/shared/tasks/sync-dot-github-dir/linux.yml
       image: image
       input_mapping:
         repo: #@ repo.name

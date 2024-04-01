@@ -70,7 +70,7 @@ EOF
 
   if [[ $(git status --porcelain) ]]; then
     git add -A .
-    git commit -m "Sync shared github issue/PR templates"
+    git commit -m "Sync .github dir templates"
   fi
 
   rsync -a $PWD/ "$CURRENT_DIR/synced-repo"
