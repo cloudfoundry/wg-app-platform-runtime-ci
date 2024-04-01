@@ -48,7 +48,12 @@ function run() {
     cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/CONTRIBUTING.md" "${DIR}/"
   else
     cp -r "${CI_DIR}/shared/github/CONTRIBUTING.md" "${DIR}/"
+    if [[ ! -f "${DIR}/scripts/create-docker-container.bash" ]]; then
+      echo "Missing required files in CONTRIBUTING.md"
+      exit 1
+    fi
   fi
+
 
   cat > "${DIR}/.github/TEMPLATE-README.md" << EOF
 Changing templates
