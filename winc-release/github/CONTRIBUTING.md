@@ -60,5 +60,5 @@ Running Tests
 
 - `./scripts/docker/build-binaries.bash`: This will build binaries requires for testing this repo
 - `./scripts/docker/test-all.bash`: This will test all submodules
-` ./scripts/docker/test.bash <package>`: This will test a package e.g. winc
+- `./scripts/docker/test.bash <package>`: This will test a package e.g. winc
 
