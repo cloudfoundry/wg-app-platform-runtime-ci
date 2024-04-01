@@ -20,28 +20,34 @@ function run() {
   pushd repo > /dev/null
   mkdir -p "${DIR}/.github/ISSUE_TEMPLATE"
 
-  if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/issue-bug.yml" ]]; then
+  if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/issue-bug.yml" ]]; then
     cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/issue-bug.yml" "${DIR}/.github/ISSUE_TEMPLATE/"
   else
     cp -r "${CI_DIR}/shared/github/issue-bug.yml" "${DIR}/.github/ISSUE_TEMPLATE/"
   fi
 
-  if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/issue-enhance.yml" ]]; then
+  if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/issue-enhance.yml" ]]; then
     cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/issue-enhance.yml" "${DIR}/.github/ISSUE_TEMPLATE/"
   else
     cp -r "${CI_DIR}/shared/github/issue-enhance.yml" "${DIR}/.github/ISSUE_TEMPLATE/"
   fi
 
-  if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/config.yml" ]]; then
+  if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/config.yml" ]]; then
     cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/config.yml" "${DIR}/.github/ISSUE_TEMPLATE/"
   else
     cp -r "${CI_DIR}/shared/github/config.yml" "${DIR}/.github/ISSUE_TEMPLATE/"
   fi
 
-  if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/PULL_REQUEST_TEMPLATE.md" ]]; then
-    cp -r "${CI_DIR}/shared/${PARENT_TEMPLATE_DIR}/PULL_REQUEST_TEMPLATE.md" "${DIR}/.github"
+  if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/PULL_REQUEST_TEMPLATE.md" ]]; then
+    cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/PULL_REQUEST_TEMPLATE.md" "${DIR}/.github"
   else
     cp -r "${CI_DIR}/shared/github/PULL_REQUEST_TEMPLATE.md" "${DIR}/.github"
+  fi
+
+  if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/CONTRIBUTING.md" ]]; then
+    cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/CONTRIBUTING.md" "${DIR}/"
+  else
+    cp -r "${CI_DIR}/shared/github/CONTRIBUTING.md" "${DIR}"
   fi
 
   cat > "${DIR}/.github/TEMPLATE-README.md" << EOF
