@@ -62,7 +62,7 @@ resources:
   type: git
   icon: github-box
   source:
-    branch:  with-7zip
+    branch:  develop
     uri: git@github.com:cloudfoundry/winc-release
     private_key: ((github-tas-runtime-bot/private-key))
 
