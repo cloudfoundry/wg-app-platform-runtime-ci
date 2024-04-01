@@ -20,8 +20,8 @@ body:
         **I want** *this ability to do X*
         **So that** *I can do Y*
 
-  - Provide details of where this request is coming from including links, GitHub Issues, etc..
-  - Provide details of prior work (if applicable) including links to commits, github issues, etc...
+        - Provide details of where this request is coming from including links, GitHub Issues, etc..
+        - Provide details of prior work (if applicable) including links to commits, github issues, etc...
   - type: textarea
     id: acceptance
     attributes:
