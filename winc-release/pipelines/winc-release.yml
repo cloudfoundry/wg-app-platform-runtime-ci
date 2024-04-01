@@ -23,6 +23,7 @@ groups:
   - bump-dependencies-go-mod
   - bump-package-golang
   - bump-bosh-blobs
+  - sync-dot-github-dir
 
 - name: manual
   jobs:
@@ -85,6 +86,24 @@ resources:
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+
+- name: shared-templates
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: 
+      - shared/github
+
+#@ for repo in data.values.internal_repos:
+- name: #@ "{}-repo".format(repo.name)
+  type: git
+  icon: github-box
+  source:
+    branch: main
+    uri: #@ "git@github.com:cloudfoundry/{}.git".format(repo.name)
+    private_key: ((github-tas-runtime-bot/private-key))
+#@ end
 
 - name: cf-deployment
   type: git
@@ -439,6 +458,45 @@ jobs:
       params:
        rebase: true
        repository: bumped-repo
+
+- name: sync-dot-github-dir
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get: repo
+#@ for repo in data.values.internal_repos:
+      - get: #@ "{}-repo".format(repo.name)
+#@ end
+      - get: shared-templates
+        trigger: true
+  - do:
+    - task: sync-dot-github-dir-winc-release
+      file: ci/shared/tasks/sync-dot-github-dir/linux.yml
+      image: image
+      params:
+        PARENT_TEMPLATE_DIR: winc-release
+    - put: repo
+      params:
+       rebase: true
+       repository: synced-repo
+#@ for repo in data.values.internal_repos:
+  - do:
+    - task: #@ "sync-dot-github-dir-{}".format(repo.name)
+      file: ci/shared/tasks/sync-dot-github-dir/linux.yml
+      image: image
+      input_mapping:
+        repo: #@ "{}-repo".format(repo.name)
+      params:
+        PARENT_TEMPLATE_DIR: winc-release
+    - put: #@ "{}-repo".format(repo.name)
+      params:
+       rebase: true
+       repository: synced-repo
+#@ end
+
 - name: template-tests
   serial: true
   plan:

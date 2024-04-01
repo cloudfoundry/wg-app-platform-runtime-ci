@@ -5,7 +5,6 @@
 #! <MUST> repo/component/package to test in your repo/release
 internal_repos:
 - name: cert-injector
-- name: certsplitter
 - name: diff-exporter
 - name: groot-windows
 - name: winc
