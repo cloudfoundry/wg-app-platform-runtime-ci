@@ -69,6 +69,7 @@ template in \`\$PARENT_TEMPLATE_DIR/github/FILENAME\` in CI repo
 EOF
 
   if [[ $(git status --porcelain) ]]; then
+    git checkout -
     git add -A .
     git commit -m "Sync .github dir templates"
   fi
