@@ -44,14 +44,14 @@ function run() {
     cp -r "${CI_DIR}/shared/github/PULL_REQUEST_TEMPLATE.md" "${DIR}/.github"
   fi
 
-  cat > "${DIR}/.github/README.md" << EOF
+  cat > "${DIR}/.github/TEMPLATE-README.md" << EOF
 Changing templates
 ---------------
 These templates are synced from [these shared tempaltes](https://github.com/cloudfoundry/wg-app-platform-runtime-ci/tree/main/shared/github).
-Each pipeline will contain a "sync-shared-templates-*" job for updating the content of these files.
+Each pipeline will contain a \`sync-shared-templates-*\` job for updating the content of these files.
 If you would like to modify these, please change them in the shared group.
-It's also possible to override the templates on pieline's parent directory by introducing a custom
-template in \$PARENT_TEMPLATE_DIR/github/<FILENAME> in CI repo
+It's also possible to override the templates on pipeline's parent directory by introducing a custom
+template in \'\$PARENT_TEMPLATE_DIR/github/FILENAME\` in CI repo
 EOF
 
   if [[ $(git status --porcelain) ]]; then
