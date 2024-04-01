@@ -48,5 +48,3 @@ body:
       placeholder: |
         - [ ] code.cloudfoundry.org/bbs for links
         - [x] cloudfoundry/rep#123 for issues/prs
-
-#THIS IS SYNCED from https://github.com/cloudfoundry/wg-app-platform-runtime-ci/tree/main/shared/github

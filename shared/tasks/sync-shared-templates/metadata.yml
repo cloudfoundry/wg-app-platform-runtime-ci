@@ -4,4 +4,5 @@ readme: |
 oses:
   - linux
 params:
-  DIR: The path of the repo that is getting updated within a release
+  DIR: (Defaults to .) The path of the repo that is getting updated within a release
+  PARENT_TEMPLATE_DIR: The name of parent's pipeline dir for overriding github templates.

@@ -19,5 +19,3 @@ If this is a breaking change, or modifies currently expected behaviors of core f
 - Should this feature be considered experimental for a period of time, and allow operators to opt-in?
 - Should this apply immediately to all deployments?
 -->
-
-<!-- THIS IS SYNCED from https://github.com/cloudfoundry/wg-app-platform-runtime-ci/tree/main/shared/github -->

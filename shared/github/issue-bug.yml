@@ -40,5 +40,3 @@ body:
       description: Please enter the version
     validations:
       required: true
-
-#THIS IS SYNCED from https://github.com/cloudfoundry/wg-app-platform-runtime-ci/tree/main/shared/github
