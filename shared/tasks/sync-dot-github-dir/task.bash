@@ -16,45 +16,46 @@ function run() {
   git_configure_safe_directory
 
   local CI_DIR="$PWD/ci"
+  local SYNCED_REPO_DIR="$PWD/synced-repo"
  
-  pushd repo > /dev/null
-  rm -rf "${DIR}/.github"
-  mkdir -p "${DIR}/.github/ISSUE_TEMPLATE"
+  pushd "repo/${DIR}" > /dev/null
+  rm -rf ".github"
+  mkdir -p ".github/ISSUE_TEMPLATE"
 
   if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/issue-bug.yml" ]]; then
-    cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/issue-bug.yml" "${DIR}/.github/ISSUE_TEMPLATE/"
+    cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/issue-bug.yml" ".github/ISSUE_TEMPLATE/"
   else
-    cp -r "${CI_DIR}/shared/github/issue-bug.yml" "${DIR}/.github/ISSUE_TEMPLATE/"
+    cp -r "${CI_DIR}/shared/github/issue-bug.yml" ".github/ISSUE_TEMPLATE/"
   fi
 
   if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/issue-enhance.yml" ]]; then
-    cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/issue-enhance.yml" "${DIR}/.github/ISSUE_TEMPLATE/"
+    cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/issue-enhance.yml" ".github/ISSUE_TEMPLATE/"
   else
-    cp -r "${CI_DIR}/shared/github/issue-enhance.yml" "${DIR}/.github/ISSUE_TEMPLATE/"
+    cp -r "${CI_DIR}/shared/github/issue-enhance.yml" ".github/ISSUE_TEMPLATE/"
   fi
 
   if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/config.yml" ]]; then
-    cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/config.yml" "${DIR}/.github/ISSUE_TEMPLATE/"
+    cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/config.yml" ".github/ISSUE_TEMPLATE/"
   else
-    cp -r "${CI_DIR}/shared/github/config.yml" "${DIR}/.github/ISSUE_TEMPLATE/"
+    cp -r "${CI_DIR}/shared/github/config.yml" ".github/ISSUE_TEMPLATE/"
   fi
 
   if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/PULL_REQUEST_TEMPLATE.md" ]]; then
-    cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/PULL_REQUEST_TEMPLATE.md" "${DIR}/.github"
+    cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/PULL_REQUEST_TEMPLATE.md" ".github"
   else
-    cp -r "${CI_DIR}/shared/github/PULL_REQUEST_TEMPLATE.md" "${DIR}/.github"
+    cp -r "${CI_DIR}/shared/github/PULL_REQUEST_TEMPLATE.md" ".github"
   fi
 
   if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/CONTRIBUTING.md" ]]; then
-    cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/CONTRIBUTING.md" "${DIR}/.github"
+    cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/CONTRIBUTING.md" ".github"
   else
-    cp -r "${CI_DIR}/shared/github/CONTRIBUTING.md" "${DIR}/.github"
-    if [[ ! -f "${DIR}/scripts/create-docker-container.bash" ]]; then
+    cp -r "${CI_DIR}/shared/github/CONTRIBUTING.md" ".github"
+    if [[ ! -f "scripts/create-docker-container.bash" ]]; then
       echo "Missing required files in CONTRIBUTING.md"
       exit 1
     fi
   fi
-  cat > "${DIR}/.github/TEMPLATE-README.md" << EOF
+  cat > ".github/TEMPLATE-README.md" << EOF
 
 > [!IMPORTANT]
 > Content in this directory is managed by the CI task \`sync-dot-github-dir\`.
@@ -74,7 +75,7 @@ EOF
     git commit -m "Sync .github dir templates"
   fi
 
-  rsync -a $PWD/ "$CURRENT_DIR/synced-repo"
+  rsync -a $PWD/ "$SYNCED_REPO_DIR"
 
   popd > /dev/null
 }
