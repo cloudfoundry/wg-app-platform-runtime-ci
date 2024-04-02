@@ -83,11 +83,11 @@ resources:
     paths: [go-version.json]
 
 #! TIMERS
-- name: weekly
+- name: daily
   type: time
   icon: clock
   source:
-    interval: '168h'  #! 1 week
+    interval: '24h'  #! 1 day 
 
 - name: env
   type: shepherd
@@ -150,7 +150,7 @@ jobs:
       - get: ci
       - get: repo
       - get: image
-      - get: weekly
+      - get: daily
         trigger: true
   - task: healthchecker-release-bump-dependencies-go-mod
     image: image
