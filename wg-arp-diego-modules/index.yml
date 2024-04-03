@@ -19,6 +19,7 @@ internal_repos:
   repo: cloudfoundry/archiver
 - name: certsplitter
   repo: cloudfoundry/certsplitter
+  on_windows: true
 - name: debugserver
   repo: cloudfoundry/debugserver
 - name: diego-logging-client

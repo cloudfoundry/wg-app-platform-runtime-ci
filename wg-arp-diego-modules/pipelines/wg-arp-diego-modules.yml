@@ -7,7 +7,7 @@ groups:
   jobs: #@ helpers.packages_names_array(data.values.internal_repos) 
 
 - name: periodics
-  jobs: #@ helpers.packages_names_array(data.values.internal_repos,"bump-dependencies-")
+  jobs: #@ helpers.packages_names_array(data.values.internal_repos,["bump-dependencies-","sync-dot-github-dir-"])
 
 #! Define-Resources
 resources:
@@ -26,6 +26,14 @@ resources:
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+
+- name: shared-templates
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: 
+      - shared/github
 
 - name: image
   type: docker-image                             
@@ -51,6 +59,29 @@ resources:
 
 #! Define-Jobs
 jobs:
+
+#@ for repo in data.values.internal_repos:
+- name: #@ "sync-dot-github-dir-{}".format(repo.name)
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get:  #@ repo.name
+      - get: shared-templates
+        trigger: true
+  - do:
+    - task: sync-dot-github-dir
+      file: ci/shared/tasks/sync-dot-github-dir/linux.yml
+      image: image
+      input_mapping:
+        repo: #@ repo.name
+    - put: #@ repo.name
+      params:
+       rebase: true
+       repository: synced-repo
+#@ end
 
 #@ for package in helpers.packages_without_configure_db(data.values.internal_repos):
 - name: #@ package.name
