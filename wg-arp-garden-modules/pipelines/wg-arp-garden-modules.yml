@@ -36,6 +36,7 @@ resources:
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
     paths: 
       - shared/github
+      - wg-arp-garden/github
 
 - name: image
   type: docker-image                             
@@ -111,6 +112,8 @@ jobs:
       image: image
       input_mapping:
         repo: #@ repo.name
+      params:
+        PARENT_TEMPLATE_DIR: wg-arp-garden-modules
     - put: #@ repo.name
       params:
        rebase: true
