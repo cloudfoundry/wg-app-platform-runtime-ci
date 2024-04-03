@@ -18,7 +18,8 @@ function run() {
   local CI_DIR="$PWD/ci"
   local SYNCED_REPO_DIR="$PWD/synced-repo"
  
-  pushd "repo/${DIR}" > /dev/null
+  pushd "rep/${DIR}" > /dev/null
+  local git_remote_name=$(git_get_remote_name)
   rm -rf ".github"
   mkdir -p ".github/ISSUE_TEMPLATE"
 
@@ -48,6 +49,8 @@ function run() {
 
   if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/CONTRIBUTING.md" ]]; then
     cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/CONTRIBUTING.md" ".github"
+  elif [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/${git_remote_name}/CONTRIBUTING.md" ]]; then
+    cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/${git_remote_name}/CONTRIBUTING.md" ".github"
   else
     cp -r "${CI_DIR}/shared/github/CONTRIBUTING.md" ".github"
     if [[ ! -f "scripts/create-docker-container.bash" ]]; then
@@ -66,7 +69,7 @@ These templates are synced from [these shared templates](https://github.com/clou
 Each pipeline will contain a \`sync-dot-github-dir-*\` job for updating the content of these files.
 If you would like to modify these, please change them in the shared group.
 It's also possible to override the templates on pipeline's parent directory by introducing a custom
-template in \`\$PARENT_TEMPLATE_DIR/github/FILENAME\` in CI repo
+template in \`\$PARENT_TEMPLATE_DIR/github/FILENAME\`  or \`\$PARENT_TEMPLATE_DIR/github/REPO_NAME/FILENAME\` in CI repo
 EOF
 
   if [[ $(git status --porcelain) ]]; then
