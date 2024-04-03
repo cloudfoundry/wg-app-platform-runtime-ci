@@ -94,6 +94,7 @@ resources:
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
     paths: 
       - shared/github
+      - winc-release/github
 
 #@ for repo in data.values.internal_repos:
 - name: #@ "{}-repo".format(repo.name)

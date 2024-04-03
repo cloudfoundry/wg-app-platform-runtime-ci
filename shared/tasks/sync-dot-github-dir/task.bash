@@ -18,7 +18,7 @@ function run() {
   local CI_DIR="$PWD/ci"
   local SYNCED_REPO_DIR="$PWD/synced-repo"
  
-  pushd "rep/${DIR}" > /dev/null
+  pushd "repo/${DIR}" > /dev/null
   local git_remote_name=$(git_get_remote_name)
   rm -rf ".github"
   mkdir -p ".github/ISSUE_TEMPLATE"
