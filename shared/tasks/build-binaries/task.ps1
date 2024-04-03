@@ -15,7 +15,7 @@ function Run
 
     ForEach ($entry in "$env:MAPPING".Split("`r`n", [System.StringSplitOptions]::RemoveEmptyEntries))
     {
-        $Config=$entry.Split("=")
+        $Config=$entry.Trim().Split("=")
         $Function=$Config[0]
         $Source='repo/{0}' -f $Config[1]
         Write-Host "Executing: $Function -Source $Source -Target $Target"
