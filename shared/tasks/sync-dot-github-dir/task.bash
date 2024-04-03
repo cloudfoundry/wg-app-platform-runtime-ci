@@ -54,7 +54,11 @@ function run() {
   else
     cp -r "${CI_DIR}/shared/github/CONTRIBUTING.md" ".github"
     if [[ ! -f "scripts/create-docker-container.bash" ]]; then
-      echo "Missing required files in CONTRIBUTING.md"
+      echo "Missing create-docker-container.bash as a required file in CONTRIBUTING.md"
+      exit 1
+    fi
+    if [[ ! -f "scripts/test-in-docker.bash" ]]; then
+      echo "Missing test-in-docker.bash as a required file in CONTRIBUTING.md"
       exit 1
     fi
   fi
