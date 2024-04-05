@@ -250,7 +250,7 @@ resources:
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
     paths: 
       - shared/github
-      - winc-release/github
+      - garden-runc-release/github
 
 #@ for repo in helpers.packages_with_a_git_repo(data.values.internal_repos):
 - name: #@ "{}-repo".format(repo.name)
