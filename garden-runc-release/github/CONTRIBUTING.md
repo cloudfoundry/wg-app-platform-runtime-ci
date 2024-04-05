@@ -56,7 +56,7 @@ Running Tests
 > The following scripts is ran against a Concourse worker. Set `FLY_TARGET` (Defaults to `shared`) environment variable to target your installation instead
 
 - `./scripts/create-docker-container.bash`: This will create a docker container with appropriate mounts. This
-scripts can be used for interactive development with a long running container. Not all tests pass in docker and that's why we recommend running tests in docker before submitting a PR.
+script can be used for interactive development with a long running container. Not all tests pass in docker and that's why we recommend running tests in Concourse before submitting a PR.
 - `./scripts/test-in-docker.bash`: Create docker container and run linters and template tests in a single script.
 - `./scripts/test-in-concourse.bash <package>`: Create concourse on-off job and test all components or a single package. Optional `CLEAN_CACHE=yes` environment variable is recommended to be set when submitting a PR to make sure cache is cleared.
 

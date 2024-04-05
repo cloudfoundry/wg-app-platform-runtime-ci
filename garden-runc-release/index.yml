@@ -6,8 +6,10 @@
 internal_repos:
 - name: greenskeeper 
   privileged: true
+  same_repo: true
 - name: thresholder
   privileged: true
+  same_repo: true
 - name: dontpanic
   privileged: true
 - name: garden

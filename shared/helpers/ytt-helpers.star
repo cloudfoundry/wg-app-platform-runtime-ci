@@ -24,6 +24,18 @@ def packages_without_configure_db(packages = []):
  return l
 end
 
+def packages_with_a_git_repo(packages = []):
+    l = []
+ for p in packages:
+     if hasattr(p, "same_repo"):
+         if not p.same_repo:
+             l.append(p)
+     end
+   end
+ end
+ return l
+end
+
 def on_windows(package):
     if hasattr(package, "on_windows"):
         if package.on_windows:
@@ -72,6 +84,7 @@ end
 helpers = struct.make(
     packages_with_configure_db=packages_with_configure_db,
     packages_without_configure_db=packages_without_configure_db,
+    packages_with_a_git_repo=packages_with_a_git_repo,
     packages_names_array=packages_names_array,
     on_windows=on_windows,
     privileged=privileged,

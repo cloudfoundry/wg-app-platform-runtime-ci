@@ -18,6 +18,7 @@ groups:
   jobs:
   - bump-dependencies-go-mod
   - bump-package-golang
+  - sync-dot-github-dir
 
 - name: manual
   jobs:
@@ -116,6 +117,14 @@ resources:
     owner: cloudfoundry
   type: github-release
 
+- name: shared-templates
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: 
+      - shared/github
+
 - name: version
   type: semver
   source:
@@ -194,6 +203,25 @@ jobs:
     params:
       rebase: true
       repository: vendored-repo
+
+- name: sync-dot-github-dir
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get:  repo
+      - get: shared-templates
+        trigger: true
+  - do:
+    - task: sync-dot-github-dir
+      file: ci/shared/tasks/sync-dot-github-dir/linux.yml
+      image: image
+    - put: repo
+      params:
+       rebase: true
+       repository: synced-repo
 
 - name: unit-and-integration-tests
   serial: true

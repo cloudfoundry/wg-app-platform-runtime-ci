@@ -27,6 +27,7 @@ groups:
   - bump-dependencies-go-mod
   - bump-package-golang
   - bump-bosh-blobs
+  - sync-dot-github-dir
 
 - name: manual
   jobs:
@@ -241,6 +242,25 @@ resources:
     repository: garden-runc-release 
     owner: cloudfoundry
   type: github-release
+
+- name: shared-templates
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: 
+      - shared/github
+      - winc-release/github
+
+#@ for repo in helpers.pacakges_with_a_git_repo(data.values.internal_repos):
+- name: #@ "{}-repo".format(repo.name)
+  type: git
+  icon: github-box
+  source:
+    branch: main
+    uri: #@ "git@github.com:cloudfoundry/{}.git".format(repo.name)
+    private_key: ((github-tas-runtime-bot/private-key))
+#@ end
 
 - name: version
   type: semver
@@ -914,6 +934,44 @@ jobs:
       params:
        rebase: true
        repository: bumped-repo
+
+- name: sync-dot-github-dir
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get: repo
+#@ for repo in helpers.pacakges_with_a_git_repo(data.values.internal_repos):
+      - get: #@ "{}-repo".format(repo.name)
+#@ end
+      - get: shared-templates
+        trigger: true
+  - do:
+    - task: sync-dot-github-dir-garden-runc-release
+      file: ci/shared/tasks/sync-dot-github-dir/linux.yml
+      image: image
+      params:
+        PARENT_TEMPLATE_DIR: garden-runc-release
+    - put: repo
+      params:
+       rebase: true
+       repository: synced-repo
+#@ for repo in helpers.pacakges_with_a_git_repo(data.values.internal_repos):
+  - do:
+    - task: #@ "sync-dot-github-dir-{}".format(repo.name)
+      file: ci/shared/tasks/sync-dot-github-dir/linux.yml
+      image: image
+      input_mapping:
+        repo: #@ "{}-repo".format(repo.name)
+      params:
+        PARENT_TEMPLATE_DIR: garden-runc-release
+    - put: #@ "{}-repo".format(repo.name)
+      params:
+       rebase: true
+       repository: synced-repo
+#@ end
 
 
 - name: template-tests
