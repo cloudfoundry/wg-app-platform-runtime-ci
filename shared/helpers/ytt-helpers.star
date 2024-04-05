@@ -31,6 +31,9 @@ def packages_with_a_git_repo(packages = []):
          if not p.same_repo:
              l.append(p)
      end
+     else:
+         l.append(p)
+
    end
  end
  return l

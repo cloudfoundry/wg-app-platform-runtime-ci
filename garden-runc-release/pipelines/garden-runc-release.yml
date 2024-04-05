@@ -252,7 +252,7 @@ resources:
       - shared/github
       - winc-release/github
 
-#@ for repo in helpers.pacakges_with_a_git_repo(data.values.internal_repos):
+#@ for repo in helpers.packages_with_a_git_repo(data.values.internal_repos):
 - name: #@ "{}-repo".format(repo.name)
   type: git
   icon: github-box
@@ -943,7 +943,7 @@ jobs:
       - get: ci
       - get: image
       - get: repo
-#@ for repo in helpers.pacakges_with_a_git_repo(data.values.internal_repos):
+#@ for repo in helpers.packages_with_a_git_repo(data.values.internal_repos):
       - get: #@ "{}-repo".format(repo.name)
 #@ end
       - get: shared-templates
@@ -958,7 +958,7 @@ jobs:
       params:
        rebase: true
        repository: synced-repo
-#@ for repo in helpers.pacakges_with_a_git_repo(data.values.internal_repos):
+#@ for repo in helpers.packages_with_a_git_repo(data.values.internal_repos):
   - do:
     - task: #@ "sync-dot-github-dir-{}".format(repo.name)
       file: ci/shared/tasks/sync-dot-github-dir/linux.yml
