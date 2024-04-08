@@ -62,6 +62,10 @@ function run() {
       exit 1
     fi
   fi
+  if [[ ! -f "scripts/test-in-docker.bash" && ! -f "scripts/test-in-concourse.bash" ]]; then
+    echo "Missing test-in-docker.bash and test-in-concourse.bash. Please make sure there is a way to test this repo and it's represented in CONTRIBUTING.md"
+    exit 1
+  fi
   cat > ".github/TEMPLATE-README.md" << EOF
 
 > [!IMPORTANT]
