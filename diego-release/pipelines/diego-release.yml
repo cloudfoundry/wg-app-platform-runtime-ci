@@ -48,9 +48,10 @@ resource_types:
 - name: github-pr
   type: registry-image
   source:
-    repository: tasruntime/github-pr-instances-resource
+    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/tasruntime/github-pr-instances-resource
     tag: latest
-
+    username: _json_key
+    password: ((gcp-tas-runtime-service-account/config-json))
 - name: shepherd
   type: registry-image
   source:
@@ -239,17 +240,18 @@ resources:
 - name: image
   type: docker-image                             
   source:                                        
-    repository: cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     tag: 'latest'
+    username: _json_key
+    password: ((gcp-tas-runtime-service-account/config-json))
 
 - name: diego-inigo-ci-rootfs
   type: docker-image
   source:
-    email: tas-runtime.pdl+tas-runtime-bot@broadcom.com
-    username: ((dockerhub-tasruntime/user))
-    password: ((dockerhub-tasruntime/password))
-    repository: cloudfoundry/diego-inigo-ci-rootfs
+    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/diego-inigo-ci-rootfs
     tag: latest
+    username: _json_key
+    password: ((gcp-tas-runtime-service-account/config-json))
 
 - name: jq
   type: github-release
