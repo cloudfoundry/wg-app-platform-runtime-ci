@@ -151,7 +151,6 @@ resources:
     private_key: ((github-tas-runtime-bot/private-key))
 #@ end
 
-
 #! CF Deployment
 - name: cf-deployment
   type: git
