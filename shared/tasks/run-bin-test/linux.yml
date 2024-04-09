@@ -1,4 +1,5 @@
 ---
+# updates needed in cnb-shim-builder-pipeline too
 platform: linux
 
 image_resource:

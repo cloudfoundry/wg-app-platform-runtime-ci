@@ -11,7 +11,9 @@ resources:
 - name: tas-runtime-build
   type: docker-image                             
   source:                                        
-    repository: cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    username: _json_key
+    password: ((gcp-tas-runtime-service-account/config-json))
     tag: 'latest'
 
 jobs:
