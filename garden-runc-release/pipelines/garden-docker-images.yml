@@ -85,9 +85,9 @@ resources:
 - name: image
   type: registry-image
   source:
-    username: ((dockerhub-tasruntime/user))
-    password: ((dockerhub-tasruntime/password))
-    repository: cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    username: _json_key
+    password: ((gcp-tas-runtime-service-account/config-json))
 
 - name: http-golang-download
   type: command-runner
@@ -100,6 +100,8 @@ resource_types:
 - name: command-runner
   type: docker-image
   source:
-    repository: cloudfoundrydevelopers/command-runner-resource
+    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
+    username: _json_key
+    password: ((gcp-tas-runtime-service-account/config-json))
     tag: latest
 

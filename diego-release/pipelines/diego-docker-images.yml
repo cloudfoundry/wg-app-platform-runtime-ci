@@ -200,9 +200,9 @@ resources:
 - name: image
   type: registry-image
   source:
-    username: ((dockerhub-tasruntime/user))
-    password: ((dockerhub-tasruntime/password))
-    repository: cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    username: _json_key
+    password: ((gcp-tas-runtime-service-account/config-json))
 
 - name: cloudfoundry-grace-gcs
   type: google-cloud-storage
@@ -237,9 +237,13 @@ resource_types:
 - name: google-cloud-storage
   type: docker-image
   source:
-    repository: frodenas/gcs-resource
+    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/frodenas/gcs-resource
+    username: _json_key
+    password: ((gcp-tas-runtime-service-account/config-json))
 - name: command-runner
   type: docker-image
   source:
-    repository: cloudfoundrydevelopers/command-runner-resource
+    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
     tag: latest
+    username: _json_key
+    password: ((gcp-tas-runtime-service-account/config-json))
