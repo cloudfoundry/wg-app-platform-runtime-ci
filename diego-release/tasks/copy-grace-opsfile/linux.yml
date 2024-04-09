@@ -4,7 +4,9 @@ platform: linux
 image_resource:
   type: registry-image
   source:
-    repository: cloudfoundry/grace
+    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/grace
+    username: _json_key
+    password: ((gcp-tas-runtime-service-account/config-json))
     tag: ((image_tag))
 
 inputs:
