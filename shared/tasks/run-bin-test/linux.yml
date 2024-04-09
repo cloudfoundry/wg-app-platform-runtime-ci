@@ -1,11 +1,12 @@
 ---
-# updates needed in cnb-shim-builder-pipeline too
 platform: linux
 
 image_resource:
   type: registry-image
   source:
-    repository: ((image_repository))
+    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/((image_repository))
+    username: _json_key
+    password: ((gcp-tas-runtime-service-account/config-json))
     tag: ((image_tag))
 
 inputs:
