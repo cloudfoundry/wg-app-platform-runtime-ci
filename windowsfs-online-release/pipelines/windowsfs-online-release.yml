@@ -158,7 +158,7 @@ resources:
   type: time
   icon: clock
   source:
-    interval: '24'  #! 1 day 
+    interval: '24h'  #! 1 day 
 
 #! Define-Jobs
 jobs:
