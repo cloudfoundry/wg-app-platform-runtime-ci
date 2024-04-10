@@ -20,6 +20,7 @@ groups:
   - bump-dependencies-go-mod
   - bump-package-golang
   - bump-bosh-blobs
+  - sync-dot-github-dir
 
 - name: manual
   jobs:
@@ -76,6 +77,15 @@ resources:
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+
+- name: shared-templates
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: 
+      - shared/github
+      - envoy-nginx-release/github
 
 - name: go-version
   type: git
@@ -254,6 +264,27 @@ jobs:
       params:
         rebase: true
         repository: bumped-repo
+
+- name: sync-dot-github-dir
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get: repo
+      - get: shared-templates
+        trigger: true
+  - do:
+    - task: sync-dot-github-dir-envoy-nginx-release
+      file: ci/shared/tasks/sync-dot-github-dir/linux.yml
+      image: image
+      params:
+        PARENT_TEMPLATE_DIR: envoy-nginx-release
+    - put: repo
+      params:
+       rebase: true
+       repository: synced-repo
 
 - name: unit-and-integration-tests
   serial: true
