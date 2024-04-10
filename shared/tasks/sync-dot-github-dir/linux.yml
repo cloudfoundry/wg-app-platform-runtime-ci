@@ -12,5 +12,4 @@ run:
   path: ci/shared/tasks/sync-dot-github-dir/task.bash
 
 params:
-  DIR: .
   PARENT_TEMPLATE_DIR:
