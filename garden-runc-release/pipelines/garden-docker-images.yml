@@ -44,8 +44,8 @@ resources:
   type: docker-image
   source:
     email: tas-runtime.pdl+tas-runtime-bot@broadcom.com
-    username: ((dockerhub-tasruntime/user))
-    password: ((dockerhub-tasruntime/password))
+    username: ((dockerhub-tasruntime-username))
+    password: ((dockerhub-tasruntime-password))
     repository: cloudfoundry/garden-rootfs
     tag: latest
 
@@ -53,8 +53,8 @@ resources:
   type: docker-image
   source:
     email: tas-runtime.pdl+tas-runtime-bot@broadcom.com
-    username: ((dockerhub-tasruntime/user))
-    password: ((dockerhub-tasruntime/password))
+    username: ((dockerhub-tasruntime-username))
+    password: ((dockerhub-tasruntime-password))
     repository: cloudfoundry/garden-fuse
     tag: latest
 

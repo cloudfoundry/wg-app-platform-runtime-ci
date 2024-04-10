@@ -160,8 +160,8 @@ jobs:
         VERSION_NUMBER=$PWD/input-02/number
         BUILT_BINARIES=$PWD/built-binaries
         IMAGE_NAME=cloudfoundry/windows2016fs
-        DOCKER_USERNAME=((dockerhub-tasruntime/user))
-        DOCKER_PASSWORD=((dockerhub-tasruntime/password))
+        DOCKER_USERNAME=((dockerhub-tasruntime-username))
+        DOCKER_PASSWORD=((dockerhub-tasruntime-password))
         OS_VERSION="2019"
         SHARE_IP=((azure-storage-acct-gardenwindowzcismb/ip))
         SHARE_FQDN=((azure-storage-acct-gardenwindowzcismb/fqdn))

@@ -14,8 +14,8 @@ outputs:
 params:
   GO_VERSION_FILE: ci/go-version.json
   IMAGE: cloudfoundry/tas-runtime-build
-  DOCKER_REGISTRY_USERNAME: ((dockerhub-tasruntime/user))
-  DOCKER_REGISTRY_PASSWORD: ((dockerhub-tasruntime/password))
+  DOCKER_REGISTRY_USERNAME: ((dockerhub-tasruntime-username))
+  DOCKER_REGISTRY_PASSWORD: ((dockerhub-tasruntime-password))
   PLUGIN:
 
 run:

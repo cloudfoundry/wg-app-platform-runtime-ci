@@ -78,8 +78,8 @@ jobs:
       dockerfile: diego-docker-app-dockerfile
     params:
       DOCKERFILE_PATH: dockerfile/diego-release/dockerfiles/diego-docker-app
-      DOCKERHUB_USERNAME: ((dockerhub-tasruntime/user))
-      DOCKERHUB_PASSWORD: ((dockerhub-tasruntime/password))
+      DOCKERHUB_USERNAME: ((dockerhub-tasruntime-username))
+      DOCKERHUB_PASSWORD: ((dockerhub-tasruntime-password))
 
   # - task: validate-label-urls
   #   file: ci/shared/tasks/lint-docker-image/linux.yml
@@ -172,8 +172,8 @@ resources:
 - name: diego-docker-app
   type: docker-image
   source:
-    username: ((dockerhub-tasruntime/user))
-    password: ((dockerhub-tasruntime/password))
+    username: ((dockerhub-tasruntime-username))
+    password: ((dockerhub-tasruntime-password))
     repository: cloudfoundry/diego-docker-app
 
 - name: aws-ecr-docker-app
@@ -186,15 +186,15 @@ resources:
 - name: diego-inigo-ci-rootfs
   type: docker-image
   source:
-    username: ((dockerhub-tasruntime/user))
-    password: ((dockerhub-tasruntime/password))
+    username: ((dockerhub-tasruntime-username))
+    password: ((dockerhub-tasruntime-password))
     repository: cloudfoundry/diego-inigo-ci-rootfs
 
 - name: cloudfoundry-grace-docker
   type: docker-image
   source:
-    username: ((dockerhub-tasruntime/user))
-    password: ((dockerhub-tasruntime/password))
+    username: ((dockerhub-tasruntime-username))
+    password: ((dockerhub-tasruntime-password))
     repository: cloudfoundry/grace
 
 - name: image

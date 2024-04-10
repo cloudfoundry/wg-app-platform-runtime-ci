@@ -148,8 +148,8 @@ jobs:
         image_tag: ((.:image_tag))
       params:
         ENVS: |
-          DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime/user))
-          DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime/password))
+          DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime-username))
+          DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime-password))
           PRIVATE_DOCKER_IMAGE_URL=docker://cloudfoundry/garden-private-image-test:groot
 #@ if helpers.on_windows(package):
     - task: #@ "{}-windows".format(package.name)
@@ -157,8 +157,8 @@ jobs:
       privileged: #@ helpers.privileged(package)
       params:
         ENVS: |
-          DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime/user))
-          DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime/password))
+          DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime-username))
+          DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime-password))
           PRIVATE_DOCKER_IMAGE_URL=docker://cloudfoundry/garden-private-image-test:groot
 #@ end
 #@ end
@@ -206,8 +206,8 @@ jobs:
         FLAGS: #@ "{}".format(package.params.FLAGS)
 #@ end
         ENVS: |
-          DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime/user))
-          DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime/password))
+          DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime-username))
+          DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime-password))
           PRIVATE_DOCKER_IMAGE_URL=docker://cloudfoundry/garden-private-image-test:groot
         DB: #@ db.value
 #@ end
@@ -217,8 +217,8 @@ jobs:
       privileged: #@ helpers.privileged(package)
       params:
         ENVS: |
-          DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime/user))
-          DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime/password))
+          DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime-username))
+          DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime-password))
           PRIVATE_DOCKER_IMAGE_URL=docker://cloudfoundry/garden-private-image-test:groot
         DB: mysql
 #@ end
