@@ -3,8 +3,8 @@
 set -eEu
 set -o pipefail
 
-export RETRY_INTERVAL=10
-export MAX_RETRIES=60
+export RETRY_INTERVAL=60
+export MAX_RETRIES=65
 
 THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 TASK_NAME="$(basename "$THIS_FILE_DIR")"
