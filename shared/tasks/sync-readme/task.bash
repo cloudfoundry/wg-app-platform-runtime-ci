@@ -37,7 +37,7 @@ function run() {
   generate_docs_md ${docs_md_file} ${task_tmp_dir}
 
 
-  pandoc ${sub_readme} ${docs_md_file} ${parent_readme} -f markdown -t markdown --atx-headers -o README.md
+  pandoc ${sub_readme} ${docs_md_file} ${parent_readme} ${CI_DIR}/shared/00-shared.md -f markdown -t markdown --atx-headers -o README.md
 
   find . -name \*.md -print0 | xargs -0 -n1 lychee --exclude "CONTRIBUTING.md" -nqq --cache
 
