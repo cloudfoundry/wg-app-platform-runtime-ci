@@ -1,12 +1,14 @@
 ---
-readme: |
+readme: |+
   This task adds and updates the README.md across repos. For example in the case of bbs, it combines
   the following files in order generate the final README
     > bbs.md (under diego-release/readme/bbs.md)
     > generates a tree of docs under docs dir of bbs. Each document is required to have a metadata YAML block. e.g.
-        title-> Where does BBS fits in Cloud Foundry
-        expires_at-> never or 12/12/2024
-        tags-> [diego-release, bbs]
+        ---
+        title: Where does BBS fits in Cloud Foundry
+        expires_at: never or 12/12/2024
+        tags: [diego-release, bbs]
+        ---
     > 01-diego-release.md (under diego-release/01-diego-release.md)
     > 00-shared.md (under shared/00-shared-md)
 
