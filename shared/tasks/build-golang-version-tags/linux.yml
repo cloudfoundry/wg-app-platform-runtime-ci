@@ -2,7 +2,7 @@
 platform: linux
 
 inputs:
-- name: ci
+- name: go-version
 
 outputs:
 - name: tag
