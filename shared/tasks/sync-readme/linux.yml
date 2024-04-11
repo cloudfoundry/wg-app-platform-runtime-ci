@@ -1,0 +1,14 @@
+---
+platform: linux
+
+inputs:
+  - name: ci
+  - name: repo
+
+outputs:
+  - name: synced-repo 
+
+run:
+  path: ci/shared/tasks/sync-readme/task.bash
+
+params:

@@ -1,0 +1,6 @@
+---
+readme: |
+  This task adds and updates the README.md across repos
+oses:
+  - linux
+params:
