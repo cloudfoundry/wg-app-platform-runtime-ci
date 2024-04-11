@@ -31,8 +31,8 @@ resources:
 - name: build-image
   type: docker-image
   source:
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
+    username: ((dockerhub-tasruntime/user))
+    password: ((dockerhub-tasruntime/password))
     repository: cloudfoundry/tas-runtime-build
 - name: build-image-version
   type: semver
@@ -66,8 +66,8 @@ resources:
 - name: postgres-image
   type: docker-image
   source:
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
+    username: ((dockerhub-tasruntime/user))
+    password: ((dockerhub-tasruntime/password))
     repository: cloudfoundry/tas-runtime-postgres
 - name: postgres-image-version
   type: semver
@@ -94,8 +94,8 @@ resources:
 - name: mysql-8.0-image
   type: docker-image
   source:
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
+    username: ((dockerhub-tasruntime/user))
+    password: ((dockerhub-tasruntime/password))
     repository: cloudfoundry/tas-runtime-mysql-8.0
 - name: mysql-8.0-image-version
   type: semver
@@ -122,8 +122,8 @@ resources:
 - name: mysql-5.7-image
   type: docker-image
   source:
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
+    username: ((dockerhub-tasruntime/user))
+    password: ((dockerhub-tasruntime/password))
     repository: cloudfoundry/tas-runtime-mysql-5.7
 - name: mysql-5.7-image-version
   type: semver
@@ -136,8 +136,8 @@ resources:
 - name: official-mysql-5.7-image
   type: docker-image
   source:
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
+    username: ((dockerhub-tasruntime/user))
+    password: ((dockerhub-tasruntime/password))
     repository: mysql
     tag: 5.7-debian
 - name: http-golang-download
@@ -225,6 +225,9 @@ jobs:
       trigger: true
       passed:
       - build-build-image
+    - get: go-version
+      passed:
+      - build-build-image
     - get: ci
       passed:
       - build-build-image
@@ -295,6 +298,9 @@ jobs:
       trigger: true
     - get: build-image-version
       trigger: true
+      passed:
+      - build-build-image
+    - get: go-version
       passed:
       - build-build-image
     - get: ci
@@ -392,6 +398,9 @@ jobs:
         bump: patch
     - get: official-mysql-5.7-image
       trigger: true
+    - get: go-version
+      passed:
+      - build-build-image
     - get: ci
       passed:
       - build-build-image
