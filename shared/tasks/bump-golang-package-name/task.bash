@@ -42,9 +42,7 @@ function run() {
         # do not match the job name, e.g. golang-1-windows in windows-tools-release
         sed -i "3,\$s/${from_package}/${to_package}/g" jobs/**/spec
         shopt -s nullglob
-        for file in jobs/**/templates/*; do
-            sed -i "s/${from_package}/${to_package}/g" "${file}"
-        done
+        find jobs/*/templates -type f -print0 | xargs sed -i "s/${from_package}/${to_package}/g"
         shopt -u nullglob
         rm -rf "packages/${from_package}"
     fi
