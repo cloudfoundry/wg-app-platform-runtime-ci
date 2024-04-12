@@ -302,7 +302,7 @@ jobs:
         image: image
         input_mapping:
           package-release: golang-release-latest
-          repo: cf-networking-repo
+          repo: cf-networking-bumped-repo
         output_mapping:
           vendored-repo: cf-networking-vendored-repo
         params:
@@ -327,7 +327,7 @@ jobs:
         image: image
         input_mapping:
           package-release: golang-release-latest
-          repo: silk-repo
+          repo: silk-bumped-repo
         output_mapping:
           vendored-repo: silk-vendored-repo
         params:
