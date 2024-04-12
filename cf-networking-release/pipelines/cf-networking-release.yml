@@ -288,7 +288,16 @@ jobs:
 
   - in_parallel:
     - do:
-      - task: bumpe-cf-networking-golang-linux
+      - task: bump-cf-networking-golang-package-name
+        file: ci/shared/tasks/bump-golang-package-name/linux.yml
+        image: image
+        input_mapping:
+          repo: cf-networking-repo
+        output_mapping:
+          bumped-repo: cf-networking-bumped-repo
+        params:
+          PLATFORM: linux
+      - task: bump-cf-netwokring-golang-linux
         file: ci/shared/tasks/bosh-vendor-package/linux.yml
         image: image
         input_mapping:
@@ -297,14 +306,23 @@ jobs:
         output_mapping:
           vendored-repo: cf-networking-vendored-repo
         params:
-          PACKAGE_NAME: golang-1.21-linux
+          PACKAGE_NAME: golang-*-linux
           GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
       - put: cf-networking-repo
         params:
           rebase: true
           repository: cf-networking-vendored-repo
     - do:
-      - task: bumpe-silk-golang-linux
+      - task: bump-silk-golang-package-name
+        file: ci/shared/tasks/bump-golang-package-name/linux.yml
+        image: image
+        input_mapping:
+          repo: silk-repo
+        output_mapping:
+          bumped-repo: silk-bumped-repo
+        params:
+          PLATFORM: linux
+      - task: bump-silk-golang-linux
         file: ci/shared/tasks/bosh-vendor-package/linux.yml
         image: image
         input_mapping:
@@ -313,7 +331,7 @@ jobs:
         output_mapping:
           vendored-repo: silk-vendored-repo
         params:
-          PACKAGE_NAME: golang-1.21-linux
+          PACKAGE_NAME: golang-*-linux
           GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
       - put: silk-repo
         params:
