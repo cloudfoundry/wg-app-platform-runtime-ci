@@ -132,7 +132,7 @@ function get_go_version_for_release(){
     local package_path package_name spec_lock_value
     package_name=""
     spec_lock_value=""
-    package_path=$(find ./packages/ -name "$package" -type d)
+    package_path=$(find ./packages/ -name "$package" -type d | sort -r | head -n1)
     if [ -n "$package_path" ]; then
         package_name=$(basename "${package_path}")
         spec_lock_value=$(yq .fingerprint "${package_path}/spec.lock")
