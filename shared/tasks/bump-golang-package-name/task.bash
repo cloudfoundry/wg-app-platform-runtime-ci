@@ -28,6 +28,7 @@ function run() {
 
     local release_name=$(bosh_release_name)
     local go_minor_version=$(cat ${go_version_file} | jq -r "if (.releases.\"${release_name}\" == null) then .default else .releases.\"${release_name}\" end")
+    echo "Bumping golang package for release:${release_name} with version:${go_minor_version}"
     local from_package to_package
     if [[ -n "${PREFIX}" ]]; then
         from_package=$(basename ./packages/$PREFIX-golang-*-${PLATFORM})
