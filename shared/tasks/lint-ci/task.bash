@@ -201,10 +201,11 @@ function allowed_dirs() {
 ^./bin/*$
 ^./.github/*$
 ^./examples/(task|pipeline)*$
-^./examples/repo/(scripts-dir-with-db|scripts-dir-generic)$
-^./examples/repo/(scripts-dir-with-db|scripts-dir-generic)/docker$
-^./(shared|${release_list})/(helpers|opsfiles|linters|manifests|dockerfiles|pipelines|bin)$
+^./examples/repo/(scripts-dir-with-db|scripts-dir-generic|scripts-dir-standalone-modules)$
+^./examples/repo/(scripts-dir-with-db|scripts-dir-generic|scripts-dir-standalone-modules)/docker$
+^./(shared|${release_list})/(helpers|opsfiles|linters|manifests|dockerfiles|pipelines|bin|readme)$
 ^./(shared|${release_list})/tasks/[a-z\-]*$
+^./(shared|${release_list})$
 ^./(${release_list})/(manifests)$
 ^./(${release_list})/default-params/[a-z\-]*$
 ^./(shared|${release_list})/dockerfiles/.*$
