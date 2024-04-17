@@ -36,7 +36,6 @@ instance_groups:
         destroy_containers_on_start: ((WITH_BPM))
         experimental_rootless_mode: ((WITH_ROOTLESS_MODE))
         containerd_mode: ((WITH_CONTAINERD_MODE))
-        experimental_use_containerd_mode_for_processes: ((WITH_COTAINERD_FOR_PROCESSES_MODE))
       grootfs:
         skip_mount: ((WITH_ROOTLESS_MODE))
   - name: gats
@@ -44,7 +43,6 @@ instance_groups:
     properties:
       cpu_throttling: ((WITH_CPU_THROTTLING))
       rootless: ((WITH_ROOTLESS_MODE))
-      containerd_for_processes: ((WITH_COTAINERD_FOR_PROCESSES_MODE))
       garden_test_rootfs: "docker:///cloudfoundry/garden-rootfs"
 - name: gpats
   instances: 1
