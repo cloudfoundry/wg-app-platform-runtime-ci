@@ -15,7 +15,6 @@ groups:
   - run-gats-with-cpu-throttling
   - run-gats-with-runc
   - run-gats-with-containerd
-  - run-gats-with-containerd-for-processes
   - run-standalone-gdn-gats
   - export-release
   - ship-what
@@ -1259,7 +1258,6 @@ jobs:
         GDN_BIND_PORT=7777
         GDN_DEBUG_PORT=17013
         ROOTLESS=false
-        CONTAINERD_FOR_PROCESSES_ENABLED=false
         NESTED=true
         LIMITS_TEST_URI="docker://busybox"
     vars:
@@ -1344,7 +1342,6 @@ jobs:
         WITH_BPM=false
         WITH_ROOTLESS_MODE=false
         WITH_CONTAINERD_MODE=false
-        WITH_COTAINERD_FOR_PROCESSES_MODE=false
         WITH_CPU_THROTTLING=true
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
@@ -1380,7 +1377,6 @@ jobs:
         WITH_BPM=false
         WITH_ROOTLESS_MODE=false
         WITH_CONTAINERD_MODE=false
-        WITH_COTAINERD_FOR_PROCESSES_MODE=false
         WITH_CPU_THROTTLING=false
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
@@ -1423,7 +1419,6 @@ jobs:
         WITH_BPM=false
         WITH_ROOTLESS_MODE=false
         WITH_CONTAINERD_MODE=true
-        WITH_COTAINERD_FOR_PROCESSES_MODE=false
         WITH_CPU_THROTTLING=false
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
@@ -1441,42 +1436,6 @@ jobs:
       DEPLOYMENT_NAME: gats-with-containerd
       ERRAND_NAME: gpats
       INSTANCE: gpats
-
-- name: run-gats-with-containerd-for-processes
-  serial: true
-  plan:
-  - in_parallel:
-    - get: ci
-    - get: repo
-      passed: [prepare-env]
-      trigger: true
-    - get: image
-    - get: env
-      passed: [prepare-env]
-      trigger: true
-    - get: package-release
-      resource: golang-release-latest
-    - get: garden-ci-artifacts-release
-    - get: cf-deployment-concourse-tasks
-  - task: bosh-deploy-gats
-    image: image
-    file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
-    params:
-      MANIFEST: ci/garden-runc-release/manifests/gats.yml
-      DEPLOYMENT_NAME: gats-with-containerd-for-processes
-      ENVS: |
-        WITH_BPM=false
-        WITH_ROOTLESS_MODE=false
-        WITH_CONTAINERD_MODE=true
-        WITH_COTAINERD_FOR_PROCESSES_MODE=true
-        WITH_CPU_THROTTLING=false
-  - task: run-gats-errand
-    file: cf-deployment-concourse-tasks/run-errand/task.yml
-    input_mapping:
-      toolsmiths-env: env
-    params:
-      DEPLOYMENT_NAME: gats-with-containerd-for-processes
-      ERRAND_NAME: gats
 
 - name: export-release
   serial: true
@@ -1509,7 +1468,6 @@ jobs:
             - run-gats-with-cpu-throttling
             - run-gats-with-runc
             - run-gats-with-containerd
-            - run-gats-with-containerd-for-processes
           trigger: true
         - get: image
         - get: release-branch
@@ -1526,7 +1484,6 @@ jobs:
             - run-gats-with-cpu-throttling
             - run-gats-with-runc
             - run-gats-with-containerd
-            - run-gats-with-containerd-for-processes
           trigger: true
 
     - task: check-safe-to-release-repo
