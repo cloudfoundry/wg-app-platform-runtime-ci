@@ -1257,7 +1257,6 @@ jobs:
         GDN_BIND_IP=127.0.0.1
         GDN_BIND_PORT=7777
         GDN_DEBUG_PORT=17013
-        ROOTLESS=false
         NESTED=true
         LIMITS_TEST_URI="docker://busybox"
     vars:
@@ -1340,7 +1339,6 @@ jobs:
       DEPLOYMENT_NAME: gats-with-cpu-throttling
       ENVS: |
         WITH_BPM=false
-        WITH_ROOTLESS_MODE=false
         WITH_CONTAINERD_MODE=false
         WITH_CPU_THROTTLING=true
   - task: run-gats-errand
@@ -1375,7 +1373,6 @@ jobs:
       DEPLOYMENT_NAME: gats-with-runc
       ENVS: |
         WITH_BPM=false
-        WITH_ROOTLESS_MODE=false
         WITH_CONTAINERD_MODE=false
         WITH_CPU_THROTTLING=false
   - task: run-gats-errand
@@ -1417,7 +1414,6 @@ jobs:
       DEPLOYMENT_NAME: gats-with-containerd
       ENVS: |
         WITH_BPM=false
-        WITH_ROOTLESS_MODE=false
         WITH_CONTAINERD_MODE=true
         WITH_CPU_THROTTLING=false
   - task: run-gats-errand
