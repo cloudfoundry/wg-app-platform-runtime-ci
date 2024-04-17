@@ -243,7 +243,6 @@ jobs:
     params:
       COPY_ACTIONS: |
         {input-01/operations/experimental/set-cpu-weight.yml,combined-assets/}
-        {input-01/operations/experimental/enable-containerd-for-processes.yml,combined-assets/}
         {ci/cpu-entitlement-plugin/opsfiles/*.yml,combined-assets/}
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml

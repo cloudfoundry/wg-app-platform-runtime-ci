@@ -3,7 +3,6 @@
 #@overlay/match missing_ok=True
 opsfiles:
 - set-cpu-weight.yml
-- enable-containerd-for-processes.yml
 - add-test-log-emitter-to-diego-cell.yml
 - enable-cpu-throttling.yml
 - grootfs-direct-io.yml
