@@ -23,7 +23,6 @@ garden-performance-acceptance-tests
 grootfs
 guardian
 idmapper
-netplugin-shim
 EOF
 
 cat /tmp/packages | xargs -s 1048576 gosub sync --force-https=true

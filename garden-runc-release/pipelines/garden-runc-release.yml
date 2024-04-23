@@ -176,13 +176,6 @@ resources:
     branch: main
     private_key: ((github-tas-runtime-bot/private-key))
 
-- name: updated-go-mod-netplugin-shim
-  type: git
-  source:
-    uri: git@github.com:cloudfoundry/netplugin-shim.git
-    branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
-
 - name: updated-go-mod-dontpanic
   type: git
   source:
@@ -438,7 +431,6 @@ jobs:
     - get: updated-go-mod-guardian
     - get: updated-go-mod-garden-integration-tests
     - get: updated-go-mod-dontpanic
-    - get: updated-go-mod-netplugin-shim
     - get: image
     - get: daily
       trigger: true
@@ -536,27 +528,6 @@ jobs:
           dep-local-repo-replace-02:idmapper
           dep-local-repo-replace-03:grootfs
     - put: updated-go-mod-guardian
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: netplugin-shim-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-netplugin-shim
-        dep-local-repo-replace-01: updated-go-mod-garden
-        dep-local-repo-replace-02: updated-go-mod-idmapper
-        dep-local-repo-replace-03: updated-go-mod-grootfs
-        dep-local-repo-replace-04: updated-go-mod-guardian
-      params:
-        GO_MODS: go.mod
-        REPLACE_DIRECTIVES: |
-          dep-local-repo-replace-01:garden
-          dep-local-repo-replace-02:idmapper
-          dep-local-repo-replace-03:grootfs
-          dep-local-repo-replace-04:guardian
-    - put: updated-go-mod-netplugin-shim
       params:
         rebase: true
         repository: bumped-repo
