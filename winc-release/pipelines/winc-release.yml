@@ -527,7 +527,6 @@ jobs:
       resource: golang-release-latest
   - task: build-binaries
     file: ci/shared/tasks/build-binaries/windows.yml
-    tags: [worker-windows-with-previous-golang]
     params:
       FUNCTIONS: ci/winc-release/helpers/build-binaries.ps1
       MAPPING: |
@@ -537,7 +536,6 @@ jobs:
 #@ for package in data.values.internal_repos:
   - task: #@ "{}".format(package.name)
     file: ci/shared/tasks/run-bin-test/windows.yml
-    tags: [worker-windows-with-previous-golang]
     privileged: #@ helpers.privileged(package)
     params:
       FUNCTIONS: ci/winc-release/helpers/configure-binaries.ps1

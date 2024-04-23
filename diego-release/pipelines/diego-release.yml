@@ -750,7 +750,6 @@ jobs:
         DEFAULT_PARAMS: "ci/diego-release/default-params/build-binaries/windows.yml"
     - task: build-binaries-for-winc-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
-      tags: [worker-windows-with-previous-golang]
       input_mapping:
         repo: winc-release
       output_mapping:
@@ -764,7 +763,6 @@ jobs:
           Build-Nstar=src/code.cloudfoundry.org/nstar
     - task: build-binaries-for-garden-runc-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
-      tags: [worker-windows-with-previous-golang]
       input_mapping:
         repo: garden-runc-release
       output_mapping:
@@ -776,7 +774,6 @@ jobs:
           Build-Gdn=src/guardian/cmd/gdn
     - task: build-binaries-for-envoy-nginx-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
-      tags: [worker-windows-with-previous-golang]
       input_mapping:
         repo: envoy-nginx-release
       output_mapping:
@@ -804,7 +801,6 @@ jobs:
   - in_parallel:
     - task: inigo-mysql-windows
       file: ci/shared/tasks/run-bin-test/windows.yml
-      tags: [worker-windows-with-previous-golang]
       privileged: true
       input_mapping:
         built-binaries: built-binaries
@@ -842,10 +838,6 @@ jobs:
           --skip-package volman,executor,certauthority
         FUNCTIONS: |
           ci/winc-release/helpers/configure-binaries.ps1
-        VERIFICATIONS: |
-          Verify-Go repo/$env:DIR
-          Verify-GoVet repo/$env:DIR
-          Verify-StaticCheck repo/$env:DIR
 - name: lint-repo
   serial: true
   plan:
