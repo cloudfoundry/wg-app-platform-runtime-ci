@@ -1242,6 +1242,7 @@ jobs:
 
 - name: run-gatsw
   serial: true
+  serial_groups: [acceptance]
   plan:
   - in_parallel:
     - get: ci
@@ -1288,6 +1289,7 @@ jobs:
 
 - name: run-gats-with-cpu-throttling
   serial: true
+  serial_groups: [acceptance]
   plan:
   - in_parallel:
     - get: ci
@@ -1322,6 +1324,7 @@ jobs:
 
 - name: run-gats-with-runc
   serial: true
+  serial_groups: [acceptance]
   plan:
   - in_parallel:
     - get: ci
@@ -1363,6 +1366,7 @@ jobs:
 
 - name: run-gats-with-containerd
   serial: true
+  serial_groups: [acceptance]
   plan:
   - in_parallel:
     - get: ci
