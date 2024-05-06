@@ -497,11 +497,21 @@ jobs:
       input_mapping:
         release-repo: release-branch
 
+    - task: get-nats-server-version
+      image: image
+      file: ci/shared/tasks/run-command-for-repo/linux.yml
+      params:
+        CMD: |
+          export COMMAND_OUTPUT=$PWD/../command-output
+          cd src/code.cloudfoundry.org
+          echo "## ✨  Built with $(go list -m github.com/nats-io/nats-server/v2)" > $COMMAND_OUTPUT/nats-version.md
+
     - task: build-release-notes-nats
       image: image
       file: ci/shared/tasks/build-release-notes/linux.yml
       input_mapping:
         previous-github-release: github-release
+        extra-metadata: command-output
 
 - name: ship-it
   serial: true
@@ -526,6 +536,15 @@ jobs:
       file: ci/shared/tasks/check-safe-to-release-repo/linux.yml
       input_mapping:
         release-repo: release-branch
+
+    - task: get-nats-server-version
+      image: image
+      file: ci/shared/tasks/run-command-for-repo/linux.yml
+      params:
+        CMD: |
+          export COMMAND_OUTPUT=$PWD/../command-output
+          cd src/code.cloudfoundry.org
+          echo "## ✨  Built with $(go list -m github.com/nats-io/nats-server/v2)" > $COMMAND_OUTPUT/nats-version.md
 
     - task: build-release-notes-nats
       image: image

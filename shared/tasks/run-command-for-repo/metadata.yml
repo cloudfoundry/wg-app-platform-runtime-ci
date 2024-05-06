@@ -1,0 +1,7 @@
+---
+readme: |
+  This task will run a generic command for a repo and output can be saved to command-output
+oses:
+  - linux
+params:
+  CMD:  Multiline command to run
