@@ -17,12 +17,6 @@ function run() {
   git_configure_author
   git_configure_safe_directory
 
-  apt update && apt install pandoc -qy
-  wget -O lychee.tgz https://github.com/lycheeverse/lychee/releases/download/v0.14.3/lychee-v0.14.3-x86_64-unknown-linux-musl.tar.gz
-  tar xzvf lychee.tgz
-  mv lychee /usr/local/bin/
-  rm lychee.tgz
-
   local CI_DIR="$PWD/ci"
   local SYNCED_REPO_DIR="$PWD/synced-repo"
 
@@ -39,7 +33,7 @@ function run() {
 
   pandoc ${sub_readme} ${docs_md_file} ${parent_readme} ${CI_DIR}/shared/00-shared.md -f markdown -t markdown --atx-headers -o README.md
 
-  find . -name \*.md -print0 | xargs -0 -n1 lychee --exclude "CONTRIBUTING.md" -nqq --cache
+  find . -name \*.md -print0 | xargs -0 -n1 lychee --exclude "CONTRIBUTING.md" --exclude-path "vendor" -nqq
 
   if [[ $(git status --porcelain) ]]; then
     git add -A .
