@@ -45,6 +45,7 @@ RUN \
     net-tools \
     openssh-client \
     openssl \
+    pandoc \
     psmisc \
     python3-pip \
     python3-venv \
@@ -89,7 +90,6 @@ RUN \
   url="https://packages.cloudfoundry.org/stable?release=linux64-binary&version=${cf_cli_version}&source=github-rel" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/cf8 /usr/local/bin/cf8 && ln -sf /usr/local/bin/cf8 /usr/local/bin/cf
-
 #    bosh cli
 RUN \
   url="$(curl -s https://api.github.com/repos/cloudfoundry/bosh-cli/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("amd"))).browser_download_url')" && \
@@ -150,6 +150,13 @@ RUN \
   url="$(curl -s https://api.github.com/repos/mikefarah/yq/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains("amd")) ).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/yq_linux_amd64 /usr/local/bin/yq
+
+#    lychee
+RUN \
+  lychee_version="$(curl -s https://api.github.com/repos/lycheeverse/lychee/releases | jq -r '.[0].name' | sed 's/v//g')" && \
+  url="https://github.com/lycheeverse/lychee/releases/download/${lychee_version}/lychee-${lychee_version}-x86_64-unknown-linux-musl.tar.gz" && \
+  curl -L "${url}" | tar -xz -C /tmp/ && \
+  install /tmp/lychee /usr/local/bin/lychee
 
 #   cleanup afterwards
 RUN \
