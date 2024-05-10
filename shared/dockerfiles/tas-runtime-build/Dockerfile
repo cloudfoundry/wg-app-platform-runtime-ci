@@ -153,8 +153,7 @@ RUN \
 
 #    lychee
 RUN \
-  lychee_version="$(curl -s https://api.github.com/repos/lycheeverse/lychee/releases | jq -r '.[0].name' | sed 's/v//g')" && \
-  url="https://github.com/lycheeverse/lychee/releases/download/${lychee_version}/lychee-${lychee_version}-x86_64-unknown-linux-musl.tar.gz" && \
+  url="$(curl -s https://api.github.com/repos/lycheeverse/lychee/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("x86_64")) and (.name | contains("musl")) ).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/lychee /usr/local/bin/lychee
 
