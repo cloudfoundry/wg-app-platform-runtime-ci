@@ -7,7 +7,7 @@ groups:
   jobs: #@ helpers.packages_names_array(data.values.internal_repos) 
 
 - name: periodics
-  jobs: #@ helpers.packages_names_array(data.values.internal_repos,["bump-dependencies-","sync-dot-github-dir-"])
+  jobs: #@ helpers.packages_names_array(data.values.internal_repos,["bump-dependencies-","sync-dot-github-dir-","sync-readme-"])
 
 #! Define-Resources
 resources:
@@ -19,6 +19,16 @@ resources:
     branch: main 
     uri: #@ "git@github.com:{}".format(package.repo)
     private_key: ((github-tas-runtime-bot/private-key))
+- name: #@ "{}-docs".format(package.name)
+  type: git
+  icon: github-box
+  source:
+    branch: main 
+    uri: #@ "git@github.com:{}".format(package.repo)
+    private_key: ((github-tas-runtime-bot/private-key))
+    paths:
+    - docs/*
+    - .github
 #@ end
 
 - name: ci
@@ -34,6 +44,16 @@ resources:
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
     paths: 
       - shared/github
+
+- name: readme
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: 
+      - shared/*.md
+      - wg-arp-diego-modules/*.md
+      - wg-arp-diego-modules/readme/*.md
 
 - name: image
   type: docker-image                             
@@ -77,6 +97,30 @@ jobs:
       image: image
       input_mapping:
         repo: #@ repo.name
+    - put: #@ repo.name
+      params:
+       rebase: true
+       repository: synced-repo
+#@ end
+
+#@ for repo in data.values.internal_repos:
+- name: #@ "sync-readme-{}".format(repo.name)
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get:  #@ "{}-docs".format(repo.name)
+        trigger: true
+      - get: readme
+        trigger: true
+  - do:
+    - task: sync-readme
+      file: ci/shared/tasks/sync-readme/linux.yml
+      image: image
+      input_mapping:
+        repo: #@ "{}-docs".format(repo.name)
     - put: #@ repo.name
       params:
        rebase: true
