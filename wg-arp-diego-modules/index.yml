@@ -20,6 +20,8 @@ internal_repos:
 - name: certsplitter
   repo: cloudfoundry/certsplitter
   on_windows: true
+- name: cfhttp
+  repo: cloudfoundry/cfhttp
 - name: debugserver
   repo: cloudfoundry/debugserver
 - name: diego-logging-client
@@ -34,3 +36,5 @@ internal_repos:
   repo: cloudfoundry/tlsconfig
 - name: bytefmt
   repo: cloudfoundry/bytefmt
+- name: lager
+  repo: cloudfoundry/lager
