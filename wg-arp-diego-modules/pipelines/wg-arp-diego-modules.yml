@@ -113,6 +113,7 @@ jobs:
       - get: image
       - get:  #@ "{}-docs".format(repo.name)
         trigger: true
+      - get:  #@ repo.name
       - get: readme
         trigger: true
   - do:
@@ -120,7 +121,7 @@ jobs:
       file: ci/shared/tasks/sync-readme/linux.yml
       image: image
       input_mapping:
-        repo: #@ "{}-docs".format(repo.name)
+        repo: #@ repo.name
     - put: #@ repo.name
       params:
        rebase: true
