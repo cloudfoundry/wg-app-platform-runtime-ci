@@ -25,7 +25,7 @@ resources:
   type: git
   icon: github-box
   source:
-    branch: main 
+    branch: #@ helpers.on_branch(package)
     uri: #@ "git@github.com:{}".format(package.repo)
     private_key: ((github-tas-runtime-bot/private-key))
     paths:
@@ -46,7 +46,7 @@ resources:
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
     paths: 
       - shared/github
-      - wg-arp-garden/github
+      - wg-arp-garden-modules/github
 
 - name: readme
   type: git
