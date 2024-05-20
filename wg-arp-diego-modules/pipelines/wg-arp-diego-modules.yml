@@ -121,7 +121,7 @@ jobs:
       file: ci/shared/tasks/sync-readme/linux.yml
       image: image
       input_mapping:
-        repo: #@ repo.name
+        repo:  #@ "{}-docs".format(repo.name)
     - put: #@ repo.name
       params:
        rebase: true
