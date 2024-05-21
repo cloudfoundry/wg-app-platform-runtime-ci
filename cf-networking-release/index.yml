@@ -36,3 +36,4 @@ opsfiles:
 - add-acceptance-test-jobs.yml
 - enable-iptables-logger.yml
 - limit-app-outbound-connections.yml
+- enable-comma-delimited-asg-destinations.yml

@@ -706,6 +706,7 @@ jobs:
       CONFIGS: cats
       WITH_ISOSEG: false
       WITH_DYNAMIC_ASG: true
+      WITH_COMMA_DELIMITED_ASG_DESTINATIONS: true
   - task: cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     attempts: 2

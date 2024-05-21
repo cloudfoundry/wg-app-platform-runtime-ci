@@ -248,6 +248,7 @@ function cf_networking_acceptance_tests() {
     "apps_domain": "${CF_SYSTEM_DOMAIN}",
     "default_security_groups": [ "dns", "public_networks" ],
     "dynamic_asgs_enabled": ${WITH_DYNAMIC_ASG},
+    "comma_delim_asgs_enabled": ${WITH_COMMA_DELIMITED_ASG_DESTINATIONS},
     "extra_listen_ports": 2,
     "nodes": 1,
     "prefix":"test-",

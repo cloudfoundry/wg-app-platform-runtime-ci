@@ -6,3 +6,4 @@ opsfiles:
   add-apps-internal-search-domain.yml: Adds apps.internal as a DNS search domain for app containers to use during service discovery.
   limit-app-outbound-connections.yml:  This opsfile is need to pass outbound_conn_limit test  (https://github.com/cloudfoundry/cf-networking-release/blob/0d93b393a10d922b3cd62335aba0a0fc8dae26b3/src/code.cloudfoundry.org/test/acceptance/outbound_conn_limit_test.go)
   use-latest.yml: Uses latest silk and cf-networking releases
+  enable-comma-delimited-asg-destinations.yml: Enables support for comma delimited ASG destinations so we can validate in CATs

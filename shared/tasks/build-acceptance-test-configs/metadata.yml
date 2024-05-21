@@ -15,3 +15,4 @@ params:
     in linux.yml or windows.yml.
   WITH_ISOSEG: (defaults to false). It will turn on/off isolation segment tests for diego-cell with isolated router
   WITH_DYNAMIC_ASG: (defaults to false) It will turn on/off dynamic asgs tests
+  WITH_COMMA_DELIMITED_ASG_DESTINATIONS: (defaults to false) Turns on/off tests of comma delimited ASG destinations
