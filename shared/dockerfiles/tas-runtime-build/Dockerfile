@@ -43,6 +43,7 @@ RUN \
     netcat \
     netcat-openbsd \
     net-tools \
+    nginx \
     openssh-client \
     openssl \
     pandoc \
