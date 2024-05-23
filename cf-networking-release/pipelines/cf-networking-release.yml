@@ -28,6 +28,8 @@ groups:
   - bump-healthchecker-in-silk-release
   - sync-dot-github-dir-in-networking-release
   - sync-dot-github-dir-in-silk-release
+  - sync-readme-in-networking-release
+  - sync-readme-in-silk-release
 
 - name: manual
   jobs:
@@ -425,6 +427,49 @@ jobs:
       params:
        rebase: true
        repository: synced-repo
+
+- name: sync-readme-in-networking-release
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get:  cf-networking-repo
+      - get: cf-networking-readme
+        trigger: true
+  - do:
+    - task: sync-readme
+      file: ci/shared/tasks/sync-readme/linux.yml
+      image: image
+      input_mapping:
+        repo:  cf-networking-readme
+    - put: cf-networking-repo
+      params:
+       rebase: true
+       repository: synced-repo
+
+- name: sync-readme-in-silk-release
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get:  silk-repo
+      - get: silk-readme
+        trigger: true
+  - do:
+    - task: sync-readme
+      file: ci/shared/tasks/sync-readme/linux.yml
+      image: image
+      input_mapping:
+        repo:  silkg-readme
+    - put: silk-repo
+      params:
+       rebase: true
+       repository: synced-repo
+
 
 - name: template-tests
   serial: true

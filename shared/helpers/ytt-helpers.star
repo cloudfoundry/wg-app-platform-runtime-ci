@@ -91,6 +91,6 @@ helpers = struct.make(
     packages_names_array=packages_names_array,
     on_windows=on_windows,
     privileged=privileged,
-    on_branch=on_branch
+    on_branch=on_branch,
 )
 

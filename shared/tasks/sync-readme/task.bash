@@ -64,7 +64,7 @@ function generate_docs_md() {
 EOF
 for f in ${files}; do pandoc $f --template ${pandoc_tmpl} | jq '.title' | xargs printf "- [%s]($f)\n" ; done >> ${docs_md_file}
 
-  local expired=$(for f in ${files}; do pandoc $f --template ${pandoc_tmpl} | jq 'select(.expires_at != "never") | select(.expires_at < (now | strftime("%m/%d/%y")))'; done)
+  local expired=$(for f in ${files}; do pandoc $f --template ${pandoc_tmpl} | jq 'select(.expires_at != "never") | select(.expires_at < (now | strftime("%Y-%m-%d")))'; done)
   if [[ "${expired:-none}" != "none" ]]; then
     echo "The following docs are now expired, please remove them"
     echo "${expired}"
