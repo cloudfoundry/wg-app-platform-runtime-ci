@@ -44,6 +44,7 @@ RUN \
     lsof \
     mercurial \
     netcat \
+    nginx \
     procps \
     psmisc \
     python \
