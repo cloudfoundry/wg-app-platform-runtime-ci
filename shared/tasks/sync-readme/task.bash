@@ -23,7 +23,7 @@ function run() {
   pushd "repo/" > /dev/null
   local git_remote_name=$(git_get_remote_name)
 
-  local sub_readme=$(find ${CI_DIR} -name "*${git_remote_name}*.md")
+  local sub_readme=$(find ${CI_DIR} -name "${git_remote_name}.md")
   local belongs_to_dir=$(echo ${sub_readme} | xargs dirname | xargs dirname)
   local parent_readme=$(find ${CI_DIR} -name "01-*.md" -ipath "${belongs_to_dir}/*")
 
