@@ -64,17 +64,6 @@ resources:
     branch: release
     private_key: ((github-tas-runtime-bot/private-key))
 
-- name: repo-docs
-  type: git
-  icon: github-box
-  source:
-    branch:  "develop"
-    uri: git@github.com:cloudfoundry/healthchecker-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
-    paths:
-    - docs/*
-    - .github
-
 - name: develop-branch-mergeback
   type: git
   source:
@@ -88,7 +77,7 @@ resources:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
-- name: healthchecker-readme
+- name: repo-readme
   type: git
   source:
     branch: main
@@ -253,7 +242,6 @@ jobs:
       - get: ci
       - get: image
       - get:  repo
-      - get: repo-docs
         trigger: true
       - get: repo-readme
         trigger: true
@@ -261,8 +249,6 @@ jobs:
     - task: sync-readme
       file: ci/shared/tasks/sync-readme/linux.yml
       image: image
-      input_mapping:
-        repo:  repo-docs
     - put: repo
       params:
        rebase: true

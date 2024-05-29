@@ -21,6 +21,7 @@ groups:
   - bump-dependencies-go-mod
   - bump-package-golang
   - sync-dot-github-dir
+  - sync-readme
 
 - name: manual
   jobs:
@@ -78,6 +79,16 @@ resources:
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+
+- name: repo-readme
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: 
+      - shared/*.md
+      - nats-release/*.md
+      - nats-release/readme/*.md
 
 - name: go-version
   type: git
@@ -261,6 +272,26 @@ jobs:
     image: image
     file: ci/shared/tasks/run-tests-templates/linux.yml
     timeout: 30m
+
+- name: sync-readme
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get:  repo
+        trigger: true
+      - get: repo-readme
+        trigger: true
+  - do:
+    - task: sync-readme
+      file: ci/shared/tasks/sync-readme/linux.yml
+      image: image
+    - put: repo
+      params:
+       rebase: true
+       repository: synced-repo
 
 - name: unit-and-integration-tests
   serial: true
