@@ -76,17 +76,6 @@ resources:
     uri: git@github.com:cloudfoundry/silk-release.git
     private_key: ((github-tas-runtime-bot/private-key))
 
-- name: silk-docs
-  type: git
-  icon: github-box
-  source:
-    branch:  "develop"
-    uri: git@github.com:cloudfoundry/silk-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
-    paths:
-    - docs/*
-    - .github
-
 - name: cf-networking-release-branch
   type: git
   icon: github-box
@@ -94,17 +83,6 @@ resources:
     branch: release
     uri: git@github.com:cloudfoundry/cf-networking-release.git
     private_key: ((github-tas-runtime-bot/private-key))
-
-- name: cf-networking-docs
-  type: git
-  icon: github-box
-  source:
-    branch:  "develop"
-    uri: git@github.com:cloudfoundry/cf-networking-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
-    paths:
-    - docs/*
-    - .github
 
 - name: silk-release-branch
   type: git
@@ -478,7 +456,6 @@ jobs:
       - get: ci
       - get: image
       - get:  cf-networking-repo
-      - get: cf-networking-docs
         trigger: true
       - get: cf-networking-readme
         trigger: true
@@ -487,7 +464,7 @@ jobs:
       file: ci/shared/tasks/sync-readme/linux.yml
       image: image
       input_mapping:
-        repo:  cf-networking-docs
+        repo:  cf-networking-repo
     - put: cf-networking-repo
       params:
        rebase: true
@@ -501,7 +478,6 @@ jobs:
       - get: ci
       - get: image
       - get:  silk-repo
-      - get: silk-docs
         trigger: true
       - get: silk-readme
         trigger: true
@@ -510,7 +486,7 @@ jobs:
       file: ci/shared/tasks/sync-readme/linux.yml
       image: image
       input_mapping:
-        repo:  silk-docs
+        repo:  silk-repo
     - put: silk-repo
       params:
        rebase: true

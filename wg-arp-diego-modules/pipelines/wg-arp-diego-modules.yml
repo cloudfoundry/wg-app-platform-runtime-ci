@@ -19,17 +19,7 @@ resources:
     branch: main 
     uri: #@ "git@github.com:{}".format(package.repo)
     private_key: ((github-tas-runtime-bot/private-key))
-- name: #@ "{}-docs".format(package.name)
-  type: git
-  icon: github-box
-  source:
-    branch: main 
-    uri: #@ "git@github.com:{}".format(package.repo)
-    private_key: ((github-tas-runtime-bot/private-key))
-    paths:
-    - docs/*
-    - .github
-#@ end
+  #@ end
 
 - name: ci
   type: git
@@ -111,9 +101,8 @@ jobs:
       steps:
       - get: ci
       - get: image
-      - get:  #@ "{}-docs".format(repo.name)
-        trigger: true
       - get:  #@ repo.name
+        trigger: true
       - get: readme
         trigger: true
   - do:
@@ -121,7 +110,7 @@ jobs:
       file: ci/shared/tasks/sync-readme/linux.yml
       image: image
       input_mapping:
-        repo:  #@ "{}-docs".format(repo.name)
+        repo:  #@ repo.name
     - put: #@ repo.name
       params:
        rebase: true
