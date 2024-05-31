@@ -5,7 +5,13 @@ def packages_with_configure_db(packages = []):
  for p in packages:
      if hasattr(p, "configure_db"):
          if p.configure_db:
+     if hasattr(p, "acceptance"):
+         if not p.acceptance:
              l.append(p)
+     end
+     else:
+             l.append(p)
+     end
      end
    end
  end
@@ -16,9 +22,21 @@ def packages_without_configure_db(packages = []):
     l = []
  for p in packages:
      if not hasattr(p, "configure_db"):
-         l.append(p)
+     if hasattr(p, "acceptance"):
+         if not p.acceptance:
+             l.append(p)
+     end
+     else:
+             l.append(p)
+     end
    elif not p.configure_db:
-       l.append(p)
+     if hasattr(p, "acceptance"):
+         if not p.acceptance:
+             l.append(p)
+     end
+     else:
+             l.append(p)
+     end
    end
  end
  return l

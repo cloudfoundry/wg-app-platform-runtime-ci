@@ -17,6 +17,7 @@ internal_repos:
   repo: <REPLACE_ME> #! <OPTIONAL> (Defaults to repo) This is only needed when we need mapping input name e.g repo->silk-repo or in modules
   configure_db: <REPLACE_ME> #! <OPTIONAL> (Defaults to false) Set to "true" if you'd like the run-bin-test to automatically configure_db before running tests.
   privileged: <REPLACE_ME>  #! <OPTIONAL> (Defaults to false) Set to "true" if you need the test run in a privileged container
+  acceptance: <REPLACE_ME> #! <OPTIONAL> (Defaults to false) Set to true when the repo doesn't need to be unit-tested. This would be case for a repo that is only used for acceptance tests.
 
 #! <OPTIONAL> set to a list of opsfile if pipeline needs to update cf-deployment
 opsfiles:
