@@ -29,11 +29,12 @@ resources:
     paths:
     - shared/dockerfiles/tas-runtime-build/*
 - name: build-image
-  type: docker-image
+  type: registry-image
   source:
     username: ((dockerhub-tasruntime-username))
     password: ((dockerhub-tasruntime-password))
     repository: cloudfoundry/tas-runtime-build
+
 - name: build-image-version
   type: semver
   source:
@@ -194,7 +195,14 @@ jobs:
             export ruby_installer_version="$(cat ruby-installer-git/.git/ref | sed 's/v//g')"
             export ruby_version="$(cat ruby-git/.git/ref | sed 's/v//g' | sed 's/_/./g')"
 
+            cat <<EOF > dockerfile-build-args/build_args
+            GO_VERSION=${go_version}
+            RUBY_INSTALLER_VERSION=${ruby_installer_version}
+            RUBY_VERSION=${ruby_version}
+            EOF
+
             echo '{}' | jq \
+
               --arg go_version "${go_version}" \
               --arg ruby_installer_version "${ruby_installer_version}" \
               --arg ruby_version "${ruby_version}" \
@@ -205,11 +213,33 @@ jobs:
                 "RUBY_VERSION":$ruby_version
             }' > dockerfile-build-args/build_args.json
 
+            cat dockerfile-build-args/build_args
             cat dockerfile-build-args/build_args.json
+  - task: build-image
+    privileged: true
+    config:
+      platform: linux
+      run:
+        path: build
+      params:
+        BUILD_ARGS_FILE: dockerfile-build-args/build_args
+        IMAGE_PLATFORM: linux/amd64,linux/arm64
+        OUTPUT_OCI: true
+        CONTEXT: build-dockerfile/shared/dockerfiles/tas-runtime-build
+      image_resource:
+        type: registry-image
+        source:
+          repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/concourse/oci-build-task
+          username: _json_key
+          password: ((gcp-tas-runtime-service-account/config-json))
+      inputs:
+        - name: build-dockerfile
+        - name: dockerfile-build-args
+      outputs:
+        - name: built-build-image
   - put: build-image
     params:
-      build: build-dockerfile/shared/dockerfiles/tas-runtime-build
-      build_args_file: dockerfile-build-args/build_args.json
+      image: built-build-image/image
       tag: build-image-version/version
       additional_tags: tag/tag
       tag_as_latest: true

@@ -1,5 +1,7 @@
 FROM ubuntu:jammy
 
+ARG TARGETARCH
+
 LABEL org.cloudfoundry.tas-runtime-build.dockerfile.url="https://github.com/cloudfoundry/wg-app-platform-runtime-ci/blob/main/shared/dockerfiles/tas-runtime-build/Dockerfile"
 LABEL org.cloudfoundry.tas-runtime-build.notes.md="Main image used for testing all tests in this repo that doesn't require a DB"
 
@@ -93,68 +95,71 @@ RUN \
   install /tmp/cf8 /usr/local/bin/cf8 && ln -sf /usr/local/bin/cf8 /usr/local/bin/cf
 #    bosh cli
 RUN \
-  url="$(curl -s https://api.github.com/repos/cloudfoundry/bosh-cli/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("amd"))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/cloudfoundry/bosh-cli/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("${TARGETARCH}"))).browser_download_url')" && \
   curl -L "${url}" -o /tmp/bosh && \
   install /tmp/bosh /usr/local/bin/bosh
 
 #    bosh bootloader (BBL)
 RUN \
-  url="$(curl -s https://api.github.com/repos/cloudfoundry/bosh-bootloader/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("amd"))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/cloudfoundry/bosh-bootloader/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("${TARGETARCH}"))).browser_download_url')" && \
   curl -L "${url}" -o /tmp/bbl && \
   install /tmp/bbl /usr/local/bin/bbl
 
 #    credhub cli
 RUN \
-  url="$(curl -s https://api.github.com/repos/cloudfoundry/credhub-cli/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("amd"))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/cloudfoundry/credhub-cli/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("${TARGETARCH}"))).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/credhub /usr/local/bin/credhub
 
 #    Routing API CLI (rtr)
 RUN \
-  url="$(curl -s https://api.github.com/repos/cloudfoundry/routing-api-cli/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("amd"))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/cloudfoundry/routing-api-cli/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("${TARGETARCH}"))).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
-  install /tmp/rtr-linux-amd64 /usr/local/bin/rtr
+  install /tmp/rtr-linux-${TARGETARCH} /usr/local/bin/rtr
 
 #    aws cli
 RUN \
-  curl -L "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip; \
+  if [[ "${TARGETARCH}" == "amd64" ]]; then aws_arch="x86_64"; else aws_arch="aarch64"; fi
+  curl -L "https://awscli.amazonaws.com/awscli-exe-linux-$aws_arch.zip" -o /tmp/awscliv2.zip; \
   cd /tmp; \
     unzip awscliv2.zip; \
     ./aws/install
 
 #    YTT
 RUN \
-  url="$(curl -s https://api.github.com/repos/carvel-dev/ytt/releases | jq -r '.[0].assets[] | select(.name == "ytt-linux-amd64").browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/carvel-dev/ytt/releases | jq -r '.[0].assets[] | select(.name == "ytt-linux-${TARGETARCH}").browser_download_url')" && \
   curl -L "${url}" -o /tmp/ytt && \
   install /tmp/ytt /usr/local/bin/ytt
 
 #    grype
 RUN \
-  url="$(curl -s https://api.github.com/repos/anchore/grype/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains("amd"))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/anchore/grype/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains("${TARGETARCH}"))).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/grype /usr/local/bin/grype
 
 #    syft
 RUN \
-  url="$(curl -s https://api.github.com/repos/anchore/syft/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains("amd"))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/anchore/syft/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains("${TARGETARCH}"))).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/syft /usr/local/bin/syft
 
 #    staticcheck
 RUN \
-  url="$(curl -s https://api.github.com/repos/dominikh/go-tools/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains("amd")) and (.name | contains("sha256") |not )).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/dominikh/go-tools/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains("${TARGETARCH}")) and (.name | contains("sha256") |not )).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/staticcheck/staticcheck /usr/local/bin/staticcheck
 
 #    yq
 RUN \
-  url="$(curl -s https://api.github.com/repos/mikefarah/yq/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains("amd")) ).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/mikefarah/yq/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains("${TARGETARCH}")) ).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
-  install /tmp/yq_linux_amd64 /usr/local/bin/yq
+  install /tmp/yq_linux_${TARGETARCH} /usr/local/bin/yq
+
 
 #    lychee
 RUN \
-  url="$(curl -s https://api.github.com/repos/lycheeverse/lychee/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("x86_64")) and (.name | contains("musl")) ).browser_download_url')" && \
+  if [[ "${TARGETARCH}" == "amd64" ]]; then lychee_arch="x86_64"; else lychee_arch="arm"; fi
+  url="$(curl -s https://api.github.com/repos/lycheeverse/lychee/releases | jq -r -a arch="$lychee_arch" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($lychee_arch)) and (.name | contains("musl")) ).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/lychee /usr/local/bin/lychee
 
@@ -167,7 +172,7 @@ RUN \
 #    golang
 ARG GO_VERSION
 RUN rm -rf /usr/local/go
-RUN wget -qO- "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz" | tar -C /usr/local -xzf -
+RUN wget -qO- "https://dl.google.com/go/go${GO_VERSION}.linux-${TARGETARCH}.tar.gz" | tar -C /usr/local -xzf -
 ENV PATH=$PATH:/usr/local/go/bin:/root/go/bin
 RUN go install github.com/square/certstrap@latest
 RUN go install github.com/onsi/ginkgo/v2/ginkgo@latest
