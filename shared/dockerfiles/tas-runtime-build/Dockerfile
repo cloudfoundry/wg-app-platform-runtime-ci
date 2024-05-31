@@ -108,9 +108,14 @@ RUN \
 
 #    credhub cli
 RUN \
+  if [ "${TARGETARCH}" = "amd64"]; then \
   url="$(curl -s https://api.github.com/repos/cloudfoundry/credhub-cli/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
-  install /tmp/credhub /usr/local/bin/credhub
+  install /tmp/credhub /usr/local/bin/credhub; \
+  else \
+    echo "no artifact for credhub-cli on arm64. do we need this on arm64 for local testing?"; \
+  fi
+
 
 #    Routing API CLI (rtr)
 RUN \

@@ -7,6 +7,7 @@
 ###
 ARG MYSQL_URI
 FROM ${MYSQL_URI}
+ARG TARGETARCH
 
 LABEL org.cloudfoundry.tas-runtime-mysql-5.7.dockerfile.url="https://github.com/cloudfoundry/wg-app-platform-runtime-ci/blob/main/shared/dockerfiles/tas-runtime-mysql-5.7/Dockerfile"
 LABEL org.cloudfoundry.tas-runtime-mysql-5.7.notes.md="Build from debian image with 5.7-debian tag"
@@ -59,19 +60,20 @@ RUN \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN \
+  if [ "${TARGETARCH}" = "amd64" ]; then cf_arch="linux64"; else cf_arch="linuxarm64"; fi; \
   cf_cli_version="$(curl -s https://api.github.com/repos/cloudfoundry/cli/releases | jq -r '.[0].name' | sed 's/v//g')" && \
-  url="https://packages.cloudfoundry.org/stable?release=linux64-binary&version=${cf_cli_version}&source=github-rel" && \
+  url="https://packages.cloudfoundry.org/stable?release=${cf_arch}-binary&version=${cf_cli_version}&source=github-rel" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/cf8 /usr/local/bin/cf8 && ln -sf /usr/local/bin/cf8 /usr/local/bin/cf
 
 RUN \
-  url="$(curl -s https://api.github.com/repos/mikefarah/yq/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains("amd")) ).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/mikefarah/yq/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains($target_arch)) ).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
-  install /tmp/yq_linux_amd64 /usr/local/bin/yq
+  install /tmp/yq_linux_${TARGETARCH} /usr/local/bin/yq
 
 ARG GO_VERSION
 RUN rm -rf /usr/local/go
-RUN wget -qO- "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz" | tar -C /usr/local -xzf -
+RUN wget -qO- "https://dl.google.com/go/go${GO_VERSION}.linux-${TARGETARCH}.tar.gz" | tar -C /usr/local -xzf -
 ENV PATH=$PATH:/usr/local/go/bin:/root/go/bin
 
 ARG RUBY_INSTALLER_VERSION

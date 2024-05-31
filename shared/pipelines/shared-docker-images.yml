@@ -65,7 +65,7 @@ resources:
     paths:
     - shared/dockerfiles/tas-runtime-postgres/*
 - name: postgres-image
-  type: docker-image
+  type: registry-image 
   source:
     username: ((dockerhub-tasruntime-username))
     password: ((dockerhub-tasruntime-password))
@@ -93,7 +93,7 @@ resources:
     paths:
     - shared/dockerfiles/tas-runtime-mysql-8.0/*
 - name: mysql-8.0-image
-  type: docker-image
+  type: registry-image
   source:
     username: ((dockerhub-tasruntime-username))
     password: ((dockerhub-tasruntime-password))
@@ -121,7 +121,7 @@ resources:
     paths:
     - shared/dockerfiles/tas-runtime-mysql-5.7/*
 - name: mysql-5.7-image
-  type: docker-image
+  type: registry-image 
   source:
     username: ((dockerhub-tasruntime-username))
     password: ((dockerhub-tasruntime-password))
@@ -201,20 +201,7 @@ jobs:
             RUBY_VERSION=${ruby_version}
             EOF
 
-            echo '{}' | jq \
-
-              --arg go_version "${go_version}" \
-              --arg ruby_installer_version "${ruby_installer_version}" \
-              --arg ruby_version "${ruby_version}" \
-              --args \
-              '{
-                "GO_VERSION":$go_version,
-                "RUBY_INSTALLER_VERSION":$ruby_installer_version,
-                "RUBY_VERSION":$ruby_version
-            }' > dockerfile-build-args/build_args.json
-
             cat dockerfile-build-args/build_args
-            cat dockerfile-build-args/build_args.json
   - task: build-image
     privileged: true
     config:
@@ -303,18 +290,25 @@ jobs:
 
             export build_uri="cloudfoundry/tas-runtime-build:$(cat build-image-version/version)"
 
-            echo '{}' | jq \
-              --arg build_uri "${build_uri}" \
-              --args \
-              '{
-                "BUILD_URI":$build_uri
-            }' > dockerfile-build-args/build_args.json
+            cat <<EOF >dockerfile-build-args/build_args
+            BUILD_URI=$build_uri
+            EOF
 
-            cat dockerfile-build-args/build_args.json
+            cat dockerfile-build-args/build_args
+  - task: build-postgres-image
+    privileged: true
+    config:
+      platform: linux
+      run:
+        path: build
+      params:
+        BUILD_ARGS_FILE: dockerfile-build-args/build_args
+        CONTEXT: dockerfile-out
+      inputs:
+        - name: dockerfile-out
+        - name: dockerfile-build-args
   - put: postgres-image
     params:
-      build: dockerfile-out
-      build_args_file: dockerfile-build-args/build_args.json
       tag: postgres-image-version/version
       additional_tags: tag/tag
       tag_as_latest: true
@@ -386,22 +380,27 @@ jobs:
             export mysql_major_version="${MYSQL_MAJOR_VERSION:-}"
             export mysql_version=$(jq -r ".[\"${MYSQL_MAJOR_VERSION}\"].version" mysql-docker-repo/versions.json)
 
-            echo '{}' | jq \
-              --arg build_uri "${build_uri}" \
-              --arg mysql_major_version "${mysql_major_version}" \
-              --arg mysql_version "${mysql_version}" \
-              --args \
-              '{
-                "BUILD_URI":$build_uri,
-                "MYSQL_MAJOR_VERSION":$mysql_major_version,
-                "MYSQL_VERSION":$mysql_version
-            }' > dockerfile-build-args/build_args.json
+            cat <<EOF > dockerfile-build-args/build_args
+            BUILD_URI=$build_uri
+            MYSQL_MAJOR_VERSION=$mysql_major_version
+            MYSQL_VERSION=$mysql_version
+            EOF
 
-            cat dockerfile-build-args/build_args.json
+            cat dockerfile-build-args/build_args
+  - task: build-mysql-8.0-image
+    privileged: true
+    config:
+      platform: linux
+      run:
+        path: build
+      params:
+        BUILD_ARGS_FILE: dockerfile-build-args/build_args
+        CONTEXT: dockerfile-out
+      inputs:
+        - name: dockerfile-out
+        - name: dockerfile-build-args
   - put: mysql-8.0-image
     params:
-      build: dockerfile-out
-      build_args_file: dockerfile-build-args/build_args.json
       tag: mysql-8.0-image-version/version
       additional_tags: tag/tag
       tag_as_latest: true
@@ -465,24 +464,27 @@ jobs:
             export ruby_installer_version="$(cat ruby-installer-git/.git/ref | sed 's/v//g')"
             export ruby_version="$(cat ruby-git/.git/ref | sed 's/v//g' | sed 's/_/./g')"
 
-            echo '{}' | jq \
-              --arg go_version "${go_version}" \
-              --arg mysql_uri "${mysql_uri}" \
-              --arg ruby_installer_version "${ruby_installer_version}" \
-              --arg ruby_version "${ruby_version}" \
-              --args \
-              '{
-                "GO_VERSION":$go_version,
-                "MYSQL_URI":$mysql_uri,
-                "RUBY_INSTALLER_VERSION":$ruby_installer_version,
-                "RUBY_VERSION":$ruby_version
-            }' > dockerfile-build-args/build_args.json
+            cat <<EOF > dockerfile-build-args/build_args
+            GO_VERSION=$go_version,
+            MYSQL_URI=$mysql_uri,
+            RUBY_INSTALLER_VERSION=$ruby_installer_version,
+            RUBY_VERSION=$ruby_version
 
-            cat dockerfile-build-args/build_args.json
+            cat dockerfile-build-args/build_args
+  - task: build-mysql-5.7-image
+    privileged: true
+    config:
+      platform: linux
+      run:
+        path: build
+      params:
+        BUILD_ARGS_FILE: dockerfile-build-args/build_args
+        CONTEXT: mysql-5.7-dockerfile/shared/dockerfiles/tas-runtime-mysql-5.7
+      inputs:
+        - name: mysql-5.7-dockerfile
+        - name: dockerfile-build-args
   - put: mysql-5.7-image
     params:
-      build: mysql-5.7-dockerfile/shared/dockerfiles/tas-runtime-mysql-5.7
-      build_args_file: dockerfile-build-args/build_args.json
       tag: mysql-5.7-image-version/version
       additional_tags: tag/tag
       tag_as_latest: true
