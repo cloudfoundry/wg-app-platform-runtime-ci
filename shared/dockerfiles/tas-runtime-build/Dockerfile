@@ -89,31 +89,31 @@ RUN \
 # Downloaded Utilities
 #    cf cli
 RUN \
-  cf_cli_version="$(curl -s https://api.github.com/repos/cloudfoundry/cli/releases | jq -r '.[0].name' | sed 's/v//g')" && \
+  cf_cli_version="$(curl -s https://api.github.com/repos/cloudfoundry/cli/releases | jq -r -a target_arch="${TARGET_ARCH}" '.[0].name' | sed 's/v//g')" && \
   url="https://packages.cloudfoundry.org/stable?release=linux64-binary&version=${cf_cli_version}&source=github-rel" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/cf8 /usr/local/bin/cf8 && ln -sf /usr/local/bin/cf8 /usr/local/bin/cf
 #    bosh cli
 RUN \
-  url="$(curl -s https://api.github.com/repos/cloudfoundry/bosh-cli/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("${TARGETARCH}"))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/cloudfoundry/bosh-cli/releases | jq -r -a target_arch="${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($targe_arch))).browser_download_url')" && \
   curl -L "${url}" -o /tmp/bosh && \
   install /tmp/bosh /usr/local/bin/bosh
 
 #    bosh bootloader (BBL)
 RUN \
-  url="$(curl -s https://api.github.com/repos/cloudfoundry/bosh-bootloader/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("${TARGETARCH}"))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/cloudfoundry/bosh-bootloader/releases | jq -r -a target_arch="${TARGET_ARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" -o /tmp/bbl && \
   install /tmp/bbl /usr/local/bin/bbl
 
 #    credhub cli
 RUN \
-  url="$(curl -s https://api.github.com/repos/cloudfoundry/credhub-cli/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("${TARGETARCH}"))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/cloudfoundry/credhub-cli/releases | jq -r -a target_arch="${TARGET_ARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/credhub /usr/local/bin/credhub
 
 #    Routing API CLI (rtr)
 RUN \
-  url="$(curl -s https://api.github.com/repos/cloudfoundry/routing-api-cli/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("${TARGETARCH}"))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/cloudfoundry/routing-api-cli/releases | jq -r -a target_arch="${TARGET_ARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/rtr-linux-${TARGETARCH} /usr/local/bin/rtr
 
@@ -127,31 +127,31 @@ RUN \
 
 #    YTT
 RUN \
-  url="$(curl -s https://api.github.com/repos/carvel-dev/ytt/releases | jq -r '.[0].assets[] | select(.name == "ytt-linux-${TARGETARCH}").browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/carvel-dev/ytt/releases | jq -r -a target_arch="${TARGET_ARCH}" '.[0].assets[] | select(.name == "ytt-linux-${TARGETARCH}").browser_download_url')" && \
   curl -L "${url}" -o /tmp/ytt && \
   install /tmp/ytt /usr/local/bin/ytt
 
 #    grype
 RUN \
-  url="$(curl -s https://api.github.com/repos/anchore/grype/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains("${TARGETARCH}"))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/anchore/grype/releases | jq -r -a target_arch="${TARGET_ARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/grype /usr/local/bin/grype
 
 #    syft
 RUN \
-  url="$(curl -s https://api.github.com/repos/anchore/syft/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains("${TARGETARCH}"))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/anchore/syft/releases | jq -r -a target_arch="${TARGET_ARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/syft /usr/local/bin/syft
 
 #    staticcheck
 RUN \
-  url="$(curl -s https://api.github.com/repos/dominikh/go-tools/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains("${TARGETARCH}")) and (.name | contains("sha256") |not )).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/dominikh/go-tools/releases | jq -r -a target_arch="${TARGET_ARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains($target_arch)) and (.name | contains("sha256") |not )).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/staticcheck/staticcheck /usr/local/bin/staticcheck
 
 #    yq
 RUN \
-  url="$(curl -s https://api.github.com/repos/mikefarah/yq/releases | jq -r '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains("${TARGETARCH}")) ).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/mikefarah/yq/releases | jq -r -a target_arch="${TARGET_ARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains($target_arch)) ).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/yq_linux_${TARGETARCH} /usr/local/bin/yq
 
