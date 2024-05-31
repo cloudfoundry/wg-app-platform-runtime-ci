@@ -106,22 +106,12 @@ RUN \
   curl -L "${url}" -o /tmp/bbl && \
   install /tmp/bbl /usr/local/bin/bbl
 
-#    credhub cli
-RUN \
-  if [ "${TARGETARCH}" = "amd64"]; then \
-  url="$(curl -s https://api.github.com/repos/cloudfoundry/credhub-cli/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
-  curl -L "${url}" | tar -xz -C /tmp/ && \
-  install /tmp/credhub /usr/local/bin/credhub; \
-  else \
-    echo "no artifact for credhub-cli on arm64. do we need this on arm64 for local testing?"; \
-  fi
-
-
 #    Routing API CLI (rtr)
 RUN \
   url="$(curl -s https://api.github.com/repos/cloudfoundry/routing-api-cli/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/rtr-linux-${TARGETARCH} /usr/local/bin/rtr
+
 
 #    aws cli
 RUN \
@@ -186,6 +176,14 @@ RUN go install github.com/onsi/ginkgo/v2/ginkgo@latest
 RUN go install github.com/stephendotcarter/unpack@latest
 RUN go install github.com/vito/gosub@master
 RUN go install github.com/cloudfoundry/uptimer@latest
+
+#    credhub cli
+RUN \
+  credhub_version="$(curl -s https://api.github.com/repos/cloudfoundry/credhub-cli/releases | jq -r '.[0].tag_name')" && \
+  go install "code.cloudfoundry.org/credhub-cli@$credhub_version" && \
+  mv "$(which credhub-cli)" "$(dirname "$(which credhub-cli)")/credhub"
+
+
 
 #    ruby
 ARG RUBY_INSTALLER_VERSION
