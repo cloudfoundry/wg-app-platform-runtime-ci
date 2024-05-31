@@ -119,7 +119,7 @@ RUN \
 
 #    aws cli
 RUN \
-  if [[ "${TARGETARCH}" == "amd64" ]]; then aws_arch="x86_64"; else aws_arch="aarch64"; fi
+  if [[ "${TARGETARCH}" == "amd64" ]]; then aws_arch="x86_64"; else aws_arch="aarch64"; fi \
   curl -L "https://awscli.amazonaws.com/awscli-exe-linux-$aws_arch.zip" -o /tmp/awscliv2.zip; \
   cd /tmp; \
     unzip awscliv2.zip; \
@@ -158,7 +158,7 @@ RUN \
 
 #    lychee
 RUN \
-  if [[ "${TARGETARCH}" == "amd64" ]]; then lychee_arch="x86_64"; else lychee_arch="arm"; fi
+  if [[ "${TARGETARCH}" == "amd64" ]]; then lychee_arch="x86_64"; else lychee_arch="arm"; fi \
   url="$(curl -s https://api.github.com/repos/lycheeverse/lychee/releases | jq -r -a arch="$lychee_arch" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($lychee_arch)) and (.name | contains("musl")) ).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/lychee /usr/local/bin/lychee
