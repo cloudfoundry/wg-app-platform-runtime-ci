@@ -1026,6 +1026,8 @@ jobs:
         - get: image
         - get: version
           resource: routing-api-cli-version
+          params:
+            bump: minor
     - task: release-binaries
       file: ci/shared/tasks/run-bin-release-binaries/linux.yml
       image: image
@@ -1034,6 +1036,9 @@ jobs:
         OS: |
           linux
           darwin
+        ARCH: |
+          amd64
+          arm64
     - put: routing-api-cli-github-release
       params:
         name: version/version
