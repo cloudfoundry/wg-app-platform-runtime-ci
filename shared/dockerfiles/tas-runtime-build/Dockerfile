@@ -89,13 +89,14 @@ RUN \
 # Downloaded Utilities
 #    cf cli
 RUN \
-  cf_cli_version="$(curl -s https://api.github.com/repos/cloudfoundry/cli/releases | jq -r -a target_arch="${TARGET_ARCH}" '.[0].name' | sed 's/v//g')" && \
-  url="https://packages.cloudfoundry.org/stable?release=linux64-binary&version=${cf_cli_version}&source=github-rel" && \
+  cf_cli_version="$(curl -s https://api.github.com/repos/cloudfoundry/cli/releases | jq -r '.[0].name' | sed 's/v//g')" && \
+  if [[ "${TARGETARCH}" == "amd64" ]]; then cf_arch="linux64"; else cf_arch="linuxarm64"; fi \
+  url="https://packages.cloudfoundry.org/stable?release=${cf_arch}-binary&version=${cf_cli_version}&source=github-rel" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/cf8 /usr/local/bin/cf8 && ln -sf /usr/local/bin/cf8 /usr/local/bin/cf
 #    bosh cli
 RUN \
-  url="$(curl -s https://api.github.com/repos/cloudfoundry/bosh-cli/releases | jq -r -a target_arch="${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($targe_arch))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/cloudfoundry/bosh-cli/releases | jq -r -a target_arch="${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" -o /tmp/bosh && \
   install /tmp/bosh /usr/local/bin/bosh
 
@@ -127,7 +128,7 @@ RUN \
 
 #    YTT
 RUN \
-  url="$(curl -s https://api.github.com/repos/carvel-dev/ytt/releases | jq -r -a target_arch="${TARGET_ARCH}" '.[0].assets[] | select(.name == "ytt-linux-${TARGETARCH}").browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/carvel-dev/ytt/releases | jq -r -a target_arch="${TARGET_ARCH}" '.[0].assets[] | select(.name == "ytt-linux-" + $target_arch).browser_download_url')" && \
   curl -L "${url}" -o /tmp/ytt && \
   install /tmp/ytt /usr/local/bin/ytt
 
@@ -159,7 +160,7 @@ RUN \
 #    lychee
 RUN \
   if [[ "${TARGETARCH}" == "amd64" ]]; then lychee_arch="x86_64"; else lychee_arch="arm"; fi \
-  url="$(curl -s https://api.github.com/repos/lycheeverse/lychee/releases | jq -r -a arch="$lychee_arch" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($lychee_arch)) and (.name | contains("musl")) ).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/lycheeverse/lychee/releases | jq -r -a lychee_arch="$lychee_arch" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($lychee_arch)) and (.name | contains("musl")) ).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/lychee /usr/local/bin/lychee
 
