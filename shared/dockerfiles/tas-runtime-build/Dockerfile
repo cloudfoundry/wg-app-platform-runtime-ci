@@ -89,38 +89,38 @@ RUN \
 # Downloaded Utilities
 #    cf cli
 RUN \
-  if [[ "${TARGETARCH}" == "amd64" ]]; then cf_arch="linux64"; else cf_arch="linuxarm64"; fi \
+  if [ "${TARGETARCH}" = "amd64" ]; then cf_arch="linux64"; else cf_arch="linuxarm64"; fi; \
   cf_cli_version="$(curl -s https://api.github.com/repos/cloudfoundry/cli/releases | jq -r '.[0].name' | sed 's/v//g')" && \
   url="https://packages.cloudfoundry.org/stable?release=${cf_arch}-binary&version=${cf_cli_version}&source=github-rel" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/cf8 /usr/local/bin/cf8 && ln -sf /usr/local/bin/cf8 /usr/local/bin/cf
 #    bosh cli
 RUN \
-  url="$(curl -s https://api.github.com/repos/cloudfoundry/bosh-cli/releases | jq -r -a target_arch="${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/cloudfoundry/bosh-cli/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" -o /tmp/bosh && \
   install /tmp/bosh /usr/local/bin/bosh
 
 #    bosh bootloader (BBL)
 RUN \
-  url="$(curl -s https://api.github.com/repos/cloudfoundry/bosh-bootloader/releases | jq -r -a target_arch="${TARGET_ARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/cloudfoundry/bosh-bootloader/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" -o /tmp/bbl && \
   install /tmp/bbl /usr/local/bin/bbl
 
 #    credhub cli
 RUN \
-  url="$(curl -s https://api.github.com/repos/cloudfoundry/credhub-cli/releases | jq -r -a target_arch="${TARGET_ARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/cloudfoundry/credhub-cli/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/credhub /usr/local/bin/credhub
 
 #    Routing API CLI (rtr)
 RUN \
-  url="$(curl -s https://api.github.com/repos/cloudfoundry/routing-api-cli/releases | jq -r -a target_arch="${TARGET_ARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/cloudfoundry/routing-api-cli/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/rtr-linux-${TARGETARCH} /usr/local/bin/rtr
 
 #    aws cli
 RUN \
-  if [[ "${TARGETARCH}" == "amd64" ]]; then aws_arch="x86_64"; else aws_arch="aarch64"; fi \
+  if [ "${TARGETARCH}" = "amd64" ]; then aws_arch="x86_64"; else aws_arch="aarch64"; fi; \
   curl -L "https://awscli.amazonaws.com/awscli-exe-linux-$aws_arch.zip" -o /tmp/awscliv2.zip; \
   cd /tmp; \
     unzip awscliv2.zip; \
@@ -128,39 +128,40 @@ RUN \
 
 #    YTT
 RUN \
-  url="$(curl -s https://api.github.com/repos/carvel-dev/ytt/releases | jq -r -a target_arch="${TARGET_ARCH}" '.[0].assets[] | select(.name == "ytt-linux-" + $target_arch).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/carvel-dev/ytt/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select(.name == "ytt-linux-" + $target_arch).browser_download_url')" && \
   curl -L "${url}" -o /tmp/ytt && \
   install /tmp/ytt /usr/local/bin/ytt
 
 #    grype
 RUN \
-  url="$(curl -s https://api.github.com/repos/anchore/grype/releases | jq -r -a target_arch="${TARGET_ARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains($target_arch))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/anchore/grype/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/grype /usr/local/bin/grype
 
 #    syft
 RUN \
-  url="$(curl -s https://api.github.com/repos/anchore/syft/releases | jq -r -a target_arch="${TARGET_ARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains($target_arch))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/anchore/syft/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/syft /usr/local/bin/syft
 
 #    staticcheck
 RUN \
-  url="$(curl -s https://api.github.com/repos/dominikh/go-tools/releases | jq -r -a target_arch="${TARGET_ARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains($target_arch)) and (.name | contains("sha256") |not )).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/dominikh/go-tools/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains($target_arch)) and (.name | contains("sha256") |not )).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/staticcheck/staticcheck /usr/local/bin/staticcheck
 
 #    yq
 RUN \
-  url="$(curl -s https://api.github.com/repos/mikefarah/yq/releases | jq -r -a target_arch="${TARGET_ARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains($target_arch)) ).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/mikefarah/yq/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains($target_arch)) ).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/yq_linux_${TARGETARCH} /usr/local/bin/yq
 
 
 #    lychee
 RUN \
-  if [[ "${TARGETARCH}" == "amd64" ]]; then lychee_arch="x86_64"; else lychee_arch="arm"; fi \
-  url="$(curl -s https://api.github.com/repos/lycheeverse/lychee/releases | jq -r -a lychee_arch="$lychee_arch" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($lychee_arch)) and (.name | contains("musl")) ).browser_download_url')" && \
+  if [ "${TARGETARCH}" = "amd64" ]; then lychee_arch="x86_64"; else lychee_arch="aarch64"; fi; \
+  url="$(curl -s https://api.github.com/repos/lycheeverse/lychee/releases | jq -r --arg lychee_arch "$lychee_arch" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($lychee_arch)) and (.name | contains("musl")) ).browser_download_url')" && \
+  echo "${url}" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/lychee /usr/local/bin/lychee
 
