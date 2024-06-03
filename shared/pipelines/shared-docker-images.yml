@@ -227,9 +227,9 @@ jobs:
   - put: build-image
     params:
       image: built-build-image/image
-      tag: build-image-version/version
+      version: build-image-version/version
       additional_tags: tag/tag
-      tag_as_latest: true
+      bump_aliases: true
   - put: build-image-version
     params:
       file: build-image-version/version
@@ -307,11 +307,20 @@ jobs:
       inputs:
         - name: dockerfile-out
         - name: dockerfile-build-args
+      ouputs:
+        - name: built-postges-image
+      image_resource:
+        type: registry-image
+        source:
+          repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/concourse/oci-build-task
+          username: _json_key
+          password: ((gcp-tas-runtime-service-account/config-json))
   - put: postgres-image
     params:
-      tag: postgres-image-version/version
+      version: postgres-image-version/version
       additional_tags: tag/tag
-      tag_as_latest: true
+      image: built-postgres-image/image
+      bump_aliases: true
   - put: postgres-image-version
     params:
       file: postgres-image-version/version
@@ -399,11 +408,20 @@ jobs:
       inputs:
         - name: dockerfile-out
         - name: dockerfile-build-args
+      ouputs:
+        - name: built-mysql8-image
+      image_resource:
+        type: registry-image
+        source:
+          repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/concourse/oci-build-task
+          username: _json_key
+          password: ((gcp-tas-runtime-service-account/config-json))
   - put: mysql-8.0-image
     params:
-      tag: mysql-8.0-image-version/version
+      image: built-mysql8-image/image
+      version: mysql-8.0-image-version/version
       additional_tags: tag/tag
-      tag_as_latest: true
+      bump_aliases: true
   - put: mysql-8.0-image-version
     params:
       file: mysql-8.0-image-version/version
@@ -483,11 +501,20 @@ jobs:
       inputs:
         - name: mysql-5.7-dockerfile
         - name: dockerfile-build-args
+      ouputs:
+        - name: built-mysql57-image
+      image_resource:
+        type: registry-image
+        source:
+          repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/concourse/oci-build-task
+          username: _json_key
+          password: ((gcp-tas-runtime-service-account/config-json))
   - put: mysql-5.7-image
     params:
-      tag: mysql-5.7-image-version/version
+      image: built-mysql57-image/image
+      version: mysql-5.7-image-version/version
       additional_tags: tag/tag
-      tag_as_latest: true
+      bump_aliases: true
   - put: mysql-5.7-image-version
     params:
       file: mysql-5.7-image-version/version
