@@ -224,10 +224,13 @@ jobs:
         - name: dockerfile-build-args
       outputs:
         - name: built-build-image
+  - load_var: build-image-version
+    file: build-image-version/version
+    format: raw
   - put: build-image
     params:
       image: built-build-image/image
-      version: build-image-version/version
+      version: ((build-image-version))
       additional_tags: tag/tag
       bump_aliases: true
   - put: build-image-version
@@ -315,9 +318,12 @@ jobs:
           repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/concourse/oci-build-task
           username: _json_key
           password: ((gcp-tas-runtime-service-account/config-json))
+  - load_var: postgres-image-version
+    file: postgres-image-version/version
+    format: raw
   - put: postgres-image
     params:
-      version: postgres-image-version/version
+      version: ((postgres-image-version))
       additional_tags: tag/tag
       image: built-postgres-image/image
       bump_aliases: true
@@ -416,10 +422,13 @@ jobs:
           repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/concourse/oci-build-task
           username: _json_key
           password: ((gcp-tas-runtime-service-account/config-json))
+  - load_var: mysql8-image-version
+    file: mysql-8.0-image-version/version
+    format: raw
   - put: mysql-8.0-image
     params:
       image: built-mysql8-image/image
-      version: mysql-8.0-image-version/version
+      version: ((mysql8-image-version))
       additional_tags: tag/tag
       bump_aliases: true
   - put: mysql-8.0-image-version
@@ -509,10 +518,13 @@ jobs:
           repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/concourse/oci-build-task
           username: _json_key
           password: ((gcp-tas-runtime-service-account/config-json))
+  - load_var: mysql57-image-version
+    file: mysql-5.7-image-version/version
+    format: raw
   - put: mysql-5.7-image
     params:
       image: built-mysql57-image/image
-      version: mysql-5.7-image-version/version
+      version: ((mysql57-image-version))
       additional_tags: tag/tag
       bump_aliases: true
   - put: mysql-5.7-image-version
