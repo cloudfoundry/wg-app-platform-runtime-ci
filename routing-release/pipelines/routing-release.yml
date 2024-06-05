@@ -1046,5 +1046,6 @@ jobs:
         globs:
         - released-binaries/*.tgz
     - put: version
+      resource: routing-api-cli-version
       params:
         file: version/version
