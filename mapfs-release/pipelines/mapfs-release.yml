@@ -1202,10 +1202,10 @@ jobs:
     passed:
     - ship-what
     trigger: true
-  - put: shepherd-env
+  - put: shepherd-env-ldap
     params:
       action: release
-      resource: shepherd-env
+      resource: shepherd-env-ldap
 
 
 - name: check-for-changes
