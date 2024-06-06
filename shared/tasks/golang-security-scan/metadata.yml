@@ -1,0 +1,8 @@
+---
+readme: |
+  This task runs the github.com/securego/gosec command against a go module and all its packages
+oses:
+  - linux
+params:
+  RELEASE_DIR: path to the top level of the golang module (pwd of the release input resource)
+  PATHS: go package paths to test (./... default)

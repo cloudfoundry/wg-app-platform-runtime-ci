@@ -1,0 +1,13 @@
+---
+platform: linux
+
+inputs:
+- name: ci 
+- name: release
+
+params:
+  PATHS: ~
+  RELEASE_DIR: ""
+
+run:
+  path: ci/shared/tasks/golang-security-scan/task.sh
