@@ -707,7 +707,7 @@ jobs:
       file: cryogenics-concourse-tasks/vol-service/run-bosh-release-tests-in-shepherd/task.yml
       params:
         STEMCELL: xenial
-        TEST_REPO: mapfs-release-develop
+        TEST_REPO: mapfs-release #! this needs to match the input name of the task, not the resource name
       input_mapping:
         shepherd-env: env-tas-xenial
         mapfs-release: mapfs-release-develop
@@ -843,6 +843,7 @@ jobs:
       toolsmiths-env: shepherd-env
       ops-files: collected-ops-files
       vars-files: generated-vars
+      mapfs-release: mapfs-release-develop
     params:
       VARS_FILES: "nfs-vars.yml"
       OPS_FILES: "operations/use-compiled-releases.yml
@@ -1045,6 +1046,7 @@ jobs:
       cf-deployment: cf-deployment
       ops-files: collected-ops-files
       vars-files: generated-vars
+      mapfs-release: mapfs-release-develop
     params:
       VARS_FILES: "nfs-vars.yml"
       OPS_FILES: "operations/use-compiled-releases.yml
