@@ -230,7 +230,7 @@ jobs:
   - put: build-image
     params:
       image: built-build-image/image
-      version: ((build-image-version))
+      version: ((.:build-image-version))
       additional_tags: tag/tag
       bump_aliases: true
   - put: build-image-version
@@ -323,7 +323,7 @@ jobs:
     format: raw
   - put: postgres-image
     params:
-      version: ((postgres-image-version))
+      version: ((.:postgres-image-version))
       additional_tags: tag/tag
       image: built-postgres-image/image
       bump_aliases: true
@@ -428,7 +428,7 @@ jobs:
   - put: mysql-8.0-image
     params:
       image: built-mysql8-image/image
-      version: ((mysql8-image-version))
+      version: ((.:mysql8-image-version))
       additional_tags: tag/tag
       bump_aliases: true
   - put: mysql-8.0-image-version
@@ -524,7 +524,7 @@ jobs:
   - put: mysql-5.7-image
     params:
       image: built-mysql57-image/image
-      version: ((mysql57-image-version))
+      version: ((.:mysql57-image-version))
       additional_tags: tag/tag
       bump_aliases: true
   - put: mysql-5.7-image-version
