@@ -1176,12 +1176,14 @@ jobs:
       file: ci/shared/tasks/check-safe-to-release-repo/linux.yml
       input_mapping:
         release-repo: mapfs-release-release
+        repo: mapfs-release-develop
 
     - task: build-release-notes-diego-release
       image: image
       file: ci/shared/tasks/build-release-notes/linux.yml
       input_mapping:
         previous-github-release: github-release
+        repo: mapfs-release-develop
 
 - name: unclaim-env
   plan:
