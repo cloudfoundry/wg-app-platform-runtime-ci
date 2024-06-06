@@ -1,0 +1,12 @@
+#@data/values
+---
+#@overlay/match missing_ok=True
+db_flavors:
+- image: postgres
+  value: postgres
+- image: mysql-8.0
+  value: mysql
+
+internal_repos:
+- name: "mapfs"
+opsfiles: []
