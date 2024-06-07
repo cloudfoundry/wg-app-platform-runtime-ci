@@ -307,6 +307,8 @@ jobs:
       params:
         BUILD_ARGS_FILE: dockerfile-build-args/build_args
         CONTEXT: dockerfile-out
+        OUTPUT_OCI: true
+        IMAGE_PLATFORM: linux/amd64,linux/arm64
       inputs:
         - name: dockerfile-out
         - name: dockerfile-build-args
@@ -411,6 +413,8 @@ jobs:
       params:
         BUILD_ARGS_FILE: dockerfile-build-args/build_args
         CONTEXT: dockerfile-out
+        OUTPUT_OCI: true
+        IMAGE_PLATFORM: linux/amd64,linux/arm64
       inputs:
         - name: dockerfile-out
         - name: dockerfile-build-args
@@ -508,6 +512,8 @@ jobs:
       params:
         BUILD_ARGS_FILE: dockerfile-build-args/build_args
         CONTEXT: mysql-5.7-dockerfile/shared/dockerfiles/tas-runtime-mysql-5.7
+        OUTPUT_OCI: true
+        IMAGE_PLATFORM: linux/amd64,linux/arm64
       inputs:
         - name: mysql-5.7-dockerfile
         - name: dockerfile-build-args
