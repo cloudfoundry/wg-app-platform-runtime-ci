@@ -223,13 +223,13 @@ jobs:
         - name: build-dockerfile
         - name: dockerfile-build-args
       outputs:
-        - name: built-build-image
+        - name: image
   - load_var: build-image-version
     file: build-image-version/version
     format: raw
   - put: build-image
     params:
-      image: built-build-image/image
+      image: image/image
       version: ((.:build-image-version))
       additional_tags: tag/tag
       bump_aliases: true
@@ -311,7 +311,7 @@ jobs:
         - name: dockerfile-out
         - name: dockerfile-build-args
       ouputs:
-        - name: built-postges-image
+        - name: image
       image_resource:
         type: registry-image
         source:
@@ -325,7 +325,7 @@ jobs:
     params:
       version: ((.:postgres-image-version))
       additional_tags: tag/tag
-      image: built-postgres-image/image
+      image: image/image
       bump_aliases: true
   - put: postgres-image-version
     params:
@@ -415,7 +415,7 @@ jobs:
         - name: dockerfile-out
         - name: dockerfile-build-args
       ouputs:
-        - name: built-mysql8-image
+        - name: image
       image_resource:
         type: registry-image
         source:
@@ -427,7 +427,7 @@ jobs:
     format: raw
   - put: mysql-8.0-image
     params:
-      image: built-mysql8-image/image
+      image: image/image
       version: ((.:mysql8-image-version))
       additional_tags: tag/tag
       bump_aliases: true
@@ -511,7 +511,7 @@ jobs:
         - name: mysql-5.7-dockerfile
         - name: dockerfile-build-args
       ouputs:
-        - name: built-mysql57-image
+        - name: image
       image_resource:
         type: registry-image
         source:
@@ -523,7 +523,7 @@ jobs:
     format: raw
   - put: mysql-5.7-image
     params:
-      image: built-mysql57-image/image
+      image: image/image
       version: ((.:mysql57-image-version))
       additional_tags: tag/tag
       bump_aliases: true
