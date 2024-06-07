@@ -414,7 +414,8 @@ jobs:
         BUILD_ARGS_FILE: dockerfile-build-args/build_args
         CONTEXT: dockerfile-out
         OUTPUT_OCI: true
-        IMAGE_PLATFORM: linux/amd64,linux/arm64
+        #! no arm64 packages for mysql-community could be found, so not multi-arch building this either
+        IMAGE_PLATFORM: linux/amd64
       inputs:
         - name: dockerfile-out
         - name: dockerfile-build-args
@@ -496,9 +497,9 @@ jobs:
             export ruby_version="$(cat ruby-git/.git/ref | sed 's/v//g' | sed 's/_/./g')"
 
             cat <<EOF > dockerfile-build-args/build_args
-            GO_VERSION=$go_version,
-            MYSQL_URI=$mysql_uri,
-            RUBY_INSTALLER_VERSION=$ruby_installer_version,
+            GO_VERSION=$go_version
+            MYSQL_URI=$mysql_uri
+            RUBY_INSTALLER_VERSION=$ruby_installer_version
             RUBY_VERSION=$ruby_version
             EOF
 
@@ -512,8 +513,9 @@ jobs:
       params:
         BUILD_ARGS_FILE: dockerfile-build-args/build_args
         CONTEXT: mysql-5.7-dockerfile/shared/dockerfiles/tas-runtime-mysql-5.7
+        #! the upstream mysql image used for 5.7 isn't multi-arch so we can't make a multi-arch image of it
         OUTPUT_OCI: true
-        IMAGE_PLATFORM: linux/amd64 #! the upstream mysql image used for 5.7 isn't multi-arch so we can't make a multi-arch image of it
+        IMAGE_PLATFORM: linux/amd64
       inputs:
         - name: mysql-5.7-dockerfile
         - name: dockerfile-build-args
