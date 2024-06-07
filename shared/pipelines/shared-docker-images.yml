@@ -496,6 +496,7 @@ jobs:
             MYSQL_URI=$mysql_uri,
             RUBY_INSTALLER_VERSION=$ruby_installer_version,
             RUBY_VERSION=$ruby_version
+            EOF
 
             cat dockerfile-build-args/build_args
   - task: build-mysql-5.7-image
