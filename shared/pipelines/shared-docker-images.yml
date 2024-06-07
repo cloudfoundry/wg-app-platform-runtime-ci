@@ -513,7 +513,7 @@ jobs:
         BUILD_ARGS_FILE: dockerfile-build-args/build_args
         CONTEXT: mysql-5.7-dockerfile/shared/dockerfiles/tas-runtime-mysql-5.7
         OUTPUT_OCI: true
-        IMAGE_PLATFORM: linux/amd64,linux/arm64
+        IMAGE_PLATFORM: linux/amd64 #! the upstream mysql image used for 5.7 isn't multi-arch so we can't make a multi-arch image of it
       inputs:
         - name: mysql-5.7-dockerfile
         - name: dockerfile-build-args
