@@ -44,6 +44,8 @@ groups:
 - name: periodics
   jobs:
   - bump-libfuse
+  - bump-ninja
+  - bump-meson
   - bump-package-golang
   - bump-dependencies-go-mod
 
@@ -155,6 +157,22 @@ resources:
     repository: libfuse
     user: libfuse
     tag_filter: "fuse-(.*)"
+
+- name: meson-git-release
+  type: github-release
+  source:
+    access_token: *github-access-token
+    repository: meson
+    user: mesonbuild
+    tag_filter: "^([0-9].*)"
+
+- name: ninja-git-release
+  type: github-release
+  source:
+    access_token: *github-access-token
+    repository: ninja
+    user: ninja-build
+    tag_filter: "^v(.*)"
 
 - name: github-release-tas-cve
   type: github-release
@@ -474,7 +492,7 @@ jobs:
       vars:
         image_repository: cloudfoundry/tas-runtime-build
         image_tag: ((.:image_tag))
-      imput_mappings:
+      input_mapping:
         input-01: fstest
       params:
         DIR: #@ "src/{}".format(repo)
@@ -487,6 +505,61 @@ jobs:
           verify_govet repo/$DIR
         DEFAULT_PARAMS: "ci/mapfs-release/default-params/run-bin-test/linux.yml"
 #@ end
+
+- name: bump-meson
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: meson-git-release
+      trigger: true
+    - get: repo
+      resource: mapfs-release-develop
+    - get: image
+  - task: bump-bosh-blob-meson
+    image: image
+    file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+    input_mapping:
+      blob: meson-git-release
+
+    params:
+      BOSH_BLOB_PATH: build-deps/meson-*.tar.gz
+      AWS_ACCESS_KEY_ID: *aws-uploader-role-id
+      AWS_SECRET_ACCESS_KEY: *aws-uploader-role-secret
+      AWS_ASSUME_ROLE_ARN: *aws-uploader-role-arn
+  - put: repo
+    resource: mapfs-release-develop
+    params:
+     rebase: true
+     repository: bumped-repo
+
+- name: bump-ninja
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: ninja-git-release
+      trigger: true
+      params:
+        include_source_tarball: true
+    - get: repo
+      resource: mapfs-release-develop
+    - get: image
+  - task: bump-bosh-blob-ninja
+    image: image
+    file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+    input_mapping:
+      blob: ninja-git-release
+    params:
+      BOSH_BLOB_PATH: build-deps/ninja-*.tar.gz
+      AWS_ACCESS_KEY_ID: *aws-uploader-role-id
+      AWS_SECRET_ACCESS_KEY: *aws-uploader-role-secret
+      AWS_ASSUME_ROLE_ARN: *aws-uploader-role-arn
+  - put: repo
+    resource: mapfs-release-develop
+    params:
+     rebase: true
+     repository: bumped-repo
 
 - name: bump-libfuse
   serial: true
