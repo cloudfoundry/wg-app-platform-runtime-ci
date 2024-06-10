@@ -8,5 +8,6 @@ db_flavors:
   value: mysql
 
 internal_repos:
-- name: "mapfs"
+- "mapfs"
+
 opsfiles: []
