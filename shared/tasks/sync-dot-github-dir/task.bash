@@ -47,10 +47,10 @@ function run() {
     cp -r "${CI_DIR}/shared/github/PULL_REQUEST_TEMPLATE.md" ".github"
   fi
 
-  if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/CONTRIBUTING.md" ]]; then
-    cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/CONTRIBUTING.md" ".github"
-  elif [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/${git_remote_name}/CONTRIBUTING.md" ]]; then
+  if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/${git_remote_name}/CONTRIBUTING.md" ]]; then
     cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/${git_remote_name}/CONTRIBUTING.md" ".github"
+  elif [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/CONTRIBUTING.md" ]]; then
+    cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/CONTRIBUTING.md" ".github"
   else
     cp -r "${CI_DIR}/shared/github/CONTRIBUTING.md" ".github"
     if [[ ! -f "scripts/create-docker-container.bash" ]]; then
