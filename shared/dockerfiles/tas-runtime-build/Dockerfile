@@ -18,6 +18,7 @@ RUN \
     dos2unix \
     file \
     flex \
+    fuse \
     gettext \
     git \
     gpg \
