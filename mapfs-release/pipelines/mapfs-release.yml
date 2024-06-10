@@ -43,9 +43,7 @@ groups:
   - shipit-mapfs
 - name: periodics
   jobs:
-  - bump-libfuse
-  - bump-ninja
-  - bump-meson
+  - bump-bosh-blobs
   - bump-package-golang
   - bump-dependencies-go-mod
 
@@ -506,87 +504,70 @@ jobs:
         DEFAULT_PARAMS: "ci/mapfs-release/default-params/run-bin-test/linux.yml"
 #@ end
 
-- name: bump-meson
+- name: bump-bosh-blobs
   serial: true
   plan:
   - in_parallel:
     - get: ci
     - get: meson-git-release
       trigger: true
-    - get: repo
-      resource: mapfs-release-develop
-    - get: image
-  - task: bump-bosh-blob-meson
-    image: image
-    file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-    input_mapping:
-      blob: meson-git-release
-
-    params:
-      BOSH_BLOB_PATH: build-deps/meson-*.tar.gz
-      AWS_ACCESS_KEY_ID: *aws-uploader-role-id
-      AWS_SECRET_ACCESS_KEY: *aws-uploader-role-secret
-      AWS_ASSUME_ROLE_ARN: *aws-uploader-role-arn
-  - put: repo
-    resource: mapfs-release-develop
-    params:
-     rebase: true
-     repository: bumped-repo
-
-- name: bump-ninja
-  serial: true
-  plan:
-  - in_parallel:
-    - get: ci
     - get: ninja-git-release
       trigger: true
       params:
         include_source_tarball: true
-    - get: repo
-      resource: mapfs-release-develop
-    - get: image
-  - task: bump-bosh-blob-ninja
-    image: image
-    file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-    input_mapping:
-      blob: ninja-git-release
-    params:
-      BOSH_BLOB_PATH: build-deps/ninja-*.tar.gz
-      AWS_ACCESS_KEY_ID: *aws-uploader-role-id
-      AWS_SECRET_ACCESS_KEY: *aws-uploader-role-secret
-      AWS_ASSUME_ROLE_ARN: *aws-uploader-role-arn
-  - put: repo
-    resource: mapfs-release-develop
-    params:
-     rebase: true
-     repository: bumped-repo
-
-- name: bump-libfuse
-  serial: true
-  plan:
-  - in_parallel:
-    - get: ci
     - get: libfuse-git-release
       trigger: true
     - get: repo
       resource: mapfs-release-develop
     - get: image
-  - task: bump-bosh-blob-libfuse
-    image: image
-    file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-    input_mapping:
-      blob: libfuse-git-release
-
-    params:
-      BOSH_BLOB_PATH: fuse/fuse-*.tar.gz
-      AWS_ACCESS_KEY_ID: *aws-uploader-role-id
-      AWS_SECRET_ACCESS_KEY: *aws-uploader-role-secret
-      AWS_ASSUME_ROLE_ARN: *aws-uploader-role-arn
-  - put: repo
-    resource: mapfs-release-develop
-    params:
-     rebase: true
-     repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-meson
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: meson-git-release
+      params:
+        BOSH_BLOB_PATH: build-deps/meson-*.tar.gz
+        AWS_ACCESS_KEY_ID: *aws-uploader-role-id
+        AWS_SECRET_ACCESS_KEY: *aws-uploader-role-secret
+        AWS_ASSUME_ROLE_ARN: *aws-uploader-role-arn
+    - put: repo
+      resource: mapfs-release-develop
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-ninja
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: ninja-git-release
+      params:
+        BOSH_BLOB_PATH: build-deps/ninja-*.tar.gz
+        AWS_ACCESS_KEY_ID: *aws-uploader-role-id
+        AWS_SECRET_ACCESS_KEY: *aws-uploader-role-secret
+        AWS_ASSUME_ROLE_ARN: *aws-uploader-role-arn
+    - put: repo
+      resource: mapfs-release-develop
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-libfuse
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: libfuse-git-release
+      params:
+        BOSH_BLOB_PATH: fuse/fuse-*.tar.gz
+        AWS_ACCESS_KEY_ID: *aws-uploader-role-id
+        AWS_SECRET_ACCESS_KEY: *aws-uploader-role-secret
+        AWS_ASSUME_ROLE_ARN: *aws-uploader-role-arn
+    - put: repo
+      resource: mapfs-release-develop
+      params:
+       rebase: true
+       repository: bumped-repo
 
 - name: claim-env-combined-nfs-mapfs-volume-release-tests
   plan:

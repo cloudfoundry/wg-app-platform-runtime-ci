@@ -29,7 +29,7 @@ function run() {
         fi
 
         local old_blob_name
-        old_blob_name="$(basename blobs/"${bosh_blob_path}")"
+        old_blob_name="$(basename blobs/${bosh_blob_path})"
         local dir_name
         dir_name="$(dirname "${bosh_blob_path}")"
         bosh remove-blob "${dir_name}/${old_blob_name}"
@@ -48,7 +48,7 @@ function run() {
         fi
 
         local old_blob_name
-        old_blob_name="$(basename blobs/"${bosh_blob_path}")"
+        old_blob_name="$(basename blobs/${bosh_blob_path})"
         local dir_name
         dir_name="$(dirname "${bosh_blob_path}")"
         bosh remove-blob "${dir_name}/${old_blob_name}"
@@ -67,7 +67,7 @@ function run() {
         fi
 
         local old_blob_name
-        old_blob_name="$(basename "blobs/${bosh_blob_path}")"
+        old_blob_name="$(basename blobs/${bosh_blob_path})"
         local dir_name
         dir_name="$(dirname "${bosh_blob_path}")"
         bosh remove-blob "${dir_name}/${old_blob_name}"
