@@ -10,4 +10,4 @@ params:
   RELEASE_DIR: ""
 
 run:
-  path: ci/shared/tasks/golang-security-scan/task.sh
+  path: ci/shared/tasks/golang-security-scan/task.bash
