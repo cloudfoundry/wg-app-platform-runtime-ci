@@ -281,6 +281,7 @@ jobs:
       - get: ci
       - get: image
       - get:  repo
+      - get: daily
         trigger: true
       - get: repo-readme
         trigger: true

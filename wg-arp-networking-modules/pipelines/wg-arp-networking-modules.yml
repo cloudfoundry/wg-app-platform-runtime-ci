@@ -101,6 +101,7 @@ jobs:
       - get: ci
       - get: image
       - get:  #@ repo.name
+      - get: daily
         trigger: true
       - get: readme
         trigger: true

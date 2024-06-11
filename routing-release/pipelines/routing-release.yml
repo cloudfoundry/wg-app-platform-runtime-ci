@@ -28,6 +28,7 @@ groups:
   - bump-package-cf-cli
   - bump-bosh-blobs
   - sync-dot-github-dir
+  - sync-readme
 
 - name: manual
   jobs:
@@ -140,6 +141,16 @@ resources:
     paths: 
       - shared/github
       - routing-release/github
+
+- name: readme
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: 
+      - shared/*.md
+      - routing-release/*.md
+      - routing-release/readme/*.md
 
 #@ for repo in data.values.internal_repos:
 - name: #@ "{}-repo".format(repo.name)
@@ -451,6 +462,43 @@ jobs:
         repo: #@ "{}-repo".format(repo.name)
       params:
         PARENT_TEMPLATE_DIR: routing-release
+    - put: #@ "{}-repo".format(repo.name)
+      params:
+       rebase: true
+       repository: synced-repo
+#@ end
+
+- name: sync-readme
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get: daily
+        trigger: true
+      - get: repo
+#@ for repo in data.values.internal_repos:
+      - get: #@ "{}-repo".format(repo.name)
+#@ end
+        trigger: true
+      - get: readme
+        trigger: true
+  - do:
+    - task: sync-readme
+      file: ci/shared/tasks/sync-readme/linux.yml
+      image: image
+    - put: repo
+      params:
+       rebase: true
+       repository: synced-repo
+#@ for repo in data.values.internal_repos:
+  - do:
+    - task: #@ "sync-dot-github-dir-{}".format(repo.name)
+      file: ci/shared/tasks/sync-readme/linux.yml
+      image: image
+      input_mapping:
+        repo: #@ "{}-repo".format(repo.name)
     - put: #@ "{}-repo".format(repo.name)
       params:
        rebase: true

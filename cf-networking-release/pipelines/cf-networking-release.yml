@@ -456,6 +456,7 @@ jobs:
       - get: ci
       - get: image
       - get:  cf-networking-repo
+      - get: daily
         trigger: true
       - get: cf-networking-readme
         trigger: true
@@ -478,6 +479,7 @@ jobs:
       - get: ci
       - get: image
       - get:  silk-repo
+      - get: daily
         trigger: true
       - get: silk-readme
         trigger: true
