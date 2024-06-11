@@ -6,7 +6,7 @@ readme: |+
     > generates a tree of docs under docs dir of bbs. Each document is required to have a metadata YAML block. e.g.
         ---
         title: Where does BBS fits in Cloud Foundry
-        expires_at: never or 12/12/2024
+        expires_at: never or 2027-03-24
         tags: [diego-release, bbs]
         ---
     > 01-diego-release.md (under diego-release/01-diego-release.md)
