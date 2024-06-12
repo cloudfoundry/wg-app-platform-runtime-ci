@@ -24,9 +24,6 @@ groups:
 - name: release
   jobs:
   - unit-and-integration-tests
-  - claim-env-combined-nfs-mapfs-volume-release-tests
-  - combined-nfs-mapfs-volume-release-tests
-  - env-gate
   - claim-env
   - deploy-cf
   - cats-nfs
@@ -121,19 +118,6 @@ resources:
     owner: cloudfoundry
   type: github-release
 
-- name: env-tas-xenial
-  icon: pool
-  type: pcf-pool
-  source:
-    url: https://v2.shepherd.run
-    service-account-key: *shepherd-token
-    compatibility-mode: environments-app
-    lease:
-      namespace: cryogenics
-      pool:
-        namespace: official
-        name: tas-2_11
-
 - name: git-concourse-cve-scan
   type: git
   source:
@@ -185,37 +169,29 @@ resources:
   source:
     interval: 24h
 
-- name: every-hour
-  type: time
-  icon: clock-outline
-  source:
-    interval: 1h
-
 - name: shepherd-env
   type: pcf-pool
   source:
     url: https://v2.shepherd.run
-    service-account-key: *shepherd-token
+    service-account-key: ((shepherd-service-account-key))
     lease:
-      namespace: cryogenics
+      namespace: tas-runtime
       pool:
         namespace: official
         name: cfd
-    compatibility_mode: environments-app
-    debug: true
+    compatibility-mode: environments-app
 
 - name: shepherd-env-ldap
   type: pcf-pool
   source:
     url: https://v2.shepherd.run
-    service-account-key: *shepherd-token
+    service-account-key: ((shepherd-service-account-key))
     lease:
-      namespace: cryogenics
+      namespace: tas-runtime
       pool:
         namespace: official
         name: cfd
-    compatibility_mode: environments-app
-    debug: true
+    compatibility-mode: environments-app
 
 - name: persi-ci
   type: git
@@ -338,15 +314,6 @@ resources:
     uri: git@github.com:pivotal/cryogenics-concourse-tasks.git
     private_key: ((tas-runtime-bot-cryo-deploy-key-for-pivotal-org/private_key))
     branch: main
-
-- name: image-cryogenics-essentials
-  icon: docker
-  type: registry-image
-  source:
-    repository: us-west2-docker.pkg.dev/mapbu-cryogenics/essentials/cryo-essentials
-    tag: latest
-    username: _json_key
-    password: *gcr_viewer_key
 
 jobs:
 - name: check-for-cves
@@ -569,116 +536,6 @@ jobs:
        rebase: true
        repository: bumped-repo
 
-- name: claim-env-combined-nfs-mapfs-volume-release-tests
-  plan:
-  - in_parallel:
-      fail_fast: true
-      steps:
-      - get: mapfs-release-develop
-        trigger: true
-        passed:
-        - check-for-cves
-        - unit-and-integration-tests
-        - security-scan
-      - get: nfs-volume-release
-      - put: env-tas-xenial
-        params:
-          action: create
-          duration: 6h
-          resource: env
-        timeout: 6h
-
-- name: combined-nfs-mapfs-volume-release-tests
-  plan:
-  - in_parallel:
-      fail_fast: true
-      steps:
-      - get: persi-ci
-      - get: cryogenics-concourse-tasks
-      - get: mapfs-release-develop  
-      - get: nfs-volume-release
-      - get: image-cryogenics-essentials
-      - get: env-tas-xenial
-        trigger: true
-        passed: [ claim-env-combined-nfs-mapfs-volume-release-tests ]
-
-  - task: rspec
-    image: image-cryogenics-essentials
-    file: persi-ci/scripts/ci/run-rspec.build.yml
-    input_mapping:
-      test-repo: nfs-volume-release
-  - in_parallel:
-    #! we never test that the release can be upgraded in place (meaning without recreating the VM). 
-    #! This lead  to a broken release because of pre-start script failing to run a 2nd time on 
-    #! the same VM. It slipped through because all of our deploy scenarios included recreating the VM 
-    #! with a new stemcell.
-    - task: upgrade-release-in-existing-cf
-      image: image-cryogenics-essentials
-      config:
-        platform: linux
-        inputs:
-          - name: env-tas-xenial
-        run:
-          path: bash
-          args:
-          - -c
-          - |
-            set -eu
-            set -o pipefail
-            . <(smith -l env-tas-xenial/metadata bosh)
-            export BOSH_DEPLOYMENT=$(bosh ds | grep '^cf-'  | awk '{print $1}')
-            bosh manifest > cf.yml
-            cat << EOF > ops.yml
-            - type: replace
-              path: /releases/name=mapfs
-              value:
-                name: mapfs
-                version: latest
-            EOF
-            until [[ $(bosh releases | grep mapfs | wc -l) -gt 1 ]]; do echo "waiting for dev release to be available"; done
-            bosh deploy cf.yml -o ops.yml -n
-
-    - task: bosh-release-test
-      image: image-cryogenics-essentials
-      file: cryogenics-concourse-tasks/vol-service/run-bosh-release-tests-in-shepherd/task.yml
-      params:
-        STEMCELL_LINE: xenial
-        TEST_REPO: nfs-volume-release
-      input_mapping:
-        shepherd-env: env-tas-xenial
-        mapfs-release: mapfs-release-develop
-    - task: bosh-release-test-mapfs
-      image: image-cryogenics-essentials
-      attempts: *number_of_retries
-      file: cryogenics-concourse-tasks/vol-service/run-bosh-release-tests-in-shepherd/task.yml
-      params:
-        STEMCELL: xenial
-        TEST_REPO: mapfs-release #! this needs to match the input name of the task, not the resource name
-      input_mapping:
-        shepherd-env: env-tas-xenial
-        mapfs-release: mapfs-release-develop
-
-
-- name: env-gate
-  plan:
-  - get: env-tas-xenial
-    passed: [ combined-nfs-mapfs-volume-release-tests ]
-  - in_parallel:
-      fail_fast: true
-      steps:
-      - put: env-tas-xenial
-        params:
-          action: release
-          resource: env-tas-xenial
-      - get: nfs-volume-release
-        passed:
-        - combined-nfs-mapfs-volume-release-tests
-      - get: mapfs-release-develop
-        trigger: true
-        passed:
-        - combined-nfs-mapfs-volume-release-tests
-      - get: every-hour
-
 - name: claim-env
   plan:
   - in_parallel:
@@ -686,13 +543,13 @@ jobs:
       steps:
       - get: persi-ci
       - get: nfs-volume-release
-        passed:
-        - env-gate
-      - get: image-cryogenics-essentials
+      - get: image
       - get: mapfs-release-develop
         trigger: true
         passed:
-        - env-gate
+        - check-for-cves
+        - unit-and-integration-tests
+        - security-scan
   - put: shepherd-env
     params:
       action: create
@@ -705,7 +562,7 @@ jobs:
       expire-in: 6h
       resource: shepherd-env
   - task: output-env-details
-    image: image-cryogenics-essentials
+    image: image
     file: persi-ci/scripts/ci/claim-pooled-env.build.yml
     input_mapping:
       pooled-env: shepherd-env
@@ -716,14 +573,14 @@ jobs:
       fail_fast: true
       steps:
       - get: persi-ci
-      - get: image-cryogenics-essentials
+      - get: image
       - get: nfs-volume-release
-        passed:
-        - env-gate
       - get: mapfs-release-develop
         trigger: true
         passed:
-        - env-gate
+        - check-for-cves
+        - unit-and-integration-tests
+        - security-scan
   - put: shepherd-env-ldap
     params:
       action: create
@@ -736,7 +593,7 @@ jobs:
       expire-in: 6h
       resource: shepherd-env-ldap
   - task: output-env-details
-    image: image-cryogenics-essentials
+    image: image
     file: persi-ci/scripts/ci/claim-pooled-env.build.yml
     input_mapping:
       pooled-env: shepherd-env-ldap
@@ -752,7 +609,7 @@ jobs:
         passed: [ claim-env ]
         trigger: true
       - get: cf-deployment-concourse-tasks
-      - get: image-cryogenics-essentials
+      - get: image
       - get: cf-deployment
       - get: persi-ci
       - get: nfs-volume-release
@@ -760,12 +617,12 @@ jobs:
       - get: mapfs-release-develop
         passed: [ claim-env ]
   - task: pin-cf-deployment-version
-    image: image-cryogenics-essentials
+    image: image
     file: persi-ci/scripts/ci/pin_cf_deployment_version.build.yml
     input_mapping:
       toolsmiths-env: shepherd-env
   - task: collect-persi-ci-ops-files
-    image: image-cryogenics-essentials
+    image: image
     file: cf-deployment-concourse-tasks/collect-ops-files/task.yml
     input_mapping:
       base-ops-files: cf-deployment
@@ -773,7 +630,7 @@ jobs:
     params:
       BASE_OPS_FILE_DIR: "operations"
   - task: generate-variables
-    image: image-cryogenics-essentials
+    image: image
     file: persi-ci/scripts/ci/generate_variables.build.yml
     input_mapping:
       smith-env: shepherd-env
@@ -781,7 +638,7 @@ jobs:
       GENERATE_NFS_VARS: true
       GENERATE_SMB_VARS: false
   - task: bosh-deploy-cf
-    image: image-cryogenics-essentials
+    image: image
     attempts: *number_of_retries
     file: persi-ci/scripts/ci/deploy-cf-with-multiple-releases.build.yml
     input_mapping:
@@ -801,14 +658,14 @@ jobs:
                   operations/backup-and-restore/enable-restore-nfs-broker.yml
                   operations/experimental/fast-deploy-with-downtime-and-danger.yml"
   - task: run-smoke-tests
-    image: image-cryogenics-essentials
+    image: image
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
       toolsmiths-env: shepherd-env
     params:
       ERRAND_NAME: smoke_tests
   - task: run-nfs-broker-errand
-    image: image-cryogenics-essentials
+    image: image
     attempts: *number_of_retries
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
@@ -832,11 +689,11 @@ jobs:
       - get: persi-ci
       - get: cf-acceptance-tests
       - get: cf-deployment-concourse-tasks
-      - get: image-cryogenics-essentials
+      - get: image
       - get: mapfs-release-develop
         passed: [ deploy-cf ]
   - task: generate-cats-config
-    image: image-cryogenics-essentials
+    image: image
     file: persi-ci/scripts/ci/generate_cats_config.build.yml
     input_mapping:
       smith-env: shepherd-env
@@ -846,7 +703,7 @@ jobs:
       PLAN_NAME: Existing
       SERVICE_NAME: nfs
   - task: run-cats
-    image: image-cryogenics-essentials
+    image: image
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     input_mapping:
       integration-config: cats-config
@@ -865,7 +722,7 @@ jobs:
         passed: [ deploy-cf ]
       - get: bbr-binary-release
       - get: disaster-recovery-acceptance-tests
-      - get: image-cryogenics-essentials
+      - get: image
       - get: persi-ci
       - get: mapfs-release-develop
         passed: [ deploy-cf ]
@@ -873,7 +730,7 @@ jobs:
         passed: [ deploy-cf ]
         trigger: true
   - task: generate-integration-config
-    image: image-cryogenics-essentials
+    image: image
     file: persi-ci/scripts/ci/generate-drats-integration-config.build.yml
     params:
       INTEGRATION_CONFIG_FILE_PATH: config/drats-nfs.json
@@ -882,7 +739,7 @@ jobs:
       integration-configs: persi-ci
       smith-env: shepherd-env
   - task: drats-with-integration-config
-    image: image-cryogenics-essentials
+    image: image
     file: disaster-recovery-acceptance-tests/ci/tasks/drats-with-integration-config/task.yml
     privileged: true
     input_mapping:
@@ -899,7 +756,7 @@ jobs:
       steps:
       - get: cf-volume-services-acceptance-tests
       - get: persi-ci
-      - get: image-cryogenics-essentials
+      - get: image
       - get: shepherd-env
         passed: [ deploy-cf ]
         trigger: true
@@ -908,7 +765,7 @@ jobs:
       - get: mapfs-release-develop
         passed: [ deploy-cf ]
   - task: generate-pats-config-nfs
-    image: image-cryogenics-essentials
+    image: image
     file: persi-ci/scripts/ci/generate_pats_config_shp.build.yml
     params:
       VAR_RESOLVER_SCRIPT: persi-ci/scripts/ci/cf_deployment_helpers_shp.sh
@@ -924,7 +781,7 @@ jobs:
     output_mapping:
       pats-config: nfs-pats-config
   - task: run-pats-nfs
-    image: image-cryogenics-essentials
+    image: image
     file: persi-ci/scripts/ci/run-pats.build.yml
     input_mapping:
       pats-config: nfs-pats-config
@@ -950,7 +807,7 @@ jobs:
       - get: cf-deployment-concourse-tasks
       - get: cf-deployment
       - get: persi-ci
-      - get: image-cryogenics-essentials
+      - get: image
       - get: nfs-volume-release
         passed:
         - claim-ldap-env
@@ -958,12 +815,12 @@ jobs:
         passed:
         - claim-ldap-env
   - task: pin-cf-deployment-version
-    image: image-cryogenics-essentials
+    image: image
     file: persi-ci/scripts/ci/pin_cf_deployment_version.build.yml
     input_mapping:
       toolsmiths-env: shepherd-env-ldap
   - task: collect-persi-ci-ops-files
-    image: image-cryogenics-essentials
+    image: image
     file: cf-deployment-concourse-tasks/collect-ops-files/task.yml
     input_mapping:
       base-ops-files: cf-deployment
@@ -971,7 +828,7 @@ jobs:
     params:
       BASE_OPS_FILE_DIR: "operations"
   - task: generate-variables
-    image: image-cryogenics-essentials
+    image: image
     file: persi-ci/scripts/ci/generate_variables.build.yml
     input_mapping:
       smith-env: shepherd-env-ldap
@@ -985,7 +842,7 @@ jobs:
       LDAP_PROTO: tcp
       LDAP_USER_FQDN: "ou=Users,dc=domain,dc=com"
   - task: bosh-deploy-cf
-    image: image-cryogenics-essentials
+    image: image
     file: persi-ci/scripts/ci/deploy-cf-with-multiple-releases.build.yml
     input_mapping:
       toolsmiths-env: shepherd-env-ldap
@@ -1004,14 +861,14 @@ jobs:
                   operations/test/enable-nfs-test-ldapserver.yml
                   operations/experimental/fast-deploy-with-downtime-and-danger.yml"
   - task: run-smoke-tests
-    image: image-cryogenics-essentials
+    image: image
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
       toolsmiths-env: shepherd-env-ldap
     params:
       ERRAND_NAME: smoke_tests
   - task: run-nfs-broker-errand
-    image: image-cryogenics-essentials
+    image: image
     attempts: *number_of_retries
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
@@ -1031,7 +888,7 @@ jobs:
         trigger: true
       - get: cf-volume-services-acceptance-tests
       - get: persi-ci
-      - get: image-cryogenics-essentials
+      - get: image
       - get: nfs-volume-release
         passed:
         - deploy-cf-with-ldap
@@ -1042,7 +899,7 @@ jobs:
       fail_fast: true
       steps:
       - task: generate-legacy-pats-config
-        image: image-cryogenics-essentials
+        image: image
         file: persi-ci/scripts/ci/generate_pats_config_shp.build.yml
         params:
           VAR_RESOLVER_SCRIPT: persi-ci/scripts/ci/cf_deployment_helpers_shp.sh
@@ -1056,7 +913,7 @@ jobs:
         output_mapping:
           pats-config: nfs-legacy-pats-config
       - task: generate-pats-config
-        image: image-cryogenics-essentials
+        image: image
         file: persi-ci/scripts/ci/generate_pats_config_shp.build.yml
         params:
           VAR_RESOLVER_SCRIPT: persi-ci/scripts/ci/cf_deployment_helpers_shp.sh
@@ -1073,14 +930,14 @@ jobs:
       fail_fast: true
       steps:
       - task: run-legacy-pats
-        image: image-cryogenics-essentials
+        image: image
         file: persi-ci/scripts/ci/run-pats.build.yml
         input_mapping:
           pats-config: nfs-legacy-pats-config
         params:
           TEST_DOCKER_PORA: true
       - task: run-pats
-        image: image-cryogenics-essentials
+        image: image
         file: persi-ci/scripts/ci/run-pats.build.yml
         input_mapping:
           pats-config: nfs-pats-config
@@ -1167,9 +1024,8 @@ jobs:
       steps:
       - get: persi-ci
       - get: ci
-      - get: image
       - get: cryogenics-concourse-tasks
-      - get: image-cryogenics-essentials
+      - get: image
       - get: mapfs-release-release
       - get: mapfs-release-develop
         passed: [ship-what]
@@ -1189,7 +1045,7 @@ jobs:
       release-repo: mapfs-release-release
 
   - task: create-final-release
-    image: image-cryogenics-essentials
+    image: image
     file: cryogenics-concourse-tasks/bosh-tasks/create-release/task.yml
     input_mapping:
       release-repo: mapfs-release-develop
@@ -1212,7 +1068,7 @@ jobs:
     params:
       USE_LATEST_PUBLISHED_TAG: true
   - task: format-release-notes
-    image: image-cryogenics-essentials
+    image: image
     file: cryogenics-concourse-tasks/release-automation/format-release-notes/task.yml
     input_mapping:
       template-folder: cryogenics-concourse-tasks
