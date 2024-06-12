@@ -289,11 +289,11 @@ function volume_services_acceptance_tests() {
   "service_name": "${VOLUME_SERVICE_SERVICE_NAME}",
 
   "create_config": "${VOLUME_SERVICE_CREATE_CONFIG}",
-  "create_bogus_config": "${VOLUME_SERVICE_CREATE_BOGUS_CONFIG}",
+  "create_bogus_config": "${VOLUME_SERVICE_CREATE_BOGUS_CONFIG:-}",
   "bind_config": ${VOLUME_SERVICE_BIND_CONFIG},
-  "bind_bogus_config": "${VOLUME_SERVICE_BIND_BOGUS_CONFIG}",
-  "disallowed_ldap_bind_config": "${VOLUME_SERVICE_DISALLOWED_LDAP_BIND_CONFIG}",
-  "disallowed_override_bind_config": "${VOLUME_SERVICE_DISALLOWED_OVERRIDE_BIND_CONFIG}"
+  "bind_bogus_config": "${VOLUME_SERVICE_BIND_BOGUS_CONFIG:-}",
+  "disallowed_ldap_bind_config": "${VOLUME_SERVICE_DISALLOWED_LDAP_BIND_CONFIG:-}",
+  "disallowed_override_bind_config": "${VOLUME_SERVICE_DISALLOWED_OVERRIDE_BIND_CONFIG:-}"
 }
 EOF
 }
