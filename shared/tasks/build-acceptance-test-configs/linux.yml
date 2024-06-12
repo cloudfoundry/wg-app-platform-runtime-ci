@@ -14,6 +14,7 @@ params:
   WITH_ISOSEG: false
   WITH_DYNAMIC_ASG: false
   WITH_COMMA_DELIMITED_ASG_DESTINATIONS: false
+  WITH_VOLUME_SERVICES: false
 
 run:
   path: ci/shared/tasks/build-acceptance-test-configs/task.bash

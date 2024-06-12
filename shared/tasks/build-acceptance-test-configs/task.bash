@@ -41,6 +41,8 @@ function run(){
             cpu_entitlement_plugin "built-acceptance-test-configs/cpu-entitlement-plugin.json"
         elif [[ "$entry" == "uptimer-bosh-restart" ]]; then
             uptimer_bosh_restart "built-acceptance-test-configs/uptimer-bosh-restart.json"
+        elif [[ "$entry" == "volume-services-acceptance-tests" ]]; then
+            voume_services_acceptance_tests "built-acceptance-test-configs/volume-services-acceptance-tests.json"
         else
             echo "Unable to generate config for $entry"
             exit 1
@@ -222,7 +224,10 @@ function wats() {
   "include_tcp_routing": false,
   "include_user_provided_services": false,
   "include_v3": false,
-  "include_volume_services": false,
+  "include_volume_services": ${WITH_VOLUME_SERVICES},
+  "volume_service_name": "${VOLUME_SERVICE_NAME}",
+  "volume_service_plan_name": "${VOLUME_SERVICE_PLAN}",
+  "volume_service_create_config": "${VOLUME_SERVICE_CREATE_CONFIG}",
   "include_windows": true,
   "include_zipkin": false,
   "comma_delim_asgs_enabled": ${WITH_COMMA_DELIMITED_ASG_DESTINATIONS},
@@ -263,6 +268,35 @@ function cf_networking_acceptance_tests() {
     "test_applications": 2,
     "include_security_groups": true,
     "use_http":true
+}
+EOF
+}
+
+function volume_services_acceptance_tests() {
+    local file="${1?Provide config file}"
+    echo "Creating ${file}"
+    cat << EOF > "${file}"
+{
+  "admin_password": "$CF_ADMIN_PASSWORD",
+  "admin_user": "admin",
+  "api": "api.${CF_SYSTEM_DOMAIN}",
+  "apps_domain": "${CF_SYSTEM_DOMAIN}",
+  "artifacts_directory": "",
+  "default_timeout": 30,
+  "skip_ssl_validation": true,
+
+  "broker_url": "${VOLUME_SERVICE_BROKER_URL}",
+  "broker_user": "${VOLUME_SERVICE_BROKER_USER}",
+  "broker_password": "${VOLUME_SERVICE_BROKER_PASSWORD}",
+  "plan_name": "${VOLUME_SERVICE_PLAN_NAME}",
+  "service_name": "${VOLUME_SERVICE_SERVICE_NAME}",
+
+  "create_config": "${VOLUME_SERVICE_CREATE_CONFIG}",
+  "create_bogus_config": "${VOLUME_SERVICE_CREATE_BOGUS_CONFIG}",
+  "bind_config": ${VOLUME_SERVICE_BIND_CONFIG},
+  "bind_bogus_config": "${VOLUME_SERVICE_BIND_BOGUS_CONFIG}",
+  "disallowed_ldap_bind_config": "${VOLUME_SERVICE_DISALLOWED_LDAP_BIND_CONFIG}",
+  "disallowed_override_bind_config": "${VOLUME_SERVICE_DISALLOWED_OVERRIDE_BIND_CONFIG}"
 }
 EOF
 }
