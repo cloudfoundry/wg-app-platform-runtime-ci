@@ -42,7 +42,7 @@ function run(){
         elif [[ "$entry" == "uptimer-bosh-restart" ]]; then
             uptimer_bosh_restart "built-acceptance-test-configs/uptimer-bosh-restart.json"
         elif [[ "$entry" == "volume-services-acceptance-tests" ]]; then
-            voume_services_acceptance_tests "built-acceptance-test-configs/volume-services-acceptance-tests.json"
+            volume_services_acceptance_tests "built-acceptance-test-configs/volume-services-acceptance-tests.json"
         else
             echo "Unable to generate config for $entry"
             exit 1
