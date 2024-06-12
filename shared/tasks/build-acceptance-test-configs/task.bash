@@ -285,9 +285,6 @@ function volume_services_acceptance_tests() {
   "default_timeout": 30,
   "skip_ssl_validation": true,
 
-  "broker_url": "${VOLUME_SERVICE_BROKER_URL:-}",
-  "broker_user": "${VOLUME_SERVICE_BROKER_USER}",
-  "broker_password": "${VOLUME_SERVICE_BROKER_PASSWORD}",
   "plan_name": "${VOLUME_SERVICE_PLAN_NAME}",
   "service_name": "${VOLUME_SERVICE_SERVICE_NAME}",
 
