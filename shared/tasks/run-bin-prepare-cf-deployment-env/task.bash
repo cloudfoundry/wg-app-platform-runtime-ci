@@ -37,6 +37,10 @@ CF_SYSTEM_DOMAIN: "${CF_SYSTEM_DOMAIN}"
 CF_TCP_DOMAIN: "${CF_TCP_DOMAIN}"
 CF_MANIFEST_VERSION: "${CF_MANIFEST_VERSION}"
 EOF
+
+    if [[ -n "${VARS}" ]]; then
+        echo "${VARS}" | yq . >> prepared-env/vars.yml
+    fi
 }
 
 function cleanup() {

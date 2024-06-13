@@ -11,5 +11,6 @@ outputs:
 
 params:
   FUNCTIONS:
+  VARS:
 run:
   path: ci/shared/tasks/run-bin-prepare-cf-deployment-env/task.bash
