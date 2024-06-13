@@ -39,7 +39,7 @@ CF_MANIFEST_VERSION: "${CF_MANIFEST_VERSION}"
 EOF
 
     if [[ -n "${VARS}" ]]; then
-        echo "${VARS}" | yq . >> prepared-env/vars.yml
+        echo "${VARS}" | yq -P . >> prepared-env/vars.yml
     fi
 }
 
