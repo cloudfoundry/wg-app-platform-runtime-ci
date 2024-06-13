@@ -4,8 +4,3 @@
   value:
     name: nfs-volume
     version: latest
-- type: replace
-  path: /releases/name=mapfs
-  value:
-    name: mapfs
-    version: latest
