@@ -8,6 +8,18 @@ db_flavors:
   value: mysql
 
 internal_repos:
-- "mapfs"
+- name: "mapfs"
 
-opsfiles: []
+opsfiles:
+- use-compiled-releases.yml
+- scale-to-one-az.yml
+- enable-nfs-volume-service.yml
+- enable-backup-restore.yml
+- enable-restore-nfs-broker.yml
+- enable-nfs-test-server.yml
+- scale-for-cats.yml
+- use-latest-nfs-release.yml
+
+opsfiles_ldap:
+- enable-nfs-ldap.yml
+- enable-nfs-test-ldapserver.yml
