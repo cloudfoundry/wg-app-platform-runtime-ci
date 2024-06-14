@@ -215,6 +215,7 @@ function allowed_dirs() {
 ^./(shared|${release_list})/(helpers|opsfiles|linters|manifests|dockerfiles|pipelines|bin|readme)$
 ^./(shared|${release_list})/tasks/[a-z\-]*$
 ^./(shared|${release_list})/tasks/[a-z\-]*/assets$
+^./(shared|${release_list})/tasks/[a-z\-]*/assets/.*$
 ^./(shared|${release_list})$
 ^./(${release_list})/(manifests)$
 ^./(${release_list})/default-params/[a-z\-]*$
