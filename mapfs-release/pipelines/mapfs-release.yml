@@ -26,6 +26,8 @@ groups:
   - bump-dependencies-go-mod
   - bump-golang
   - bump-bosh-blobs
+  - sync-dot-github-dir
+  - sync-readme
 
 - name: manual
   jobs:
@@ -112,6 +114,16 @@ resources:
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+
+- name: repo-readme
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths:
+      - shared/*.md
+      - mapfs-release/*.md
+      - mapfs-release/readme/*.md
 
 - name: go-version
   type: git
@@ -207,6 +219,14 @@ resources:
     repository: mapfs-release
   type: github-release
 
+- name: shared-templates
+  type: git
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths:
+      - shared/github
+
 - name: version
   type: semver
   source:
@@ -294,6 +314,46 @@ resources:
     user: pivotal
 
 jobs:
+- name: sync-readme
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get:  repo
+      - get: daily
+        trigger: true
+      - get: repo-readme
+        trigger: true
+  - do:
+    - task: sync-readme
+      file: ci/shared/tasks/sync-readme/linux.yml
+      image: image
+    - put: repo
+      params:
+       rebase: true
+       repository: synced-repo
+
+- name: sync-dot-github-dir
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get:  repo
+      - get: shared-templates
+        trigger: true
+  - do:
+    - task: sync-dot-github-dir
+      file: ci/shared/tasks/sync-dot-github-dir/linux.yml
+      image: image
+    - put: repo
+      params:
+       rebase: true
+       repository: synced-repo
+
 - name: check-for-cves
   plan:
   - in_parallel:
