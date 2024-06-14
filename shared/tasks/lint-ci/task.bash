@@ -173,20 +173,28 @@ function metadata_checks() {
 function allowed_task_files() {
     debug "Running allowed_task_files function"
     local filenames=(
-        assets
-        metadata.yml
-        linux.yml
-        windows.yml
-        task.bash
-        task.ps1
+        /assets/.*
+        /metadata.yml$
+        /linux.yml$
+        /windows.yml$
+        /task.bash$
+        /task.ps1$
     )
     for filepath in $(find . -ipath "*tasks/*/*" -type f | grep -Ev "ipv6-vm.tf")
     do
+        local matched=false
         local file
-        file=$(basename "${filepath}")
         # literal regex matching
         # shellcheck disable=2076
-        if ! [[ "${filenames[*]}" =~ "${file}" ]]; then
+        for pattern in "${filenames[@]}"
+        do
+            if [[ "${filepath}" =~ ${pattern} ]]; then
+                matched=true
+                break
+            fi
+        done
+
+        if [[ ${matched} == false ]]; then
             debug "File ${filepath} is not allowed"
             debug "Should be one of ${filenames[*]}"
             FOUND_ERROR=true
