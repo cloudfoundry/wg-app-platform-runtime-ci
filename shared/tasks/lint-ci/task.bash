@@ -122,7 +122,7 @@ function intersect_inputs() {
 }
 function extra_inputs_match() {
     debug "Running extra_inputs_match function"
-    for dir in $(find . -ipath "*tasks/*" -type d)
+    for dir in $(find . -ipath "*tasks/*" -type d | grep -v assets)
     do
         local linux windows metadata
         linux="${dir}/linux.yml"
