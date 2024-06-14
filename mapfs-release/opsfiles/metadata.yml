@@ -2,4 +2,4 @@
 readme:
   This directory contains the opsfiles needed for mapfs.
 opsfiles:
-  use-latestnfs-release.yml: Uses latest nfs-volume release
+  use-latest-nfs-release.yml: Uses latest nfs-volume release

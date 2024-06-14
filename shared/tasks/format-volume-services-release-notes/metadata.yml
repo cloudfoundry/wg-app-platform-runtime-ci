@@ -1,7 +1,7 @@
 ---
 readme: |
   This task formats release notes auto-generated for the volume-services releases
-extra_inputs:
+inputs:
   raw-release-notes: Output containing the auto-generated release notes
 oses:
   - linux
