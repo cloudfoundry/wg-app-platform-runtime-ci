@@ -583,6 +583,7 @@ jobs:
     image: image
 
 - name: claim-env
+  serial: true
   plan:
   - in_parallel:
       fail_fast: true
@@ -613,6 +614,7 @@ jobs:
     image: image
 
 - name: claim-ldap-env
+  serial: true
   plan:
   - in_parallel:
       fail_fast: true
