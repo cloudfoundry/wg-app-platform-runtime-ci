@@ -1,0 +1,14 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+- name: raw-release-notes
+
+outputs:
+- name: release-notes
+
+params: {}
+
+run:
+  path: ci/shared/tasks/format-volume-services-release-notes/task.bash

@@ -1,0 +1,22 @@
+<%
+  require 'json'
+
+  notes = JSON.parse(File.read(ENV.fetch("RELEASE_NOTES_PATH","")))
+  dependencies = notes['dependencies']
+  changes = notes['changes']
+
+  def print_messages(title, messages)
+    if !messages.empty?
+      puts "## " + title
+      puts
+      messages.each do |message|
+        puts "* " + message
+      end
+    end
+  end
+
+  print_messages("Changes", changes)
+  puts
+  print_messages("Dependencies", dependencies)
+%>
+

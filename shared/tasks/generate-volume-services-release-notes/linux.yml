@@ -1,0 +1,16 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+- name: repo
+- name: raw-release-notes
+  optional: true
+
+outputs:
+- name: raw-release-notes
+
+run:
+  path: ci/shared/tasks/generate-volume-services-release-notes/task.bash
+
+params: {}

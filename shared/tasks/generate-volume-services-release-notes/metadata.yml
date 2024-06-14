@@ -1,0 +1,9 @@
+---
+readme: |
+  This task will generate release notes for volume-services releases
+extra_inputs:
+  raw-release-notes: optional - raw release notes already generated
+  
+oses:
+  - linux
+params: {}
