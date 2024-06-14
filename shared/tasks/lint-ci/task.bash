@@ -53,7 +53,7 @@ function image_resource() {
 function task_params_match() {
     debug "Running task_params_match function"
     local params_expression='.params|select(.)|keys'
-    for dir in $(find . -ipath "*tasks/*" -type d | grep -v "assets")
+    for dir in $(find . -ipath "*tasks/*" -type d)
     do
         local linux windows metadata
         linux="${dir}/linux.yml"
@@ -122,7 +122,7 @@ function intersect_inputs() {
 }
 function extra_inputs_match() {
     debug "Running extra_inputs_match function"
-    for dir in $(find . -ipath "*tasks/*" -type d | grep -v assets)
+    for dir in $(find . -ipath "*tasks/*" -type d)
     do
         local linux windows metadata
         linux="${dir}/linux.yml"
@@ -173,28 +173,19 @@ function metadata_checks() {
 function allowed_task_files() {
     debug "Running allowed_task_files function"
     local filenames=(
-        /assets/.*
-        /metadata.yml$
-        /linux.yml$
-        /windows.yml$
-        /task.bash$
-        /task.ps1$
+        metadata.yml
+        linux.yml
+        windows.yml
+        task.bash
+        task.ps1
     )
     for filepath in $(find . -ipath "*tasks/*/*" -type f | grep -Ev "ipv6-vm.tf")
     do
-        local matched=false
         local file
+        file=$(basename "${filepath}")
         # literal regex matching
         # shellcheck disable=2076
-        for pattern in "${filenames[@]}"
-        do
-            if [[ "${filepath}" =~ ${pattern} ]]; then
-                matched=true
-                break
-            fi
-        done
-
-        if [[ ${matched} == false ]]; then
+        if ! [[ "${filenames[*]}" =~ "${file}" ]]; then
             debug "File ${filepath} is not allowed"
             debug "Should be one of ${filenames[*]}"
             FOUND_ERROR=true
@@ -212,10 +203,8 @@ function allowed_dirs() {
 ^./examples/(task|pipeline)*$
 ^./examples/repo/(scripts-dir-with-db|scripts-dir-generic|scripts-dir-standalone-modules)$
 ^./examples/repo/(scripts-dir-with-db|scripts-dir-generic|scripts-dir-standalone-modules)/docker$
-^./(shared|${release_list})/(helpers|opsfiles|linters|manifests|dockerfiles|pipelines|bin|readme)$
+^./(shared|${release_list})/(assets|helpers|opsfiles|linters|manifests|dockerfiles|pipelines|bin|readme)$
 ^./(shared|${release_list})/tasks/[a-z\-]*$
-^./(shared|${release_list})/tasks/[a-z\-]*/assets$
-^./(shared|${release_list})/tasks/[a-z\-]*/assets/.*$
 ^./(shared|${release_list})$
 ^./(${release_list})/(manifests)$
 ^./(${release_list})/default-params/[a-z\-]*$
