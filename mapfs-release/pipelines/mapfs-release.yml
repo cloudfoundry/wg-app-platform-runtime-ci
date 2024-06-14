@@ -1177,7 +1177,9 @@ jobs:
   plan:
   - get: env
     passed:
-    - ship-what
+    - run-cats
+    - export-release
+    - volume-services-acceptance-tests
     trigger: true
   - get: env-lock
   - put: env
@@ -1191,7 +1193,7 @@ jobs:
   plan:
   - get: ldap-env
     passed:
-    - ship-what
+    - volume-services-acceptance-tests-ldap
     trigger: true
   - get: ldap-env-lock
   - put: ldap-env
