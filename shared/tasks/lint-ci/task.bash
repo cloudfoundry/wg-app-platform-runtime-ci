@@ -205,6 +205,7 @@ function allowed_dirs() {
 ^./examples/repo/(scripts-dir-with-db|scripts-dir-generic|scripts-dir-standalone-modules)/docker$
 ^./(shared|${release_list})/(assets|helpers|opsfiles|linters|manifests|dockerfiles|pipelines|bin|readme)$
 ^./(shared|${release_list})/tasks/[a-z\-]*$
+^./(shared|${release_list})/assets/.*$
 ^./(shared|${release_list})$
 ^./(${release_list})/(manifests)$
 ^./(${release_list})/default-params/[a-z\-]*$
