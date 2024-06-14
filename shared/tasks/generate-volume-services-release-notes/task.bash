@@ -9,7 +9,7 @@ pushd "$REPO_DIR"
   export FROM_TAG=$(git describe --abbrev=0 --tags)
 popd
 
-pushd cryogenics-concourse-tasks/tasks/release-automation/release-notes/src
+pushd cryogenics-concourse-tasks/tasks/release-automation/release-notes/assets
   make init > /dev/null
 
   python main.py

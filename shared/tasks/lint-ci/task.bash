@@ -173,6 +173,7 @@ function metadata_checks() {
 function allowed_task_files() {
     debug "Running allowed_task_files function"
     local filenames=(
+        assets
         metadata.yml
         linux.yml
         windows.yml
