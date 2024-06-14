@@ -11,6 +11,7 @@ internal_repos:
 - name: "mapfs"
 
 opsfiles:
+- add-lb-ca-cert.yml
 - use-compiled-releases.yml
 - scale-to-one-az.yml
 - enable-nfs-volume-service.yml
