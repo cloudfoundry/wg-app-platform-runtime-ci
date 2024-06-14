@@ -322,6 +322,9 @@ jobs:
       - get: ci
       - get: image
       - get:  repo
+#@ for repo in data.values.internal_repos:
+      - get: #@ "{}-repo".format(repo.name)
+#@ end
       - get: daily
         trigger: true
       - get: repo-readme
@@ -334,6 +337,18 @@ jobs:
       params:
        rebase: true
        repository: synced-repo
+#@ for repo in data.values.internal_repos:
+  - do:
+    - task: #@ "sync-dot-github-dir-{}".format(repo.name)
+      file: ci/shared/tasks/sync-readme/linux.yml
+      image: image
+      input_mapping:
+        repo: #@ "{}-repo".format(repo.name)
+    - put: #@ "{}-repo".format(repo.name)
+      params:
+       rebase: true
+       repository: synced-repo
+#@ end
 
 - name: sync-dot-github-dir
   serial: true
@@ -343,6 +358,9 @@ jobs:
       - get: ci
       - get: image
       - get:  repo
+#@ for repo in data.values.internal_repos:
+      - get: #@ "{}-repo".format(repo.name)
+#@ end
       - get: shared-templates
         trigger: true
   - do:
@@ -353,6 +371,20 @@ jobs:
       params:
        rebase: true
        repository: synced-repo
+#@ for repo in data.values.internal_repos:
+  - do:
+    - task: #@ "sync-dot-github-dir-{}".format(repo.name)
+      file: ci/shared/tasks/sync-dot-github-dir/linux.yml
+      image: image
+      input_mapping:
+        repo: #@ "{}-repo".format(repo.name)
+      params:
+        PARENT_TEMPLATE_DIR: routing-release
+    - put: #@ "{}-repo".format(repo.name)
+      params:
+       rebase: true
+       repository: synced-repo
+#@ end
 
 - name: check-for-cves
   plan:
