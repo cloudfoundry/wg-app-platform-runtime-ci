@@ -53,7 +53,7 @@ function image_resource() {
 function task_params_match() {
     debug "Running task_params_match function"
     local params_expression='.params|select(.)|keys'
-    for dir in $(find . -ipath "*tasks/*" -type d)
+    for dir in $(find . -ipath "*tasks/*" -type d | grep -v "assets")
     do
         local linux windows metadata
         linux="${dir}/linux.yml"
