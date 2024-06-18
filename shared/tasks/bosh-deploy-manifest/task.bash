@@ -15,10 +15,12 @@ function run(){
     shift 1
 
     local cf_manifest="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-cf.yml')"
+    local cloud_config="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-cc.yml')"
     bosh_target
     bosh_manifest > "${cf_manifest}"
+    bosh_cloud_config > "${cloud_config}"
     local default_envs_file="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-env.bash')"
-    bosh_extract_manifest_defaults_from_cf "${cf_manifest}" > "${default_envs_file}"
+    bosh_extract_manifest_defaults_from_cf "${cf_manifest}" "${cloud_config}" > "${default_envs_file}"
     debug "Extracted defaults vars from CF: $(cat ${default_envs_file})"
 
     local env_file="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-env.bash')"
