@@ -3,15 +3,15 @@
 set -euo pipefail
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-REPO="$DIR/.."
-. "${REPO}/shared/helpers/fly-functions.bash"
+OSS_CI="$DIR/.."
+. "${OSS_CI}/shared/helpers/fly-functions.bash"
 export -f fly_login
 export -f fly_pipeline
 
 main() {
   local repo=${1:?Provide a repo e.g. shared,cf-networking-release}
   if [[ "$repo" == "all" ]]; then
-    local pipelines=$(find "$REPO" -name "set-repo-pipeline.bash")
+    local pipelines=$(find "$OSS_CI" -name "set-repo-pipeline.bash")
     for p in ${pipelines}; do
       eval "$p"
     done
@@ -21,11 +21,18 @@ main() {
 }
 
 repo_pipeline() {
-  if [[ ! -d "$REPO/$repo" ]]; then
-    echo "$REPO/$repo doesn't exist."
+  local repo="${1:?Provide a repo name}"
+  local ci_config
+  if [[ "${PRIVATE_CI:-empty}" == "empty" ]]; then
+    ci_config="${OSS_CI}"
+  else
+    ci_config="${PRIVATE_CI}"
+  fi
+  if [[ ! -d "$ci_config/$repo" ]]; then
+    echo "$ci_config/$repo doesn't exist."
     exit 1
   fi
-  "$REPO/$repo/bin/set-repo-pipeline.bash"
+  "$ci_config/$repo/bin/set-repo-pipeline.bash"
 }
 
 main "$@"

@@ -1,6 +1,20 @@
 function bosh_target(){
-    eval "$(bbl print-env --metadata-file env/metadata)"
-    export ENVIRONMENT_NAME="$(jq -r .name env/metadata)"
+    if [[ "$(is_env_cf_deployment)" == "yes" ]]; then
+        eval "$(bbl print-env --metadata-file env/metadata)"
+        export ENVIRONMENT_NAME="$(jq -r .name env/metadata)"
+    else
+        export OM_USERNAME="$(jq -r .ops_manager.username env/metadata)"
+        export OM_PASSWORD="$(jq -r .ops_manager.password env/metadata)"
+        export OM_TARGET="$(jq -r .ops_manager.url env/metadata)"
+        export OM_PRIVATE_KEY="$(jq -r .ops_manager_private_key env/metadata)"
+        export OM_PUBLIC_IP="$(jq -r .ops_manager_public_ip env/metadata)"
+        export ENVIRONMENT_NAME="$(jq -r .name env/metadata)"
+        echo "${OM_PRIVATE_KEY}" > /tmp/${ENVIRONMENT_NAME}.key
+        chmod 600 /tmp/${ENVIRONMENT_NAME}.key
+        export BOSH_ALL_PROXY="ssh+socks5://ubuntu@${OM_PUBLIC_IP}:22?private-key=/tmp/${ENVIRONMENT_NAME}.key"
+        export CREDHUB_PROXY="ssh+socks5://ubuntu@${OM_PUBLIC_IP}:22?private-key=/tmp/${ENVIRONMENT_NAME}.key"
+        eval "$(om bosh-env)"
+    fi
 }
 
 function bosh_manifest(){
@@ -40,8 +54,8 @@ function bosh_extract_vars_from_env_files(){
 
 #Copied from https://github.com/cloudfoundry/cf-deployment-concourse-tasks/blob/9d60cd05a75ae674706201fd083ae46617147373/shared-functions#L351-L369
 function bosh_get_password_from_credhub() {
-    set +x
     local bosh_manifest_password_variable_name=$1
+    local field="${2:-.value}"
 
     local credential_path=$(credhub find -j -n ${bosh_manifest_password_variable_name} | jq -r .credentials[].name )
     local credential_paths_len=$(echo ${credential_path} | tr ' ' '\n' | wc -l)
@@ -55,8 +69,7 @@ function bosh_get_password_from_credhub() {
         return
     fi
 
-    echo $(credhub find -j -n ${bosh_manifest_password_variable_name} | jq -r .credentials[].name | xargs credhub get -j -n | jq -r .value)
-    set -x
+    echo $(credhub find -j -n ${bosh_manifest_password_variable_name} | jq -r .credentials[].name | xargs credhub get -j -n | jq -r $field)
 }
 
 function bosh_configure_private_yml() {

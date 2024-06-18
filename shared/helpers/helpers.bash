@@ -232,3 +232,13 @@ function retry_command() {
     done
 }
 export -f retry_command
+
+function is_env_cf_deployment() {
+    local has_opsman=$(jq 'any(.;.ops_manager)' env/metadata)
+    if [[ "$has_opsman" == "true" ]]; then
+        echo  "no"
+    else 
+        echo "yes"
+    fi
+}
+export -f is_env_cf_deployment
