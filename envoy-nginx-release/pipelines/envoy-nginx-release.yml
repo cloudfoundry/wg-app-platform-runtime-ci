@@ -449,6 +449,7 @@ jobs:
       CONFIGS: wats
       WITH_ISOSEG: false
       WITH_DYNAMIC_ASG: true
+      WITH_VOLUME_SERVICES: false
   - task: wats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     attempts: 2
