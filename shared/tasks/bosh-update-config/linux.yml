@@ -1,0 +1,20 @@
+---
+platform: linux
+
+inputs:
+  - name: ci
+  - name: repo
+  - name: env
+  - name: release-01
+    optional: true
+  - name: release-02
+    optional: true
+
+params:
+  ENVS:
+  NAME:
+  RUNTIME_CONFIG:
+  TYPE:
+
+run:
+  path: ci/shared/tasks/bosh-update-config/task.bash
