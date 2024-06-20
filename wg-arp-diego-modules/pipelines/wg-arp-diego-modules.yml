@@ -14,7 +14,7 @@ resources:
 #@ for package in data.values.internal_repos:
 - name: #@ package.name
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch: main 
     uri: #@ "git@github.com:{}".format(package.repo)
@@ -23,12 +23,14 @@ resources:
 
 - name: ci
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: shared-templates
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
@@ -37,6 +39,7 @@ resources:
 
 - name: readme
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
@@ -47,6 +50,7 @@ resources:
 
 - name: image
   type: docker-image                             
+  icon: docker
   source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
@@ -55,7 +59,7 @@ resources:
 
 - name: golang-release-latest
   type: git
-  icon: github-box
+  icon: tag-outline
   source:
     tag_filter: v*
     uri: https://github.com/bosh-packages/golang-release.git

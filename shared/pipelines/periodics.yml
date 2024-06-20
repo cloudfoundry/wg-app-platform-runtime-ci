@@ -6,11 +6,13 @@ groups:
 resources:
 - name: ci
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 - name: image
   type: docker-image                             
+  icon: docker
   source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
