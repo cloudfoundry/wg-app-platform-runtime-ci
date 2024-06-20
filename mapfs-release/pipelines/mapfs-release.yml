@@ -83,13 +83,14 @@ resource_types:
 resources:
 - name: golang-release-latest
   type: git
-  icon: github-box
+  icon: tag-outline
   source:
     tag_filter: v*
     uri: https://github.com/bosh-packages/golang-release.git
 
 - name: repo
   type: git
+  icon: source-branch
   source:
     branch: develop
     private_key: ((github-tas-runtime-bot/private-key))
@@ -97,6 +98,7 @@ resources:
 
 - name: release-branch
   type: git
+  icon: source-branch
   source:
     branch: release
     private_key: ((github-tas-runtime-bot/private-key))
@@ -104,6 +106,7 @@ resources:
 
 - name: develop-branch-mergeback
   type: git
+  icon: source-branch
   source:
     uri: git@github.com:cloudfoundry/mapfs-release.git
     branch: develop
@@ -111,12 +114,14 @@ resources:
 
 - name: ci
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: repo-readme
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
@@ -127,6 +132,7 @@ resources:
 
 - name: go-version
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
@@ -135,6 +141,7 @@ resources:
 #@ for repo in data.values.internal_repos:
 - name: #@ "{}-repo".format(repo.name)
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: #@ "git@github.com:cloudfoundry/{}.git".format(repo.name)
@@ -143,30 +150,35 @@ resources:
 
 - name: cf-deployment
   type: git
+  icon: source-branch
   source:
     branch: release-candidate
     uri: https://github.com/cloudfoundry/cf-deployment.git
 
 - name: cf-deployment-concourse-tasks
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
 
 - name: cf-acceptance-tests
   type: git
+  icon: source-branch
   source:
     branch: release-candidate
     uri: https://github.com/cloudfoundry/cf-acceptance-tests.git
 
 - name: cf-volume-services-acceptance-tests
   type: git
+  icon: source-branch
   source:
     uri: https://github.com/cloudfoundry/cf-volume-services-acceptance-tests.git
     branch: main
 
 - name: nfs-volume-release
   type: git
+  icon: source-branch
   source:
     branch: master
     private_key: ((github-tas-runtime-bot/private-key))
@@ -176,12 +188,13 @@ resources:
 
 - name: daily
   type: time
-  icon: clock-outline
+  icon: clock
   source:
     interval: 24h
 
 - name: env
   type: pcf-pool
+  icon: sheep
   source:
     url: https://v2.shepherd.run
     service-account-key: ((shepherd-service-account-key))
@@ -194,6 +207,7 @@ resources:
 
 - name: ldap-env
   type: pcf-pool
+  icon: sheep
   source:
     url: https://v2.shepherd.run
     service-account-key: ((shepherd-service-account-key))
@@ -205,22 +219,25 @@ resources:
     compatibility-mode: environments-app
 
 - name: github-release
+  type: github-release
+  icon: github
   source:
     access_token: ((github-tas-runtime-bot/access-token))
     repository: mapfs-release
     owner: cloudfoundry
-  type: github-release
 
 - name: draft-github-release
+  type: github-release
+  icon: github
   source:
     access_token: ((github-tas-runtime-bot/access-token))
     drafts: true
     owner: cloudfoundry
     repository: mapfs-release
-  type: github-release
 
 - name: shared-templates
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
@@ -229,6 +246,7 @@ resources:
 
 - name: version
   type: semver
+  icon: counter
   source:
     access_key_id: ((aws-s3-107350105730-mapfs-volume-services-s3/access-key-id))
     bucket: mapfs-versions
@@ -239,23 +257,26 @@ resources:
     assume_role_arn: ((aws-s3-107350105730-mapfs-volume-services-s3/assume-role))
 
 - name: env-lock
+  type: pool
+  icon: cloud-lock
   source:
     branch: main
     pool: mapfs-release-env-lock
     private_key: ((github-tas-runtime-bot/private-key))
     uri: git@github.com:/cloudfoundry/runtime-ci-pools.git
-  type: pool
 
 - name: ldap-env-lock
+  type: pool
+  icon: cloud-lock
   source:
     branch: main
     pool: mapfs-release-ldap-env-lock
     private_key: ((github-tas-runtime-bot/private-key))
     uri: git@github.com:/cloudfoundry/runtime-ci-pools.git
-  type: pool
 
 - name: image
   type: docker-image
+  icon: docker
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     tag: 'latest'
@@ -264,12 +285,14 @@ resources:
 
 - name: fstest
   type: git
+  icon: source-branch
   source:
     uri: https://github.com/zfsonlinux/fstest.git
     branch: master
 
 - name: libfuse-git-release
   type: github-release
+  icon: github
   source:
     access_token: ((github-tas-runtime-bot/access-token))
     repository: libfuse
@@ -278,6 +301,7 @@ resources:
 
 - name: meson-git-release
   type: github-release
+  icon: github
   source:
     access_token: ((github-tas-runtime-bot/access-token))
     repository: meson
@@ -286,6 +310,7 @@ resources:
 
 - name: ninja-git-release
   type: github-release
+  icon: github
   source:
     access_token: ((github-tas-runtime-bot/access-token))
     repository: ninja
@@ -294,6 +319,7 @@ resources:
 
 - name: git-concourse-cve-scan
   type: git
+  icon: source-branch
   source:
     uri: git@github.com:pivotal/concourse-cve-scan.git
     branch: feat/add-vex-consideration
@@ -301,6 +327,7 @@ resources:
 
 - name: git-tas-vex
   type: git
+  icon: source-branch
   source:
     uri: git@github.com:pivotal/tas-vex.git
     branch: main
@@ -308,6 +335,7 @@ resources:
 
 - name: github-release-tas-cve
   type: github-release
+  icon: source-branch
   source:
     access_token: ((github-tas-runtime-bot/access-token))
     repository: tas-cve
