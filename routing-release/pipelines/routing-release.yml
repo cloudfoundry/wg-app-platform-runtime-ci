@@ -55,20 +55,21 @@ resources:
 #! REPOS
 - name: cipher-test-release
   type: git
+  icon: source-branch
   source:
     branch: master
     uri: https://github.com/cf-routing/cipher-test-release
 
 - name: golang-release-latest
   type: git
-  icon: github-box
+  icon: tag-outline
   source:
     tag_filter: v*
     uri: https://github.com/bosh-packages/golang-release.git
 
 - name: repo
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/routing-release.git
@@ -76,6 +77,7 @@ resources:
 
 - name: release-branch 
   type: git
+  icon: source-branch
   source:
     uri: git@github.com:cloudfoundry/routing-release.git
     branch: release
@@ -83,6 +85,7 @@ resources:
 
 - name: develop-branch-mergeback
   type: git
+  icon: source-branch
   source:
     uri: git@github.com:cloudfoundry/routing-release.git
     branch: develop
@@ -90,14 +93,15 @@ resources:
 
 - name: cf-cli-release
   type: git
-  icon: github-box
+  icon: tag-outline
   source:
+    tag_filter: v*
     uri: https://github.com/bosh-packages/cf-cli-release.git
     branch: main
 
 - name: healthchecker-release
   type: git
-  icon: github-box
+  icon: tag-outline
   source:
     uri: git@github.com:cloudfoundry/healthchecker-release.git
     private_key: ((github-tas-runtime-bot/private-key))
@@ -106,14 +110,14 @@ resources:
 
 - name: disaster-recovery-acceptance-tests
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/disaster-recovery-acceptance-tests.git
 
 - name: bbr-binary-release
   type: github-release
-  icon: github-face
+  icon: github
   check_every: '5m'
   source:
     user: cloudfoundry-incubator
@@ -122,12 +126,14 @@ resources:
 
 - name: ci
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: go-version
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
@@ -135,6 +141,7 @@ resources:
 
 - name: shared-templates
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
@@ -144,6 +151,7 @@ resources:
 
 - name: readme
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
@@ -155,7 +163,7 @@ resources:
 #@ for repo in data.values.internal_repos:
 - name: #@ "{}-repo".format(repo.name)
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch: main
     uri: #@ "git@github.com:cloudfoundry/{}.git".format(repo.name)
@@ -165,14 +173,14 @@ resources:
 #! CF Deployment
 - name: cf-deployment
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/cf-deployment.git
 
 - name: cf-smoke-tests-release
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/cf-smoke-tests-release.git
@@ -180,14 +188,14 @@ resources:
 #! Concourse Tasks
 - name: cf-deployment-concourse-tasks
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
 
 - name: cf-acceptance-tests
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch: release-candidate
     uri: https://github.com/cloudfoundry/cf-acceptance-tests
@@ -195,6 +203,7 @@ resources:
 #! STEMCELLS
 - name: gcp-stemcell-bionic
   type: bosh-io-stemcell
+  icon: tag-outline
   source:
     name: bosh-google-kvm-ubuntu-bionic-go_agent
 
@@ -208,6 +217,7 @@ resources:
 #! Deployment Environment pool
 - name: env
   type: shepherd
+  icon: sheep
   source:
     url: https://v2.shepherd.run
     service-account-key: ((shepherd-service-account-key))
@@ -219,22 +229,25 @@ resources:
     compatibility-mode: environments-app
 
 - name: github-release
+  type: github-release
+  icon: github
   source:
     access_token: ((github-tas-runtime-bot/access-token))
     repository: routing-release
     owner: cloudfoundry
-  type: github-release
 
 - name: draft-github-release 
+  type: github-release
+  icon: github
   source:
     access_token: ((github-tas-runtime-bot/access-token))
     drafts: true
     repository: routing-release
     owner: cloudfoundry
-  type: github-release
 
 - name: version
   type: semver
+  icon: counter
   source:
     driver: gcs
     bucket: ci-release-versions
@@ -243,6 +256,7 @@ resources:
 
 - name: routing-api-cli-github-release
   type: github-release
+  icon: github
   check_every: '5m'
   source:
     user: cloudfoundry
@@ -251,6 +265,7 @@ resources:
 
 - name: routing-api-cli-version
   type: semver
+  icon: counter
   source:
     json_key: ((gcp-tas-runtime-service-account/config-json))
     bucket: ci-release-versions
@@ -259,15 +274,17 @@ resources:
     driver: gcs
 
 - name: env-lock
+  type: pool
+  icon: cloud-lock
   source:
     branch: main
     pool: routing-release-env-lock 
     private_key: ((github-tas-runtime-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-  type: pool
 
 - name: image
   type: docker-image                             
+  icon: docker
   source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
@@ -276,12 +293,14 @@ resources:
 
 - name: jq
   type: github-release
+  icon: github
   source:
     owner: jqlang
     repository: jq
 
 - name: haproxy
   type: git
+  icon: tag-outline
   source:
     uri: https://git.haproxy.org/git/haproxy-2.8.git
     tag_filter: v*
