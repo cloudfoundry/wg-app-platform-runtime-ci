@@ -42,6 +42,7 @@ jobs:
 resources:
 - name: garden-rootfs
   type: docker-image
+  icon: docker
   source:
     email: tas-runtime.pdl+tas-runtime-bot@broadcom.com
     username: ((dockerhub-tasruntime-username))
@@ -51,6 +52,7 @@ resources:
 
 - name: garden-fuse
   type: docker-image
+  icon: docker
   source:
     email: tas-runtime.pdl+tas-runtime-bot@broadcom.com
     username: ((dockerhub-tasruntime-username))
@@ -60,6 +62,7 @@ resources:
 
 - name: garden-rootfs-dockerfile
   type: git
+  icon: source-branch
   source:
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci.git
     branch: main
@@ -69,6 +72,7 @@ resources:
 
 - name: garden-fuse-dockerfile
   type: git
+  icon: source-branch
   source:
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci.git
     branch: main
@@ -78,12 +82,14 @@ resources:
 
 - name: ci
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: image
   type: registry-image
+  icon: docker
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
@@ -91,6 +97,7 @@ resources:
 
 - name: http-golang-download
   type: command-runner
+  icon: link-variant
   source:
     version_key: "latest-golang"
     check_command: "echo https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"

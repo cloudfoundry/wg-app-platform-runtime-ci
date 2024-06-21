@@ -45,14 +45,14 @@ resource_types:
 resources:
 - name: golang-release-latest
   type: git
-  icon: github-box
+  icon: tag-outline
   source:
     tag_filter: v*
     uri: https://github.com/bosh-packages/golang-release.git
 
 - name: repo
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/envoy-nginx-release
@@ -60,6 +60,7 @@ resources:
 
 - name: release-branch
   type: git
+  icon: source-branch
   source:
     uri: git@github.com:cloudfoundry/envoy-nginx-release.git
     branch: release
@@ -67,6 +68,7 @@ resources:
 
 - name: develop-branch-mergeback
   type: git
+  icon: source-branch
   source:
     uri: git@github.com:cloudfoundry/envoy-nginx-release.git
     branch: develop
@@ -74,12 +76,14 @@ resources:
 
 - name: ci
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: shared-templates
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
@@ -89,6 +93,7 @@ resources:
 
 - name: go-version
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
@@ -96,21 +101,21 @@ resources:
 
 - name: cf-deployment
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/cf-deployment.git
 
 - name: cf-deployment-concourse-tasks
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
 
 - name: cf-acceptance-tests
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch: release-candidate
     uri: https://github.com/cloudfoundry/cf-acceptance-tests
@@ -124,6 +129,7 @@ resources:
 
 - name: env
   type: shepherd
+  icon: sheep
   source:
     url: https://v2.shepherd.run
     service-account-key: ((shepherd-service-account-key))
@@ -135,22 +141,25 @@ resources:
     compatibility-mode: environments-app
 
 - name: github-release
+  type: github-release
+  icon: github
   source:
     access_token: ((github-tas-runtime-bot/access-token))
     repository: envoy-nginx-release
     owner: cloudfoundry
-  type: github-release
 
 - name: draft-github-release
+  type: github-release
+  icon: github
   source:
     access_token: ((github-tas-runtime-bot/access-token))
     drafts: true
     repository: envoy-nginx-release
     owner: cloudfoundry
-  type: github-release
 
 - name: version
   type: semver
+  icon: counter
   source:
     driver: gcs
     bucket: ci-release-versions
@@ -159,15 +168,17 @@ resources:
     initial_version: 0.21.0
 
 - name: env-lock
+  type: pool
+  icon: cloud-lock
   source:
     branch: main
     pool: envoy-nginx-release-env-lock
     private_key: ((github-tas-runtime-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-  type: pool
 
 - name: image
   type: docker-image
+  icon: docker
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
@@ -176,7 +187,7 @@ resources:
 
 - name: nginx
   type: git
-  icon: github-box
+  icon: tag-outline
   source:
     uri: https://github.com/nginx/nginx
     tag_filter: release-*

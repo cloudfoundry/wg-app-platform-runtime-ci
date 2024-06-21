@@ -17,12 +17,14 @@ resource_types:
 resources:
 - name: windowsservercore-2019
   type: docker-image
+  icon: docker
   source:
     repository: mcr.microsoft.com/windows/servercore
     tag: "1809-amd64"
 
 - name: repo
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: git@github.com:cloudfoundry/windows2016fs.git
@@ -31,6 +33,7 @@ resources:
 
 - name: git-setup
   type: github-release
+  icon: github
   check_every: '5m'
   source:
     user: git-for-windows
@@ -40,36 +43,42 @@ resources:
 #!  version management
 - name: vcredist-ucrt
   type: command-runner
+  icon: link-variant
   source:
     version_key: "url"
     check_command: "curl --location --silent --write-out %{url_effective} --request HEAD https://aka.ms/vs/16/release/vc_redist.x64.exe"
     in_command:    "curl --location --silent --fail --output $1/vcredist-ucrt.x64.exe https://aka.ms/vs/16/release/vc_redist.x64.exe"
 - name: vcredist-ucrt-x86
   type: command-runner
+  icon: link-variant
   source:
     version_key: "url"
     check_command: "curl --location --silent --write-out %{url_effective} --request HEAD https://aka.ms/vs/16/release/vc_redist.x86.exe"
     in_command:    "curl --location --silent --fail --output $1/vcredist-ucrt.x86.exe https://aka.ms/vs/16/release/vc_redist.x86.exe"
 - name: vcredist-2010
   type: command-runner
+  icon: link-variant
   source:
     version_key: "2010-hardcoded-url"
     check_command: "echo https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe"
     in_command:    "curl --silent --fail --output $1/vcredist-2010.x64.exe https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe"
 - name: vcredist-2010-x86
   type: command-runner
+  icon: link-variant
   source:
     version_key: "2010-hardcoded-url"
     check_command: "echo https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe"
     in_command:    "curl --silent --fail --output $1/vcredist-2010.x86.exe https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe"
 - name: dotnet-48-installer
   type: command-runner
+  icon: link-variant
   source:
     version_key: "dotnet-installer-hardcoded-url"
     check_command: "echo https://download.visualstudio.microsoft.com/download/pr/014120d7-d689-4305-befd-3cb711108212/0fd66638cde16859462a6243a4629a50/ndp48-x86-x64-allos-enu.exe"
     in_command:    "curl --silent --fail --output $1/dotnet-48-installer.exe https://download.visualstudio.microsoft.com/download/pr/014120d7-d689-4305-befd-3cb711108212/0fd66638cde16859462a6243a4629a50/ndp48-x86-x64-allos-enu.exe"
 - name: rewrite-msi
   type: command-runner
+  icon: link-variant
   source:
     version_key: "rewrite-msi-url"
     check_command: "echo https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi"
@@ -77,12 +86,14 @@ resources:
 
 - name: ci
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: version
   type: semver
+  icon: counter
   source:
     access_key_id: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
     secret_access_key: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
@@ -94,6 +105,7 @@ resources:
 
 - name: image
   type: docker-image                             
+  icon: docker
   source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key

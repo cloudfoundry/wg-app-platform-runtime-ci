@@ -56,14 +56,14 @@ resource_types:
 resources:
 - name: golang-release-latest
   type: git
-  icon: github-box
+  icon: tag-outline
   source:
     tag_filter: v*
     uri: https://github.com/bosh-packages/golang-release.git
 
 - name: repo
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch:  develop
     uri: git@github.com:cloudfoundry/winc-release
@@ -71,6 +71,7 @@ resources:
 
 - name: release-branch 
   type: git
+  icon: source-branch
   source:
     uri: git@github.com:cloudfoundry/winc-release.git
     branch: release
@@ -78,6 +79,7 @@ resources:
 
 - name: develop-branch-mergeback
   type: git
+  icon: source-branch
   source:
     uri: git@github.com:cloudfoundry/winc-release.git
     branch: develop
@@ -85,12 +87,14 @@ resources:
 
 - name: ci
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: shared-templates
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
@@ -101,7 +105,7 @@ resources:
 #@ for repo in data.values.internal_repos:
 - name: #@ "{}-repo".format(repo.name)
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch: main
     uri: #@ "git@github.com:cloudfoundry/{}.git".format(repo.name)
@@ -110,27 +114,28 @@ resources:
 
 - name: cf-deployment
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/cf-deployment.git
 
 - name: cf-deployment-concourse-tasks
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
 
 - name: cf-acceptance-tests
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch: release-candidate
     uri: https://github.com/cloudfoundry/cf-acceptance-tests
 
 - name: go-version
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
@@ -138,30 +143,35 @@ resources:
 
 - name: updated-go-mod-diff-exporter
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: git@github.com:cloudfoundry/diff-exporter.git
     private_key: ((github-tas-runtime-bot/private-key))
 - name: updated-go-mod-groot-windows
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: git@github.com:cloudfoundry/groot-windows.git
     private_key: ((github-tas-runtime-bot/private-key))
 - name: updated-go-mod-winc
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: git@github.com:cloudfoundry/winc.git
     private_key: ((github-tas-runtime-bot/private-key))
 - name: updated-go-mod-certsplitter
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: git@github.com:cloudfoundry/certsplitter.git
     private_key: ((github-tas-runtime-bot/private-key))
 - name: updated-go-mod-cert-injector
   type: git
+  icon: source-branch
   source:
     branch: main
     uri: git@github.com:cloudfoundry/cert-injector.git
@@ -169,28 +179,28 @@ resources:
 
 - name: garden-ci-artifacts-release
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch: develop
     uri: https://github.com/cloudfoundry/garden-ci-artifacts-release.git
 
 - name: garden-runc-release
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch: release
     uri: https://github.com/cloudfoundry/garden-runc-release.git
 
 - name: routing-release
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch: develop
     uri: https://github.com/cloudfoundry/routing-release.git
 
 - name: windows-utilities-release
   type: git
-  icon: github-box
+  icon: source-branch
   source:
     branch: master
     uri: https://github.com/cloudfoundry/windows-utilities-release.git
@@ -198,6 +208,8 @@ resources:
 #! Environments
 - name: env
   type: git
+  icon: source-branch
+  #! icon: sheep # add this when it transitions to shepherd envs
   source:
     branch: master
     private_key: ((github-tas-runtime-bot/private-key))
@@ -211,22 +223,25 @@ resources:
     interval: '24h'  #! 1 day
 
 - name: github-release
+  type: github-release
+  icon: github
   source:
     access_token: ((github-tas-runtime-bot/access-token))
     repository: winc-release
     owner: cloudfoundry
-  type: github-release
 
 - name: draft-github-release 
+  type: github-release
+  icon: github
   source:
     access_token: ((github-tas-runtime-bot/access-token))
     drafts: true
     repository: winc-release
     owner: cloudfoundry
-  type: github-release
 
 - name: version
   type: semver
+  icon: counter
   source:
     access_key_id: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
     secret_access_key: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
@@ -237,15 +252,17 @@ resources:
     region_name: us-east-1
 
 - name: env-lock
+  type: pool
+  icon: cloud-lock
   source:
     branch: main
     pool: winc-release-env-lock 
     private_key: ((github-tas-runtime-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-  type: pool
 
 - name: image
   type: docker-image                             
+  icon: docker
   source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
@@ -254,6 +271,7 @@ resources:
 
 - name: pesto-cf-deployment
   type: bosh-deployment
+  icon: server-network
   source:
     deployment: cf
     client: ((gcp-garden-windows-env-pesto/bosh-client-id))
@@ -265,16 +283,19 @@ resources:
 
 - name: linux-stemcell
   type: bosh-io-stemcell
+  icon: tag-outline
   source:
     name: bosh-google-kvm-ubuntu-jammy-go_agent
 
 - name: windows-stemcell
   type: bosh-io-stemcell
+  icon: tag-outline
   source:
     name: bosh-google-kvm-windows2019-go_agent
 
 - name: seven-zip
   type: github-release
+  icon: github
   source:
     access_token: ((github-tas-runtime-bot/access-token))
     owner: ip7z
@@ -282,6 +303,7 @@ resources:
 
 - name: mingw
   type: github-release
+  icon: github
   source:
     access_token: ((github-tas-runtime-bot/access-token))
     owner: niXman
