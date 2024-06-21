@@ -33,9 +33,12 @@ function run(){
     do
         arguments="${arguments} -o ${op}"
     done
-    debug "bosh arguments for update-config: ${arguments}"
 
-    bosh delete-config -n --name=${NAME} --type=${TYPE} || true
+    if [[ $(bosh configs --name=${NAME} --type=${TYPE} --json | jq '.Tables[0].Rows | length') -ne 0]]; then
+        bosh delete-config -n --name=${NAME} --type=${TYPE}
+    fi
+
+    debug "bosh arguments for update-config: ${arguments}"
     eval "bosh update-config -n --name=${NAME} --type=${TYPE} ${arguments} ${RUNTIME_CONFIG}"
 }
 
