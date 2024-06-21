@@ -34,7 +34,7 @@ function run(){
         arguments="${arguments} -o ${op}"
     done
 
-    if [[ $(bosh configs --name=${NAME} --type=${TYPE} --json | jq '.Tables[0].Rows | length') -ne 0]]; then
+    if [[ $(bosh configs --name=${NAME} --type=${TYPE} --json | jq '.Tables[0].Rows | length') -ne 0]] then
         bosh delete-config -n --name=${NAME} --type=${TYPE}
     fi
 
