@@ -5,6 +5,8 @@ inputs:
   - name: ci
   - name: repo
   - name: env
+  - name: ci-config
+    optional: true
   - name: release-01
     optional: true
   - name: release-02
