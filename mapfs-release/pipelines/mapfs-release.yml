@@ -9,17 +9,13 @@ groups:
   - security-scan
   - lint-repo
   - claim-env
-  - claim-ldap-env
   - prepare-env
-  - prepare-ldap-env
   - run-cats
   - export-release
   - volume-services-acceptance-tests
-  - volume-services-acceptance-tests-ldap
   - ship-what
   - ship-it
   - unclaim-env
-  - unclaim-ldap-env
 
 - name: periodics
   jobs:
@@ -32,7 +28,6 @@ groups:
 - name: manual
   jobs:
   - release-env-lock
-  - release-ldap-env-lock
 
 - name: version
   jobs:
@@ -205,19 +200,6 @@ resources:
         name: cfd
     compatibility-mode: environments-app
 
-- name: ldap-env
-  type: pcf-pool
-  icon: sheep
-  source:
-    url: https://v2.shepherd.run
-    service-account-key: ((shepherd-service-account-key))
-    lease:
-      namespace: tas-runtime
-      pool:
-        namespace: official
-        name: cfd
-    compatibility-mode: environments-app
-
 - name: github-release
   type: github-release
   icon: github
@@ -262,15 +244,6 @@ resources:
   source:
     branch: main
     pool: mapfs-release-env-lock
-    private_key: ((github-tas-runtime-bot/private-key))
-    uri: git@github.com:/cloudfoundry/runtime-ci-pools.git
-
-- name: ldap-env-lock
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: mapfs-release-ldap-env-lock
     private_key: ((github-tas-runtime-bot/private-key))
     uri: git@github.com:/cloudfoundry/runtime-ci-pools.git
 
@@ -673,36 +646,6 @@ jobs:
       toolsmiths-env: env
     image: image
 
-- name: claim-ldap-env
-  serial: true
-  plan:
-  - in_parallel:
-      fail_fast: true
-      steps:
-      - get: ci
-      - get: image
-      - get: repo
-        trigger: true
-        passed:
-        - check-for-cves
-        - unit-and-integration-tests
-        - security-scan
-        - lint-repo
-      - put: ldap-env-lock
-        params:
-          acquire: true
-  - put: ldap-env
-    params:
-      action: create
-      duration: 176h
-      resource: ldap-env
-      description: mapfs ldap pipeline
-  - task: wait-for-cf-api
-    file: ci/shared/tasks/wait-for-cf-api/linux.yml
-    input_mapping:
-      toolsmiths-env: ldap-env
-    image: image
-
 - name: prepare-env
   public: true
   build_logs_to_retain: 100
@@ -725,6 +668,14 @@ jobs:
   - task: prepare-cf-deployment-env
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+    params:
+      VARS:
+        nfs-ldap-host: ((volume-services-ldap/hostname))
+        nfs-ldap-service-user: ((volume-services-ldap/username))
+        nfs-ldap-service-password: ((volume-services-ldap/password))
+        nfs-ldap-port: ((volume-services-ldap/port))
+        nfs-ldap-proto: ((volume-services-ldap/protocol))
+        nfs-ldap-fqdn: ((volume-services-ldap/fqdn))
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
@@ -881,8 +832,8 @@ jobs:
     params:
       ENVS: |
         VOLUME_SERVICE_BIND_BOGUS_CONFIG='{\"uid\":\"1000\",\"gid\":\"1000\"}'
-        VOLUME_SERVICE_BIND_CONFIG='["{\"uid\":\"1000\",\"gid\":\"1000\"}","{\"uid\":\"1000\",\"gid\":\"1000\",\"mount\":\"/var/vcap/data/foo\"}","{\"uid\":\"1000\",\"gid\":\"1000\",\"version\":\"3\"}","{\"uid\":\"1000\",\"gid\":\"1000\",\"version\":\"4.0\"}","{\"uid\":\"1000\",\"gid\":\"1000\",\"version\":\"4.1\"}","{\"uid\":\"1000\",\"gid\":\"1000\",\"version\":\"4.2\"}"]'
         VOLUME_SERVICE_CREATE_BOGUS_CONFIG='{\"share\":\"nfstestserver.service.cf.internal/export/nonexistensevol\"}'
+        VOLUME_SERVICE_BIND_CONFIG='["{\"username\":\"user1000\",\"password\":\"secret\"}"]'
         VOLUME_SERVICE_CREATE_CONFIG='{\"share\":\"nfstestserver.service.cf.internal/export/users\"}'
         VOLUME_SERVICE_PLAN_NAME=Existing
         VOLUME_SERVICE_SERVICE_NAME=nfs
@@ -921,201 +872,6 @@ jobs:
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
 
-- name: prepare-ldap-env
-  public: true
-  build_logs_to_retain: 100
-  max_in_flight: 1
-  plan:
-  - in_parallel:
-      fail_fast: true
-      steps:
-      - get: ldap-env
-        passed:
-        - claim-ldap-env
-        trigger: true
-      - get: cf-deployment-concourse-tasks
-      - get: cf-deployment
-      - get: ci
-      - get: image
-      - get: nfs-volume-release
-      - get: repo
-        trigger: true
-        passed:
-        - claim-ldap-env
-  - task: prepare-cf-deployment-env
-    image: image
-    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
-    input_mapping:
-      env: ldap-env
-    params:
-      VARS:
-        nfs-ldap-host: ((volume-services-ldap/hostname))
-        nfs-ldap-service-user: ((volume-services-ldap/username))
-        nfs-ldap-service-password: ((volume-services-ldap/password))
-        nfs-ldap-port: ((volume-services-ldap/port))
-        nfs-ldap-proto: ((volume-services-ldap/protocol))
-        nfs-ldap-fqdn: ((volume-services-ldap/fqdn))
-  - task: combine-ops-files
-    file: ci/shared/tasks/combine-assets/linux.yml
-    image: image
-    input_mapping:
-      input-01: cf-deployment
-    params:
-      COPY_ACTIONS: |
-        {input-01/operations/use-compiled-releases.yml,combined-assets}
-        {input-01/operations/scale-to-one-az.yml,combined-assets}
-        {input-01/operations/enable-nfs-volume-service.yml,combined-assets}
-        {input-01/operations/enable-nfs-ldap.yml,combined-assets}
-        {input-01/operations/backup-and-restore/enable-backup-restore.yml,combined-assets}
-        {input-01/operations/backup-and-restore/enable-restore-nfs-broker.yml,combined-assets}
-        {input-01/operations/test/enable-nfs-test-server.yml,combined-assets}
-        {input-01/operations/test/enable-nfs-test-ldapserver.yml,combined-assets}
-        {input-01/operations/experimental/fast-deploy-with-downtime-and-danger.yml,combined-assets}
-        {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
-        {ci/mapfs-release/opsfiles/*.yml,combined-assets}
-  - task: upload-latest-nfs-release
-    file: ci/shared/tasks/bosh-upload-dev-releases/linux.yml
-    image: image
-    input_mapping:
-      env: ldap-env
-      release-01: nfs-volume-release
-  - task: deploy-cf-deployment
-    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
-    input_mapping:
-      ops-files: combined-assets
-      vars-files: prepared-env
-      toolsmiths-env: ldap-env
-    params:
-      DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
-      FAIL_ON_DOWNTIME: "false"
-      VARS_FILES: vars.yml
-      OPS_FILES: #@ "\n".join(data.values.opsfiles + data.values.opsfiles_ldap)
-  - task: uptimer-measure-with-garden-runc-release-update
-    file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
-    input_mapping:
-      ops-files: combined-assets
-      release: repo
-      vars-files: prepared-env
-      toolsmiths-env: ldap-env
-    params:
-      DEPLOY_WITH_UPTIME_MEASUREMENTS: "true"
-      APP_PUSHABILITY_THRESHOLD: "20"
-      APP_STATS_THRESHOLD: "20"
-      HTTP_AVAILABILITY_THRESHOLD: "20"
-      TCP_AVAILABILITY_THRESHOLD: "20"
-      AVAILABLE_PORT: "-1"
-      TCP_PORT: "1029"
-      FAIL_ON_DOWNTIME: "true"
-      MEASURE_SYSLOG_AVAILABILITY: "false"
-      MEASURE_TCP_AVAILABILITY: "true"
-      RECENT_LOGS_THRESHOLD: "50"
-      STREAMING_LOGS_THRESHOLD: "50"
-      APP_SYSLOG_AVAILABILITY_THRESHOLD: "50"
-      USE_SINGLE_APP_INSTANCE: "false"
-      VARS_FILES: vars.yml
-      OPS_FILES: #@ "\n".join(data.values.opsfiles + data.values.opsfiles_ldap)
-  - task: open-asg-for-credhub
-    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
-    input_mapping:
-      toolsmiths-env: ldap-env
-    params:
-      INSTANCE_GROUP_NAME: credhub
-      SECURITY_GROUP_NAME: credhub
-  - task: open-asg-for-uaa
-    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
-    input_mapping:
-      toolsmiths-env: ldap-env
-    params:
-      INSTANCE_GROUP_NAME: uaa
-      SECURITY_GROUP_NAME: uaa
-  - task: enable-feature-flags-for-cats
-    file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
-    input_mapping:
-      toolsmiths-env: ldap-env
-    params:
-      ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
-  - task: run-smoke-tests
-    image: image
-    file: cf-deployment-concourse-tasks/run-errand/task.yml
-    input_mapping:
-      toolsmiths-env: ldap-env
-    params:
-      ERRAND_NAME: smoke_tests
-  - task: run-nfs-broker-errand
-    image: image
-    attempts: 2
-    file: cf-deployment-concourse-tasks/run-errand/task.yml
-    input_mapping:
-      toolsmiths-env: ldap-env
-    params:
-      ERRAND_NAME: nfsbrokerpush
-      INSTANCE: nfs-broker-push
-
-- name: volume-services-acceptance-tests-ldap
-  serial_groups:
-  - acceptance-tests-ldap
-  plan:
-  - in_parallel:
-      fail_fast: true
-      steps:
-      - get: cf-volume-services-acceptance-tests
-      - get: ci
-      - get: image
-      - get: ldap-env
-        passed: [ prepare-ldap-env ]
-        trigger: true
-      - get: nfs-volume-release
-        passed: [ prepare-ldap-env ]
-      - get: repo
-        passed: [ prepare-ldap-env ]
-        trigger: true
-  - task: generate-pats-config-nfs-legacy
-    image: image
-    file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
-    params:
-      ENVS: |
-        VOLUME_SERVICE_BIND_CONFIG='["{\"username\":\"user1000\",\"password\":\"secret\"}"]'
-        VOLUME_SERVICE_CREATE_CONFIG='{\"share\":\"nfstestserver.service.cf.internal/export/users\"}'
-        VOLUME_SERVICE_DISALLOWED_LDAP_BIND_CONFIG='{\"uid\":\"1000\",\"gid\":\"1000\"}'
-        VOLUME_SERVICE_PLAN_NAME=Existing
-        VOLUME_SERVICE_SERVICE_NAME=nfs-legacy
-      CONFIGS: volume-services-acceptance-tests
-    input_mapping:
-      env: ldap-env
-    output_mapping:
-      built-acceptance-test-configs: nfs-pats-config-legacy
-  - task: run-volume-services-acceptance-tests-nfs-legacy
-    image: image
-    file: ci/shared/tasks/run-volume-services-acceptance-tests/linux.yml
-    input_mapping:
-      config: nfs-pats-config-legacy
-    attempts: 2
-    params:
-      TEST_DOCKER_PORA: true
-  - task: generate-pats-config-nfs
-    image: image
-    file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
-    params:
-      ENVS: |
-        VOLUME_SERVICE_BIND_CONFIG='["{\"username\":\"user1000\",\"password\":\"secret\"}"]'
-        VOLUME_SERVICE_CREATE_CONFIG='{\"share\":\"nfstestserver.service.cf.internal/export/users\"}'
-        VOLUME_SERVICE_DISALLOWED_LDAP_BIND_CONFIG='{\"uid\":\"1000\",\"gid\":\"1000\"}'
-        VOLUME_SERVICE_PLAN_NAME=Existing
-        VOLUME_SERVICE_SERVICE_NAME=nfs
-      CONFIGS: volume-services-acceptance-tests
-    input_mapping:
-      env: ldap-env
-    output_mapping:
-      built-acceptance-test-configs: nfs-pats-config
-  - task: run-volume-services-acceptance-tests-nfs
-    image: image
-    file: ci/shared/tasks/run-volume-services-acceptance-tests/linux.yml
-    input_mapping:
-      config: nfs-pats-config
-    attempts: 2
-    params:
-      TEST_DOCKER_PORA: true
-
 - name: ship-what
   plan:
     - in_parallel:
@@ -1125,7 +881,6 @@ jobs:
           passed:
             - run-cats
             - volume-services-acceptance-tests
-            - volume-services-acceptance-tests-ldap
             - export-release
           trigger: true
         - get: image
@@ -1139,10 +894,6 @@ jobs:
             - volume-services-acceptance-tests
             - run-cats
             - export-release
-          trigger: true
-        - get: ldap-env
-          passed:
-            - volume-services-acceptance-tests-ldap
           trigger: true
 
     - task: check-safe-to-release-repo
@@ -1249,20 +1000,6 @@ jobs:
     params:
       release: env-lock
 
-- name: unclaim-ldap-env
-  plan:
-  - get: ldap-env
-    passed:
-    - volume-services-acceptance-tests-ldap
-    trigger: true
-  - get: ldap-env-lock
-  - put: ldap-env
-    params:
-      action: release
-  - put: ldap-env-lock
-    params:
-      release: ldap-env-lock
-
 - name: release-env-lock
   plan:
     - get: env-lock
@@ -1270,14 +1007,6 @@ jobs:
     put: env-lock
     params:
       release: env-lock
-
-- name: release-ldap-env-lock
-  plan:
-    - get: ldap-env-lock
-  ensure:
-    put: ldap-env-lock
-    params:
-      release: ldap-env-lock
 
 - name: patch-bump
   plan:
