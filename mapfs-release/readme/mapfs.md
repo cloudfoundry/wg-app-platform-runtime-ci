@@ -31,6 +31,3 @@ process and the NFS Driver will start a new one. This may break running apps.
 ```
 make test
 ```
-
-# TODO
-REMOVE-me
