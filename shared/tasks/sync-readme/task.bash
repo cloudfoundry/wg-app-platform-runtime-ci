@@ -21,13 +21,18 @@ function run() {
   local SYNCED_REPO_DIR="$PWD/synced-repo"
 
   pushd "repo/" > /dev/null
-  local git_remote_name=$(git_get_remote_name)
+  local git_remote_name
+  git_remote_name=$(git_get_remote_name)
 
-  local sub_readme=$(find ${CI_DIR} -name "${git_remote_name}.md")
-  local belongs_to_dir=$(echo ${sub_readme} | xargs dirname | xargs dirname)
-  local parent_readme=$(find ${CI_DIR} -name "01-*.md" -ipath "${belongs_to_dir}/*")
+  local sub_readme
+  sub_readme=$(find "${CI_DIR}" -name "${git_remote_name}.md")
+  local belongs_to_dir
+  belongs_to_dir=$(echo "${sub_readme}" | xargs dirname | xargs dirname)
+  local parent_readme
+  parent_readme=$(find "${CI_DIR}" -name "01-*.md" -ipath "${belongs_to_dir}/*")
 
-  local docs_md_file="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-docs.md')"
+  local docs_md_file
+  docs_md_file="$(mktemp -p "${task_tmp_dir}" -t 'XXXXX-docs.md')"
   generate_docs_md ${docs_md_file} ${task_tmp_dir}
 
 
