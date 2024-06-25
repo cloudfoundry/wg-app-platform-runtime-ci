@@ -668,14 +668,6 @@ jobs:
   - task: prepare-cf-deployment-env
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
-    params:
-      VARS:
-        nfs-ldap-host: ((volume-services-ldap/hostname))
-        nfs-ldap-service-user: ((volume-services-ldap/username))
-        nfs-ldap-service-password: ((volume-services-ldap/password))
-        nfs-ldap-port: ((volume-services-ldap/port))
-        nfs-ldap-proto: ((volume-services-ldap/protocol))
-        nfs-ldap-fqdn: ((volume-services-ldap/fqdn))
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
@@ -690,8 +682,6 @@ jobs:
         {input-01/operations/backup-and-restore/enable-restore-nfs-broker.yml,combined-assets}
         {input-01/operations/test/enable-nfs-test-server.yml,combined-assets}
         {input-01/operations/experimental/fast-deploy-with-downtime-and-danger.yml,combined-assets}
-        {input-01/operations/enable-nfs-ldap.yml,combined-assets}
-        {input-01/operations/test/enable-nfs-test-ldapserver.yml,combined-assets}
         {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
         {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
         {ci/mapfs-release/opsfiles/*.yml,combined-assets}
@@ -835,7 +825,7 @@ jobs:
       ENVS: |
         VOLUME_SERVICE_BIND_BOGUS_CONFIG='{\"uid\":\"1000\",\"gid\":\"1000\"}'
         VOLUME_SERVICE_CREATE_BOGUS_CONFIG='{\"share\":\"nfstestserver.service.cf.internal/export/nonexistensevol\"}'
-        VOLUME_SERVICE_BIND_CONFIG='["{\"username\":\"user1000\",\"password\":\"secret\"}"]'
+        VOLUME_SERVICE_BIND_CONFIG='["{\"uid\":\"1000\",\"gid\":\"1000\"}","{\"uid\":\"1000\",\"gid\":\"1000\",\"mount\":\"/var/vcap/data/foo\"}","{\"uid\":\"1000\",\"gid\":\"1000\",\"version\":\"3\"}","{\"uid\":\"1000\",\"gid\":\"1000\",\"version\":\"4.0\"}","{\"uid\":\"1000\",\"gid\":\"1000\",\"version\":\"4.1\"}","{\"uid\":\"1000\",\"gid\":\"1000\",\"version\":\"4.2\"}"]'
         VOLUME_SERVICE_CREATE_CONFIG='{\"share\":\"nfstestserver.service.cf.internal/export/users\"}'
         VOLUME_SERVICE_PLAN_NAME=Existing
         VOLUME_SERVICE_SERVICE_NAME=nfs
@@ -998,6 +988,7 @@ jobs:
   - put: env
     params:
       action: release
+      resource: env
   - put: env-lock
     params:
       release: env-lock

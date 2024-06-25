@@ -20,5 +20,3 @@ opsfiles:
 - enable-nfs-test-server.yml
 - scale-for-cats.yml
 - use-latest-nfs-release.yml
-- enable-nfs-ldap.yml
-- enable-nfs-test-ldapserver.yml
