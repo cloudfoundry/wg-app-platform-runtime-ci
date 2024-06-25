@@ -1,0 +1,5 @@
+---
+readme: |
+  This task will upload bosh-release tarball.
+oses:
+  - linux

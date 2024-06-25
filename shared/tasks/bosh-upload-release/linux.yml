@@ -1,0 +1,12 @@
+---
+platform: linux
+
+inputs:
+  - name: ci
+  - name: env
+  - name: created-release-tarball
+
+params:
+
+run:
+  path: ci/shared/tasks/bosh-upload-release/task.bash
