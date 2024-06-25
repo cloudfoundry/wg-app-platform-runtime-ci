@@ -29,6 +29,8 @@ function run(){
     fi
     popd > /dev/null
 
+    cp "${CF_MANIFEST_FILE}" ./prepared-env/cf.yml
+
     cat <<EOF > prepared-env/vars.yml
 ---
 CF_ADMIN_PASSWORD: "${CF_ADMIN_PASSWORD}"
@@ -37,7 +39,7 @@ CF_ENVIRONMENT_NAME: "${CF_ENVIRONMENT_NAME}"
 CF_SYSTEM_DOMAIN: "${CF_SYSTEM_DOMAIN}"
 CF_TCP_DOMAIN: "${CF_TCP_DOMAIN}"
 CF_MANIFEST_VERSION: "${CF_MANIFEST_VERSION}"
-CF_MANIFEST_FILE: "${CF_MANIFEST_FILE}"
+CF_MANIFEST_FILE: "cf.yml"
 EOF
 
     if [[ -n "${VARS}" ]]; then
