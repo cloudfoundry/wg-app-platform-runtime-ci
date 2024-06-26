@@ -7,6 +7,8 @@ inputs:
   - name: env
   - name: config
     optional: true
+  - name: ops-files
+    optional: true
   - name: release-01
     optional: true
   - name: release-02

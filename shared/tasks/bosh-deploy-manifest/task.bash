@@ -31,6 +31,13 @@ function run(){
     local arguments=$(bosh_extract_vars_from_env_files ${default_envs_file} ${env_file})
     for op in ${OPS_FILES:-}
     do
+        if [[ ! -f "${op}" ]]; then
+            if [[ ! -f "ops-files/${op}" ]]; then
+                echo "Can't find ops-file ${op}"
+            else
+                op="ops-files/${op}"
+            fi
+        fi
         arguments="${arguments} -o ${op}"
     done
     debug "bosh arguments for deploy: ${arguments}"

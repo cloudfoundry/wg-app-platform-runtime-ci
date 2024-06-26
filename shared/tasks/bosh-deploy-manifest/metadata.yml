@@ -3,6 +3,7 @@ readme: |
   This task will deploy a given manifest. A set of default vars will be provided for the manifest. See bosh-helpers.bash file for `bosh_extract_manifest_defaults_from_cf` function. 
 extra_inputs:
   config: (Optional) used to pass manifest.yml or other config needed for the task
+  ops-files: (Optional) use to pass opsfiles
   release-*: (Optional) Generic release (git resource) to be created in manifest. Manifest can have `version:create` with variable path. The content in this release can then be mapped via ENV variable.
 oses:
   - linux
