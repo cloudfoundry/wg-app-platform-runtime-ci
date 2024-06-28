@@ -46,6 +46,26 @@ function verify_staticcheck(){
     popd >/dev/null
 }
 
+function verify_gosec(){
+    local dir="${1:-$PWD}"
+    pushd "${dir}" >/dev/null
+    gosec_config_file=$(mktemp)
+    trap "rm ${gosec_config_file}" EXIT
+    cat <<EOF >"${gosec_config_file}"
+{
+  "global": {
+    "exclude": "G304,G204,G103,G404,G402,G401,G101,G501,G107,G505,G601,G305,G303,G106"
+  },
+ "G302": "0755",
+ "G306": "0755",
+ "G301": "0755"
+}
+EOF
+    gosec -conf "${gosec_config_file}" ./...
+    popd >/dev/null
+
+}
+
 function verify_binary() {
     local cmd=${1:?"Provide a command to verify"}
     if ! [ -x "$(command -v "$cmd")" ]; then
