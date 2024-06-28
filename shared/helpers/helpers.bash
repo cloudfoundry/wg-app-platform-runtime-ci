@@ -51,6 +51,16 @@ function verify_gosec(){
     pushd "${dir}" >/dev/null
     gosec_config_file=$(mktemp)
     trap "rm ${gosec_config_file}" EXIT
+
+# - We don't care about the alerts relating to TLSInsecureSkipVerify, or TLSMinVersion because we control that
+#   intentionally, or use the default values from golang (which are secure). gosec freaks out nonetheless.
+# - Also ignore alerts related to the usage of md5 + sha1 being insecure because we're only using them for hashes,
+#   not encryption. 
+# - Also Ignore alerts related to the use of `unsafe` since we need to use it
+# - Also ignore alerts related to variables used in URLs, opening files, executing commands
+# - also ignore alerts about cryptographically insecure random number generators since we don't do encryption with them
+# - also ignore memory aliasing as go 1.22 made it obsolete.
+# - and reconfigure all filepermission checks to have a max permission of 0755 instead of 0600/0700.
     cat <<EOF >"${gosec_config_file}"
 {
   "global": {
