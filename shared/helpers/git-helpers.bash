@@ -4,6 +4,7 @@ function git_configure_author(){
 }
 
 function git_get_remote_name() {
+    # Use HTTPS URLs for remotes. Test scripts will error on SSH Git URLs
     basename "$(git remote get-url origin)" | sed 's/.git//g'
 }
 
