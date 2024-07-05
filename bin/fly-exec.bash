@@ -26,11 +26,16 @@ function run() {
     os="${FLY_OS:-linux}"
 
     local task_path
-    if [[ $(find "${ci_dir}" -type d -ipath "*tasks/$task*" | wc -l) != "1" ]]; then
-        echo "Unable to find task. Either more than one or no task dir with name ($task) was found"
-        exit 1
-    fi
     task_path=$(find "${ci_dir}" -type d -ipath "*tasks/$task*")
+    if [[ ! -d ${task_path} ]]; then
+        if [[ "${PRIVATE_CI:-empty}" != "empty" ]]; then
+            task_path=$(find "${PRIVATE_CI}" -type d -ipath "*tasks/$task*")
+            if [[ ! -d ${task_path} ]]; then
+                echo "Unable to find task. Either more than one or no task dir with name ($task) was found"
+                exit 1
+            fi
+        fi
+    fi
     if [[ "$os" == "linux" ]]; then
         local image
         image="${FLY_IMAGE:-cloudfoundry/tas-runtime-build}"
@@ -64,7 +69,11 @@ else
     fi
 
     local fly_args
-    fly_args="-i ci=${ci_dir} ${fly_mappings:-} $*"
+    fly_args="-i ci=${ci_dir} ${fly_mappings:-}"
+    if [[ "${PRIVATE_CI:-empty}" != "empty" ]]; then
+        fly_args="${fly_args} -i private-ci=${PRIVATE_CI}"
+    fi
+    fly_args="${fly_args} $*"
     echo "Running fly execute with args (${fly_args})"
     eval "fly -t ${target} execute -c ${task_definition} ${fly_args} --include-ignored"
 }
@@ -91,6 +100,7 @@ if [[ "$1" == "-h" || "$1" == "--help" || -z "$1" ]]; then
     - FLY_OS: defaults to linux
     - FLY_IMAGE: defaults to cloudfoundry/tas-runtime-build
     - FLY_TARGET: defaults to runtime
+    - PRIVATE_CI: If the task definition needs to be looked up from a repo other than this repo
 
     Optional Environment variables:
     - REPO_PATH: loaded by .envrc in each respective repo (used where default-params for the task and repo defines inputs and outputs mapping)
