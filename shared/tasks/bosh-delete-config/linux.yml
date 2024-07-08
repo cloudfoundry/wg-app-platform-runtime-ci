@@ -1,0 +1,13 @@
+---
+platform: linux
+
+inputs:
+  - name: ci
+  - name: env
+
+params:
+  NAME:
+  TYPE:
+
+run:
+  path: ci/shared/tasks/bosh-delete-config/task.bash

@@ -1,0 +1,8 @@
+---
+readme: |
+  This task will delete a given config for bosh. 
+oses:
+  - linux
+params:
+  NAME: Bosh Config Name
+  TYPE: Bosh Config Type
