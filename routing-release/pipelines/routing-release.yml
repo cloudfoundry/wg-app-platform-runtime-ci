@@ -811,6 +811,31 @@ jobs:
     file: ci/shared/tasks/determine-image-tag/linux.yml
   - load_var: image_tag
     file: determined-image-tag/tag
+  - task: combine-ops-files
+    file: ci/shared/tasks/combine-assets/linux.yml
+    image: image
+    input_mapping:
+      input-01: cf-deployment
+    params:
+      COPY_ACTIONS: |
+        {ci/routing-release/opsfiles/disable-bbr-non-routing.yml,combined-assets}
+        {ci/routing-release/opsfiles/temp-tls-health-check-compensation.yml,combined-assets}
+        {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
+        {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
+        {ci/shared/opsfiles/add-smoke-tests.yml,combined-assets}
+        {input-01/operations/use-compiled-releases.yml,combined-assets}
+        {input-01/operations/backup-and-restore/enable-backup-restore.yml,combined-assets}
+        {input-01/operations/add-persistent-isolation-segment-diego-cell.yml,combined-assets}
+        {input-01/operations/add-persistent-isolation-segment-router.yml,combined-assets}
+        {input-01/operations/scale-database-cluster.yml,combined-assets}
+        {ci/routing-release/opsfiles/enable-tcp-router-tls.yml,combined-assets}
+        {ci/routing-release/opsfiles/enable-route-emitter-tls-tcp-routes.yml
+        {ci/routing-release/opsfiles/enable-envoy-mtls.yml,combined-assets}
+        {ci/routing-release/opsfiles/disable-rep-unproxied-ports.yml,combined-assets}
+        {ci/routing-release/opsfiles/disable-tcp-router-tls.yml,combined-assets}
+        {ci/routing-release/opsfiles/disable-route-emitter-tls-tcp-routes.yml,combined-assets}
+        {ci/routing-release/opsfiles/disable-envoy-mtls.yml,combined-assets}
+        {ci/routing-release/opsfiles/enable-rep-unproxied-ports.yml,combined-assets}
   - task: create-rats-config
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
     image: image
@@ -826,6 +851,40 @@ jobs:
     vars:
       image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
       image_tag: ((.:image_tag))
+  - task: update-cf-with-tls-support-on-tcp-router-and-mtls-only
+    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    input_mapping:
+      ops-files: combined-assets
+      vars-files: prepared-env
+      toolsmiths-env: env
+    params:
+      DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
+      FAIL_ON_DOWNTIME: "false"
+      VARS_FILES: vars.yml
+      OPS_FILES: #@ "\n".join(data.values.opsfiles + data.values.enable_tcp_routing_tls_opsfiles)
+  - task: run-rats
+    file: ci/shared/tasks/run-bin-test/linux.yml
+    image: image
+    input_mapping:
+      input-01: built-acceptance-test-configs
+    params:
+      DIR: "src/code.cloudfoundry.org/routing-acceptance-tests"
+      ENVS: "CONFIG=$PWD/input-01/rats.json"
+      FUNCTIONS: "ci/routing-release/helpers/configure-binaries.bash"
+    vars:
+      image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
+      image_tag: ((.:image_tag))
+  - task: update-cf-with-no-tls-tcp-route-support
+    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    input_mapping:
+      ops-files: combined-assets
+      vars-files: prepared-env
+      toolsmiths-env: env
+    params:
+      DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
+      FAIL_ON_DOWNTIME: "false"
+      VARS_FILES: vars.yml
+      OPS_FILES: #@ "\n".join(data.values.opsfiles + data.values.disable_tcp_routing_tls_opsfiles)
   - task: run-rats
     file: ci/shared/tasks/run-bin-test/linux.yml
     image: image
