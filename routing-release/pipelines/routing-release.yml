@@ -897,6 +897,17 @@ jobs:
     vars:
       image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
       image_tag: ((.:image_tag))
+  - task: reset-to-original-cf-deployment-settings
+    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    input_mapping:
+      ops-files: combined-assets
+      vars-files: prepared-env
+      toolsmiths-env: env
+    params:
+      DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
+      FAIL_ON_DOWNTIME: "false"
+      VARS_FILES: vars.yml
+      OPS_FILES: #@ "\n".join(data.values.opsfiles)
 
 - name: run-cfsmoke
   serial: true
