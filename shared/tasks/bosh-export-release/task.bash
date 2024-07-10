@@ -11,32 +11,58 @@ unset THIS_FILE_DIR
 
 
 function run(){
-    local task_tmp_dir="${1:?provide temp dir for task}"
-    shift 1
+  local task_tmp_dir="${1:?provide temp dir for task}"
+  shift 1
 
-    bosh_target
-    local cf_manifest="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-cf.yml')"
-    bosh -d "$DEPLOYMENT_NAME" manifest > "${cf_manifest}"
+  bosh_target
+  local deployment_name="export-release-$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 5 ; echo '')"
 
-    pushd repo > /dev/null
-    local release_name=$(bosh_release_name)
-    popd > /dev/null
+  pushd repo > /dev/null
+  local release_name=$(bosh_release_name)
+  popd > /dev/null
 
-    local release_version=$(release="${release_name}" yq '.releases | .[] | select(.name==env(release)) | .version' "${cf_manifest}")
-    if [ -z "${release_version}" ] || [ "$release_version" == "latest" ]; then
-        release_version=$(bosh releases --json | release="${release_name}" jq -r '.Tables[0].Rows[] | select(.name==env.release) | .version' | grep '\*' | cut -d'*' -f1)
-    fi
+  local release_version=$(bosh releases --json | jq --arg name "${release_name}" -r '.Tables[0].Rows[] | select(.name==$name) | .version' | grep '\*' | cut -d'*' -f1)
 
-    local stemcell=$(bosh stemcells --json | jq -r --arg os "${OS}" '.Tables[].Rows[] | select(.os | contains($os)) | select(.version | contains("*")) | .os + "/" + .version' | tr -d "*" | sort -V | tail -1)
+  if (( $(echo "${release_version}" | wc -l) > 1 )); then
+    echo "multiple versions ${release_version} is used with release ${release_name}"
+    exit 1
+  fi
 
-    local release="${release_name}/${release_version}"
+  local release="${release_name}/${release_version}"
 
-    debug "Running 'bosh export-release -d ${DEPLOYMENT_NAME} ${release} ${stemcell}'"
-    bosh export-release -d "${DEPLOYMENT_NAME}" "${release}" "${stemcell}"
+  local stemcell=$(bosh stemcells --json | jq -r --arg os "${OS}" '.Tables[].Rows[] | select(.os | contains($os)) | select(.version | contains("*")) | .os + "/" + .version' | tr -d "*" | sort -V | tail -1)
+
+  echo "Deploying $release with stemcell $stemcell"
+  local deployment_manifest="${task_tmp_dir}/${deployment_name}.yml"
+  cat << EOF > "${deployment_manifest}"
+name: "${deployment_name}"
+releases:
+- name: ${release_name}
+  version: ${release_version}
+
+stemcells:
+- alias: default
+  os: "$(echo $stemcell | cut -d '/' -f1)"
+  version: "$(echo $stemcell | cut -d '/' -f2)"
+
+instance_groups: []
+
+update:
+  canaries: 1
+  max_in_flight: 1
+  canary_watch_time: 1000-90000
+  update_watch_time: 1000-90000
+EOF
+bosh -d ${deployment_name} -n deploy ${deployment_manifest}
+
+
+debug "Running 'bosh export-release -d ${deployment_name} ${release} ${stemcell}'"
+bosh export-release -d "${deployment_name}" "${release}" "${stemcell}"
+bosh -d "${deployment_name}" -n deld
 }
 
 function cleanup() {
-    rm -rf "${task_tmp_dir}"
+  rm -rf "${task_tmp_dir}"
 }
 
 task_tmp_dir="$(mktemp -d -t 'XXXX-task-tmp-dir')"

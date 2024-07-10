@@ -5,4 +5,3 @@ oses:
   - linux
 params:
   OS:  (defaults to ubuntu). Name of OS.
-  DEPLOYMENT_NAME: (default to cf). Name of deployment.
