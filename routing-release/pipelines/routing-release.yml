@@ -806,6 +806,8 @@ jobs:
       trigger: true
     - get: package-release
       resource: golang-release-latest
+    - get: cf-deployment
+    - get: cf-deployment-concourse-tasks
   - task: determine-image-tag
     image: image
     file: ci/shared/tasks/determine-image-tag/linux.yml
@@ -829,7 +831,7 @@ jobs:
         {input-01/operations/add-persistent-isolation-segment-router.yml,combined-assets}
         {input-01/operations/scale-database-cluster.yml,combined-assets}
         {ci/routing-release/opsfiles/enable-tcp-router-tls.yml,combined-assets}
-        {ci/routing-release/opsfiles/enable-route-emitter-tls-tcp-routes.yml
+        {ci/routing-release/opsfiles/enable-route-emitter-tls-tcp-routes.yml,combined-assets}
         {ci/routing-release/opsfiles/enable-envoy-mtls.yml,combined-assets}
         {ci/routing-release/opsfiles/disable-rep-unproxied-ports.yml,combined-assets}
         {ci/routing-release/opsfiles/disable-tcp-router-tls.yml,combined-assets}
