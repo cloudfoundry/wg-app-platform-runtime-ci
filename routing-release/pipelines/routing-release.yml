@@ -697,7 +697,7 @@ jobs:
       APP_PUSHABILITY_THRESHOLD: "20"
       APP_STATS_THRESHOLD: "20"
       HTTP_AVAILABILITY_THRESHOLD: "20"
-      TCP_AVAILABILITY_THRESHOLD: "20"
+      TCP_AVAILABILITY_THRESHOLD: "5" #! lowering to make sure pipelines catch tls-tcp issues
       AVAILABLE_PORT: "-1"
       TCP_PORT: "1029"
       FAIL_ON_DOWNTIME: "true"
