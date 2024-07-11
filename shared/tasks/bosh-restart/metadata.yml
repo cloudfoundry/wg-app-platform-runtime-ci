@@ -1,0 +1,8 @@
+---
+readme: |
+  This task will restart an instance group
+oses:
+  - linux
+params:
+  DEPLOYMENT_NAME: Name of deployment
+  INSTANCE_GROUP: Instance Group to be restarted
