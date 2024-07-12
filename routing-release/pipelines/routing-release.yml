@@ -813,6 +813,9 @@ jobs:
     file: ci/shared/tasks/determine-image-tag/linux.yml
   - load_var: image_tag
     file: determined-image-tag/tag
+  - task: prepare-cf-deployment-env
+    image: image
+    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
