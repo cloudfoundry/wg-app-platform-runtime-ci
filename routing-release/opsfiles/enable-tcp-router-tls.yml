@@ -6,24 +6,3 @@
     client_cert: ((tcp_router_backend_tls.certificate))
     client_key: ((tcp_router_backend_tls.private_key))
     ca_cert: ((diego_instance_identity_ca.ca))
-
-- type: replace
-  path: /variables/name=tcp_router_backend_tls?
-  value:
-    name: tcp_router_backend_tls
-    type: certificate
-    options:
-      ca: service_cf_internal_ca
-      common_name: tcp_router_backend_tls
-      alternative_names:
-      - tcp-router.service.cf.internal
-      extended_key_usage:
-      - client_auth
-
-- type: replace
-  path: /instance_groups/name=diego-cell/jobs/name=rep/properties/containers/proxy/trusted_ca_certificates/-
-  value: ((tcp_router_backend_tls.ca))
-
-- type: replace
-  path: /instance_groups/name=diego-cell/jobs/name=rep/properties/containers/proxy/verify_subject_alt_name/-
-  value: tcp-router.service.cf.internal

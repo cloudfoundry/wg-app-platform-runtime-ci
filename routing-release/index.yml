@@ -32,6 +32,7 @@ opsfiles:
 - enable-backup-restore.yml
 - disable-bbr-non-routing.yml
 - temp-tls-health-check-compensation.yml
+- add-tcp-router-backend-tls-certs.yml
 enable_tcp_routing_tls_opsfiles: []
 #! - enable-tcp-router-tls.yml
 #! - enable-route-emitter-tls-tcp-routes.yml
