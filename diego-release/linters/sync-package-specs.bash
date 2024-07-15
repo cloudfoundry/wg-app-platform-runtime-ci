@@ -31,6 +31,9 @@ function run() {
   sync_package docker_app_lifecycle    -app  code.cloudfoundry.org/dockerapplifecycle/builder \
     -app code.cloudfoundry.org/dockerapplifecycle/launcher &
 
+  sync_package cnb_app_lifecycle       -app  code.cloudfoundry.org/cnbapplifecycle/cmd/builder \
+    -app code.cloudfoundry.org/cnbapplifecycle/cmd/launcher &
+
   sync_package buildpack_app_lifecycle -app  code.cloudfoundry.org/buildpackapplifecycle/builder \
     -app code.cloudfoundry.org/buildpackapplifecycle/launcher \
     -app code.cloudfoundry.org/buildpackapplifecycle/getenv \
