@@ -58,8 +58,14 @@ function run(){
     extra_metadata=$(cat extra-metadata/*)
   fi
 
+  local dashed_version
+  dashed_version="$(echo ${new_version} | sed  s/\\./-/g)"
 
   cat >> built-release-notes/notes.md <<EOF
+## <a id="${dashed_version}"></a> ${new_version}
+
+**Release Date**: $(date  +"%B %d, %Y")
+
 ## Changes
 
 - FIXME: enter release notes here
