@@ -43,9 +43,9 @@ function run(){
     fi
   fi
 
-  if [[ -z "${go_version}" ]]; then
-    echo "Unable to find version of go"
-    exit 1
+  local built_with_go=""
+  if [[ -n "${go_version}" ]]; then
+    built_with_go="## ✨  Built with go ${go_version}"
   fi
 
   repo_name="$(git_get_remote_name)"
@@ -65,8 +65,7 @@ function run(){
 - FIXME: enter release notes here
 
 ${spec_diff}
-
-## ✨  Built with go ${go_version}
+${built_with_go}
 
 **Full Changelog**: https://github.com/${GITHUB_ORG}/${repo_name}/compare/${old_version}...${new_tag_version}
 
