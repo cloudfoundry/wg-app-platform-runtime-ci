@@ -11,6 +11,8 @@ function create_pr() {
 
 function run(){
     pushd repo > /dev/null
+
+    git fetch --all
     local title=$(git show "origin/$BRANCH" --pretty=format:"%s" --no-patch)
     local description=$(git show "origin/$BRANCH" --pretty=format:"%b" --no-patch)
 
