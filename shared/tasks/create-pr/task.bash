@@ -6,7 +6,7 @@ set -o pipefail
 function create_pr() {
     local title="${1:?Provide title}"
     local description="${1:?Provide title}"
-    gh pr create --title "${title}" --body "${description}" --label "${LABEL}" --base develop --head "${BRANCH}"
+    gh pr create --title "${title}" --body "${description}" --label "${LABEL}" --base "${BASE_BRANCH}" --head "${BRANCH}"
 }
 
 function run(){

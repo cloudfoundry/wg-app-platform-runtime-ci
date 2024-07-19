@@ -9,6 +9,7 @@ params:
   GITHUB_TOKEN: ~
   LABEL: dependencies
   BRANCH: ~
+  BASE_BRANCH: develop
 
 run:
   path: ci/shared/tasks/create-pr/task.bash
