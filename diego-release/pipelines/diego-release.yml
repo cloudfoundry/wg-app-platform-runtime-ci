@@ -734,11 +734,6 @@ jobs:
           INIGO_ECR_IMAGE_REF=((aws-ecr-diego-docker-app/ref))
           INIGO_ECR_IMAGE_ROOTFS_PATH=((aws-ecr-diego-docker-app/uri))
           INIGO_ECR_IMAGE_URI=((aws-ecr-diego-docker-app/uri))
-          INIGO_PRIVATE_DOCKER_IMAGE_PASSWORD=((azure-acr-diego/password))
-          INIGO_PRIVATE_DOCKER_IMAGE_REF=((azure-acr-diego/ref))
-          INIGO_PRIVATE_DOCKER_IMAGE_ROOTFS_PATH=((azure-acr-diego/uri))
-          INIGO_PRIVATE_DOCKER_IMAGE_URI=((azure-acr-diego/uri))
-          INIGO_PRIVATE_DOCKER_IMAGE_USERNAME=((azure-acr-diego/username))
           ROUTING_RELEASE_PATH=$PWD/input-01
           GARDEN_RUNC_RELEASE_PATH=$PWD/input-02
           DIEGO_RELEASE_PATH=$PWD/repo
