@@ -253,10 +253,10 @@ resources:
   type: docker-image                             
   icon: docker
   source:                                        
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    repository: cloudfoundry/tas-runtime-build
     tag: 'latest'
-    username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    username: ((dockerhub-tasruntime/user))
+    password: ((dockerhub-tasruntime/password))
 
 - name: diego-inigo-ci-rootfs
   type: docker-image
