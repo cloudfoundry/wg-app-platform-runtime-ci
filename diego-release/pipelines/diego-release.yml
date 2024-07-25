@@ -255,8 +255,8 @@ resources:
   source:                                        
     repository: cloudfoundry/tas-runtime-build
     tag: 'latest'
-    username: ((dockerhub-tasruntime/user))
-    password: ((dockerhub-tasruntime/password))
+    username: ((dockerhub-tasruntime-username))
+    password: ((dockerhub-tasruntime-password))
 
 - name: diego-inigo-ci-rootfs
   type: docker-image
