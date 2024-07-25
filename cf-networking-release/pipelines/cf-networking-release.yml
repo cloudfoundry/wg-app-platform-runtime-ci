@@ -50,6 +50,11 @@ resource_types:
   source:
     repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
     tag: v1  #! This may be bumped in the future
+- name: cogito
+  type: registry-image
+  check_every: 168h
+  source:
+    repository: pix4d/cogito
 
 #! Define-Resources
 resources:
@@ -121,7 +126,7 @@ resources:
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
-    paths: 
+    paths:
       - shared/*.md
       - silk-release/*.md
       - silk-release/readme/*.md
@@ -132,7 +137,7 @@ resources:
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
-    paths: 
+    paths:
       - shared/*.md
       - cf-networking-release/*.md
       - cf-networking-release/readme/*.md
@@ -187,7 +192,7 @@ resources:
         name: cfd
     compatibility-mode: environments-app
 
-- name: cf-networking-github-release 
+- name: cf-networking-github-release
   type: github-release
   icon: github
   source:
@@ -195,7 +200,7 @@ resources:
     repository: cf-networking-release
     owner: cloudfoundry
 
-- name: silk-github-release 
+- name: silk-github-release
   type: github-release
   icon: github
   source:
@@ -203,7 +208,7 @@ resources:
     repository: silk-release
     owner: cloudfoundry
 
-- name: cf-networking-draft-github-release 
+- name: cf-networking-draft-github-release
   type: github-release
   icon: github
   source:
@@ -212,7 +217,7 @@ resources:
     repository: cf-networking-release
     owner: cloudfoundry
 
-- name: silk-draft-github-release 
+- name: silk-draft-github-release
   type: github-release
   icon: github
   source:
@@ -227,7 +232,7 @@ resources:
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
-    paths: 
+    paths:
       - shared/github
 
 - name: version
@@ -244,24 +249,43 @@ resources:
   icon: cloud-lock
   source:
     branch: main
-    pool: cf-networking-release-env-lock 
+    pool: cf-networking-release-env-lock
     private_key: ((github-tas-runtime-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: image
-  type: docker-image                             
+  type: docker-image
   icon: docker
-  source:                                        
+  source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     tag: 'latest'
     username: _json_key
     password: ((gcp-tas-runtime-service-account/config-json))
 
+- name: chat-notify
+  type: cogito
+  check_every: never
+  source:
+    sinks:
+      - gchat
+    gchat_webhook: ((concourse-google-chat-webhook))
+
+meta:
+  gchat_notification: &gchat_notification
+    on_failure:
+      put: chat-notify
+      params:
+        state: failure
+    on_error:
+      put: chat-notify
+      params:
+        state: error
 
 #! Define-Jobs
 jobs:
 - name: bump-dependencies-go-mod
   serial: true
+  <<: *gchat_notification
   plan:
   - in_parallel:
       steps:
@@ -311,6 +335,7 @@ jobs:
           repository: bumped-silk
 
 - name: bump-package-golang
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -373,6 +398,7 @@ jobs:
           repository: silk-vendored-repo
 
 - name: bump-healthchecker-in-networking-release
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -396,6 +422,7 @@ jobs:
       repository: vendored-repo
 
 - name: bump-healthchecker-in-silk-release
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -420,6 +447,7 @@ jobs:
 
 - name: sync-dot-github-dir-in-networking-release
   serial: true
+  <<: *gchat_notification
   plan:
   - in_parallel:
       steps:
@@ -441,6 +469,7 @@ jobs:
 
 - name: sync-dot-github-dir-in-silk-release
   serial: true
+  <<: *gchat_notification
   plan:
   - in_parallel:
       steps:
@@ -462,6 +491,7 @@ jobs:
 
 - name: sync-readme-in-networking-release
   serial: true
+  <<: *gchat_notification
   plan:
   - in_parallel:
       steps:
@@ -485,6 +515,7 @@ jobs:
 
 - name: sync-readme-in-silk-release
   serial: true
+  <<: *gchat_notification
   plan:
   - in_parallel:
       steps:
@@ -506,9 +537,9 @@ jobs:
        rebase: true
        repository: synced-repo
 
-
 - name: template-tests
   serial: true
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -535,6 +566,7 @@ jobs:
 
 - name: unit-and-integration-tests
   serial: true
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -601,10 +633,11 @@ jobs:
 
 - name: lint-repo
   serial: true
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
-    - get: silk-repo 
+    - get: silk-repo
       trigger: true
     - get: cf-networking-repo
       trigger: true
@@ -622,6 +655,7 @@ jobs:
 
 - name: claim-env
   serial: true
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -657,6 +691,7 @@ jobs:
 
 - name: prepare-env
   serial: true
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -764,6 +799,7 @@ jobs:
 - name: run-cats
   serial: true
   serial_groups: [acceptance]
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -799,6 +835,7 @@ jobs:
 - name: run-service-discovery-acceptance-tests
   serial: true
   serial_groups: [acceptance]
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -829,7 +866,7 @@ jobs:
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
     params:
       CONFIGS: service-discovery-acceptance-tests
-      WITH_ISOSEG: false 
+      WITH_ISOSEG: false
       WITH_DYNAMIC_ASG: true
   - task: service-discovery-acceptance-tests
     file: ci/shared/tasks/run-bin-test/linux.yml
@@ -847,10 +884,10 @@ jobs:
       DIR: src/code.cloudfoundry.org/test/acceptance-sd
       FLAGS: "--procs=1" #!TODO: acceptance tests can't run in parallel, overwrite default ginkgo flag to run in serial
 
-
 - name: run-cf-networking-acceptance-tests
   serial: true
   serial_groups: [acceptance]
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -881,7 +918,7 @@ jobs:
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
     params:
       CONFIGS: cf-networking-acceptance-tests
-      WITH_ISOSEG: false 
+      WITH_ISOSEG: false
       WITH_DYNAMIC_ASG: true
   - task: cf-networking-acceptance-tests
     file: ci/shared/tasks/run-bin-test/linux.yml
@@ -901,6 +938,7 @@ jobs:
 
 - name: run-service-discovery-performance-tests
   serial: true
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: cf-networking-repo
@@ -939,6 +977,7 @@ jobs:
 
 - name: export-release
   serial: true
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -965,6 +1004,7 @@ jobs:
       repo: silk-repo
 
 - name: ship-what
+  <<: *gchat_notification
   plan:
     - in_parallel:
         steps:
@@ -1030,6 +1070,7 @@ jobs:
 
 - name: ship-it
   serial: true
+  <<: *gchat_notification
   plan:
     - in_parallel:
         steps:
@@ -1165,6 +1206,7 @@ jobs:
 
 - name: unclaim-env
   serial: true
+  <<: *gchat_notification
   plan:
   - get: env
     passed: [ship-what]
@@ -1179,6 +1221,7 @@ jobs:
     put: env-lock
 
 - name: release-env-lock
+  <<: *gchat_notification
   plan:
   - get: env-lock
   ensure:
@@ -1189,6 +1232,7 @@ jobs:
 #! versioning
 - name: patch-bump
   serial_groups: [version]
+  <<: *gchat_notification
   plan:
   - get: version
     params: {bump: patch}
@@ -1197,6 +1241,7 @@ jobs:
 
 - name: minor-bump
   serial_groups: [version]
+  <<: *gchat_notification
   plan:
   - get: version
     params: {bump: minor}
@@ -1205,6 +1250,7 @@ jobs:
 
 - name: major-bump
   serial_groups: [version]
+  <<: *gchat_notification
   plan:
   - get: version
     params: {bump: major}
