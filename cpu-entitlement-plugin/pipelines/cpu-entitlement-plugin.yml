@@ -37,6 +37,12 @@ resource_types:
     repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
     tag: v1  #! This may be bumped in the future
 
+- name: cogito
+  type: registry-image
+  check_every: 168h
+  source:
+    repository: pix4d/cogito
+
 #! Define-Resources
 resources:
 - name: repo
@@ -55,7 +61,7 @@ resources:
     uri: git@github.com:cloudfoundry/test-log-emitter-release.git
     private_key: ((github-tas-runtime-bot/private-key))
 
-- name: release-branch 
+- name: release-branch
   type: git
   icon: source-branch
   source:
@@ -120,7 +126,7 @@ resources:
     repository: cpu-entitlement-plugin
     owner: cloudfoundry
 
-- name: draft-github-release 
+- name: draft-github-release
   type: github-release
   icon: github
   source:
@@ -143,30 +149,50 @@ resources:
   icon: cloud-lock
   source:
     branch: main
-    pool: cpu-entitlement-plugin-env-lock 
+    pool: cpu-entitlement-plugin-env-lock
     private_key: ((github-tas-runtime-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: image
-  type: docker-image                             
+  type: docker-image
   icon: docker
-  source:                                        
+  source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     tag: 'latest'
     username: _json_key
     password: ((gcp-tas-runtime-service-account/config-json))
 
+- name: chat-notify
+  type: cogito
+  check_every: never
+  source:
+    sinks:
+      - gchat
+    gchat_webhook: ((concourse-google-chat-webhook))
+
+meta:
+  gchat_notification: &gchat_notification
+    on_failure:
+      put: chat-notify
+      params:
+        state: failure
+    on_error:
+      put: chat-notify
+      params:
+        state: error
+
 #! Define-Jobs
 jobs:
 - name: bump-dependencies-go-mod
   serial: true
+  <<: *gchat_notification
   plan:
   - in_parallel:
       steps:
       - get: ci
       - get: repo
       - get: image
-      - get: daily 
+      - get: daily
         trigger: true
   - task: cpu-entitlement-plugin-bump-dependencies-go-mod
     image: image
@@ -180,6 +206,7 @@ jobs:
 
 - name: unit-tests
   serial: true
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -202,6 +229,7 @@ jobs:
 
 - name: claim-env
   serial: true
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -229,6 +257,7 @@ jobs:
 
 - name: prepare-env
   serial: true
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -270,6 +299,7 @@ jobs:
 - name: run-integration-tests
   serial: true
   serial_groups: [acceptance]
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -310,6 +340,7 @@ jobs:
 - name: run-e2e-tests
   serial: true
   serial_groups: [acceptance]
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -356,6 +387,7 @@ jobs:
       image_tag: ((.:image_tag))
 
 - name: ship-what
+  <<: *gchat_notification
   plan:
     - in_parallel:
         steps:
@@ -403,6 +435,7 @@ jobs:
 
 - name: ship-it
   serial: true
+  <<: *gchat_notification
   plan:
     - in_parallel:
         steps:
@@ -482,6 +515,7 @@ jobs:
 
 - name: unclaim-env
   serial: true
+  <<: *gchat_notification
   plan:
   - get: env
     passed: [ship-what]
@@ -496,6 +530,7 @@ jobs:
     put: env-lock
 
 - name: release-env-lock
+  <<: *gchat_notification
   plan:
   - get: env-lock
   ensure:
@@ -506,6 +541,7 @@ jobs:
 #! versioning
 - name: patch-bump
   serial_groups: [version]
+  <<: *gchat_notification
   plan:
   - get: version
     params: {bump: patch}
@@ -514,6 +550,7 @@ jobs:
 
 - name: minor-bump
   serial_groups: [version]
+  <<: *gchat_notification
   plan:
   - get: version
     params: {bump: minor}
@@ -522,6 +559,7 @@ jobs:
 
 - name: major-bump
   serial_groups: [version]
+  <<: *gchat_notification
   plan:
   - get: version
     params: {bump: major}
