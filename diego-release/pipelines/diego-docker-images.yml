@@ -1,8 +1,171 @@
 ---
-jobs:
+resource_types:
+  - name: google-cloud-storage
+    type: docker-image
+    source:
+      repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/frodenas/gcs-resource
+      username: _json_key
+      password: ((gcp-tas-runtime-service-account/config-json))
 
+  - name: command-runner
+    type: docker-image
+    source:
+      repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
+      tag: latest
+      username: _json_key
+      password: ((gcp-tas-runtime-service-account/config-json))
+
+  - name: cogito
+    type: registry-image
+    check_every: 168h
+    source:
+      repository: pix4d/cogito
+
+resources:
+  - name: diego-inigo-ci-rootfs-dockerfile
+    type: git
+    icon: source-branch
+    source:
+      uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci.git
+      branch: main
+      private_key: ((github-tas-runtime-bot/private-key))
+      paths:
+        - diego-release/dockerfiles/diego-inigo-ci-rootfs/Dockerfile
+
+  - name: oras-cli
+    type: github-release
+    icon: github
+    check_every: '24h'
+    source:
+      access_token: ((github-tas-runtime-bot/access-token))
+      owner: oras-project
+      repository: oras
+
+  - name: docker-buildx
+    type: github-release
+    icon: github
+    check_every: '24h'
+    source:
+      access_token: ((github-tas-runtime-bot/access-token))
+      owner: docker
+      repository: buildx
+
+  - name: diego-docker-app-dockerfile
+    type: git
+    icon: source-branch
+    source:
+      uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci.git
+      branch: main
+      private_key: ((github-tas-runtime-bot/private-key))
+      paths:
+        - diego-release/dockerfiles/diego-docker-app/Dockerfile
+        - diego-release/dockerfiles/diego-docker-app/dockerapp.go
+
+  - name: grace
+    type: git
+    icon: source-branch
+    source:
+      uri: git@github.com:cloudfoundry/grace.git
+      branch: main
+      private_key: ((github-tas-runtime-bot/private-key))
+
+  - name: diego-docker-app
+    type: docker-image
+    icon: docker
+    source:
+      username: ((dockerhub-tasruntime-username))
+      password: ((dockerhub-tasruntime-password))
+      repository: cloudfoundry/diego-docker-app
+
+  - name: aws-ecr-docker-app
+    type: docker-image
+    icon: docker
+    source:
+      aws_access_key_id: ((aws-ecr-diego-docker-app/access-key-id))
+      aws_secret_access_key: ((aws-ecr-diego-docker-app/secret-access-key))
+      repository: ((aws-ecr-diego-docker-app/ref))
+
+  - name: diego-inigo-ci-rootfs
+    type: docker-image
+    icon: docker
+    source:
+      username: ((dockerhub-tasruntime-username))
+      password: ((dockerhub-tasruntime-password))
+      repository: cloudfoundry/diego-inigo-ci-rootfs
+
+  - name: cloudfoundry-grace-docker
+    type: docker-image
+    icon: docker
+    source:
+      username: ((dockerhub-tasruntime-username))
+      password: ((dockerhub-tasruntime-password))
+      repository: cloudfoundry/grace
+
+  - name: image
+    type: registry-image
+    icon: docker
+    source:
+      repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+      username: _json_key
+      password: ((gcp-tas-runtime-service-account/config-json))
+
+  - name: cloudfoundry-grace-gcs
+    type: google-cloud-storage
+    icon: bitbucket
+    source:
+      bucket: grace-assets
+      regexp: grace-*.tgz
+      json_key: ((gcp-tas-runtime-service-account/config-json))
+
+  - name: ci
+    type: git
+    icon: source-branch
+    source:
+      branch: main
+      uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci
+      private_key: ((github-tas-runtime-bot/private-key))
+
+  - name: go-version
+    type: git
+    icon: source-branch
+    source:
+      branch: main
+      uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci
+      private_key: ((github-tas-runtime-bot/private-key))
+      paths:
+        - go-version.json
+
+  - name: http-golang-download
+    type: command-runner
+    icon: link-variant
+    source:
+      version_key: "latest-golang"
+      check_command: "echo https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"
+      in_command:    "curl --silent --fail --output $1/golang.tgz https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"
+
+  - name: chat-notify
+    type: cogito
+    check_every: never
+    source:
+      sinks:
+        - gchat
+      gchat_webhook: ((concourse-google-chat-webhook))
+
+meta:
+  gchat_notification: &gchat_notification
+    on_failure:
+      put: chat-notify
+      params:
+        state: failure
+    on_error:
+      put: chat-notify
+      params:
+        state: error
+
+jobs:
 - name: diego-inigo-ci-rootfs
   serial: true
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -25,6 +188,7 @@ jobs:
 
 - name: diego-docker-app
   serial: true
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -52,6 +216,7 @@ jobs:
 
 - name: diego-oci-app
   serial: true
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -89,6 +254,7 @@ jobs:
 
 - name: grace
   serial: true
+  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: http-golang-download
@@ -125,140 +291,3 @@ jobs:
     params:
       file: released-binaries/grace-*.tgz
       predefined_acl: publicRead
-
-resources:
-- name: diego-inigo-ci-rootfs-dockerfile
-  type: git
-  icon: source-branch
-  source:
-    uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci.git
-    branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
-    paths:
-    - diego-release/dockerfiles/diego-inigo-ci-rootfs/Dockerfile
-
-- name: oras-cli
-  type: github-release
-  icon: github
-  check_every: '24h'
-  source:
-    access_token: ((github-tas-runtime-bot/access-token))
-    owner: oras-project
-    repository: oras
-
-- name: docker-buildx
-  type: github-release
-  icon: github
-  check_every: '24h'
-  source:
-    access_token: ((github-tas-runtime-bot/access-token))
-    owner: docker
-    repository: buildx
-
-- name: diego-docker-app-dockerfile
-  type: git
-  icon: source-branch
-  source:
-    uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci.git
-    branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
-    paths:
-    - diego-release/dockerfiles/diego-docker-app/Dockerfile
-    - diego-release/dockerfiles/diego-docker-app/dockerapp.go
-
-- name: grace
-  type: git
-  icon: source-branch
-  source:
-    uri: git@github.com:cloudfoundry/grace.git
-    branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
-
-- name: diego-docker-app
-  type: docker-image
-  icon: docker
-  source:
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
-    repository: cloudfoundry/diego-docker-app
-
-- name: aws-ecr-docker-app
-  type: docker-image
-  icon: docker
-  source:
-    aws_access_key_id: ((aws-ecr-diego-docker-app/access-key-id))
-    aws_secret_access_key: ((aws-ecr-diego-docker-app/secret-access-key))
-    repository: ((aws-ecr-diego-docker-app/ref))
-
-- name: diego-inigo-ci-rootfs
-  type: docker-image
-  icon: docker
-  source:
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
-    repository: cloudfoundry/diego-inigo-ci-rootfs
-
-- name: cloudfoundry-grace-docker
-  type: docker-image
-  icon: docker
-  source:
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
-    repository: cloudfoundry/grace
-
-- name: image
-  type: registry-image
-  icon: docker
-  source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
-    username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
-
-- name: cloudfoundry-grace-gcs
-  type: google-cloud-storage
-  icon: bitbucket
-  source:
-    bucket: grace-assets
-    regexp: grace-*.tgz
-    json_key: ((gcp-tas-runtime-service-account/config-json))
-
-- name: ci
-  type: git
-  icon: source-branch
-  source:
-    branch: main
-    uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci
-    private_key: ((github-tas-runtime-bot/private-key))
-
-- name: go-version
-  type: git
-  icon: source-branch
-  source:
-    branch: main
-    uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci
-    private_key: ((github-tas-runtime-bot/private-key))
-    paths:
-    - go-version.json
-
-- name: http-golang-download
-  type: command-runner
-  icon: link-variant
-  source:
-    version_key: "latest-golang"
-    check_command: "echo https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"
-    in_command:    "curl --silent --fail --output $1/golang.tgz https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"
-
-resource_types:
-- name: google-cloud-storage
-  type: docker-image
-  source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/frodenas/gcs-resource
-    username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
-- name: command-runner
-  type: docker-image
-  source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
-    tag: latest
-    username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
