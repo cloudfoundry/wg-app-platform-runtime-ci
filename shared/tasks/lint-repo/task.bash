@@ -27,9 +27,13 @@ function run(){
     for linter in ${LINTERS}; do
         local repo_linter="./ci/${repo_name}/linters/${linter}"
         local shared_linter="./ci/shared/linters/${linter}"
+        local private_repo_linter="./private-ci/${repo_name}/linters/${linter}"
         if [[ -f "$repo_linter" ]]; then
             echo "Running $repo_linter for-$repo_name with-exit-on-error=true"
             "$repo_linter" "$PWD/repo" true
+        elif [[ -f "$private_repo_linter" ]]; then
+            echo "Running $private_repo_linter for-$repo_name with-exit-on-error=true"
+            "$private_repo_linter" "$PWD/repo" true
         elif [[ -f "$shared_linter" ]]; then
             echo "Running $shared_linter for-$repo_name with-exit-on-error=true"
             "$shared_linter" "$PWD/repo" true
