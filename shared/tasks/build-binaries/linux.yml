@@ -12,6 +12,8 @@ image_resource:
 inputs:
 - name: ci
 - name: repo
+- name: private-ci
+  optional: true
 
 outputs:
 - name: built-binaries
