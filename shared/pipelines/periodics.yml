@@ -38,16 +38,20 @@ resources:
   source:
     sinks:
       - gchat
-    gchat_webhook: ((concourse-google-chat-webhook))
+    gchat_webhook: ((concourse-google-chat-webhook/concourse-webhook))
 
 meta:
   gchat_notification: &gchat_notification
     on_failure:
       put: chat-notify
+      inputs:
+        - ci
       params:
         state: failure
     on_error:
       put: chat-notify
+      inputs:
+        - ci
       params:
         state: error
 

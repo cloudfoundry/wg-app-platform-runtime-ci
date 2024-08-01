@@ -178,16 +178,38 @@ resources:
   source:
     sinks:
       - gchat
-    gchat_webhook: ((concourse-google-chat-webhook))
+    gchat_webhook: ((concourse-google-chat-webhook/concourse-webhook))
 
 meta:
   gchat_notification: &gchat_notification
     on_failure:
       put: chat-notify
+      inputs:
+        - ci
+        - go-version
+        - build-dockerfile
+        - ruby-installer-git
+        - ruby-git
+        - postgres-dockerfile
+        - postgres-docker-repo
+        - mysql-8.0-dockerfile
+        - mysql-docker-repo
+        - mysql-5.7-dockerfile
       params:
         state: failure
     on_error:
       put: chat-notify
+      inputs:
+        - ci
+        - go-version
+        - build-dockerfile
+        - ruby-installer-git
+        - ruby-git
+        - postgres-dockerfile
+        - postgres-docker-repo
+        - mysql-8.0-dockerfile
+        - mysql-docker-repo
+        - mysql-5.7-dockerfile
       params:
         state: error
 

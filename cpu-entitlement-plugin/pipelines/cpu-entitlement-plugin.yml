@@ -168,16 +168,32 @@ resources:
   source:
     sinks:
       - gchat
-    gchat_webhook: ((concourse-google-chat-webhook))
+    gchat_webhook: ((concourse-google-chat-webhook/concourse-webhook))
 
 meta:
   gchat_notification: &gchat_notification
     on_failure:
       put: chat-notify
+      inputs:
+        - repo
+        - test-log-emitter-release
+        - release-branch
+        - develop-branch-mergeback
+        - ci
+        - cf-deployment
+        - cf-deployment-concourse-tasks
       params:
         state: failure
     on_error:
       put: chat-notify
+      inputs:
+        - repo
+        - test-log-emitter-release
+        - release-branch
+        - develop-branch-mergeback
+        - ci
+        - cf-deployment
+        - cf-deployment-concourse-tasks
       params:
         state: error
 
@@ -241,7 +257,7 @@ jobs:
 
     - put: env-lock
       params:
-       acquire: true
+        acquire: true
   - put: env
     params:
       action: create
