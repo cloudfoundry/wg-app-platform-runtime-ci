@@ -4,6 +4,8 @@ platform: linux
 inputs:
   - name: ci
   - name: repo
+  - name: ci-config
+    optional: true
 
 outputs:
   - name: synced-repo 

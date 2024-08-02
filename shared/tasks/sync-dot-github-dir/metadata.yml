@@ -1,6 +1,8 @@
 ---
 readme: |
   This task adds and updates the shared github templates across repos
+extra_inputs:
+  ci-config: (Optional) if ci config files needs to be provided from a repo other than this. This would be used when using a private-repo to hold ci configurations
 oses:
   - linux
 params:
