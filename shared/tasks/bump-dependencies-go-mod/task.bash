@@ -40,8 +40,14 @@ function bump() {
 }
 
 function run() {
+  local task_tmp_dir="${1:?provide temp dir for task}"
+  shift 1
   git_configure_author
   git_configure_safe_directory
+  
+  local env_file="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-env.bash')"
+  expand_envs "${env_file}"
+  . "${env_file}"
 
   pushd repo > /dev/null
   local repo_name=$(git_get_remote_name)
@@ -92,7 +98,12 @@ function run() {
   rsync -av $PWD/ "$CURRENT_DIR/bumped-repo"
   popd > /dev/null
 }
+function cleanup() {
+    rm -rf $task_tmp_dir
+}
 
 process_replace_directives
+task_tmp_dir="$(mktemp -d -t 'XXXX-task-tmp-dir')"
+trap cleanup EXIT
 trap 'err_reporter $LINENO' ERR
-run "$@"
+run $task_tmp_dir "$@"

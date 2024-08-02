@@ -24,6 +24,7 @@ params:
   REPLACE_DIRECTIVES: 
   FUNCTIONS:
   EXTRA_GO_TAGS: 
+  ENVS:
 
 run:
   path: ci/shared/tasks/bump-dependencies-go-mod/task.bash
