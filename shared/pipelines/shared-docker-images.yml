@@ -6,12 +6,6 @@ resource_types:
     username: _json_key
     password: ((gcp-tas-runtime-service-account/config-json))
     tag: latest
-- name: cogito
-  type: registry-image
-  check_every: 168h
-  source:
-    repository: pix4d/cogito
-
 resources:
 - name: ci
   type: git
@@ -44,6 +38,7 @@ resources:
     username: ((dockerhub-tasruntime-username))
     password: ((dockerhub-tasruntime-password))
     repository: cloudfoundry/tas-runtime-build
+
 - name: build-image-version
   type: semver
   icon: counter
@@ -78,7 +73,7 @@ resources:
     paths:
     - shared/dockerfiles/tas-runtime-postgres/*
 - name: postgres-image
-  type: registry-image
+  type: registry-image 
   icon: docker
   source:
     username: ((dockerhub-tasruntime-username))
@@ -142,7 +137,7 @@ resources:
     paths:
     - shared/dockerfiles/tas-runtime-mysql-5.7/*
 - name: mysql-5.7-image
-  type: registry-image
+  type: registry-image 
   icon: docker
   source:
     username: ((dockerhub-tasruntime-username))
@@ -172,29 +167,9 @@ resources:
     version_key: "latest-golang"
     check_command: "echo https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"
     in_command:    "curl --silent --fail --output $1/golang.tgz https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"
-- name: chat-notify
-  type: cogito
-  check_every: never
-  source:
-    sinks:
-      - gchat
-    gchat_webhook: ((concourse-google-chat-webhook))
-
-meta:
-  gchat_notification: &gchat_notification
-    on_failure:
-      put: chat-notify
-      params:
-        state: failure
-    on_error:
-      put: chat-notify
-      params:
-        state: error
-
 jobs:
 - name: build-build-image
   serial: true
-  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: http-golang-download
@@ -282,7 +257,6 @@ jobs:
     params:
       file: build-image-version/version
 - name: build-postgres-image
-  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: postgres-dockerfile
@@ -379,7 +353,6 @@ jobs:
     params:
       file: postgres-image-version/version
 - name: build-mysql-8.0-image
-  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: mysql-8.0-dockerfile
@@ -487,7 +460,6 @@ jobs:
     params:
       file: mysql-8.0-image-version/version
 - name: build-mysql-5.7-image
-  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: mysql-5.7-dockerfile

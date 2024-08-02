@@ -1,10 +1,3 @@
-resource_types:
-  - name: cogito
-    type: registry-image
-    check_every: 168h
-    source:
-      repository: pix4d/cogito
-
 groups:
 - name: main
   jobs:
@@ -18,9 +11,9 @@ resources:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 - name: image
-  type: docker-image
+  type: docker-image                             
   icon: docker
-  source:
+  source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
     password: ((gcp-tas-runtime-service-account/config-json))
@@ -32,29 +25,10 @@ resources:
     start: 11:00 PM
     stop: 11:30 PM
     location: America/New_York
-- name: chat-notify
-  type: cogito
-  check_every: never
-  source:
-    sinks:
-      - gchat
-    gchat_webhook: ((concourse-google-chat-webhook))
-
-meta:
-  gchat_notification: &gchat_notification
-    on_failure:
-      put: chat-notify
-      params:
-        state: failure
-    on_error:
-      put: chat-notify
-      params:
-        state: error
 
 jobs:
 - name: go-clean-cache-windows
   serial: true
-  <<: *gchat_notification
   plan:
   - in_parallel:
       steps:
