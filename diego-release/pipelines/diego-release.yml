@@ -52,18 +52,11 @@ resource_types:
     tag: latest
     username: _json_key
     password: ((gcp-tas-runtime-service-account/config-json))
-
 - name: shepherd
   type: registry-image
   source:
     repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
     tag: v1  #! This may be bumped in the future
-
-- name: cogito
-  type: registry-image
-  check_every: 168h
-  source:
-    repository: pix4d/cogito
 
 #! Define-Resources
 resources:
@@ -82,7 +75,7 @@ resources:
     uri: git@github.com:cloudfoundry/diego-release.git
     private_key: ((github-tas-runtime-bot/private-key))
 
-- name: release-branch
+- name: release-branch 
   type: git
   icon: source-branch
   source:
@@ -127,7 +120,7 @@ resources:
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
-    paths:
+    paths: 
       - shared/github
       - diego-release/github
 
@@ -202,7 +195,7 @@ resources:
     tag_filter: v0.285.0
 
 #! TIMERS
-- name: daily
+- name: daily 
   type: time
   icon: clock
   source:
@@ -229,7 +222,7 @@ resources:
     repository: diego-release
     owner: cloudfoundry
 
-- name: draft-github-release
+- name: draft-github-release 
   type: github-release
   icon: github
   source:
@@ -252,14 +245,14 @@ resources:
   icon: cloud-lock
   source:
     branch: main
-    pool: diego-release-env-lock
+    pool: diego-release-env-lock 
     private_key: ((github-tas-runtime-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: image
-  type: docker-image
+  type: docker-image                             
   icon: docker
-  source:
+  source:                                        
     repository: cloudfoundry/tas-runtime-build
     tag: 'latest'
     username: ((dockerhub-tasruntime-username))
@@ -296,37 +289,17 @@ resources:
     repository: winpty
     order_by: time
 
-- name: chat-notify
-  type: cogito
-  check_every: never
-  source:
-    sinks:
-      - gchat
-    gchat_webhook: ((concourse-google-chat-webhook))
-
-meta:
-  gchat_notification: &gchat_notification
-    on_failure:
-      put: chat-notify
-      params:
-        state: failure
-    on_error:
-      put: chat-notify
-      params:
-        state: error
-
 #! Define-Jobs
 jobs:
 - name: bump-dependencies-go-mod
   serial: true
-  <<: *gchat_notification
   plan:
   - in_parallel:
       steps:
       - get: ci
       - get: repo
       - get: image
-      - get: daily
+      - get: daily 
         trigger: true
   - task: diego-release-bump-dependencies-go-mod
     image: image
@@ -344,7 +317,6 @@ jobs:
 - name: bump-golang
   old_name: bump-package-golang
   serial: true
-  <<: *gchat_notification
   plan:
   - in_parallel:
       steps:
@@ -402,7 +374,6 @@ jobs:
 
 - name: bump-bosh-blobs
   serial: true
-  <<: *gchat_notification
   plan:
   - in_parallel:
       steps:
@@ -412,14 +383,14 @@ jobs:
       - get: jq
         params:
           globs:
-          - jq-linux-amd64
+          - jq-linux-amd64 
         trigger: true
       - get: tar
         trigger: true
       - get: winpty
         params:
           globs:
-          - winpty-*-msvc2015.zip
+          - winpty-*-msvc2015.zip 
         trigger: true
   - do:
     - task: bump-bosh-blob-jq
@@ -428,7 +399,7 @@ jobs:
       input_mapping:
         blob: jq
       params:
-        BOSH_BLOB_PATH: jq/jq-*-linux-amd64.tgz
+        BOSH_BLOB_PATH: jq/jq-*-linux-amd64.tgz 
         AWS_ACCESS_KEY_ID: ((aws-s3-diego-release-blobs/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-diego-release-blobs/secret-access-key))
     - put: repo
@@ -466,7 +437,6 @@ jobs:
 
 - name: bump-dependencies-envoy
   serial: true
-  <<: *gchat_notification
   plan:
   - in_parallel:
       steps:
@@ -493,7 +463,6 @@ jobs:
 
 - name: create-envoy-pr
   serial: true
-  <<: *gchat_notification
   plan:
   - in_parallel:
       steps:
@@ -514,7 +483,6 @@ jobs:
 
 - name: sync-dot-github-dir
   serial: true
-  <<: *gchat_notification
   plan:
   - in_parallel:
       steps:
@@ -551,9 +519,9 @@ jobs:
        repository: synced-repo
 #@ end
 
+
 - name: template-tests
   serial: true
-  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -567,7 +535,6 @@ jobs:
 
 - name: unit-and-integration-tests
   serial: true
-  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -661,7 +628,7 @@ jobs:
     - task: #@ "{}-windows".format(package.name)
       file: ci/shared/tasks/run-bin-test/windows.yml
       tags: [ diego-windows ]
-      privileged: true #! for windows test
+      privileged: true #! for windows test 
       attempts: 3
       input_mapping:
         built-binaries: windows-built-binaries
@@ -672,7 +639,6 @@ jobs:
 #@ for db in data.values.db_flavors:
 - name: #@ "inigo-{}-linux".format(db.value)
   serial: true
-  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -777,7 +743,6 @@ jobs:
 #@ end
 - name: inigo-mysql-windows
   serial: true
-  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -885,10 +850,8 @@ jobs:
           --skip-package volman,executor,certauthority
         FUNCTIONS: |
           ci/winc-release/helpers/configure-binaries.ps1
-
 - name: lint-repo
   serial: true
-  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -903,7 +866,6 @@ jobs:
 
 - name: claim-env
   serial: true
-  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -936,7 +898,6 @@ jobs:
 - name: prepare-env
   serial: true
   serial_groups: [acceptance]
-  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -1047,7 +1008,6 @@ jobs:
 - name: run-cats
   serial: true
   serial_groups: [acceptance]
-  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -1079,7 +1039,6 @@ jobs:
 - name: run-wats
   serial: true
   serial_groups: [acceptance]
-  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -1113,7 +1072,6 @@ jobs:
 - name: export-release
   serial: true
   serial_groups: [acceptance]
-  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -1132,7 +1090,6 @@ jobs:
 - name: run-vizzini
   serial: true
   serial_groups: [acceptance]
-  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -1153,7 +1110,6 @@ jobs:
 - name: run-bosh-restart
   serial: true
   serial_groups: [acceptance]
-  <<: *gchat_notification
   plan:
   - in_parallel:
     - get: ci
@@ -1180,7 +1136,6 @@ jobs:
       config: built-acceptance-test-configs
 
 - name: ship-what
-  <<: *gchat_notification
   plan:
     - in_parallel:
         steps:
@@ -1222,7 +1177,6 @@ jobs:
 
 - name: ship-it
   serial: true
-  <<: *gchat_notification
   plan:
     - in_parallel:
         steps:
@@ -1297,7 +1251,6 @@ jobs:
 
 - name: unclaim-env
   serial: true
-  <<: *gchat_notification
   plan:
   - get: env
     passed: [ship-what]
@@ -1312,7 +1265,6 @@ jobs:
     put: env-lock
 
 - name: release-env-lock
-  <<: *gchat_notification
   plan:
   - get: env-lock
   ensure:
@@ -1323,7 +1275,6 @@ jobs:
 #! versioning
 - name: patch-bump
   serial_groups: [version]
-  <<: *gchat_notification
   plan:
   - get: version
     params: {bump: patch}
@@ -1332,7 +1283,6 @@ jobs:
 
 - name: minor-bump
   serial_groups: [version]
-  <<: *gchat_notification
   plan:
   - get: version
     params: {bump: minor}
@@ -1341,7 +1291,6 @@ jobs:
 
 - name: major-bump
   serial_groups: [version]
-  <<: *gchat_notification
   plan:
   - get: version
     params: {bump: major}
