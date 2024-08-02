@@ -4,6 +4,8 @@ platform: linux
 inputs:
   - name: ci
   - name: repo
+  - name: built-binaries
+    optional: true
   - name: dep-local-repo-replace-01
     optional: true
   - name: dep-local-repo-replace-02

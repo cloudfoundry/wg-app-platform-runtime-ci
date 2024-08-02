@@ -44,6 +44,17 @@ function run() {
   shift 1
   git_configure_author
   git_configure_safe_directory
+
+  if [[ -d "built-binaries" ]]; then
+    IFS=$'\n'
+    for entry in $(find built-binaries -name "*.bash");
+    do
+      echo "Sourcing: $entry"
+      debug "$(cat $entry)"
+      source "${entry}"
+    done
+    unset IFS
+  fi
   
   local env_file="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-env.bash')"
   expand_envs "${env_file}"
