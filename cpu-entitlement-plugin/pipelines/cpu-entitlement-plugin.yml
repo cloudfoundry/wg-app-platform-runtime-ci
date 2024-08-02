@@ -176,24 +176,12 @@ meta:
       put: chat-notify
       inputs:
         - repo
-        - test-log-emitter-release
-        - release-branch
-        - develop-branch-mergeback
-        - ci
-        - cf-deployment
-        - cf-deployment-concourse-tasks
       params:
         state: failure
     on_error:
       put: chat-notify
       inputs:
         - repo
-        - test-log-emitter-release
-        - release-branch
-        - develop-branch-mergeback
-        - ci
-        - cf-deployment
-        - cf-deployment-concourse-tasks
       params:
         state: error
 

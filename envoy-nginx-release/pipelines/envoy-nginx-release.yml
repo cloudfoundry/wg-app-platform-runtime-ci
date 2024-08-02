@@ -210,10 +210,14 @@ meta:
   gchat_notification: &gchat_notification
     on_failure:
       put: chat-notify
+      inputs:
+        - repo
       params:
         state: failure
     on_error:
       put: chat-notify
+      inputs:
+        - repo
       params:
         state: error
 
@@ -323,8 +327,8 @@ jobs:
         PARENT_TEMPLATE_DIR: envoy-nginx-release
     - put: repo
       params:
-       rebase: true
-       repository: synced-repo
+        rebase: true
+        repository: synced-repo
 
 - name: unit-and-integration-tests
   serial: true
@@ -370,7 +374,7 @@ jobs:
     - get: image
     - put: env-lock
       params:
-       acquire: true
+        acquire: true
   - put: env
     params:
       action: create

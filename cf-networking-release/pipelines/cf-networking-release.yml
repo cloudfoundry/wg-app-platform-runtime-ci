@@ -275,41 +275,15 @@ meta:
     on_failure:
       put: chat-notify
       inputs:
-        - golang-release-latest
         - cf-networking-repo
         - silk-repo
-        - cf-networking-release-branch
-        - silk-release-branch
-        - cf-networking-develop-branch-mergeback
-        - silk-develop-branch-mergeback
-        - ci
-        - silk-readme
-        - cf-networking-readme
-        - cf-deployment
-        - cf-deployment-concourse-tasks
-        - cf-acceptance-tests
-        - healthchecker-release
-        - shared-templates
       params:
         state: failure
     on_error:
       put: chat-notify
       inputs:
-        - golang-release-latest
         - cf-networking-repo
         - silk-repo
-        - cf-networking-release-branch
-        - silk-release-branch
-        - cf-networking-develop-branch-mergeback
-        - silk-develop-branch-mergeback
-        - ci
-        - silk-readme
-        - cf-networking-readme
-        - cf-deployment
-        - cf-deployment-concourse-tasks
-        - cf-acceptance-tests
-        - healthchecker-release
-        - shared-templates
       params:
         state: error
 

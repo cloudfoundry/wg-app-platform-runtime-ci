@@ -309,47 +309,13 @@ meta:
     on_failure:
       put: chat-notify
       inputs:
-        - golang-release-latest
         - repo
-        - release-branch
-        - develop-branch-mergeback
-        - diego-release-envoy-bump
-        - ci
-        - go-version
-        - shared-templates
-        #@ for repo in data.values.internal_repos:
-        - #@ "{}-repo".format(repo.name)
-        #@ end
-        - cf-deployment
-        - cf-deployment-concourse-tasks
-        - cf-acceptance-tests
-        - garden-runc-release
-        - winc-release
-        - envoy-nginx-release
-        - routing-release
       params:
         state: failure
     on_error:
       put: chat-notify
       inputs:
-        - golang-release-latest
         - repo
-        - release-branch
-        - develop-branch-mergeback
-        - diego-release-envoy-bump
-        - ci
-        - go-version
-        - shared-templates
-        #@ for repo in data.values.internal_repos:
-        - #@ "{}-repo".format(repo.name)
-        #@ end
-        - cf-deployment
-        - cf-deployment-concourse-tasks
-        - cf-acceptance-tests
-        - garden-runc-release
-        - winc-release
-        - envoy-nginx-release
-        - routing-release
       params:
         state: error
 
