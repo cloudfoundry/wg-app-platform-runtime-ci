@@ -18,6 +18,7 @@ function run() {
   git_configure_safe_directory
 
   local CI_DIR="$PWD/ci"
+  local CI_CONFIG_DIR="$PWD/ci-config"
   local SYNCED_REPO_DIR="$PWD/synced-repo"
 
   pushd "repo/" > /dev/null
@@ -25,11 +26,19 @@ function run() {
   git_remote_name=$(git_get_remote_name)
 
   local sub_readme
-  sub_readme=$(find "${CI_DIR}" -name "${git_remote_name}.md")
+  if [[ -d "${CI_CONFIG_DIR}" ]]; then
+    sub_readme=$(find "${CI_CONFIG_DIR}" -name "${git_remote_name}.md")
+  else
+    sub_readme=$(find "${CI_DIR}" -name "${git_remote_name}.md")
+  fi
   local belongs_to_dir
   belongs_to_dir=$(echo "${sub_readme}" | xargs dirname | xargs dirname)
   local parent_readme
-  parent_readme=$(find "${CI_DIR}" -name "01-*.md" -ipath "${belongs_to_dir}/*")
+  if [[ -d "${CI_CONFIG_DIR}" ]]; then
+    parent_readme=$(find "${CI_CONFIG_DIR}" -name "01-*.md" -ipath "${belongs_to_dir}/*")
+  else
+    parent_readme=$(find "${CI_DIR}" -name "01-*.md" -ipath "${belongs_to_dir}/*")
+  fi
 
   local docs_md_file
   docs_md_file="$(mktemp -p "${task_tmp_dir}" -t 'XXXXX-docs.md')"
