@@ -110,7 +110,7 @@ resources:
   type: git
   icon: source-branch
   source:
-    branch: main
+    branch: protobuf-with-plugin
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: go-version
