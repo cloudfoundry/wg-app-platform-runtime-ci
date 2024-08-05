@@ -251,8 +251,8 @@ resources:
   type: pool
   icon: cloud-lock
   source:
-    branch: main
-    pool: diego-release-env-lock
+    branch: protobuf-with-plugin
+    pool: diego-protobuf-env-lock
     private_key: ((github-tas-runtime-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
