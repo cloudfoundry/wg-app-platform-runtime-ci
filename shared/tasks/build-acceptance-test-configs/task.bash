@@ -186,7 +186,11 @@ function cfsmoke() {
   "isolation_segment_name": "persistent_isolation_segment",
   "isolation_segment_domain": "iso-seg.${CF_SYSTEM_DOMAIN}",
   "enable_isolation_segment_tests": ${WITH_ISOSEG},
-  "skip_ssl_validation": true
+  "skip_ssl_validation": true,
+  "include_volume_services": ${WITH_VOLUME_SERVICES},
+  "volume_service_name": "${VOLUME_SERVICE_NAME:-}",
+  "volume_service_plan_name": "${VOLUME_SERVICE_PLAN:-}",
+  "volume_service_create_config": "${VOLUME_SERVICE_CREATE_CONFIG:-}"
 }
 EOF
 }
