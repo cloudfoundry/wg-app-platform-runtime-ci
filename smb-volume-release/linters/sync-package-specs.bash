@@ -56,10 +56,10 @@ function sync_package() {
         package="code.cloudfoundry.org/${src_dir}/vendor/${package}"
       fi
       echo ${package} | sed -e 's/\(.*\)/  - \1\/*.go # gosub/g'
-      if ls ../../../src/code.cloudfoundry.org/${src_dir}/vendor/${package}/*.s >/dev/null 2>&1; then
+      if ls ../../${package}/*.s >/dev/null 2>&1; then
         echo ${package} | sed -e 's/\(.*\)/  - \1\/*.s # gosub/g'
       fi
-      if ls ../../../src/code.cloudfoundry.org/${src_dir}/vendor/${package}/*.binpb >/dev/null 2>&1; then
+      if ls ../../${package}/*.binpb >/dev/null 2>&1; then
         echo ${package} | sed -e 's/\(.*\)/  - \1\/*.binpb # gosub/g'
       fi
     done
