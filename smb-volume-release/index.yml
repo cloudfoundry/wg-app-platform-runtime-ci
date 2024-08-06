@@ -1,0 +1,15 @@
+#@data/values
+---
+#@overlay/match missing_ok=True
+
+#! <MUST> repo/component/package to test in your repo/release
+internal_repos:
+- name: smbbroker
+- name: smbdriver
+
+#! <OPTIONAL> set to a list of opsfile if pipeline needs to update cf-deployment
+opsfiles:
+- use-compiled-releases.yml
+- enable-smb-test-server.yml
+- enable-backup-restore.yml
+- enable-smb-volume-service.yml
