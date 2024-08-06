@@ -19,7 +19,7 @@ function run() {
     -app . &
 
   sync_package smbdriver smbdriver \
-    -app cmd/smbdriver &
+    -app code.cloudfoundry.org/smbdriver/cmd/smbdriver &
 
   wait
 

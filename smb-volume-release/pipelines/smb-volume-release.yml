@@ -11,6 +11,7 @@ groups:
   - claim-env
   - prepare-env
   - run-cats
+  - volume-services-acceptance-tests
   - export-release
   - ship-what
   - ship-it
@@ -108,6 +109,13 @@ resources:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
     paths: [go-version.json]
+
+- name: cf-volume-services-acceptance-tests
+  type: git
+  icon: git
+  source:
+    uri: https://github.com/cloudfoundry/cf-volume-services-acceptance-tests.git
+    branch: main
 
 #! TIMERS
 - name: daily
@@ -212,6 +220,8 @@ jobs:
   - task: bump-golang-package-name
     image: image
     file: ci/shared/tasks/bump-golang-package-name/linux.yml
+    output_mapping:
+      bumped-repo: bumped-golang-package-name-linux
     params:
       PLATFORM: linux
 
@@ -312,8 +322,8 @@ jobs:
   - in_parallel:
     - get: ci
     - get: repo
-      trigger: true
-      passed: [claim-env]
+      #! trigger: true
+      #! passed: [claim-env]
     - get: image
     - get: cf-deployment
     - get: cf-deployment-concourse-tasks
@@ -323,6 +333,10 @@ jobs:
   - task: prepare-cf-deployment-env
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+    params:
+      VARS:
+        smb-username: ((azure-smb-volume-access-volume-services/username))
+        smb-password: ((azure-smb-volume-access-volume-services/password))
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
@@ -410,9 +424,14 @@ jobs:
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
     params:
+      ENVS: |
+        VOLUME_SERVICE_NAME=smb
+        VOLUME_SERVICE_PLAN=Existing
+        VOLUME_SERVICE_CREATE_CONFIG={\"share\": \"((azure-smb-volume-access-volume-services/remote_path))\", \"username\": \"((azure-smb-volume-access-volume-services/username))\", \"password\": \"((azure-smb-volume-access-volume-services/password))\"}
       CONFIGS: cats
-      WITH_ISOSEG: true
-      WITH_DYNAMIC_ASG: true
+      WITH_VOLUME_SERVICES: true
+      WITH_ISOSEG: false
+      WITH_DYNAMIC_ASG: false
   - task: cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     attempts: 2
@@ -420,6 +439,49 @@ jobs:
       integration-config: built-acceptance-test-configs
     params:
       CONFIG_FILE_PATH: cats.json
+
+- name: volume-services-acceptance-tests
+  serial_groups:
+  - acceptance-tests
+  plan:
+  - in_parallel:
+      fail_fast: true
+      steps:
+      - get: cf-volume-services-acceptance-tests
+      - get: ci
+      - get: image
+      - get: env
+        passed: [ prepare-env ]
+        trigger: true
+      - get: repo
+        passed: [ prepare-env ]
+        trigger: true
+  - task: generate-pats-config-smb
+    image: image
+    file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
+    params:
+      ENVS: |
+        VOLUME_SERVICE_DISALLOWED_OVERRIDE_BIND_CONFIG='{\"share\":\"//smbtestserver.service.cf.internal/export/vol2\"}'
+        VOLUME_SERVICE_CREATE_BOGUS_CONFIG='{\"share\":\"//smb.bogus/export/nonexistensevol\"}'
+        VOLUME_SERVICE_BIND_CONFIG=["{\"username\":\"((azure-smb-volume-access-volume-services/username))\",\"password\":\"((azure-smb-volume-access-volume-services/password))\", \"domain\": \"foo\"}", "{\"username\":\"((azure-smb-volume-access-volume-services/username))\",\"password\":\"((azure-smb-volume-access-volume-services/password))\", \"domain\": \"foo\", \"version\": \"3.0\"}", "{\"username\":\"((azure-smb-volume-access-volume-services/username))\",\"password\":\"((azure-smb-volume-access-volume-services/password))\", \"mount\": \"/var/vcap/data/foo\", \"domain\": \"foo\"}"]
+        VOLUME_SERVICE_CREATE_CONFIG={\"share\":\"((azure-smb-volume-access-volume-services/remote_path))\"}
+        VOLUME_SERVICE_PLAN_NAME=Existing
+        VOLUME_SERVICE_SERVICE_NAME=smb
+      CONFIGS: volume-services-acceptance-tests
+    output_mapping:
+      built-acceptance-test-configs: pats-config
+  - task: run-volume-services-acceptance-tests-smb
+    image: image
+    file: ci/shared/tasks/run-volume-services-acceptance-tests/linux.yml
+    input_mapping:
+      config: pats-config
+    attempts: 2
+    params:
+      PARALLEL_NODES: 5
+      TEST_MOUNT_FAIL_LOGGING: true
+      TEST_MOUNT_OPTIONS: true
+      TEST_MULTI_CELL: true
+      TEST_READ_ONLY: true
 
 - name: export-release
   serial: true
@@ -447,6 +509,7 @@ jobs:
         - get: repo
           passed:
             - run-cats
+            - volume-services-acceptance-tests
             - export-release
           trigger: true
         - get: image
@@ -458,6 +521,7 @@ jobs:
         - get: env
           passed:
             - run-cats
+            - volume-services-acceptance-tests
             - export-release
           trigger: true
 

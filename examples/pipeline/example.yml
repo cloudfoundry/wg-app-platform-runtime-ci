@@ -212,6 +212,8 @@ jobs:
   - task: bump-golang-package-name
     image: image
     file: ci/shared/tasks/bump-golang-package-name/linux.yml
+    output_mapping:
+      bumped-repo: bumped-golang-package-name-linux
     params:
       PLATFORM: linux
 
