@@ -84,13 +84,17 @@ function cats() {
     "include_tcp_isolation_segments": ${WITH_ISOSEG},
     "include_user_provided_services": true,
     "include_v3": true,
+    "include_volume_services": ${WITH_VOLUME_SERVICES},
     "include_zipkin": true,
     "isolation_segment_name": "persistent_isolation_segment",
     "isolation_segment_domain": "iso-seg.${CF_SYSTEM_DOMAIN}",
     "skip_ssl_validation": true,
     "stacks": ["cflinuxfs4"],
     "timeout_scale": 2,
-    "use_http": true
+    "use_http": true,
+    "volume_service_name": "${VOLUME_SERVICE_NAME:-}",
+    "volume_service_plan_name": "${VOLUME_SERVICE_PLAN:-}",
+    "volume_service_create_config": "${VOLUME_SERVICE_CREATE_CONFIG:-}"
 }
 EOF
 }
@@ -186,11 +190,7 @@ function cfsmoke() {
   "isolation_segment_name": "persistent_isolation_segment",
   "isolation_segment_domain": "iso-seg.${CF_SYSTEM_DOMAIN}",
   "enable_isolation_segment_tests": ${WITH_ISOSEG},
-  "skip_ssl_validation": true,
-  "include_volume_services": ${WITH_VOLUME_SERVICES},
-  "volume_service_name": "${VOLUME_SERVICE_NAME:-}",
-  "volume_service_plan_name": "${VOLUME_SERVICE_PLAN:-}",
-  "volume_service_create_config": "${VOLUME_SERVICE_CREATE_CONFIG:-}"
+  "skip_ssl_validation": true
 }
 EOF
 }
@@ -228,10 +228,6 @@ function wats() {
   "include_tcp_routing": false,
   "include_user_provided_services": false,
   "include_v3": false,
-  "include_volume_services": ${WITH_VOLUME_SERVICES},
-  "volume_service_name": "${VOLUME_SERVICE_NAME}",
-  "volume_service_plan_name": "${VOLUME_SERVICE_PLAN}",
-  "volume_service_create_config": "${VOLUME_SERVICE_CREATE_CONFIG}",
   "include_windows": true,
   "include_zipkin": false,
   "comma_delim_asgs_enabled": ${WITH_COMMA_DELIMITED_ASG_DESTINATIONS},
