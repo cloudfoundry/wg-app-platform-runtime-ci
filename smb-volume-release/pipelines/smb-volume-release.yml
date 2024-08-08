@@ -115,7 +115,7 @@ resources:
   icon: git
   source:
     uri: https://github.com/cloudfoundry/cf-volume-services-acceptance-tests.git
-    branch: main
+    branch: with-runtime-standard
 
 #! TIMERS
 - name: daily
@@ -233,8 +233,10 @@ jobs:
       package-release: golang-release-latest
     params:
       PACKAGE_NAME: golang-*-linux
-      AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-      AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+      AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-smb-volume-services-s3/secret-access-key))
+      AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-smb-volume-services-s3/access-key-id))
+      AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-smb-volume-services-s3/assume-role))
+
 
   - put: repo
     params:
@@ -318,6 +320,7 @@ jobs:
 
 - name: prepare-env
   serial: true
+  serial_groups: [acceptance]
   plan:
   - in_parallel:
     - get: ci
@@ -349,17 +352,6 @@ jobs:
         {input-01/operations/backup-and-restore/enable-backup-restore.yml,combined-assets}
         {input-01/operations/enable-smb-volume-service.yml,combined-assets}
   - task: deploy-cf-deployment
-    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
-    input_mapping:
-      ops-files: combined-assets
-      vars-files: prepared-env
-      toolsmiths-env: env
-    params:
-      DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
-      FAIL_ON_DOWNTIME: "false"
-      VARS_FILES: vars.yml
-      OPS_FILES: #@ "\n".join(data.values.opsfiles)
-  - task: uptimer-measure-with-smb-volume-release-update
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping:
       ops-files: combined-assets
@@ -367,20 +359,8 @@ jobs:
       vars-files: prepared-env
       toolsmiths-env: env
     params:
-      DEPLOY_WITH_UPTIME_MEASUREMENTS: "true"
-      APP_PUSHABILITY_THRESHOLD: "20"
-      APP_STATS_THRESHOLD: "20"
-      HTTP_AVAILABILITY_THRESHOLD: "20"
-      TCP_AVAILABILITY_THRESHOLD: "20"
-      AVAILABLE_PORT: "-1"
-      TCP_PORT: "1029"
-      FAIL_ON_DOWNTIME: "true"
-      MEASURE_SYSLOG_AVAILABILITY: "false"
-      MEASURE_TCP_AVAILABILITY: "true"
-      RECENT_LOGS_THRESHOLD: "50"
-      STREAMING_LOGS_THRESHOLD: "50"
-      APP_SYSLOG_AVAILABILITY_THRESHOLD: "50"
-      USE_SINGLE_APP_INSTANCE: "false"
+      DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
+      FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
       OPS_FILES: #@ "\n".join(data.values.opsfiles)
   - task: open-asg-for-credhub
@@ -403,6 +383,13 @@ jobs:
       toolsmiths-env: env
     params:
       ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
+  - task: run-smbbrokerpush-errand
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      ERRAND_NAME: smbbrokerpush
+      INSTANCE: smb-broker-push
 
 - name: run-cats
   serial: true
@@ -427,7 +414,7 @@ jobs:
       ENVS: |
         VOLUME_SERVICE_NAME=smb
         VOLUME_SERVICE_PLAN=Existing
-        VOLUME_SERVICE_CREATE_CONFIG={\"share\": \"((azure-smb-volume-access-volume-services/remote_path))\", \"username\": \"((azure-smb-volume-access-volume-services/username))\", \"password\": \"((azure-smb-volume-access-volume-services/password))\"}
+        VOLUME_SERVICE_CREATE_CONFIG='{\"share\": \"((azure-smb-volume-access-volume-services/remote_path))\", \"username\": \"((azure-smb-volume-access-volume-services/username))\", \"password\": \"((azure-smb-volume-access-volume-services/password))\"}'
       CONFIGS: cats
       WITH_VOLUME_SERVICES: true
       WITH_ISOSEG: false
@@ -441,8 +428,8 @@ jobs:
       CONFIG_FILE_PATH: cats.json
 
 - name: volume-services-acceptance-tests
-  serial_groups:
-  - acceptance-tests
+  serial: true
+  serial_groups: [acceptance]
   plan:
   - in_parallel:
       fail_fast: true
@@ -456,32 +443,41 @@ jobs:
       - get: repo
         passed: [ prepare-env ]
         trigger: true
+      - get: package-release
+        resource: golang-release-latest
+  - task: determine-image-tag
+    image: image
+    file: ci/shared/tasks/determine-image-tag/linux.yml
+  - load_var: image_tag
+    file: determined-image-tag/tag
   - task: generate-pats-config-smb
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
     params:
+      CONFIGS: volume-services-acceptance-tests
       ENVS: |
         VOLUME_SERVICE_DISALLOWED_OVERRIDE_BIND_CONFIG='{\"share\":\"//smbtestserver.service.cf.internal/export/vol2\"}'
         VOLUME_SERVICE_CREATE_BOGUS_CONFIG='{\"share\":\"//smb.bogus/export/nonexistensevol\"}'
-        VOLUME_SERVICE_BIND_CONFIG=["{\"username\":\"((azure-smb-volume-access-volume-services/username))\",\"password\":\"((azure-smb-volume-access-volume-services/password))\", \"domain\": \"foo\"}", "{\"username\":\"((azure-smb-volume-access-volume-services/username))\",\"password\":\"((azure-smb-volume-access-volume-services/password))\", \"domain\": \"foo\", \"version\": \"3.0\"}", "{\"username\":\"((azure-smb-volume-access-volume-services/username))\",\"password\":\"((azure-smb-volume-access-volume-services/password))\", \"mount\": \"/var/vcap/data/foo\", \"domain\": \"foo\"}"]
-        VOLUME_SERVICE_CREATE_CONFIG={\"share\":\"((azure-smb-volume-access-volume-services/remote_path))\"}
+        VOLUME_SERVICE_BIND_CONFIG='["{\"username\":\"((azure-smb-volume-access-volume-services/username))\",\"password\":\"((azure-smb-volume-access-volume-services/password))\", \"domain\": \"foo\"}", "{\"username\":\"((azure-smb-volume-access-volume-services/username))\",\"password\":\"((azure-smb-volume-access-volume-services/password))\", \"domain\": \"foo\", \"version\": \"3.0\"}", "{\"username\":\"((azure-smb-volume-access-volume-services/username))\",\"password\":\"((azure-smb-volume-access-volume-services/password))\", \"mount\": \"/var/vcap/data/foo\", \"domain\": \"foo\"}"]'
+        VOLUME_SERVICE_CREATE_CONFIG='{\"share\":\"((azure-smb-volume-access-volume-services/remote_path))\"}'
         VOLUME_SERVICE_PLAN_NAME=Existing
         VOLUME_SERVICE_SERVICE_NAME=smb
-      CONFIGS: volume-services-acceptance-tests
-    output_mapping:
-      built-acceptance-test-configs: pats-config
   - task: run-volume-services-acceptance-tests-smb
-    image: image
-    file: ci/shared/tasks/run-volume-services-acceptance-tests/linux.yml
+    file: ci/shared/tasks/run-bin-test/linux.yml
     input_mapping:
-      config: pats-config
+      input-01: built-acceptance-test-configs
+      repo: cf-volume-services-acceptance-tests
     attempts: 2
+    vars:
+      image_repository: cloudfoundry/tas-runtime-build
+      image_tag: ((.:image_tag))
     params:
-      PARALLEL_NODES: 5
-      TEST_MOUNT_FAIL_LOGGING: true
-      TEST_MOUNT_OPTIONS: true
-      TEST_MULTI_CELL: true
-      TEST_READ_ONLY: true
+      ENVS: |
+        TEST_MOUNT_FAIL_LOGGING=true
+        TEST_MOUNT_OPTIONS=true
+        TEST_MULTI_CELL=true
+        TEST_READ_ONLY=true
+        CONFIG=$PWD/input-01/volume-services-acceptance-tests.json
 
 - name: export-release
   serial: true
