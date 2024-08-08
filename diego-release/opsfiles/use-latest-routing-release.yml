@@ -1,0 +1,10 @@
+---
+- type: replace
+  path: /releases/name=routing/version?
+  value: 0.302.0
+- type: replace
+  path: /releases/name=routing/url?
+  value: https://bosh.io/d/github.com/cloudfoundry/routing-release?v=0.302.0
+- type: replace
+  path: /releases/name=routing/sha1?
+  value: 43ca8fb7482caa885998ba998773d528c8a2bcee
