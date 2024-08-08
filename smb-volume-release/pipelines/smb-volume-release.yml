@@ -115,7 +115,7 @@ resources:
   icon: git
   source:
     uri: https://github.com/cloudfoundry/cf-volume-services-acceptance-tests.git
-    branch: with-runtime-standard
+    branch: main
 
 #! TIMERS
 - name: daily
@@ -462,7 +462,7 @@ jobs:
         VOLUME_SERVICE_CREATE_CONFIG='{\"share\":\"((azure-smb-volume-access-volume-services/remote_path))\"}'
         VOLUME_SERVICE_PLAN_NAME=Existing
         VOLUME_SERVICE_SERVICE_NAME=smb
-  - task: run-volume-services-acceptance-tests-smb
+  - task: run-bin-test-cf-volume-services-acceptance-tests
     file: ci/shared/tasks/run-bin-test/linux.yml
     input_mapping:
       input-01: built-acceptance-test-configs

@@ -818,6 +818,13 @@ jobs:
       - get: repo
         passed: [ prepare-env ]
         trigger: true
+      - get: package-release
+        resource: golang-release-latest
+  - task: determine-image-tag
+    image: image
+    file: ci/shared/tasks/determine-image-tag/linux.yml
+  - load_var: image_tag
+    file: determined-image-tag/tag
   - task: generate-pats-config-nfs
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
@@ -830,20 +837,22 @@ jobs:
         VOLUME_SERVICE_PLAN_NAME=Existing
         VOLUME_SERVICE_SERVICE_NAME=nfs
       CONFIGS: volume-services-acceptance-tests
-    output_mapping:
-      built-acceptance-test-configs: nfs-pats-config
-  - task: run-volume-services-acceptance-tests-nfs
-    image: image
-    file: ci/shared/tasks/run-volume-services-acceptance-tests/linux.yml
+  - task: run-bin-test-cf-volume-services-acceptance-tests
+    file: ci/shared/tasks/run-bin-test/linux.yml
     input_mapping:
-      config: nfs-pats-config
+      input-01: built-acceptance-test-configs
+      repo: cf-volume-services-acceptance-tests
     attempts: 2
+    vars:
+      image_repository: cloudfoundry/tas-runtime-build
+      image_tag: ((.:image_tag))
     params:
-      PARALLEL_NODES: 5
-      TEST_MOUNT_FAIL_LOGGING: true
-      TEST_MOUNT_OPTIONS: true
-      TEST_MULTI_CELL: true
-      TEST_READ_ONLY: true
+      ENVS: |
+        TEST_MOUNT_FAIL_LOGGING=true
+        TEST_MOUNT_OPTIONS=true
+        TEST_MULTI_CELL=true
+        TEST_READ_ONLY=true
+        CONFIG=$PWD/input-01/volume-services-acceptance-tests.json
 
 - name: export-release
   serial: true
