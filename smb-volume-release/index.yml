@@ -13,3 +13,5 @@ opsfiles:
 - enable-smb-test-server.yml
 - enable-backup-restore.yml
 - enable-smb-volume-service.yml
+- add-lb-ca-cert.yml
+- scale-for-cats.yml

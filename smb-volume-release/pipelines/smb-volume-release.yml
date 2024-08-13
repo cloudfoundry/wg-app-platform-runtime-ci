@@ -351,6 +351,8 @@ jobs:
         {input-01/operations/test/enable-smb-test-server.yml,combined-assets}
         {input-01/operations/backup-and-restore/enable-backup-restore.yml,combined-assets}
         {input-01/operations/enable-smb-volume-service.yml,combined-assets}
+        {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
+        {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping:
@@ -363,33 +365,41 @@ jobs:
       FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
       OPS_FILES: #@ "\n".join(data.values.opsfiles)
-  - task: open-asg-for-credhub
-    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
-    input_mapping:
-      toolsmiths-env: env
-    params:
-      INSTANCE_GROUP_NAME: credhub
-      SECURITY_GROUP_NAME: credhub
-  - task: open-asg-for-uaa
-    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
-    input_mapping:
-      toolsmiths-env: env
-    params:
-      INSTANCE_GROUP_NAME: uaa
-      SECURITY_GROUP_NAME: uaa
-  - task: enable-feature-flags-for-cats
-    file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
-    input_mapping:
-      toolsmiths-env: env
-    params:
-      ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
-  - task: run-smbbrokerpush-errand
-    file: cf-deployment-concourse-tasks/run-errand/task.yml
-    input_mapping:
-      toolsmiths-env: env
-    params:
-      ERRAND_NAME: smbbrokerpush
-      INSTANCE: smb-broker-push
+  - in_parallel:
+    - task: open-asg-for-credhub
+      file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+      input_mapping:
+        toolsmiths-env: env
+      params:
+        INSTANCE_GROUP_NAME: credhub
+        SECURITY_GROUP_NAME: credhub
+    - task: open-asg-for-uaa
+      file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+      input_mapping:
+        toolsmiths-env: env
+      params:
+        INSTANCE_GROUP_NAME: uaa
+        SECURITY_GROUP_NAME: uaa
+    - task: open-asg-for-smbtestserver
+      file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+      input_mapping:
+        toolsmiths-env: env
+      params:
+        INSTANCE_GROUP_NAME: smbtestserver
+        SECURITY_GROUP_NAME: smbtestserver
+    - task: enable-feature-flags-for-cats
+      file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
+      input_mapping:
+        toolsmiths-env: env
+      params:
+        ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
+    - task: run-smbbrokerpush-errand
+      file: cf-deployment-concourse-tasks/run-errand/task.yml
+      input_mapping:
+        toolsmiths-env: env
+      params:
+        ERRAND_NAME: smbbrokerpush
+        INSTANCE: smb-broker-push
 
 - name: run-cats
   serial: true
@@ -414,7 +424,7 @@ jobs:
       ENVS: |
         VOLUME_SERVICE_NAME=smb
         VOLUME_SERVICE_PLAN=Existing
-        VOLUME_SERVICE_CREATE_CONFIG='{\"share\": \"((azure-smb-volume-access-volume-services/remote_path))\", \"username\": \"((azure-smb-volume-access-volume-services/username))\", \"password\": \"((azure-smb-volume-access-volume-services/password))\"}'
+        VOLUME_SERVICE_CREATE_CONFIG='{\"share\": \"//smbtestserver.serivce.cf.internal/vol1\", \"username\": \"((azure-smb-volume-access-volume-services/username))\", \"password\": \"((azure-smb-volume-access-volume-services/password))\"}'
       CONFIGS: cats
       WITH_VOLUME_SERVICES: true
       WITH_ISOSEG: false
@@ -458,8 +468,8 @@ jobs:
       ENVS: |
         VOLUME_SERVICE_DISALLOWED_OVERRIDE_BIND_CONFIG='{\"share\":\"//smbtestserver.service.cf.internal/export/vol2\"}'
         VOLUME_SERVICE_CREATE_BOGUS_CONFIG='{\"share\":\"//smb.bogus/export/nonexistensevol\"}'
-        VOLUME_SERVICE_BIND_CONFIG='["{\"username\":\"((azure-smb-volume-access-volume-services/username))\",\"password\":\"((azure-smb-volume-access-volume-services/password))\", \"domain\": \"foo\"}", "{\"username\":\"((azure-smb-volume-access-volume-services/username))\",\"password\":\"((azure-smb-volume-access-volume-services/password))\", \"domain\": \"foo\", \"version\": \"3.0\"}", "{\"username\":\"((azure-smb-volume-access-volume-services/username))\",\"password\":\"((azure-smb-volume-access-volume-services/password))\", \"mount\": \"/var/vcap/data/foo\", \"domain\": \"foo\"}"]'
-        VOLUME_SERVICE_CREATE_CONFIG='{\"share\":\"((azure-smb-volume-access-volume-services/remote_path))\"}'
+        VOLUME_SERVICE_BIND_CONFIG='["{\"username\":\"((azure-smb-volume-access-volume-services/username))\",\"password\":\"((azure-smb-volume-access-volume-services/password))\", \"domain\": \"foo\"}", "{\"username\":\"((azure-smb-volume-access-volume-services/username))\",\"password\":\"((azure-smb-volume-access-volume-services/password))\", \"domain\": \"foo\", \"version\": \"3.1\"}", "{\"username\":\"((azure-smb-volume-access-volume-services/username))\",\"password\":\"((azure-smb-volume-access-volume-services/password))\", \"mount\": \"/var/vcap/data/foo\", \"domain\": \"foo\"}"]'
+        VOLUME_SERVICE_CREATE_CONFIG='{\"share\":\"//smbtestserver.service.cf.internal/vol1\"}'
         VOLUME_SERVICE_PLAN_NAME=Existing
         VOLUME_SERVICE_SERVICE_NAME=smb
   - task: run-bin-test-cf-volume-services-acceptance-tests
@@ -474,7 +484,7 @@ jobs:
     params:
       ENVS: |
         TEST_MOUNT_FAIL_LOGGING=true
-        TEST_MOUNT_OPTIONS=true
+        TEST_MOUNT_OPTIONS=false
         TEST_MULTI_CELL=true
         TEST_READ_ONLY=true
         CONFIG=$PWD/input-01/volume-services-acceptance-tests.json
