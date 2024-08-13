@@ -15,9 +15,6 @@ params:
   WITH_DYNAMIC_ASG: false
   WITH_COMMA_DELIMITED_ASG_DESTINATIONS: false
   WITH_VOLUME_SERVICES: false
-  VOLUME_SERVICE_NAME: ''
-  VOLUME_SERVICE_PLAN: ''
-  VOLUME_SERVICE_CREATE_CONFIG: ''
 
 run:
   path: ci/shared/tasks/build-acceptance-test-configs/task.bash
