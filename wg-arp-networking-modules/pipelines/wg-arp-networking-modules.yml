@@ -4,7 +4,7 @@
 #! Define-Groups
 groups:
 - name: test
-  jobs: #@ helpers.packages_names_array(data.values.internal_repos) 
+  jobs: #@ helpers.packages_names_array(data.values.internal_repos,["", "ship-it-"])
 - name: periodics
   jobs: #@ helpers.packages_names_array(data.values.internal_repos,["bump-dependencies-","sync-dot-github-dir-","sync-readme-"])
 
@@ -18,6 +18,23 @@ resources:
     branch: main 
     uri: #@ "git@github.com:{}".format(package.repo)
     private_key: ((github-tas-runtime-bot/private-key))
+
+- name: #@ "{}-github-release".format(package.name)
+  type: github-release
+  icon: github
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    repository: #@ package.name
+    owner: cloudfoundry
+
+- name: #@ "{}-version".format(package.name)
+  type: semver
+  icon: counter
+  source:
+    driver: gcs
+    bucket: ci-release-versions
+    key: #@ "networking-modules/{}/version".format(package.name)
+    json_key: ((gcp-tas-runtime-service-account/config-json))
 #@ end
 
 - name: ci
@@ -227,4 +244,35 @@ jobs:
     params:
       rebase: true
       repository: bumped-repo
+#@ end
+
+#@ for package in data.values.internal_repos:
+- name: #@ "ship-it-{}".format(package.name)
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: #@ "{}-version".format(package.name)
+      - resource: #@ package.name
+        get: repo
+        passed:
+        - #@ package.name
+        trigger: true
+  - put: #@ package.name
+    params:
+      repository: repo
+      tag: #@ "{}-version/number".format(package.name)
+      tag_prefix: v
+  - put: #@ "{}-github-release".format(package.name)
+    params:
+      name: #@ "{}-version/number".format(package.name)
+      tag: #@ "{}-version/number".format(package.name)
+      tag_prefix: v
+  - get: next-version
+    resource: #@ "{}-version".format(package.name)
+    params: {bump: minor}
+  - put: next-version
+    resource: #@ "{}-version".format(package.name)
+    params: {file: next-version/number}
 #@ end
