@@ -22,6 +22,7 @@ groups:
   jobs:
   - bump-dependencies-go-mod
   - bump-package-golang
+  - bump-bosh-blobs
 
 - name: manual
   jobs:
@@ -183,6 +184,64 @@ resources:
     username: ((dockerhub-tasruntime-username))
     password: ((dockerhub-tasruntime-password))
 
+#! bosh blobs
+
+- name: autoconf
+  type: git
+  icon: tag-outline
+  source:
+    branch: master
+    uri: https://github.com/autotools-mirror/autoconf
+    tag_filter: v*
+
+- name: automake
+  type: git
+  icon: tag-outline
+  source:
+    branch: master
+    uri: https://github.com/autotools-mirror/automake
+    tag_filter: v*
+
+- name: cifs-utils
+  type: git
+  icon: tag-outline
+  source:
+    branch: master
+    uri: https://git.samba.org/cifs-utils.git
+    tag_filter: cifs-utils-*
+
+- name: keyutils
+  type: git
+  icon: tag-outline
+  source:
+    branch: master
+    uri: https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/keyutils.git
+    tag_filter: v*
+
+- name: libtool
+  type: git
+  icon: tag-outline
+  source:
+    branch: master
+    uri: https://git.savannah.gnu.org/git/libtool.git
+    tag_filter: v2.4.*
+
+- name: pkg-config
+  type: git
+  icon: tag-outline
+  source:
+    branch: master
+    uri: https://gitlab.freedesktop.org/pkg-config/pkg-config.git
+    tag_filter: pkg-config-*
+
+- name: talloc
+  type: git
+  icon: tag-outline
+  source:
+    branch: master
+    uri: https://gitlab.com/samba-team/devel/samba.git
+    tag_filter: talloc-*
+
 #! Define-Jobs
 jobs:
 - name: bump-dependencies-go-mod
@@ -243,6 +302,148 @@ jobs:
     params:
       rebase: true
       repository: vendored-repo
+
+- name: bump-bosh-blobs
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: repo
+      - get: image
+      - get: autoconf
+        params:
+          fetch_tags: true
+        trigger: true
+      - get: automake
+        params:
+          fetch_tags: true
+        trigger: true
+      - get: cifs-utils
+        params:
+          fetch_tags: true
+        trigger: true
+      - get: keyutils
+        params:
+          fetch_tags: true
+        trigger: true
+      - get: libtool
+        params:
+          fetch_tags: true
+        trigger: true
+      - get: pkg-config
+        params:
+          fetch_tags: true
+        trigger: true
+      - get: talloc
+        params:
+          fetch_tags: true
+        trigger: true
+  - do:
+    - task: bump-bosh-blob-autoconf
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: autoconf
+      params:
+        BOSH_BLOB_PATH: autoconf/autoconf-*.tar.gz
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-smb-volume-services-s3/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-smb-volume-services-s3/access-key-id))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-smb-volume-services-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-automake
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: automake
+      params:
+        BOSH_BLOB_PATH: automake/automake-*.tar.gz
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-smb-volume-services-s3/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-smb-volume-services-s3/access-key-id))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-smb-volume-services-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-cifs-utils
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: cifs-utils
+      params:
+        BOSH_BLOB_PATH: cifs-utils/cifs-utils-*.tar.bz2
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-smb-volume-services-s3/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-smb-volume-services-s3/access-key-id))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-smb-volume-services-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-keyutils
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: keyutils
+      params:
+        BOSH_BLOB_PATH: keyutils/keyutils-*.tar.gz
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-smb-volume-services-s3/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-smb-volume-services-s3/access-key-id))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-smb-volume-services-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-libtool
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: libtool
+      params:
+        BOSH_BLOB_PATH: libtool/libtool-*.tar.gz
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-smb-volume-services-s3/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-smb-volume-services-s3/access-key-id))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-smb-volume-services-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-pkg-config
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: pkg-config
+      params:
+        BOSH_BLOB_PATH: pkg-config/pkg-config-*.tar.gz
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-smb-volume-services-s3/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-smb-volume-services-s3/access-key-id))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-smb-volume-services-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-talloc
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: talloc
+      params:
+        BOSH_BLOB_PATH: talloc/talloc-*.tar.gz
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-smb-volume-services-s3/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-smb-volume-services-s3/access-key-id))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-smb-volume-services-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
 
 - name: template-tests
   serial: true
