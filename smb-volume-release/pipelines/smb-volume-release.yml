@@ -23,6 +23,7 @@ groups:
   - bump-dependencies-go-mod
   - bump-package-golang
   - bump-bosh-blobs
+  - sync-dot-github-dir
 
 - name: manual
   jobs:
@@ -111,6 +112,28 @@ resources:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
     paths: [go-version.json]
+
+- name: shared-templates
+  type: git
+  icon: source-branch
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths:
+      - shared/github
+      - smb-volume-release/github
+
+- name: readme
+  type: git
+  icon: source-branch
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths:
+      - shared/*.md
+      - smb-volume-release/*.md
+      - smb-volume-release/readme/*.md
+
 
 - name: cf-volume-services-acceptance-tests
   type: git
@@ -444,6 +467,28 @@ jobs:
       params:
        rebase: true
        repository: bumped-repo
+
+- name: sync-dot-github-dir
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get: repo
+      - get: shared-templates
+        trigger: true
+  - do:
+    - task: sync-dot-github-dir-smb-volume-release
+      file: ci/shared/tasks/sync-dot-github-dir/linux.yml
+      image: image
+      params:
+        PARENT_TEMPLATE_DIR: smb-volume-release
+    - put: repo
+      params:
+       rebase: true
+       repository: synced-repo
+
 
 - name: template-tests
   serial: true
