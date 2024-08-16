@@ -21,7 +21,7 @@ function run() {
   sync_package smbdriver smbdriver \
     -app code.cloudfoundry.org/smbdriver/cmd/smbdriver &
 
-  sync_package dockerdriver dockerdriver \
+  sync_package dockerdriver-integration dockerdriver \
     -app github.com/onsi/ginkgo/v2/ginkgo \
     -test code.cloudfoundry.org/dockerdriver/integration/... &
 
