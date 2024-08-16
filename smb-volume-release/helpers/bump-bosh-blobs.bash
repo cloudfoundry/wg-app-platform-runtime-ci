@@ -120,8 +120,8 @@ function run() {
         echo "Bumping talloc blob"
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]-')
-        local tgz_name="pkg-config-${version}.tar.gz"
-        wget  -O "${tgz_name}" "https://pkgconfig.freedesktop.org/releases/pkg-config-${version}.tar.gz"
+        local tgz_name="talloc-${version}.tar.gz"
+        wget  -O "${tgz_name}" "https://download.samba.org/pub/talloc/talloc-${version}.tar.gz"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
