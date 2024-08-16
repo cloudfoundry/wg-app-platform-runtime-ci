@@ -9,6 +9,7 @@ internal_repos:
 
 #! <OPTIONAL> set to a list of opsfile if pipeline needs to update cf-deployment
 opsfiles:
+- add-dockerdriver-integration-errand.yml
 - use-compiled-releases.yml
 - enable-smb-test-server.yml
 - enable-backup-restore.yml
