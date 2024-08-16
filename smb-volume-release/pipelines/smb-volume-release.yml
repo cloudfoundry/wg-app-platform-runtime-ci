@@ -707,6 +707,7 @@ jobs:
       - get: repo
         passed: [ prepare-env ]
         trigger: true
+      - get: cf-deployment-concourse-tasks
   - task: run-dockerdriver-integration-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
