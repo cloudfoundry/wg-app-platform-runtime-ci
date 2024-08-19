@@ -24,6 +24,7 @@ groups:
   - bump-package-golang
   - bump-bosh-blobs
   - sync-dot-github-dir
+  - sync-readme
 
 - name: manual
   jobs:
@@ -57,7 +58,7 @@ resources:
   type: git
   icon: git
   source:
-    branch: with-runtime-ci
+    branch: develop
     uri: git@github.com:cloudfoundry/smb-volume-release
     private_key: ((github-tas-runtime-bot/private-key))
 
@@ -484,6 +485,27 @@ jobs:
       image: image
       params:
         PARENT_TEMPLATE_DIR: smb-volume-release
+    - put: repo
+      params:
+       rebase: true
+       repository: synced-repo
+
+- name: sync-readme
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get: daily
+        trigger: true
+      - get: repo
+      - get: readme
+        trigger: true
+  - do:
+    - task: sync-readme
+      file: ci/shared/tasks/sync-readme/linux.yml
+      image: image
     - put: repo
       params:
        rebase: true
