@@ -607,8 +607,8 @@ jobs:
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
     params:
       VARS:
-        smb-username: ((azure-smb-volume-access-volume-services/username))
-        smb-password: ((azure-smb-volume-access-volume-services/password))
+        smb-username: ((smb-volume-release-smbtestserver-credentials/username))
+        smb-password: ((smb-volume-release-smbtestserver-credentials/password))
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
@@ -694,7 +694,7 @@ jobs:
       ENVS: |
         VOLUME_SERVICE_NAME=smb
         VOLUME_SERVICE_PLAN=Existing
-        VOLUME_SERVICE_CREATE_CONFIG='{\"share\": \"//smbtestserver.serivce.cf.internal/vol\", \"username\": \"((azure-smb-volume-access-volume-services/username))\", \"password\": \"((azure-smb-volume-access-volume-services/password))\"}'
+        VOLUME_SERVICE_CREATE_CONFIG='{\"share\": \"//smbtestserver.serivce.cf.internal/vol\", \"username\": \"((smb-volume-release-smbtestserver-credentials/username))\", \"password\": \"((smb-volume-release-smbtestserver-credentials/password))\"}'
       CONFIGS: cats
       WITH_VOLUME_SERVICES: true
       WITH_ISOSEG: false
@@ -738,7 +738,7 @@ jobs:
       ENVS: |
         VOLUME_SERVICE_DISALLOWED_OVERRIDE_BIND_CONFIG='{\"share\":\"//smbtestserver.service.cf.internal/export/vol2\"}'
         VOLUME_SERVICE_CREATE_BOGUS_CONFIG='{\"share\":\"//smb.bogus/export/nonexistensevol\"}'
-        VOLUME_SERVICE_BIND_CONFIG='["{\"username\":\"((azure-smb-volume-access-volume-services/username))\",\"password\":\"((azure-smb-volume-access-volume-services/password))\", \"domain\": \"foo\"}", "{\"username\":\"((azure-smb-volume-access-volume-services/username))\",\"password\":\"((azure-smb-volume-access-volume-services/password))\", \"domain\": \"foo\", \"version\": \"3.1.1\"}", "{\"username\":\"((azure-smb-volume-access-volume-services/username))\",\"password\":\"((azure-smb-volume-access-volume-services/password))\", \"mount\": \"/var/vcap/data/foo\", \"domain\": \"foo\"}"]'
+        VOLUME_SERVICE_BIND_CONFIG='["{\"username\":\"((smb-volume-release-smbtestserver-credentials/username))\",\"password\":\"((smb-volume-release-smbtestserver-credentials/password))\", \"domain\": \"foo\"}", "{\"username\":\"((smb-volume-release-smbtestserver-credentials/username))\",\"password\":\"((smb-volume-release-smbtestserver-credentials/password))\", \"domain\": \"foo\", \"version\": \"3.1.1\"}", "{\"username\":\"((smb-volume-release-smbtestserver-credentials/username))\",\"password\":\"((smb-volume-release-smbtestserver-credentials/password))\", \"mount\": \"/var/vcap/data/foo\", \"domain\": \"foo\"}"]'
         VOLUME_SERVICE_CREATE_CONFIG='{\"share\":\"//smbtestserver.service.cf.internal/vol\"}'
         VOLUME_SERVICE_PLAN_NAME=Existing
         VOLUME_SERVICE_SERVICE_NAME=smb
