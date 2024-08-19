@@ -26,6 +26,8 @@ internal_repos:
   repo: cloudfoundry/debugserver
 - name: diego-logging-client
   repo: cloudfoundry/diego-logging-client
+- name: dockerdriver
+  repo: cloudfoundry/dockerdriver
 - name: durationjson
   repo: cloudfoundry/durationjson
 - name: eventhub
