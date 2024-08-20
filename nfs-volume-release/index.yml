@@ -1,0 +1,19 @@
+#@data/values
+---
+#@overlay/match missing_ok=True
+
+#! <MUST> repo/component/package to test in your repo/release
+internal_repos:
+- name: nfsbroker
+- name: nfsv3driver
+
+#! <OPTIONAL> set to a list of opsfile if pipeline needs to update cf-deployment
+opsfiles:
+- add-dockerdriver-integration-errand.yml
+- use-compiled-releases.yml
+- enable-nfs-test-server.yml
+- enable-nfs-test-ldapserver.yml
+- enable-backup-restore.yml
+- enable-nfs-volume-service.yml
+- add-lb-ca-cert.yml
+- scale-for-cats.yml
