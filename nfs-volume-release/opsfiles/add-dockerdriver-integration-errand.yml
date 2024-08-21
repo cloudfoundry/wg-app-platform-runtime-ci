@@ -17,3 +17,5 @@
     jobs:
     - name: dockerdriver-integration
       release: nfs-volume
+    - name: mapfs
+      release: mapfs
