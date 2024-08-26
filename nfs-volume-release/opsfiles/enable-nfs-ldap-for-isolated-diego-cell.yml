@@ -1,24 +1,24 @@
 ---
 - type: replace
-  path: /instance_groups/name=isolated-diego-cel/jobs/name=nfsv3driver/properties/nfsv3driver/ldap_svc_user?
+  path: /instance_groups/name=isolated-diego-cell/jobs/name=nfsv3driver/properties/nfsv3driver/ldap_svc_user?
   value: ((nfs-ldap-service-user))
 - type: replace
-  path: /instance_groups/name=isolated-diego-cel/jobs/name=nfsv3driver/properties/nfsv3driver/ldap_svc_password?
+  path: /instance_groups/name=isolated-diego-cell/jobs/name=nfsv3driver/properties/nfsv3driver/ldap_svc_password?
   value: ((nfs-ldap-service-password))
 - type: replace
-  path: /instance_groups/name=isolated-diego-cel/jobs/name=nfsv3driver/properties/nfsv3driver/ldap_host?
+  path: /instance_groups/name=isolated-diego-cell/jobs/name=nfsv3driver/properties/nfsv3driver/ldap_host?
   value: ((nfs-ldap-host))
 - type: replace
-  path: /instance_groups/name=isolated-diego-cel/jobs/name=nfsv3driver/properties/nfsv3driver/ldap_port?
+  path: /instance_groups/name=isolated-diego-cell/jobs/name=nfsv3driver/properties/nfsv3driver/ldap_port?
   value: ((nfs-ldap-port))
 - type: replace
-  path: /instance_groups/name=isolated-diego-cel/jobs/name=nfsv3driver/properties/nfsv3driver/ldap_proto?
+  path: /instance_groups/name=isolated-diego-cell/jobs/name=nfsv3driver/properties/nfsv3driver/ldap_proto?
   value: ((nfs-ldap-proto))
 - type: replace
-  path: /instance_groups/name=isolated-diego-cel/jobs/name=nfsv3driver/properties/nfsv3driver/ldap_user_fqdn?
+  path: /instance_groups/name=isolated-diego-cell/jobs/name=nfsv3driver/properties/nfsv3driver/ldap_user_fqdn?
   value: ((nfs-ldap-fqdn))
 - type: replace
-  path: /instance_groups/name=isolated-diego-cel/jobs/name=nfsv3driver/properties/nfsv3driver/allowed-in-source?
+  path: /instance_groups/name=isolated-diego-cell/jobs/name=nfsv3driver/properties/nfsv3driver/allowed-in-source?
   value: ""
 - type: replace
   path: /instance_groups/name=nfs-broker-push/jobs/name=nfsbrokerpush/properties/nfsbrokerpush/ldap_enabled?
