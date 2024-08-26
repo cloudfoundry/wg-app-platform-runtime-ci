@@ -606,12 +606,12 @@ jobs:
     image: image
     params:
       VARS:
-        LDAP_HOST: "nfstestldapserver.service.cf.internal"
-        LDAP_SVC_USER: "cn=admin,dc=domain,dc=com"
-        LDAP_SVC_PASS: "secret"
-        LDAP_PORT: 636
-        LDAP_PROTO: tcp
-        LDAP_USER_FQDN: "ou=Users,dc=domain,dc=com"
+        nfs-ldap-host: "nfstestldapserver.service.cf.internal"
+        nfs-ldap-service-user: "cn=admin,dc=domain,dc=com"
+        nfs-ldap-service-password: "secret"
+        nfs-ldap-port: 636
+        nfs-ldap-proto: tcp
+        nfs-ldap-fqdn: "ou=Users,dc=domain,dc=com"
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
@@ -622,12 +622,14 @@ jobs:
       COPY_ACTIONS: |
         {input-01/operations/enable-nfs-volume-service.yml,combined-assets}
         {input-01/operations/use-compiled-releases.yml,combined-assets}
+        {input-01/operations/add-persistent-isolation-segment-diego-cell.yml,combined-assets}
         {input-01/operations/test/enable-nfs-test-server.yml,combined-assets}
         {input-01/operations/test/enable-nfs-test-ldapserver.yml,combined-assets}
         {input-01/operations/backup-and-restore/enable-backup-restore.yml,combined-assets}
         {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
         {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
         {ci/nfs-volume-release/opsfiles/add-dockerdriver-integration-errand.yml,combined-assets}
+        {ci/nfs-volume-release/opsfiles/enable-nfs-ldap-for-isolated-diego-cell.yml,combined-assets}
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping:

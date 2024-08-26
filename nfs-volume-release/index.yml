@@ -11,9 +11,11 @@ internal_repos:
 opsfiles:
 - enable-nfs-volume-service.yml
 - use-compiled-releases.yml
+- add-persistent-isolation-segment-diego-cell.yml
 - enable-nfs-test-server.yml
 - enable-nfs-test-ldapserver.yml
 - enable-backup-restore.yml
 - add-lb-ca-cert.yml
 - scale-for-cats.yml
 - add-dockerdriver-integration-errand.yml
+- enable-nfs-ldap-for-isolated-diego-cell.yml
