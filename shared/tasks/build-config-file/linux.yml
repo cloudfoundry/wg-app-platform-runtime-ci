@@ -1,0 +1,14 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+
+outputs:
+- name: built-config-file
+
+params:
+  CONFIG:
+
+run:
+  path: ci/shared/tasks/build-config-file/task.bash
