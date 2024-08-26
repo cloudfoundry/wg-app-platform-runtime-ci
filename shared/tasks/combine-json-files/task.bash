@@ -10,7 +10,7 @@ unset THIS_FILE_DIR
 
 : "${FILES:?Need to set list of FILES}"
 function run(){
-  local output="./built-json-files/$OUTPUT_FILE"
+  local output="./combined-json-files/$OUTPUT_FILE"
   echo '{}' > "${output}"
 
   for file in ${FILES}
