@@ -3,3 +3,4 @@ readme:
   This directory contains the opsfiles needed for nfs-volume-release.
 opsfiles:
   add-dockerdriver-integration-errand.yml: Add dockerdriver-integration errand to cf-deployment
+  enable-nfs-ldap-for-isolated-diego-cell.yml: Add LDAP nfs configuration for isolated diego-cell
