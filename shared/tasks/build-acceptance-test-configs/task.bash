@@ -286,7 +286,10 @@ function volume_services_acceptance_tests() {
   "apps_domain": "${CF_SYSTEM_DOMAIN}",
   "artifacts_directory": "",
   "default_timeout": 30,
-  "skip_ssl_validation": true
+  "skip_ssl_validation": true,
+  "isolation_segment_name": "persistent_isolation_segment",
+  "isolation_segment_domain": "iso-seg.${CF_SYSTEM_DOMAIN}",
+  "isolation_segment_tcp_domain": "tcp.${CF_SYSTEM_DOMAIN}",
 }
 EOF
 }
