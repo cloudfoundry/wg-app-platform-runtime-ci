@@ -992,7 +992,7 @@ jobs:
 
   - get: next-version
     resource: version
-    params: {bump: patch}
+    params: {bump: minor}
   - put: next-version
     params:
       file: next-version/number
