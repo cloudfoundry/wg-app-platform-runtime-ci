@@ -67,6 +67,16 @@ resources:
     branch:  "develop"
     uri: git@github.com:cloudfoundry/cf-networking-release.git
     private_key: ((github-tas-runtime-bot/private-key))
+    ignore_paths:
+    - .github/
+    - .gitignore
+    - .final_build
+    - CODEOWNERS
+    - LICENSE
+    - NOTICE
+    - README*
+    - docs/
+    - releases/
 
 - name: silk-repo
   type: git
@@ -75,6 +85,16 @@ resources:
     branch:  "develop"
     uri: git@github.com:cloudfoundry/silk-release.git
     private_key: ((github-tas-runtime-bot/private-key))
+    ignore_paths:
+    - .github/
+    - .gitignore
+    - .final_build
+    - CODEOWNERS
+    - LICENSE
+    - NOTICE
+    - README*
+    - docs/
+    - releases/
 
 - name: cf-networking-release-branch
   type: git

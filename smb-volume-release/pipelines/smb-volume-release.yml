@@ -61,6 +61,16 @@ resources:
     branch: develop
     uri: git@github.com:cloudfoundry/smb-volume-release
     private_key: ((github-tas-runtime-bot/private-key))
+    ignore_paths:
+    - .github/
+    - .gitignore
+    - .final_build
+    - CODEOWNERS
+    - LICENSE
+    - NOTICE
+    - README*
+    - docs/
+    - releases/
 
 - name: release-branch 
   type: git

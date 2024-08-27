@@ -46,6 +46,14 @@ resources:
     branch: develop
     uri: git@github.com:cloudfoundry/cpu-entitlement-plugin
     private_key: ((github-tas-runtime-bot/private-key))
+    ignore_paths:
+    - .github/
+    - .gitignore
+    - CODEOWNERS
+    - LICENSE
+    - NOTICE
+    - README*
+    - docs/
 
 - name: test-log-emitter-release
   type: git

@@ -38,6 +38,16 @@ resources:
     uri: git@github.com:cloudfoundry/windows-tools-release.git
     branch: develop
     private_key: ((github-tas-runtime-bot/private-key))
+    ignore_paths:
+    - .github/
+    - .gitignore
+    - .final_build
+    - CODEOWNERS
+    - LICENSE
+    - NOTICE
+    - README*
+    - docs/
+    - releases/
 
 - name: release-branch
   type: git

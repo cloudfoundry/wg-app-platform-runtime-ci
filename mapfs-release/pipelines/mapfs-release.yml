@@ -90,6 +90,16 @@ resources:
     branch: develop
     private_key: ((github-tas-runtime-bot/private-key))
     uri: git@github.com:cloudfoundry/mapfs-release.git
+    ignore_paths:
+    - .github/
+    - .gitignore
+    - .final_build
+    - CODEOWNERS
+    - LICENSE
+    - NOTICE
+    - README*
+    - docs/
+    - releases/
 
 - name: release-branch
   type: git
@@ -935,6 +945,7 @@ jobs:
       release-repo: release-branch
 
   - task: create-release-notes
+    image: image
     file: ci/shared/tasks/generate-volume-services-release-notes/linux.yml
   - task: format-release-notes
     image: image
