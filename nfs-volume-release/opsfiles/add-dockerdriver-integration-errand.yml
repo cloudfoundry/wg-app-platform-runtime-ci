@@ -17,12 +17,8 @@
     jobs:
     - name: dockerdriver-integration
       release: nfs-volume
-      consumes:
-        mapfs: {from: mapfs-docker-integration}
     - name: mapfs
       release: mapfs
-      provides:
-        mapfs: {as: mapfs-docker-integration}
 
 - type: replace
   path: /instance_groups/name=diego-cell/jobs/name=nfsv3driver/consumes?
