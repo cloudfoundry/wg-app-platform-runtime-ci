@@ -312,6 +312,10 @@ jobs:
           - released-binaries/*
     - put: hwc-version
       params: {bump: major}
+    - put: hwc-develop-branch-mergeback
+      params:
+        repository: merged-branch
+        rebase: true
 
 #@ for package in data.values.internal_repos:
 - name: #@ "bump-dependencies-{}".format(package.name)

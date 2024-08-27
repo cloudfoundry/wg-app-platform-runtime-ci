@@ -16,17 +16,23 @@ internal_repos:
 - name: commandrunner
   repo: cloudfoundry/commandrunner
   on_windows: true
+  initial_version: 0.4.0
 - name: cpu-entitlement-admin-plugin
   repo: cloudfoundry/cpu-entitlement-admin-plugin
+  initial_version: 0.8.0
 - name: groot
   repo: cloudfoundry/groot
   on_windows: true
+  initial_version: 0.7.0
 - name: hydrator
   repo: cloudfoundry/hydrator
+  initial_version: 0.7.0
 - name: filelock
   repo: cloudfoundry/filelock
   on_windows: true
+  initial_version: 0.4.0
 - name: hwc
   repo: cloudfoundry/hwc
   on_branch: develop
   on_windows: true
+  initial_version: 30.0.0
