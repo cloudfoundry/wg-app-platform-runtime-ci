@@ -201,13 +201,6 @@ resources:
     branch: release
     uri: https://github.com/cloudfoundry/garden-runc-release.git
 
-- name: routing-release
-  type: git
-  icon: source-branch
-  source:
-    branch: develop
-    uri: https://github.com/cloudfoundry/routing-release.git
-
 - name: windows-utilities-release
   type: git
   icon: source-branch
@@ -622,7 +615,6 @@ jobs:
       passed: [claim-env]
     - get: linux-stemcell
     - get: windows-stemcell
-    - get: routing-release
   - task: create-toolsmiths-env
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
@@ -661,7 +653,6 @@ jobs:
         {ci/winc-release/opsfiles/enable-windows-auth.yml,combined-assets}
         {ci/winc-release/opsfiles/enable-windows-tcp-routes.yml,combined-assets}
         {ci/winc-release/opsfiles/windows2019-cell-with-static-ip.yml,combined-assets}
-        {ci/winc-release/opsfiles/use-latest-routing-release.yml,combined-assets}
         {ci/winc-release/opsfiles/enable-sticky-sessions-for-auth-negotiate.yml,combined-assets}
   - put: pesto-cf-deployment
     attempts: 3
@@ -678,12 +669,6 @@ jobs:
       ops_files: #@ ["combined-assets/{0}".format(i) for i in data.values.opsfiles]
     get_params:
       skip_export: true
-  - task: upload-dev-releases
-    file: ci/shared/tasks/bosh-upload-dev-releases/linux.yml
-    image: image
-    input_mapping:
-      release-01: routing-release
-      env: pesto-env
   - put: pesto-cf-deployment
     attempts: 3
     params:
