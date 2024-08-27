@@ -914,7 +914,7 @@ jobs:
       input_mapping:
         release-repo: release-branch
 
-    - task: build-release-notes-diego-release
+    - task: build-release-notes-mapfs-release
       image: image
       file: ci/shared/tasks/build-release-notes/linux.yml
       input_mapping:
@@ -927,12 +927,13 @@ jobs:
       fail_fast: true
       steps:
       - get: ci
+      - get: repo
+        passed: [ship-what]
       - get: image
       - get: release-branch
         params:
           submodules: none
-      - get: repo
-        passed: [ship-what]
+      - get: github-release
       - get: version
       - get: develop-branch-mergeback
         params:
@@ -944,24 +945,23 @@ jobs:
     input_mapping:
       release-repo: release-branch
 
-  - task: create-release-notes
+  - task: build-release-notes-mapfs-release
     image: image
-    file: ci/shared/tasks/generate-volume-services-release-notes/linux.yml
-  - task: format-release-notes
-    image: image
-    file: ci/shared/tasks/format-volume-services-release-notes/linux.yml
+    file: ci/shared/tasks/build-release-notes/linux.yml
+    input_mapping:
+      previous-github-release: github-release
 
   - task: bosh-finalize-release
     image: image
     file: ci/shared/tasks/bosh-finalize-release/linux.yml
     params:
-      AWS_ACCESS_KEY_ID: ((aws-s3-diego-release-blobs/access-key-id))
-      AWS_SECRET_ACCESS_KEY: ((aws-s3-diego-release-blobs/secret-access-key))
+      AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-mapfs-volume-services-s3/secret-access-key))
+      AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-mapfs-volume-services-s3/access-key-id))
       AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-mapfs-volume-services-s3/assume-role))
 
   - put: release-branch
     params:
-      repository: mapfs-final-release
+      repository: finalized-release-repo
       tag: version/number
       tag_prefix: v
 
@@ -981,7 +981,7 @@ jobs:
         params:
           name: version/number
           tag: version/number
-          body: release-notes/release-notes.md
+          body: built-release-notes/notes.md
           tag_prefix: v
           globs:
           - finalized-release-tarball/mapfs-*.tgz
