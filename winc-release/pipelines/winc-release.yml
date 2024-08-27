@@ -623,19 +623,6 @@ jobs:
     - get: linux-stemcell
     - get: windows-stemcell
     - get: routing-release
-  - put: pesto-cf-deployment
-    attempts: 3
-    params:
-      manifest: cf-deployment/cf-deployment.yml
-      stemcells:
-      - linux-stemcell/*.tgz
-      vars_files:
-      - env/pesto/cf/vars.yml
-      vars:
-        cf_admin_password: ((gcp-garden-windows-env-pesto/cf-admin-password))
-      cleanup: true
-    get_params:
-      skip_export: true
   - task: create-toolsmiths-env
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
@@ -658,6 +645,9 @@ jobs:
       input-01: cf-deployment
     params:
       COPY_ACTIONS: |
+        {input-01/operations/use-compiled-releases.yml,combined-assets}
+        {input-01/operations/experimental/use-compiled-releases-windows.yml,combined-assets}
+        {input-01/operations/windows2019-cell.yml,combined-assets}
         {input-01/operations/scale-to-one-az.yml,combined-assets}
         {input-01/operations/windows2019-cell.yml,combined-assets}
         {input-01/operations/use-online-windows2019fs.yml,combined-assets}
@@ -673,6 +663,21 @@ jobs:
         {ci/winc-release/opsfiles/windows2019-cell-with-static-ip.yml,combined-assets}
         {ci/winc-release/opsfiles/use-latest-routing-release.yml,combined-assets}
         {ci/winc-release/opsfiles/enable-sticky-sessions-for-auth-negotiate.yml,combined-assets}
+  - put: pesto-cf-deployment
+    attempts: 3
+    params:
+      manifest: cf-deployment/cf-deployment.yml
+      stemcells:
+      - linux-stemcell/*.tgz
+      - windows-stemcell/*.tgz
+      vars_files:
+      - env/pesto/cf/vars.yml
+      vars:
+        cf_admin_password: ((gcp-garden-windows-env-pesto/cf-admin-password))
+      cleanup: true
+      ops_files: #@ ["combined-assets/{0}".format(i) for i in data.values.opsfiles]
+    get_params:
+      skip_export: true
   - task: upload-dev-releases
     file: ci/shared/tasks/bosh-upload-dev-releases/linux.yml
     image: image
