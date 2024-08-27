@@ -693,7 +693,6 @@ jobs:
         {input-01/operations/test/enable-nfs-test-server.yml,combined-assets}
         {input-01/operations/experimental/fast-deploy-with-downtime-and-danger.yml,combined-assets}
         {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
-        {ci/shared/opsfiles/scale-to-HA.yml,combined-assets}
         {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
         {ci/mapfs-release/opsfiles/*.yml,combined-assets}
   - task: upload-latest-nfs-release
@@ -988,7 +987,6 @@ jobs:
       - put: develop-branch-mergeback
         params:
           repository: merged-branch
-          rebase: true
 
   - get: next-version
     resource: version

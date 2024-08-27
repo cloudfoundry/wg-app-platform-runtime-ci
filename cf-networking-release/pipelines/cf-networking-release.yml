@@ -1130,7 +1130,6 @@ jobs:
           - put: cf-networking-develop-branch-mergeback
             params:
               repository: cf-networking-merged-branch
-              rebase: true
           - put: cf-networking-draft-github-release
             params:
               name: version/number
@@ -1169,7 +1168,6 @@ jobs:
           - put: silk-develop-branch-mergeback
             params:
               repository: silk-merged-branch
-              rebase: true
           - put: silk-draft-github-release
             params:
               name: version/number
