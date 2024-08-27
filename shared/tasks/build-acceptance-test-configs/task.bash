@@ -289,7 +289,7 @@ function volume_services_acceptance_tests() {
   "skip_ssl_validation": true,
   "isolation_segment_name": "persistent_isolation_segment",
   "isolation_segment_domain": "iso-seg.${CF_SYSTEM_DOMAIN}",
-  "isolation_segment_tcp_domain": "tcp.${CF_SYSTEM_DOMAIN}"
+  "isolation_segment_tcp_domain": "tcp.${CF_SYSTEM_DOMAIN}",
 
   "plan_name": "${VOLUME_SERVICE_PLAN_NAME:-}",
   "service_name": "${VOLUME_SERVICE_SERVICE_NAME:-}",
