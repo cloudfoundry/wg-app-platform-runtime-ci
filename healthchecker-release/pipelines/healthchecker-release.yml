@@ -481,6 +481,7 @@ jobs:
         - put: develop-branch-mergeback
           params:
             repository: merged-branch
+            merge: true
 
     - get: next-version
       resource: version

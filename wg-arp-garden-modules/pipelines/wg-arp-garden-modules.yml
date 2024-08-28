@@ -315,7 +315,8 @@ jobs:
     - put: hwc-develop-branch-mergeback
       params:
         repository: merged-branch
-        rebase: true
+        merge: true
+
 
 #@ for package in data.values.internal_repos:
 - name: #@ "bump-dependencies-{}".format(package.name)
