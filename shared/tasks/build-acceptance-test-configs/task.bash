@@ -284,16 +284,18 @@ function volume_services_acceptance_tests() {
   "admin_user": "admin",
   "api": "api.${CF_SYSTEM_DOMAIN}",
   "apps_domain": "${CF_SYSTEM_DOMAIN}",
-  "artifacts_directory": "",
   "default_timeout": 30,
   "skip_ssl_validation": true,
+  "plan_name": "${VOLUME_SERVICE_PLAN_NAME:-}",
+  "service_name": "${VOLUME_SERVICE_SERVICE_NAME:-}",
+  "include_multi_cell": true,
+
   "isolation_segment_name": "persistent_isolation_segment",
   "isolation_segment_domain": "iso-seg.${CF_SYSTEM_DOMAIN}",
   "isolation_segment_tcp_domain": "tcp.${CF_SYSTEM_DOMAIN}",
 
-  "plan_name": "${VOLUME_SERVICE_PLAN_NAME:-}",
-  "service_name": "${VOLUME_SERVICE_SERVICE_NAME:-}",
 
+  "artifacts_directory": "",
   "create_config": "${VOLUME_SERVICE_CREATE_CONFIG:-}",
   "create_bogus_config": "${VOLUME_SERVICE_CREATE_BOGUS_CONFIG:-}",
   "bind_config": "${VOLUME_SERVICE_BIND_CONFIG:-}",
