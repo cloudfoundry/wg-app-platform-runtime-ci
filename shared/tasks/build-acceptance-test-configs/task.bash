@@ -292,8 +292,8 @@ function volume_services_acceptance_tests() {
   "isolation_segment_tcp_domain": "tcp.${CF_SYSTEM_DOMAIN}",
   "service_name": "${VOLUME_SERVICE_SERVICE_NAME:-}",
   "plan_name": "${VOLUME_SERVICE_PLAN_NAME:-}",
-  "username": "${VOLUME_SERVICE_USERNAME:-}", 
-  "password": "${VOLUME_SERVICE_PASSWORD:-}",
+  "username": "${VOLUME_SERVICE_USERNAME:-}",
+  "password": "${VOLUME_SERVICE_PASSWORD:-}"
 }
 EOF
 }
