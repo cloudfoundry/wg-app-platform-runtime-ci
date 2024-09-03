@@ -151,7 +151,7 @@ resources:
   icon: git
   source:
     uri: https://github.com/cloudfoundry/cf-volume-services-acceptance-tests.git
-    branch: main
+    branch: with-a-single-config  #! TODO: go back to main when branch is merged
 
 #! TIMERS
 - name: daily
@@ -746,27 +746,21 @@ jobs:
     params:
       CONFIGS: volume-services-acceptance-tests
       ENVS: |
-        VOLUME_SERVICE_DISALLOWED_OVERRIDE_BIND_CONFIG='{\"share\":\"//smbtestserver.service.cf.internal/export/vol2\"}'
-        VOLUME_SERVICE_CREATE_BOGUS_CONFIG='{\"share\":\"//smb.bogus/export/nonexistensevol\"}'
-        VOLUME_SERVICE_BIND_CONFIG='["{\"username\":\"((smb-volume-release-smbtestserver-credentials/username))\",\"password\":\"((smb-volume-release-smbtestserver-credentials/password))\", \"domain\": \"foo\"}", "{\"username\":\"((smb-volume-release-smbtestserver-credentials/username))\",\"password\":\"((smb-volume-release-smbtestserver-credentials/password))\", \"domain\": \"foo\", \"version\": \"3.1.1\"}", "{\"username\":\"((smb-volume-release-smbtestserver-credentials/username))\",\"password\":\"((smb-volume-release-smbtestserver-credentials/password))\", \"mount\": \"/var/vcap/data/foo\", \"domain\": \"foo\"}"]'
-        VOLUME_SERVICE_CREATE_CONFIG='{\"share\":\"//smbtestserver.service.cf.internal/vol\"}'
-        VOLUME_SERVICE_PLAN_NAME=Existing
         VOLUME_SERVICE_SERVICE_NAME=smb
+        VOLUME_SERVICE_PLAN_NAME=Existing
+        VOLUME_SERVICE_USERNAME=((smb-volume-release-smbtestserver-credentials/username))
+        VOLUME_SERVICE_PASSWORD=((smb-volume-release-smbtestserver-credentials/password))
   - task: run-bin-test-cf-volume-services-acceptance-tests
     file: ci/shared/tasks/run-bin-test/linux.yml
     input_mapping:
-      input-01: built-acceptance-test-configs
       repo: cf-volume-services-acceptance-tests
+      input-01: built-acceptance-test-configs
     attempts: 2
     vars:
       image_repository: cloudfoundry/tas-runtime-build
       image_tag: ((.:image_tag))
     params:
       ENVS: |
-        TEST_MOUNT_FAIL_LOGGING=true
-        TEST_MOUNT_OPTIONS=false
-        TEST_MULTI_CELL=true
-        TEST_READ_ONLY=true
         CONFIG=$PWD/input-01/volume-services-acceptance-tests.json
 
 - name: dockerdriver-integration
