@@ -701,17 +701,6 @@ jobs:
     input_mapping:
       release-01: nfs-volume-release
   - task: deploy-cf-deployment
-    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
-    input_mapping:
-      ops-files: combined-assets
-      vars-files: prepared-env
-      toolsmiths-env: env
-    params:
-      DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
-      FAIL_ON_DOWNTIME: "false"
-      VARS_FILES: vars.yml
-      OPS_FILES: #@ "\n".join(data.values.opsfiles)
-  - task: uptimer-measure-with-garden-runc-release-update
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping:
       ops-files: combined-assets
@@ -719,58 +708,47 @@ jobs:
       vars-files: prepared-env
       toolsmiths-env: env
     params:
-      DEPLOY_WITH_UPTIME_MEASUREMENTS: "true"
-      APP_PUSHABILITY_THRESHOLD: "20"
-      APP_STATS_THRESHOLD: "20"
-      HTTP_AVAILABILITY_THRESHOLD: "20"
-      TCP_AVAILABILITY_THRESHOLD: "20"
-      AVAILABLE_PORT: "-1"
-      TCP_PORT: "1029"
-      FAIL_ON_DOWNTIME: "true"
-      MEASURE_SYSLOG_AVAILABILITY: "false"
-      MEASURE_TCP_AVAILABILITY: "true"
-      RECENT_LOGS_THRESHOLD: "50"
-      STREAMING_LOGS_THRESHOLD: "50"
-      APP_SYSLOG_AVAILABILITY_THRESHOLD: "50"
-      USE_SINGLE_APP_INSTANCE: "false"
+      DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
+      FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
       OPS_FILES: #@ "\n".join(data.values.opsfiles)
-  - task: open-asg-for-credhub
-    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
-    input_mapping:
-      toolsmiths-env: env
-    params:
-      INSTANCE_GROUP_NAME: credhub
-      SECURITY_GROUP_NAME: credhub
-  - task: open-asg-for-uaa
-    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
-    input_mapping:
-      toolsmiths-env: env
-    params:
-      INSTANCE_GROUP_NAME: uaa
-      SECURITY_GROUP_NAME: uaa
-  - task: enable-feature-flags-for-cats
-    file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
-    input_mapping:
-      toolsmiths-env: env
-    params:
-      ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
-  - task: run-smoke-tests
-    image: image
-    file: cf-deployment-concourse-tasks/run-errand/task.yml
-    input_mapping:
-      toolsmiths-env: env
-    params:
-      ERRAND_NAME: smoke_tests
-  - task: run-nfs-broker-errand
-    image: image
-    attempts: 2
-    file: cf-deployment-concourse-tasks/run-errand/task.yml
-    input_mapping:
-      toolsmiths-env: env
-    params:
-      ERRAND_NAME: nfsbrokerpush
-      INSTANCE: nfs-broker-push
+  - in_parallel:
+    - task: open-asg-for-credhub
+      file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+      input_mapping:
+        toolsmiths-env: env
+      params:
+        INSTANCE_GROUP_NAME: credhub
+        SECURITY_GROUP_NAME: credhub
+    - task: open-asg-for-uaa
+      file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+      input_mapping:
+        toolsmiths-env: env
+      params:
+        INSTANCE_GROUP_NAME: uaa
+        SECURITY_GROUP_NAME: uaa
+    - task: open-asg-for-nfstestserver
+      file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+      input_mapping:
+        toolsmiths-env: env
+      params:
+        INSTANCE_GROUP_NAME: nfstestserver
+        SECURITY_GROUP_NAME: nfstestserver
+    - task: enable-feature-flags-for-cats
+      file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
+      input_mapping:
+        toolsmiths-env: env
+      params:
+        ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
+    - task: run-nfs-broker-errand
+      image: image
+      attempts: 2
+      file: cf-deployment-concourse-tasks/run-errand/task.yml
+      input_mapping:
+        toolsmiths-env: env
+      params:
+        ERRAND_NAME: nfsbrokerpush
+        INSTANCE: nfs-broker-push
 
 - name: run-cats
   serial_groups:
