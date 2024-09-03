@@ -43,5 +43,45 @@
   path: /instance_groups/name=isolated-diego-cell/jobs/name=nfsv3driver/properties/nfsv3driver/allowed-in-source?
   value: ""
 - type: replace
-  path: /instance_groups/name=nfs-broker-push/jobs/name=nfsbrokerpush/properties/nfsbrokerpush/ldap_enabled?
-  value: true
+  path: /instance_groups/-
+  value:
+    azs:
+    - z1
+    instances: 1
+    jobs:
+    - name: nfsldapbrokerpush
+      properties:
+        nfsbrokerpush:
+          ldap_enabled: true
+          app_domain: ((system_domain))
+          app_name: nfs-ldap-broker
+          cf:
+            client_id: nfs-broker-push-client
+            client_secret: ((nfs-broker-push-uaa-client-secret))
+          create_credhub_security_group: true
+          create_sql_security_group: false
+          credhub:
+            uaa_ca_cert: ((uaa_ssl.ca))
+            uaa_client_id: nfs-broker-credhub-client
+            uaa_client_secret: ((nfs-broker-credhub-uaa-client-secret))
+          domain: ((system_domain))
+          organization: system
+          password: ((nfs-broker-password))
+          skip_cert_verify: true
+          space: nfs-ldap-broker-space
+          store_id: nfsbroker
+          broker_name: nfs-ldap
+          syslog_url: ""
+          username: nfs-broker
+      provides:
+        nfsbrokerpush:
+          as: ignore-me
+      release: nfs-volume
+    - name: cf-cli-8-linux
+      release: cf-cli
+    lifecycle: errand
+    name: nfs-broker-push
+    networks:
+    - name: default
+    stemcell: default
+    vm_type: minimal
