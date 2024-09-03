@@ -49,7 +49,7 @@
     - z1
     instances: 1
     jobs:
-    - name: nfsldapbrokerpush
+    - name: nfsbrokerpush
       properties:
         nfsbrokerpush:
           ldap_enabled: true
@@ -75,7 +75,7 @@
           username: nfs-broker
       provides:
         nfsbrokerpush:
-          as: ignore-me
+          as: ignore-me-isolated-segement
       release: nfs-volume
     - name: cf-cli-8-linux
       release: cf-cli
