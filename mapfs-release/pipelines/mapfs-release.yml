@@ -179,7 +179,7 @@ resources:
   icon: source-branch
   source:
     uri: https://github.com/cloudfoundry/cf-volume-services-acceptance-tests.git
-    branch: main
+    branch: with-a-single-config #! TODO move to main branch when PR is merged
 
 - name: nfs-volume-release
   type: git
@@ -840,28 +840,20 @@ jobs:
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
     params:
       ENVS: |
-        VOLUME_SERVICE_BIND_BOGUS_CONFIG='{\"uid\":\"1000\",\"gid\":\"1000\"}'
-        VOLUME_SERVICE_CREATE_BOGUS_CONFIG='{\"share\":\"nfstestserver.service.cf.internal/export/nonexistensevol\"}'
-        VOLUME_SERVICE_BIND_CONFIG='["{\"uid\":\"1000\",\"gid\":\"1000\"}","{\"uid\":\"1000\",\"gid\":\"1000\",\"mount\":\"/var/vcap/data/foo\"}","{\"uid\":\"1000\",\"gid\":\"1000\",\"version\":\"3\"}","{\"uid\":\"1000\",\"gid\":\"1000\",\"version\":\"4.0\"}","{\"uid\":\"1000\",\"gid\":\"1000\",\"version\":\"4.1\"}","{\"uid\":\"1000\",\"gid\":\"1000\",\"version\":\"4.2\"}"]'
-        VOLUME_SERVICE_CREATE_CONFIG='{\"share\":\"nfstestserver.service.cf.internal/export/users\"}'
-        VOLUME_SERVICE_PLAN_NAME=Existing
         VOLUME_SERVICE_SERVICE_NAME=nfs
+        VOLUME_SERVICE_PLAN_NAME=Existing
       CONFIGS: volume-services-acceptance-tests
   - task: run-bin-test-cf-volume-services-acceptance-tests
     file: ci/shared/tasks/run-bin-test/linux.yml
     input_mapping:
-      input-01: built-acceptance-test-configs
       repo: cf-volume-services-acceptance-tests
+      input-01: built-acceptance-test-configs
     attempts: 2
     vars:
       image_repository: cloudfoundry/tas-runtime-build
       image_tag: ((.:image_tag))
     params:
       ENVS: |
-        TEST_MOUNT_FAIL_LOGGING=true
-        TEST_MOUNT_OPTIONS=true
-        TEST_MULTI_CELL=true
-        TEST_READ_ONLY=true
         CONFIG=$PWD/input-01/volume-services-acceptance-tests.json
 
 - name: export-release
