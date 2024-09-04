@@ -1,0 +1,31 @@
+---
+- type: replace
+  path: /instance_groups/-
+  value:
+    name: dockerdriver-integration-vm
+    lifecycle: errand
+    azs:
+    - z1
+    instances: 1
+    vm_type: minimal
+    stemcell: default
+    update:
+      max_in_flight: 1
+      serial: true
+    networks:
+    - name: default
+    jobs:
+    - name: dockerdriver-integration
+      release: nfs-volume
+    - name: mapfs
+      release: mapfs
+
+- type: replace
+  path: /instance_groups/name=diego-cell/jobs/name=nfsv3driver/consumes?
+  value:
+    mapfs: {from: mapfs-on-diego-cell}
+
+- type: replace
+  path: /instance_groups/name=diego-cell/jobs/name=mapfs/provides?
+  value:
+    mapfs: {as: mapfs-on-diego-cell}

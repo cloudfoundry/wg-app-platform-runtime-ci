@@ -16,6 +16,7 @@ function run() {
   git_configure_safe_directory
 
   local CI_DIR="$PWD/ci"
+  local CI_CONFIG_DIR="$PWD/ci-config"
   local SYNCED_REPO_DIR="$PWD/synced-repo"
  
   pushd "repo/" > /dev/null
@@ -25,24 +26,32 @@ function run() {
 
   if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/issue-bug.yml" ]]; then
     cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/issue-bug.yml" ".github/ISSUE_TEMPLATE/"
+  elif [[ -f "${CI_CONFIG_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/issue-bug.yml" ]]; then
+    cp -r "${CI_CONFIG_DIR}/${PARENT_TEMPLATE_DIR}/github/issue-bug.yml" ".github/ISSUE_TEMPLATE/"
   else
     cp -r "${CI_DIR}/shared/github/issue-bug.yml" ".github/ISSUE_TEMPLATE/"
   fi
 
   if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/issue-enhance.yml" ]]; then
     cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/issue-enhance.yml" ".github/ISSUE_TEMPLATE/"
+  elif [[ -f "${CI_CONFIG_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/issue-enhance.yml" ]]; then
+    cp -r "${CI_CONFIG_DIR}/${PARENT_TEMPLATE_DIR}/github/issue-enhance.yml" ".github/ISSUE_TEMPLATE/"
   else
     cp -r "${CI_DIR}/shared/github/issue-enhance.yml" ".github/ISSUE_TEMPLATE/"
   fi
 
   if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/config.yml" ]]; then
     cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/config.yml" ".github/ISSUE_TEMPLATE/"
+  elif [[ -f "${CI_CONFIG_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/config.yml" ]]; then
+    cp -r "${CI_CONFIG_cDIR}/${PARENT_TEMPLATE_DIR}/github/config.yml" ".github/ISSUE_TEMPLATE/"
   else
     cp -r "${CI_DIR}/shared/github/config.yml" ".github/ISSUE_TEMPLATE/"
   fi
 
   if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/PULL_REQUEST_TEMPLATE.md" ]]; then
     cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/PULL_REQUEST_TEMPLATE.md" ".github"
+  elif [[ -f "${CI_CONFIG_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/PULL_REQUEST_TEMPLATE.md" ]]; then
+    cp -r "${CI_CONFIG_DIR}/${PARENT_TEMPLATE_DIR}/github/PULL_REQUEST_TEMPLATE.md" ".github"
   else
     cp -r "${CI_DIR}/shared/github/PULL_REQUEST_TEMPLATE.md" ".github"
   fi
@@ -51,6 +60,10 @@ function run() {
     cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/${git_remote_name}/CONTRIBUTING.md" ".github"
   elif [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/CONTRIBUTING.md" ]]; then
     cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/CONTRIBUTING.md" ".github"
+  elif [[ -f "${CI_CONFIG_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/${git_remote_name}/CONTRIBUTING.md" ]]; then
+    cp -r "${CI_CONFIG_DIR}/${PARENT_TEMPLATE_DIR}/github/${git_remote_name}/CONTRIBUTING.md" ".github"
+  elif [[ -f "${CI_CONFIG_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/CONTRIBUTING.md" ]]; then
+    cp -r "${CI_CONFIG_DIR}/${PARENT_TEMPLATE_DIR}/github/CONTRIBUTING.md" ".github"
   else
     cp -r "${CI_DIR}/shared/github/CONTRIBUTING.md" ".github"
     if [[ ! -f "scripts/create-docker-container.bash" ]]; then

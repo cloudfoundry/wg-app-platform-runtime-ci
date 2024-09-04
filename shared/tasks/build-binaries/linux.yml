@@ -12,7 +12,7 @@ image_resource:
 inputs:
 - name: ci
 - name: repo
-- name: private-ci
+- name: ci-config
   optional: true
 
 outputs:

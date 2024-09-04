@@ -4,6 +4,8 @@ platform: linux
 inputs:
   - name: ci
   - name: repo
+  - name: built-binaries
+    optional: true
   - name: dep-local-repo-replace-01
     optional: true
   - name: dep-local-repo-replace-02
@@ -24,6 +26,7 @@ params:
   REPLACE_DIRECTIVES: 
   FUNCTIONS:
   EXTRA_GO_TAGS: 
+  ENVS:
 
 run:
   path: ci/shared/tasks/bump-dependencies-go-mod/task.bash

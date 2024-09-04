@@ -45,22 +45,32 @@ resource_types:
 resources:
 - name: golang-release-latest
   type: git
-  icon: tag-outline
+  icon: git
   source:
     tag_filter: v*
     uri: https://github.com/bosh-packages/golang-release.git
 
 - name: repo
   type: git
-  icon: source-branch
+  icon: git
   source:
     branch: develop
     uri: git@github.com:<REPLACE_ME>
     private_key: ((github-tas-runtime-bot/private-key))
+    ignore_paths:
+    - .github/
+    - .gitignore
+    - .final_build
+    - CODEOWNERS
+    - LICENSE
+    - NOTICE
+    - README*
+    - docs/
+    - releases/
 
 - name: release-branch 
   type: git
-  icon: source-branch
+  icon: git
   source:
     uri: git@github.com:cloudfoundry/<REPLACE_ME>.git
     branch: release
@@ -68,7 +78,7 @@ resources:
 
 - name: develop-branch-mergeback
   type: git
-  icon: source-branch
+  icon: git
   source:
     uri: git@github.com:cloudfoundry/<REPLACE_ME>.git
     branch: develop
@@ -76,35 +86,35 @@ resources:
 
 - name: ci
   type: git
-  icon: source-branch
+  icon: git
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: cf-deployment
   type: git
-  icon: source-branch
+  icon: git
   source:
     branch: main
     uri: https://github.com/cloudfoundry/cf-deployment.git
 
 - name: cf-deployment-concourse-tasks
   type: git
-  icon: source-branch
+  icon: git
   source:
     branch: main
     uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
 
 - name: cf-acceptance-tests
   type: git
-  icon: source-branch
+  icon: git
   source:
     branch: release-candidate
     uri: https://github.com/cloudfoundry/cf-acceptance-tests
 
 - name: go-version
   type: git
-  icon: source-branch
+  icon: git
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
@@ -212,6 +222,8 @@ jobs:
   - task: bump-golang-package-name
     image: image
     file: ci/shared/tasks/bump-golang-package-name/linux.yml
+    output_mapping:
+      bumped-repo: bumped-golang-package-name-linux
     params:
       PLATFORM: linux
 
@@ -548,6 +560,7 @@ jobs:
         - put: develop-branch-mergeback
           params:
             repository: merged-branch
+            merge: true
 
     - get: next-version
       resource: version

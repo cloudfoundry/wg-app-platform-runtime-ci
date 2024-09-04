@@ -1,0 +1,7 @@
+---
+readme: |
+  This task will build generic config file to be consumed. It will create a config.json and config.yml in the output dir
+oses:
+  - linux
+params:
+  CONFIG: Config struct to be created

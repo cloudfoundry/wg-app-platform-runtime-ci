@@ -106,7 +106,7 @@ function expand_envs(){
     for entry in ${ENVS:-}
     do
         local key=$(echo $entry | cut -d '=' -f1)
-        local value=$(echo $entry | cut -d '=' -f2)
+        local value=$(echo $entry | cut -d '=' -f2-)
         echo "Setting env: $key"
         echo "export $key=$value" >> "${env_file}"
     done

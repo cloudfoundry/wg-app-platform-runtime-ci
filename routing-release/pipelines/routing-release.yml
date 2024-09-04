@@ -74,6 +74,16 @@ resources:
     branch: develop
     uri: git@github.com:cloudfoundry/routing-release.git
     private_key: ((github-tas-runtime-bot/private-key))
+    ignore_paths:
+    - .github/
+    - .gitignore
+    - .final_build
+    - CODEOWNERS
+    - LICENSE
+    - NOTICE
+    - README*
+    - docs/
+    - releases/
 
 - name: release-branch 
   type: git
@@ -573,8 +583,8 @@ jobs:
       image_tag: ((.:image_tag_mysql_5_7))
     params:
       DEFAULT_PARAMS: "ci/routing-release/default-params/build-binaries/linux.yml"
-  - in_parallel:
 #@ for package in helpers.packages_with_configure_db(data.values.internal_repos):
+  - in_parallel:
 #@ for db in data.values.db_flavors:
     - task: #@ "{}-{}".format(package.name,db.image)
       file: ci/shared/tasks/run-bin-test/linux.yml
@@ -588,6 +598,7 @@ jobs:
         DEFAULT_PARAMS: "ci/routing-release/default-params/run-bin-test/linux.yml"
 #@ end
 #@ end
+  - in_parallel:
 #@ for package in helpers.packages_without_configure_db(data.values.internal_repos):
     - task: #@ package.name
       file: ci/shared/tasks/run-bin-test/linux.yml
@@ -1105,6 +1116,7 @@ jobs:
         - put: develop-branch-mergeback
           params:
             repository: merged-branch
+            merge: true
 
     - get: next-version
       resource: version

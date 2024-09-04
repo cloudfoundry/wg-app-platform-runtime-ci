@@ -2,6 +2,7 @@
 readme: |
   This task bump dependencies for a go project with go.mod
 extra_inputs:
+  built-binaries: (Optional) This will optionally take built-binaries (chained with build-binaries task) that have corresponding source files (run.ps1/run.bash) to be used at runtime.
   dep-local-repo-replace-*: (Optional) Generic input to use when go.mod has a local import path
 oses:
   - linux
@@ -11,3 +12,8 @@ params:
   REPLACE_DIRECTIVES: Create a local directory mapping for values set here so that local go.mod dirs can resolve. e.g. dep-local-repo-replace-01:garden
   FUNCTIONS:  Multiline functions to be used for extra configuration of binaries. e.g. ci/winc-release/helpers/configure-binaries.{ps1,bash}
   EXTRA_GO_TAGS: Extra go tag to run go mod vendor and go mod tidy with e.g. tools
+  ENVS: |
+    (Currently works on Linux Only). This parameter defines a list of environment variables will be loaded at runtime, as opposed to
+    container-creation time. The purpose here is to allow users to extend the list of environment
+    variables used by the task simply by updating the pipeline config, rather than by updating the task definition
+    in linux.yml.

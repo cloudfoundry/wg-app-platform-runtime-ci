@@ -1,6 +1,8 @@
 ---
 readme: |
   This task will build-binaries using helper FUNCTIONS defined dynamically. For each platfrom, this is accomplished by using (bash or powershell) functions defined at the release level that know how to build binaries for that release. The goal is to centralized building process of binaries for all concourse tasks within the release that defines them so that we don't have different ways of building. `built-binaries` will contain the output of binaries.
+extra_inputs:
+  ci-config: (Optional) if ci config files needs to be provided from a repo other than this. This would be used when using a private-repo to hold ci configurations for params.
 oses:
   - linux
   - windows

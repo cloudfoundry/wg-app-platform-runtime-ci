@@ -1,0 +1,19 @@
+---
+- type: replace
+  path: /instance_groups/-
+  value:
+    name: dockerdriver-integration-vm
+    lifecycle: errand
+    azs:
+    - z1
+    instances: 1
+    vm_type: minimal
+    stemcell: default
+    update:
+      max_in_flight: 1
+      serial: true
+    networks:
+    - name: default
+    jobs:
+    - name: dockerdriver-integration
+      release: smb-volume

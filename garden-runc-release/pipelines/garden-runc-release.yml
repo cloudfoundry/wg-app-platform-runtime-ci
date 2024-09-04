@@ -77,6 +77,16 @@ resources:
     branch: develop
     uri: git@github.com:cloudfoundry/garden-runc-release.git
     private_key: ((github-tas-runtime-bot/private-key))
+    ignore_paths:
+    - .github/
+    - .gitignore
+    - .final_build
+    - CODEOWNERS
+    - LICENSE
+    - NOTICE
+    - README*
+    - docs/
+    - releases/
 
 - name: release-branch 
   type: git
@@ -349,7 +359,7 @@ resources:
   source:
     branch: master
     uri: https://github.com/autotools-mirror/automake
-    tag_regex: ^v([0-9]|[1-9][0-9]*)\.([0-9]|[1-9][0-9]*)\.([0-9]|[1-9][0-9]*)$
+    tag_filter: v*
 
 - name: busybox
   type: git
@@ -1596,6 +1606,7 @@ jobs:
         - put: develop-branch-mergeback
           params:
             repository: merged-branch
+            merge: true
 
     - get: next-version
       resource: version

@@ -11,6 +11,8 @@ internal_repos:
 
 #! <OPTIONAL> set to a list of opsfile if pipeline needs to update cf-deployment
 opsfiles:
+- use-compiled-releases.yml
+- use-compiled-releases-windows.yml
 - scale-to-one-az.yml
 - windows2019-cell.yml
 - use-online-windows2019fs.yml
@@ -24,5 +26,4 @@ opsfiles:
 - enable-windows-auth.yml
 - enable-windows-tcp-routes.yml
 - windows2019-cell-with-static-ip.yml
-- use-latest-routing-release.yml
 - enable-sticky-sessions-for-auth-negotiate.yml

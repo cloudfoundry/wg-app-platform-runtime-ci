@@ -1,0 +1,12 @@
+
+---
+readme: |
+  This task will combine json files together
+extra_inputs:
+  input-*: Extra inputs that you can use to combine
+oses:
+  - linux
+params:
+  FILES: |
+    Multiple files to be combined. e.g. input-01/dir-01/config.json
+  OUTPUT_FILE: (Defaults to config.json) Name of output file. 

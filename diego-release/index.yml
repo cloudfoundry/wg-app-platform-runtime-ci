@@ -77,3 +77,4 @@ opsfiles:
 - set-rep-max-idle-conns.yml
 - turn-on-debug-mode.yml
 - resize-grootfs-store.yml
+- use-latest-routing-release.yml

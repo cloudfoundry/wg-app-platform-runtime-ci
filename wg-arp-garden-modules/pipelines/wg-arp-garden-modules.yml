@@ -4,12 +4,9 @@
 #! Define-Groups
 groups:
 - name: test
-  jobs: #@ helpers.packages_names_array(data.values.internal_repos) 
+  jobs: #@ helpers.packages_names_array(data.values.internal_repos,["", "ship-it-"])
 - name: periodics
   jobs: #@ helpers.packages_names_array(data.values.internal_repos,["bump-dependencies-","sync-dot-github-dir-","sync-readme-"])
-- name: release
-  jobs:
-    - release-hwc
 
 #! Define-Resources
 resources:
@@ -21,6 +18,24 @@ resources:
     branch: #@ helpers.on_branch(package)
     uri: #@ "git@github.com:{}".format(package.repo)
     private_key: ((github-tas-runtime-bot/private-key))
+
+- name: #@ "{}-github-release".format(package.name)
+  type: github-release
+  icon: github
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    repository: #@ package.name
+    owner: cloudfoundry
+
+- name: #@ "{}-version".format(package.name)
+  type: semver
+  icon: counter
+  source:
+    driver: gcs
+    bucket: ci-release-versions
+    key: #@ "garden-modules/{}/version".format(package.name)
+    json_key: ((gcp-tas-runtime-service-account/config-json))
+    initial_version: #@ package.initial_version
 #@ end
 
 - name: ci
@@ -83,32 +98,18 @@ resources:
     branch: develop
     private_key: ((github-tas-runtime-bot/private-key))
 
-- name: hwc-version
-  type: semver
-  icon: counter
-  source:
-    bucket: hwc-release
-    key: versions/hwc-version
-    access_key_id: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
-    secret_access_key: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
-    assume_role_arn: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
-    initial_version: "1.0.0"
-
-- name: hwc-github-release
-  type: github-release
-  icon: github
-  check_every: '5m'
-  source:
-    user: cloudfoundry
-    repository: hwc
-    access_token: ((github-tas-runtime-bot/access-token))
-
 #! TIMERS
 - name: daily
   type: time
   icon: clock
   source:
     interval: '24h'  #! 1 day
+
+- name: weekly
+  type: time
+  icon: clock
+  source:
+    interval: '168h'  #! 7 days
 
 #! Define-Jobs
 jobs:
@@ -266,7 +267,7 @@ jobs:
         DB: mysql
 #@ end
 #@ end
-- name: release-hwc
+- name: ship-it-hwc
   serial: true
   plan:
     - in_parallel:
@@ -276,6 +277,8 @@ jobs:
         - get: hwc-version
         - get: hwc-develop-branch-mergeback
         - get: image
+        - get: weekly
+          trigger: true
     - task: release-binaries
       file: ci/shared/tasks/run-bin-release-binaries/linux.yml
       image: image
@@ -309,6 +312,11 @@ jobs:
           - released-binaries/*
     - put: hwc-version
       params: {bump: major}
+    - put: hwc-develop-branch-mergeback
+      params:
+        repository: merged-branch
+        merge: true
+
 
 #@ for package in data.values.internal_repos:
 - name: #@ "bump-dependencies-{}".format(package.name)
@@ -331,4 +339,37 @@ jobs:
     params:
       rebase: true
       repository: bumped-repo
+#@ end
+
+#@ for package in data.values.internal_repos:
+#@ if package.name != "hwc":
+- name: #@ "ship-it-{}".format(package.name)
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: #@ "{}-version".format(package.name)
+      - resource: #@ package.name
+        get: repo
+        passed:
+        - #@ package.name
+        trigger: true
+  - put: #@ package.name
+    params:
+      repository: repo
+      tag: #@ "{}-version/number".format(package.name)
+      tag_prefix: v
+  - put: #@ "{}-github-release".format(package.name)
+    params:
+      name: #@ "{}-version/number".format(package.name)
+      tag: #@ "{}-version/number".format(package.name)
+      tag_prefix: v
+  - get: next-version
+    resource: #@ "{}-version".format(package.name)
+    params: {bump: minor}
+  - put: next-version
+    resource: #@ "{}-version".format(package.name)
+    params: {file: next-version/number}
+#@ end
 #@ end

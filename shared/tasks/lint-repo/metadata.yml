@@ -4,6 +4,8 @@ readme: |
   1st-Argument -> path to where repo is located
   2nd-Argument -> Whether it should error on detecting failures or not (true or false). In some tasks we take advantage of sync-package-specs script to automatically bump go-mod-dependencies, so that changes can be committed. For backward compatibility we are keeping the same behavior.
   match-golang-os-package-versions.bash -> Make sure golang version for linux & windows package is the same.
+extra_inputs:
+  ci-config: (Optional) if ci config files needs to be provided from a repo other than this. This would be used when using a private-repo to hold ci configurations
 oses:
   - linux
 params:

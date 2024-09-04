@@ -82,15 +82,22 @@ function cats() {
     "include_sso": true,
     "include_tasks": true,
     "include_tcp_isolation_segments": ${WITH_ISOSEG},
+    "include_tcp_routing": true,
     "include_user_provided_services": true,
     "include_v3": true,
+    "include_volume_services": ${WITH_VOLUME_SERVICES},
     "include_zipkin": true,
     "isolation_segment_name": "persistent_isolation_segment",
     "isolation_segment_domain": "iso-seg.${CF_SYSTEM_DOMAIN}",
+    "isolation_segment_tcp_domain": "tcp.${CF_SYSTEM_DOMAIN}",
     "skip_ssl_validation": true,
     "stacks": ["cflinuxfs4"],
+    "tcp_domain": "tcp.${CF_SYSTEM_DOMAIN}",
     "timeout_scale": 2,
-    "use_http": true
+    "use_http": true,
+    "volume_service_name": "${VOLUME_SERVICE_SERVICE_NAME:-}",
+    "volume_service_plan_name": "${VOLUME_SERVICE_PLAN_NAME:-}",
+    "volume_service_create_config": "${VOLUME_SERVICE_CREATE_CONFIG:-}"
 }
 EOF
 }
@@ -224,10 +231,6 @@ function wats() {
   "include_tcp_routing": false,
   "include_user_provided_services": false,
   "include_v3": false,
-  "include_volume_services": ${WITH_VOLUME_SERVICES},
-  "volume_service_name": "${VOLUME_SERVICE_NAME}",
-  "volume_service_plan_name": "${VOLUME_SERVICE_PLAN}",
-  "volume_service_create_config": "${VOLUME_SERVICE_CREATE_CONFIG}",
   "include_windows": true,
   "include_zipkin": false,
   "comma_delim_asgs_enabled": ${WITH_COMMA_DELIMITED_ASG_DESTINATIONS},
@@ -281,19 +284,18 @@ function volume_services_acceptance_tests() {
   "admin_user": "admin",
   "api": "api.${CF_SYSTEM_DOMAIN}",
   "apps_domain": "${CF_SYSTEM_DOMAIN}",
-  "artifacts_directory": "",
   "default_timeout": 30,
   "skip_ssl_validation": true,
-
-  "plan_name": "${VOLUME_SERVICE_PLAN_NAME}",
-  "service_name": "${VOLUME_SERVICE_SERVICE_NAME}",
-
-  "create_config": "${VOLUME_SERVICE_CREATE_CONFIG}",
-  "create_bogus_config": "${VOLUME_SERVICE_CREATE_BOGUS_CONFIG:-}",
-  "bind_config": ${VOLUME_SERVICE_BIND_CONFIG},
-  "bind_bogus_config": "${VOLUME_SERVICE_BIND_BOGUS_CONFIG:-}",
-  "disallowed_ldap_bind_config": "${VOLUME_SERVICE_DISALLOWED_LDAP_BIND_CONFIG:-}",
-  "disallowed_override_bind_config": "${VOLUME_SERVICE_DISALLOWED_OVERRIDE_BIND_CONFIG:-}"
+  "isolation_segment_name": "persistent_isolation_segment",
+  "isolation_segment_domain": "iso-seg.${CF_SYSTEM_DOMAIN}",
+  "isolation_segment_tcp_domain": "tcp.${CF_SYSTEM_DOMAIN}",
+  "service_name": "${VOLUME_SERVICE_SERVICE_NAME:-}",
+  "broker_name": "${VOLUME_SERVICE_BROKER_NAME:-}",
+  "plan_name": "${VOLUME_SERVICE_PLAN_NAME:-}",
+  "include_multi_cell": true,
+  "include_isolation_segment": ${WITH_ISOSEG},
+  "username": "${VOLUME_SERVICE_USERNAME:-}",
+  "password": "${VOLUME_SERVICE_PASSWORD:-}"
 }
 EOF
 }

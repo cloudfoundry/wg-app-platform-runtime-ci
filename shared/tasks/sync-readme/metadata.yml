@@ -11,7 +11,8 @@ readme: |+
         ---
     > 01-diego-release.md (under diego-release/01-diego-release.md)
     > 00-shared.md (under shared/00-shared-md)
+extra_inputs:
+  ci-config: (Optional) if ci config files needs to be provided from a repo other than this. This would be used when using a private-repo to hold ci configurations
 
 oses:
   - linux
-params:
