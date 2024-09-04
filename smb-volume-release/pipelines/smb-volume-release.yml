@@ -702,8 +702,8 @@ jobs:
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
     params:
       ENVS: |
-        VOLUME_SERVICE_NAME=smb
-        VOLUME_SERVICE_PLAN=Existing
+        VOLUME_SERVICE_SERVICE_NAME=smb
+        VOLUME_SERVICE_PLAN_NAME=Existing
         VOLUME_SERVICE_CREATE_CONFIG='{\"share\": \"//smbtestserver.serivce.cf.internal/vol\", \"username\": \"((smb-volume-release-smbtestserver-credentials/username))\", \"password\": \"((smb-volume-release-smbtestserver-credentials/password))\"}'
       CONFIGS: cats
       WITH_VOLUME_SERVICES: true
@@ -747,6 +747,7 @@ jobs:
       CONFIGS: volume-services-acceptance-tests
       ENVS: |
         VOLUME_SERVICE_SERVICE_NAME=smb
+        VOLUME_SERVICE_BROKER_NAME=smbbroker
         VOLUME_SERVICE_PLAN_NAME=Existing
         VOLUME_SERVICE_USERNAME=((smb-volume-release-smbtestserver-credentials/username))
         VOLUME_SERVICE_PASSWORD=((smb-volume-release-smbtestserver-credentials/password))
