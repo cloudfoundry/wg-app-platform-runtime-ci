@@ -16,8 +16,8 @@ function run(){
 
     bosh_target
     cf_target
-    eval "cf ${CMD}"
-    
+    cf_login
+    cf_command "${CMD}"
 }
 
 function cleanup() {
