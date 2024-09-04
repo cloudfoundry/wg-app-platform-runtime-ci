@@ -43,6 +43,30 @@
   path: /instance_groups/name=isolated-diego-cell/jobs/name=nfsv3driver/properties/nfsv3driver/allowed-in-source?
   value: ""
 - type: replace
+  path: /instance_groups/name=uaa/jobs/name=uaa/properties/uaa/clients/nfs-ldap-broker-push-client?
+  value:
+    authorities: cloud_controller.admin,clients.read
+    authorized-grant-types: client_credentials
+    secret: ((nfs-ldap-broker-push-uaa-client-secret))
+- type: replace
+  path: /instance_groups/name=uaa/jobs/name=uaa/properties/uaa/clients/nfs-ldap-broker-credhub-client?
+  value:
+    authorities: credhub.read,credhub.write
+    authorized-grant-types: client_credentials
+    secret: ((nfs-ldap-broker-credhub-uaa-client-secret))
+- type: replace
+  path: /instance_groups/name=credhub/jobs/name=credhub/properties/credhub/authorization/permissions/-
+  value:
+    actors:
+    - uaa-client:nfs-ldap-broker-credhub-client
+    operations:
+    - read
+    - write
+    - delete
+    - read_acl
+    - write_acl
+    path: /nfsldapbroker/*
+- type: replace
   path: /instance_groups/-
   value:
     azs:
@@ -56,14 +80,14 @@
           app_domain: ((system_domain))
           app_name: nfs-ldap-broker
           cf:
-            client_id: nfs-broker-push-client
-            client_secret: ((nfs-broker-push-uaa-client-secret))
+            client_id: nfs-ldap-broker-push-client
+            client_secret: ((nfs-ldap-broker-push-uaa-client-secret))
           create_credhub_security_group: true
           create_sql_security_group: false
           credhub:
             uaa_ca_cert: ((uaa_ssl.ca))
-            uaa_client_id: nfs-broker-credhub-client
-            uaa_client_secret: ((nfs-broker-credhub-uaa-client-secret))
+            uaa_client_id: nfs-ldap-broker-credhub-client
+            uaa_client_secret: ((nfs-ldap-broker-credhub-uaa-client-secret))
           domain: ((system_domain))
           organization: system
           password: ((nfs-broker-password))
