@@ -1,0 +1,7 @@
+---
+readme: |
+  Run a generic cf command as an admin.
+oses:
+  - linux
+params:
+  CMD: the cf command to run. Do not include "cf". 
