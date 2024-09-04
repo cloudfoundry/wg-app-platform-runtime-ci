@@ -151,7 +151,7 @@ resources:
   icon: git
   source:
     uri: https://github.com/cloudfoundry/cf-volume-services-acceptance-tests.git
-    branch: with-a-single-config  #! TODO: go back to main when branch is merged
+    branch: main
 
 #! TIMERS
 - name: daily

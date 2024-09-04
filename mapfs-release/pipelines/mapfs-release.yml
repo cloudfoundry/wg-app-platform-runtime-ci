@@ -179,7 +179,7 @@ resources:
   icon: source-branch
   source:
     uri: https://github.com/cloudfoundry/cf-volume-services-acceptance-tests.git
-    branch: with-a-single-config #! TODO move to main branch when PR is merged
+    branch: main
 
 - name: nfs-volume-release
   type: git
