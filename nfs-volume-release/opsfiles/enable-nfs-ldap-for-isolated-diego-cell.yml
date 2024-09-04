@@ -90,7 +90,7 @@
             uaa_client_secret: ((nfs-ldap-broker-credhub-uaa-client-secret))
           domain: ((system_domain))
           organization: system
-          password: ((nfs-broker-password))
+          password: ((nfs-ldap-broker-password))
           skip_cert_verify: true
           space: nfs-ldap-broker-space
           store_id: nfsldapbroker
@@ -109,3 +109,18 @@
     - name: default
     stemcell: default
     vm_type: minimal
+- type: replace
+  path: /variables/-
+  value:
+    name: nfs-ldap-broker-push-uaa-client-secret
+    type: password
+- type: replace
+  path: /variables/-
+  value:
+    name: nfs-ldap-broker-password
+    type: password
+- type: replace
+  path: /variables/-
+  value:
+    name: nfs-ldap-broker-credhub-uaa-client-secret
+    type: password
