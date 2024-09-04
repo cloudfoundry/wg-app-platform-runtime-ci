@@ -633,6 +633,7 @@ jobs:
         {input-01/operations/enable-nfs-volume-service.yml,combined-assets}
         {input-01/operations/use-compiled-releases.yml,combined-assets}
         {input-01/operations/add-persistent-isolation-segment-diego-cell.yml,combined-assets}
+        {input-01/operations/add-persistent-isolation-segment-router.yml,combined-assets}
         {input-01/operations/test/enable-nfs-test-server.yml,combined-assets}
         {input-01/operations/test/enable-nfs-test-ldapserver.yml,combined-assets}
         {input-01/operations/backup-and-restore/enable-backup-restore.yml,combined-assets}
@@ -680,13 +681,24 @@ jobs:
         toolsmiths-env: env
       params:
         ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
-    - task: run-nfsbrokerpush-errand
-      file: cf-deployment-concourse-tasks/run-errand/task.yml
-      input_mapping:
-        toolsmiths-env: env
+    - task: create-isolation-segment
+      image: image
+      file: ci/shared/tasks/run-cf-command/linux.yml
       params:
-        ERRAND_NAME: nfsbrokerpush
-        INSTANCE: nfs-broker-push
+        CMD: create-isolation-segment persistent_isolation_segment
+  - task: run-nfsbrokerpush-errand
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      ERRAND_NAME: nfsbrokerpush
+      INSTANCE: nfs-broker-push
+  - task: run-nfsldapbrokerpush-errand
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      ERRAND_NAME: nfs-ldap-broker-push
 
 - name: run-cats
   serial: true
@@ -709,8 +721,8 @@ jobs:
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
     params:
       ENVS: |
-        VOLUME_SERVICE_NAME=nfs
-        VOLUME_SERVICE_PLAN=Existing
+        VOLUME_SERVICE_SERVICE_NAME=nfs
+        VOLUME_SERVICE_PLAN_NAME=Existing
       CONFIGS: cats
       WITH_VOLUME_SERVICES: true
       WITH_ISOSEG: false
@@ -748,66 +760,53 @@ jobs:
     file: determined-image-tag/tag
   - in_parallel:
     - do: 
-      - task: generate-pats-config-nfs-without-ldap
+      - task: generate-cf-volume-services-acceptance-tests-config-without-ldap
         image: image
         file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
-        params:
-          CONFIGS: volume-services-acceptance-tests
-      - task: generate-pats-config-nfs-without-ldap
-        image: image
-        file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
+        output_mapping:
+          built-acceptance-test-configs: configs-without-ldap
         params:
           CONFIGS: volume-services-acceptance-tests
           ENVS: |
-            VOLUME_SERVICE_CREATE_BOGUS_CONFIG='{\"share\":\"nfstestserver.service.cf.internal/export/nonexistensevol\"}'
-            VOLUME_SERVICE_BIND_BOGUS_CONFIG='{\"uid\":\"1000\",\"gid\":\"1000\"}'
-            VOLUME_SERVICE_BIND_CONFIG='["{\"uid\":\"1000\",\"gid\":\"1000\"}", "{\"uid\":\"1000\",\"gid\":\"1000\",\"mount\": \"/var/vcap/data/foo\"}", "{\"uid\":\"1000\",\"gid\":\"1000\", \"version\": \"3\"}", "{\"uid\":\"1000\",\"gid\":\"1000\", \"version\": \"4.0\"}", "{\"uid\":\"1000\",\"gid\":\"1000\", \"version\": \"4.1\"}", "{\"uid\":\"1000\",\"gid\":\"1000\", \"version\": \"4.2\"}"]'  # yamllint disable-line rule:line-length
-            VOLUME_SERVICE_CREATE_CONFIG='{\"share\":\"nfstestserver.service.cf.internal/export/users\"}'
-            VOLUME_SERVICE_PLAN_NAME=Existing
             VOLUME_SERVICE_SERVICE_NAME=nfs
+            VOLUME_SERVICE_BROKER_NAME=nfsbroker
+            VOLUME_SERVICE_PLAN_NAME=Existing
       - task: run-bin-test-cf-volume-services-acceptance-tests-without-ldap
         file: ci/shared/tasks/run-bin-test/linux.yml
         input_mapping:
-          input-01: built-acceptance-test-configs
           repo: cf-volume-services-acceptance-tests
+          input-01: configs-without-ldap
         attempts: 2
         vars:
           image_repository: cloudfoundry/tas-runtime-build
           image_tag: ((.:image_tag))
         params:
           ENVS: |
-            TEST_MOUNT_FAIL_LOGGING=true
-            TEST_MOUNT_OPTIONS=true
-            TEST_MULTI_CELL=true
-            TEST_READ_ONLY=true
             CONFIG=$PWD/input-01/volume-services-acceptance-tests.json
     - do: 
-      - task: generate-pats-config-nfs-with-ldap
+      - task: generate-cf-volume-services-acceptance-tests-config-with-ldap
         image: image
         file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
+        output_mapping:
+          built-acceptance-test-configs: configs-with-ldap
         params:
           CONFIGS: volume-services-acceptance-tests
+          WITH_ISOSEG: true
           ENVS: |
-            VOLUME_SERVICE_DISALLOWED_LDAP_BIND_CONFIG='{\"uid\":\"1000\",\"gid\":\"1000\"}'
-            VOLUME_SERVICE_BIND_CONFIG='["{\"username\":\"user1000\",\"password\":\"secret\"}"]'
-            VOLUME_SERVICE_CREATE_CONFIG='{\"share\":\"nfstestserver.service.cf.internal/export/users\"}'
-            VOLUME_SERVICE_PLAN_NAME=Existing
             VOLUME_SERVICE_SERVICE_NAME=nfs
+            VOLUME_SERVICE_BROKER_NAME=nfsldapbroker
+            VOLUME_SERVICE_PLAN_NAME=Existing
       - task: run-bin-test-cf-volume-services-acceptance-tests-with-ldap
         file: ci/shared/tasks/run-bin-test/linux.yml
         input_mapping:
-          input-01: built-acceptance-test-configs
           repo: cf-volume-services-acceptance-tests
+          input-01: configs-with-ldap
         attempts: 2
         vars:
           image_repository: cloudfoundry/tas-runtime-build
           image_tag: ((.:image_tag))
         params:
           ENVS: |
-            TEST_MOUNT_FAIL_LOGGING=true
-            TEST_MOUNT_OPTIONS=true
-            TEST_MULTI_CELL=true
-            TEST_READ_ONLY=true
             CONFIG=$PWD/input-01/volume-services-acceptance-tests.json
 
 - name: dockerdriver-integration

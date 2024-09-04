@@ -12,6 +12,7 @@ opsfiles:
 - enable-nfs-volume-service.yml
 - use-compiled-releases.yml
 - add-persistent-isolation-segment-diego-cell.yml
+- add-persistent-isolation-segment-router.yml
 - enable-nfs-test-server.yml
 - enable-nfs-test-ldapserver.yml
 - enable-backup-restore.yml
