@@ -69,8 +69,8 @@
           password: ((nfs-broker-password))
           skip_cert_verify: true
           space: nfs-ldap-broker-space
-          store_id: nfsbroker
-          broker_name: nfs-ldap
+          store_id: nfsldapbroker
+          broker_name: nfsldapbroker
           syslog_url: ""
           username: nfs-broker
       provides:
