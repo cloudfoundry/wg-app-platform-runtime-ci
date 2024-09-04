@@ -80,7 +80,7 @@
     - name: cf-cli-8-linux
       release: cf-cli
     lifecycle: errand
-    name: nfsldapbrokerpush
+    name: nfs-ldap-broker-push
     networks:
     - name: default
     stemcell: default
