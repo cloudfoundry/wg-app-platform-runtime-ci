@@ -293,7 +293,7 @@ function volume_services_acceptance_tests() {
   "broker_name": "${VOLUME_SERVICE_BROKER_NAME:-}",
   "plan_name": "${VOLUME_SERVICE_PLAN_NAME:-}",
   "include_multi_cell": true,
-  "include_isolation_segment": ${VOLUME_SERVICE_INCLUDE_ISOLATION_SEGMENT:-false},
+  "include_isolation_segment": ${WITH_ISOSEG},
   "username": "${VOLUME_SERVICE_USERNAME:-}",
   "password": "${VOLUME_SERVICE_PASSWORD:-}"
 }
