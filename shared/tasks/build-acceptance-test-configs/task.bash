@@ -95,8 +95,8 @@ function cats() {
     "tcp_domain": "tcp.${CF_SYSTEM_DOMAIN}",
     "timeout_scale": 2,
     "use_http": true,
-    "volume_service_name": "${VOLUME_SERVICE_NAME:-}",
-    "volume_service_plan_name": "${VOLUME_SERVICE_PLAN:-}",
+    "volume_service_name": "${VOLUME_SERVICE_SERVICE_NAME:-}",
+    "volume_service_plan_name": "${VOLUME_SERVICE_PLAN_NAME:-}",
     "volume_service_create_config": "${VOLUME_SERVICE_CREATE_CONFIG:-}"
 }
 EOF
@@ -291,6 +291,7 @@ function volume_services_acceptance_tests() {
   "isolation_segment_domain": "iso-seg.${CF_SYSTEM_DOMAIN}",
   "isolation_segment_tcp_domain": "tcp.${CF_SYSTEM_DOMAIN}",
   "service_name": "${VOLUME_SERVICE_SERVICE_NAME:-}",
+  "broker_name": "${VOLUME_SERVICE_BROKER_NAME:-}",
   "plan_name": "${VOLUME_SERVICE_PLAN_NAME:-}",
   "username": "${VOLUME_SERVICE_USERNAME:-}",
   "password": "${VOLUME_SERVICE_PASSWORD:-}"
