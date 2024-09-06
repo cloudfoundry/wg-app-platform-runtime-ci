@@ -14,12 +14,11 @@ function run() {
     local bosh_blob_path=${2:?Provide a regex path for bosh-blob}
     local blob=${3:?Provide a path to new blob}
 
-    if [[ "$bosh_blob_path" == 'autoconf/autoconf-*.tar.gz' ]]; then
-        echo "Bumping autoconf blob"
+    if [[ "$bosh_blob_path" == 'berkeleydb/db-*.tar.gz' ]]; then
+        echo "Bumping berkeleydb blob"
         pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
-        local tgz_name="autoconf-${version}.tar.gz"
-        wget "https://ftp.gnu.org/gnu/autoconf/autoconf-${version}.tar.gz" -O "${tgz_name}"
+        local version=$(cat version | tr -d 'v')
+        local tgz_name="db-${version}.tar.gz"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
@@ -31,12 +30,112 @@ function run() {
         local dir_name="$(dirname ${bosh_blob_path})"
         bosh remove-blob "${dir_name}/${blob_name}"
         bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
-    elif [[ "$bosh_blob_path" == 'automake/automake-*.tar.gz' ]]; then
-        echo "Bumping automake blob"
+    elif [[ "$bosh_blob_path" == 'nfs-debs/libevent-*-stable.tar.gz' ]]; then
+        echo "Bumping libevent blob"
+        pushd "${blob}" > /dev/null
+        local version=$(cat version | tr -d 'release-')
+        local tgz_name="libevent-${version}.tar.gz"
+        popd > /dev/null
+
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
+            echo "$tgz_name already exists, skippping"
+            return
+        fi
+
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname ${bosh_blob_path})"
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
+    elif [[ "$bosh_blob_path" == 'nfs-debs/libtirpc-*.tar.gz' ]]; then
+        echo "Bumping libtirpc blob"
+        pushd "${blob}" > /dev/null
+        local version=$(git describe --tags --abbrev=0 | tr -d 'libtirpc-')
+        local tgz_name="libtirpc-${version}.tar.gz"
+        tar czvf "${tgz_name}" ./*
+        popd > /dev/null
+
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
+            echo "$tgz_name already exists, skippping"
+            return
+        fi
+
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname ${bosh_blob_path})"
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
+    elif [[ "$bosh_blob_path" == 'nfs-debs/nfs-utils-*.tar.gz' ]]; then
+        echo "Bumping nfs-utils blob"
+        pushd "${blob}" > /dev/null
+        local version=$(git describe --tags --abbrev=0 | tr -d 'nfs-utils-')
+        local tgz_name="nfs-utils-${version}.tar.gz"
+        tar czvf "${tgz_name}" ./*
+        popd > /dev/null
+
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
+            echo "$tgz_name already exists, skippping"
+            return
+        fi
+
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname ${bosh_blob_path})"
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
+    elif [[ "$bosh_blob_path" == 'nfs-debs/rpcbind-*.tar.gz' ]]; then
+        echo "Bumping rpcbind blob"
+        pushd "${blob}" > /dev/null
+        local version=$(git describe --tags --abbrev=0 | tr -d 'rpcbind-' | sed 's/_/-/g')
+        local tgz_name="rpcbind-${version}.tar.gz"
+        tar czvf "${tgz_name}" ./*
+        popd > /dev/null
+
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
+            echo "$tgz_name already exists, skippping"
+            return
+        fi
+
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname ${bosh_blob_path})"
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
+    elif [[ "$bosh_blob_path" == 'nfs-debs/rpcsvc-proto-*.tar.xz' ]]; then
+        echo "Bumping rpcsvc-proto blob"
+        pushd "${blob}" > /dev/null
+        local version=$(cat version | tr -d 'v')
+        local tgz_name="rpcsvc-proto-${version}.tar.xz"
+        popd > /dev/null
+
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
+            echo "$tgz_name already exists, skippping"
+            return
+        fi
+
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname ${bosh_blob_path})"
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
+    elif [[ "$bosh_blob_path" == 'nfs-debs/sqlite-*.tar.gz' ]]; then
+        echo "Bumping sqlite blob"
+        pushd "${blob}" > /dev/null
+        local version=$(git describe --tags --abbrev=0 | tr -d 'version-')
+        local tgz_name="sqlite-${version}.tar.gz"
+        tar czvf "${tgz_name}" ./*
+        popd > /dev/null
+
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
+            echo "$tgz_name already exists, skippping"
+            return
+        fi
+
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname ${bosh_blob_path})"
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
+    elif [[ "$bosh_blob_path" == 'nfs-debs/util-linux-*.tar.gz' ]]; then
+        echo "Bumping util-linux blob"
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d 'v')
-        local tgz_name="automake-${version}.tar.gz"
-        wget "https://ftp.gnu.org/gnu/automake/automake-${version}.tar.gz" -O "${tgz_name}"
+        local tgz_name="util-linux-${version}.tar.gz"
+        tar czvf "${tgz_name}" ./*
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
@@ -48,12 +147,12 @@ function run() {
         local dir_name="$(dirname ${bosh_blob_path})"
         bosh remove-blob "${dir_name}/${blob_name}"
         bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
-    elif [[ "$bosh_blob_path" == 'cifs-utils/cifs-utils-*.tar.bz2' ]]; then
-        echo "Bumping cifs-utils blob"
+    elif [[ "$bosh_blob_path" == 'openldap/openldap-*.tgz' ]]; then
+        echo "Bumping openldap blob"
         pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | tr -d 'cifs-utils-')
-        local tgz_name="cifs-utils-${version}.tar.bz2"
-        wget "https://download.samba.org/pub/linux-cifs/cifs-utils/cifs-utils-${version}.tar.bz2" -O "${tgz_name}"
+        local version=$(git describe --tags --abbrev=0 | tr -d 'OPENLDAP_REL_ENG_' | sed 's/_/./g')
+        local tgz_name="openldap-${version}.tar.gz"
+        wget  -O "${tgz_name}" "https://www.openldap.org/software/download/OpenLDAP/openldap-release/openldap-${version}.tgz"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
@@ -65,63 +164,11 @@ function run() {
         local dir_name="$(dirname ${bosh_blob_path})"
         bosh remove-blob "${dir_name}/${blob_name}"
         bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
-    elif [[ "$bosh_blob_path" == 'keyutils/keyutils-*.tar.gz' ]]; then
-        echo "Bumping keyutils- blob"
+    elif [[ "$bosh_blob_path" == 'test-dependencies/openssl-*.tar.gz' ]]; then
+        echo "Bumping openssl blob"
         pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | tr -d 'v')
-        local tgz_name="keyutils-${version}.tar.gz"
-        wget "https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/keyutils.git/snapshot/keyutils-${version}.tar.gz" -O "${tgz_name}"
-        popd > /dev/null
-
-        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
-            echo "$tgz_name already exists, skippping"
-            return
-        fi
-
-        local blob_name="$(basename blobs/${bosh_blob_path})"
-        local dir_name="$(dirname ${bosh_blob_path})"
-        bosh remove-blob "${dir_name}/${blob_name}"
-        bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
-    elif [[ "$bosh_blob_path" == 'libtool/libtool-*.tar.gz' ]]; then
-        echo "Bumping libtool blob"
-        pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
-        local tgz_name="libtool-${version}.tar.gz"
-        wget  -O "${tgz_name}" "https://ftp.wayne.edu/gnu/libtool/libtool-${version}.tar.gz"
-        popd > /dev/null
-
-        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
-            echo "$tgz_name already exists, skippping"
-            return
-        fi
-
-        local blob_name="$(basename blobs/${bosh_blob_path})"
-        local dir_name="$(dirname ${bosh_blob_path})"
-        bosh remove-blob "${dir_name}/${blob_name}"
-        bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
-    elif [[ "$bosh_blob_path" == 'pkg-config/pkg-config-*.tar.gz' ]]; then
-        echo "Bumping pkg-config blob"
-        pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]-')
-        local tgz_name="pkg-config-${version}.tar.gz"
-        wget  -O "${tgz_name}" "https://pkgconfig.freedesktop.org/releases/pkg-config-${version}.tar.gz"
-        popd > /dev/null
-
-        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
-            echo "$tgz_name already exists, skippping"
-            return
-        fi
-
-        local blob_name="$(basename blobs/${bosh_blob_path})"
-        local dir_name="$(dirname ${bosh_blob_path})"
-        bosh remove-blob "${dir_name}/${blob_name}"
-        bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
-    elif [[ "$bosh_blob_path" == 'talloc/talloc-*.tar.gz' ]]; then
-        echo "Bumping talloc blob"
-        pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]-')
-        local tgz_name="talloc-${version}.tar.gz"
-        wget  -O "${tgz_name}" "https://download.samba.org/pub/talloc/talloc-${version}.tar.gz"
+        local version=$(cat version)
+        local tgz_name="${version}.tar.gz"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
