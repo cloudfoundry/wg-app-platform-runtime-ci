@@ -90,7 +90,7 @@ git clone https://github.com/envoyproxy/envoy
 cd envoy
 git checkout ${ENVOY_TAG}
 sed -i '/\"envoy.transport_sockets.tcp_stats\":.*\"\\/\\/source\\/extensions\\/transport_sockets\\/tcp_stats:config\",/d' source/extensions/extensions_build_config.bzl
-IMAGE_NAME=${IMAGE_NAME} IMAGE_ID=${IMAGE_ID} ENVOY_DOCKER_OPTIONS='--network=host' BAZEL_BUILD_EXTRA_OPTIONS='--flaky_test_attempts=10' ./ci/run_envoy_docker.sh './ci/do_ci.sh bazel.release'
+IMAGE_NAME=${IMAGE_NAME} ENVOY_DOCKER_OPTIONS='--network=host' BAZEL_BUILD_EXTRA_OPTIONS='--flaky_test_attempts=10' ./ci/run_envoy_docker.sh './ci/do_ci.sh bazel.release'
 "
 
 popd
