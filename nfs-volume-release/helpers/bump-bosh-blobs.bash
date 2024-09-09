@@ -83,7 +83,7 @@ function run() {
     elif [[ "$bosh_blob_path" == 'nfs-debs/rpcbind-*.tar.gz' ]]; then
         echo "Bumping rpcbind blob"
         pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | sed 's/rpcbind\-//g' | sed 's/_/-/g')
+        local version=$(git describe --tags --abbrev=0 | sed 's/rpcbind\-//g' | sed 's/_/./g')
         local tgz_name="rpcbind-${version}.tar.gz"
         tar czvf "${tgz_name}" ./*
         popd > /dev/null
@@ -100,7 +100,7 @@ function run() {
     elif [[ "$bosh_blob_path" == 'nfs-debs/rpcsvc-proto-*.tar.xz' ]]; then
         echo "Bumping rpcsvc-proto blob"
         pushd "${blob}" > /dev/null
-        local version=$(cat version | tr -d 'v')
+        local version=$(cat tag | tr -d 'v')
         local tgz_name="rpcsvc-proto-${version}.tar.xz"
         popd > /dev/null
 
