@@ -55,6 +55,13 @@ function run() {
         local rt_version=$(cat version | cut -d'-' -f2)
         local rev_version=$(cat version | cut -d'-' -f3)
         local tgz_name="x86_64-${version}-release-posix-seh-ucrt-${rt_version}-${rev_version}.7z"
+
+        if [[ ! -f "${tgz_name}" ]]; then
+            echo "${tgz_name} not found. Cannot continue."
+            ls
+            exit 1
+        fi
+
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
