@@ -116,7 +116,7 @@ function run() {
     elif [[ "$bosh_blob_path" == 'nfs-debs/sqlite-*.tar.gz' ]]; then
         echo "Bumping sqlite blob"
         pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | sed 's/version\-//g')
+        local version=$(git describe --tags --abbrev=0 --match version* | sed 's/version\-//g')
         local tgz_name="sqlite-${version}.tar.gz"
         tar czvf "${tgz_name}" ./*
         popd > /dev/null
