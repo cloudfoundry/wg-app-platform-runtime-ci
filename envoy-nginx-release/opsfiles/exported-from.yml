@@ -1,0 +1,150 @@
+- type: replace
+  path: /releases/name=binary-buildpack/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=bosh-dns-aliases/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=bpm/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=capi/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=cf-cli/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=cf-networking/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=cf-smoke-tests/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=cflinuxfs4/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=credhub/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=diego/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=dotnet-core-buildpack/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=garden-runc/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=go-buildpack/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=java-buildpack/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=log-cache/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=loggregator/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=loggregator-agent/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=nats/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=nginx-buildpack/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=nodejs-buildpack/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=php-buildpack/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=pxc/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=python-buildpack/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=r-buildpack/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=routing/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=ruby-buildpack/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=silk/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=staticfile-buildpack/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=statsd-injector/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
+- type: replace
+  path: /releases/name=uaa/exported_from?
+  value:
+  - os: ubuntu-jammy
+    version: "1.423"
