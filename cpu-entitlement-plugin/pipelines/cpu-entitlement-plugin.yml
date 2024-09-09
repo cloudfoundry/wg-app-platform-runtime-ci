@@ -261,7 +261,9 @@ jobs:
     params:
       COPY_ACTIONS: |
         {input-01/operations/use-compiled-releases.yml,combined-assets}
+        {input-01/operations/experimental/use-compiled-releases-windows.yml,combined-assets}
         {input-01/operations/experimental/set-cpu-weight.yml,combined-assets/}
+        {ci/shared/opsfiles/compiled-windows-windows-runtime-workaround.yml,combined-assets}
         {ci/cpu-entitlement-plugin/opsfiles/*.yml,combined-assets/}
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml

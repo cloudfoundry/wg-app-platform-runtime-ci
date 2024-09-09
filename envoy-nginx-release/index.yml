@@ -7,7 +7,8 @@ internal_repos:
 
 opsfiles:
   - use-compiled-releases.yml
-  - exported-from.yml
+  - compiled-windows-windows-runtime-workaround.yml
+  - use-compiled-releases-windows.yml
   - scale-to-one-az.yml
   - windows2019-cell.yml
   - use-online-windows2019fs.yml

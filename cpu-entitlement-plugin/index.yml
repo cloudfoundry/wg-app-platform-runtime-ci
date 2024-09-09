@@ -3,6 +3,8 @@
 #@overlay/match missing_ok=True
 opsfiles:
 - use-compiled-releases.yml
+- compiled-windows-windows-runtime-workaround.yml
+- use-compiled-releases-windows.yml
 - set-cpu-weight.yml
 - add-test-log-emitter-to-diego-cell.yml
 - enable-cpu-throttling.yml
