@@ -33,7 +33,7 @@ function run() {
     elif [[ "$bosh_blob_path" == 'nfs-debs/libevent-*-stable.tar.gz' ]]; then
         echo "Bumping libevent blob"
         pushd "${blob}" > /dev/null
-        local version=$(cat version | tr -d 'release-')
+        local version=$(cat version | sed  's/release\-//g')
         local tgz_name="libevent-${version}.tar.gz"
         popd > /dev/null
 
@@ -49,7 +49,7 @@ function run() {
     elif [[ "$bosh_blob_path" == 'nfs-debs/libtirpc-*.tar.gz' ]]; then
         echo "Bumping libtirpc blob"
         pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | tr -d 'libtirpc-')
+        local version=$(git describe --tags --abbrev=0 | sed's/libtirpc\-//g')
         local tgz_name="libtirpc-${version}.tar.gz"
         tar czvf "${tgz_name}" ./*
         popd > /dev/null
@@ -66,7 +66,7 @@ function run() {
     elif [[ "$bosh_blob_path" == 'nfs-debs/nfs-utils-*.tar.gz' ]]; then
         echo "Bumping nfs-utils blob"
         pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | tr -d 'nfs-utils-')
+        local version=$(git describe --tags --abbrev=0 | sed  's/nfs\-utils\-//g')
         local tgz_name="nfs-utils-${version}.tar.gz"
         tar czvf "${tgz_name}" ./*
         popd > /dev/null
@@ -83,7 +83,7 @@ function run() {
     elif [[ "$bosh_blob_path" == 'nfs-debs/rpcbind-*.tar.gz' ]]; then
         echo "Bumping rpcbind blob"
         pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | tr -d 'rpcbind-' | sed 's/_/-/g')
+        local version=$(git describe --tags --abbrev=0 | sed 's/rpcbind\-//g' | sed 's/_/-/g')
         local tgz_name="rpcbind-${version}.tar.gz"
         tar czvf "${tgz_name}" ./*
         popd > /dev/null
@@ -116,7 +116,7 @@ function run() {
     elif [[ "$bosh_blob_path" == 'nfs-debs/sqlite-*.tar.gz' ]]; then
         echo "Bumping sqlite blob"
         pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | tr -d 'version-')
+        local version=$(git describe --tags --abbrev=0 | sed 's/version\-//g')
         local tgz_name="sqlite-${version}.tar.gz"
         tar czvf "${tgz_name}" ./*
         popd > /dev/null
@@ -150,7 +150,7 @@ function run() {
     elif [[ "$bosh_blob_path" == 'openldap/openldap-*.tgz' ]]; then
         echo "Bumping openldap blob"
         pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | tr -d 'OPENLDAP_REL_ENG_' | sed 's/_/./g')
+        local version=$(git describe --tags --abbrev=0 | sed 's/OPENLDAP_REL_ENG_//g' | sed 's/_/./g')
         local tgz_name="openldap-${version}.tar.gz"
         wget  -O "${tgz_name}" "https://www.openldap.org/software/download/OpenLDAP/openldap-release/openldap-${version}.tgz"
         popd > /dev/null
