@@ -879,7 +879,7 @@ jobs:
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
       FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
-      OPS_FILES: #@ "\n".join(data.values.opsfiles + data.values.enable_tcp_routing_tls_opsfiles)
+      OPS_FILES: #@ "\n".join(data.values.opsfiles + data.values.opsfiles_enable_tcp_routing_tls)
   - task: run-rats
     file: ci/shared/tasks/run-bin-test/linux.yml
     image: image
@@ -902,7 +902,7 @@ jobs:
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
       FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
-      OPS_FILES: #@ "\n".join(data.values.opsfiles + data.values.disable_tcp_routing_tls_opsfiles)
+      OPS_FILES: #@ "\n".join(data.values.opsfiles + data.values.opsfiles_disable_tcp_routing_tls)
   - task: run-rats
     file: ci/shared/tasks/run-bin-test/linux.yml
     image: image

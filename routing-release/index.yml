@@ -33,12 +33,12 @@ opsfiles:
 - disable-bbr-non-routing.yml
 - temp-tls-health-check-compensation.yml
 - add-tcp-router-backend-tls-certs.yml
-enable_tcp_routing_tls_opsfiles:
+opsfiles_enable_tcp_routing_tls:
 - enable-tcp-router-tls.yml
 - enable-route-emitter-tls-tcp-routes.yml
 - enable-envoy-mtls.yml
 - disable-rep-unproxied-ports.yml
-disable_tcp_routing_tls_opsfiles:
+opsfiles_disable_tcp_routing_tls:
 - disable-tcp-router-tls.yml
 - disable-route-emitter-tls-tcp-routes.yml
 - disable-envoy-mtls.yml
