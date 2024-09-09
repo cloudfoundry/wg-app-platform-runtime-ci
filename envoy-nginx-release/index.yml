@@ -6,6 +6,7 @@ internal_repos:
 - name: "envoy-nginx"
 
 opsfiles:
+  - use-compiled-releases.yml
   - scale-to-one-az.yml
   - windows2019-cell.yml
   - use-online-windows2019fs.yml

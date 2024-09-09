@@ -386,6 +386,7 @@ jobs:
       input-01: cf-deployment
     params:
       COPY_ACTIONS: |
+        {input-01/operations/use-compiled-releases.yml,combined-assets}
         {input-01/operations/scale-to-one-az.yml,combined-assets}
         {input-01/operations/windows2019-cell.yml,combined-assets}
         {input-01/operations/use-online-windows2019fs.yml,combined-assets}
