@@ -2,7 +2,7 @@
 ---
 #@overlay/match missing_ok=True
 opsfiles:
-- use-compiled-release.yml
+- use-compiled-releases.yml
 - set-cpu-weight.yml
 - add-test-log-emitter-to-diego-cell.yml
 - enable-cpu-throttling.yml
