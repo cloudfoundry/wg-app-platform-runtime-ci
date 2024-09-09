@@ -180,6 +180,23 @@ function run() {
         local dir_name="$(dirname ${bosh_blob_path})"
         bosh remove-blob "${dir_name}/${blob_name}"
         bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
+    elif [[ "$bosh_blob_path" == 'nfs-debs/pkg-config-*.tar.gz' ]]; then
+        echo "Bumping pkg-config blob"
+        pushd "${blob}" > /dev/null
+        local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]-')
+        local tgz_name="pkg-config-${version}.tar.gz"
+        wget  -O "${tgz_name}" "https://pkgconfig.freedesktop.org/releases/pkg-config-${version}.tar.gz"
+        popd > /dev/null
+
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
+            echo "$tgz_name already exists, skippping"
+            return
+        fi
+
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname ${bosh_blob_path})"
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
     else
         echo "can't find ${bosh_blob_path}"
         exit 1
