@@ -49,7 +49,7 @@ function run() {
     elif [[ "$bosh_blob_path" == 'nfs-debs/libtirpc-*.tar.gz' ]]; then
         echo "Bumping libtirpc blob"
         pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | sed's/libtirpc\-//g')
+        local version=$(git describe --tags --abbrev=0 | sed 's/libtirpc\-//g' | sed 's/-/./g')
         local tgz_name="libtirpc-${version}.tar.gz"
         tar czvf "${tgz_name}" ./*
         popd > /dev/null
@@ -66,7 +66,7 @@ function run() {
     elif [[ "$bosh_blob_path" == 'nfs-debs/nfs-utils-*.tar.gz' ]]; then
         echo "Bumping nfs-utils blob"
         pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | sed  's/nfs\-utils\-//g')
+        local version=$(git describe --tags --abbrev=0 | sed  's/nfs\-utils\-//g' | sed 's/-/./g')
         local tgz_name="nfs-utils-${version}.tar.gz"
         tar czvf "${tgz_name}" ./*
         popd > /dev/null
