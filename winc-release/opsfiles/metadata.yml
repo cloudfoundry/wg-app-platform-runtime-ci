@@ -10,5 +10,4 @@ opsfiles:
   latest-winc.yml: because we are using pesto, we have to have this opsfile for latest winc
   scale-down-windows2019.yml: for IWA tests. Can be removed after this story www.pivotaltracker.com/story/show/186684047
   use-2-azs-for-router.yml: <TODO> copied over and don't know why we are doing this
-  use-latest-routing-release.yml: <TODO> Temp until latest routing-release with NTLM support is part of cf-deployment
   windows2019-cell-with-static-ip.yml: for IWA test. We need a static IP so that this would be the only cell talking to Domain Controller
