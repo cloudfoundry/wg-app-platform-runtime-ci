@@ -388,7 +388,7 @@ jobs:
       COPY_ACTIONS: |
         {input-01/operations/use-compiled-releases.yml,combined-assets}
         {input-01/operations/experimental/use-compiled-releases-windows.yml,combined-assets}
-        {input-01/operations/scale-to-one-az.yml,combined-assets}
+        {input-01/operations/scale-to-HA.yml,combined-assets}
         {input-01/operations/windows2019-cell.yml,combined-assets}
         {input-01/operations/use-online-windows2019fs.yml,combined-assets}
         {input-01/operations/use-latest-windows2019-stemcell.yml,combined-assets}
