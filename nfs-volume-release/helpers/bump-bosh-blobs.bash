@@ -83,7 +83,7 @@ function run() {
     elif [[ "$bosh_blob_path" == 'nfs-debs/rpcbind-*.tar.gz' ]]; then
         echo "Bumping rpcbind blob"
         pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 --match applied*  | cut -d'/' -f3)
+        local version=$(git describe --tags --abbrev=0 | cut -d'/' -f3)
         local tgz_name="rpcbind-${version}.tar.gz"
         tar czvf "${tgz_name}" ./*
         popd > /dev/null
