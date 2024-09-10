@@ -508,6 +508,14 @@ jobs:
 - name: release-env-lock
   plan:
   - get: env-lock
+  - try:
+      do:
+      - get: env
+        passed: [claim-env]
+      - put: env
+        params:
+          action: release
+          resource: env
   ensure:
     put: env-lock
     params:
