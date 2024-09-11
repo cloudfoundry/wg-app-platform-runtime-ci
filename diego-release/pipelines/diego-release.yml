@@ -896,7 +896,7 @@ jobs:
   - put: env
     params:
       action: create
-      duration: 176h
+      duration: 48h
       resource: env
       description: "diego pipeline"
   - task: wait-for-cf-api

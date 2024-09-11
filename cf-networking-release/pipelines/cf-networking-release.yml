@@ -665,7 +665,7 @@ jobs:
   - put: env
     params:
       action: create
-      duration: 176h
+      duration: 48h
       resource: env
       description: "cf-networking pipeline"
     timeout: 6h

@@ -352,7 +352,7 @@ jobs:
   - put: env
     params:
       action: create
-      duration: 176h
+      duration: 48h
       resource: env
       description: "envoy-nginx pipeline"
     timeout: 6h

@@ -1096,7 +1096,7 @@ jobs:
   - put: env
     params:
       action: create
-      duration: 176h
+      duration: 48h
       resource: env
       description: "garden-runc-release pipeline"
   - task: wait-for-cf-api

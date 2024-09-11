@@ -305,7 +305,7 @@ jobs:
   - put: env
     params:
       action: create
-      duration: 176h
+      duration: 48h
       resource: env
     timeout: 6h
 

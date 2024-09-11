@@ -593,7 +593,7 @@ jobs:
     timeout: 6h
     params:
       action: create
-      duration: 176h
+      duration: 48h
       resource: env
       description: 'example-release pipeline CHANGEME'
 
