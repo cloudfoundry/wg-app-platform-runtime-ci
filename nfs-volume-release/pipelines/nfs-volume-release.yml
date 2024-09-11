@@ -667,7 +667,7 @@ jobs:
       action: create
       duration: 48h
       resource: env
-      description: 'example-release pipeline CHANGEME'
+      description: 'nfs-volume-release pipeline'
 
 - name: prepare-env
   serial: true
