@@ -220,61 +220,85 @@ resources:
 
 #! bosh blobs
 
-- name: autoconf
+- name: berkeleydb
+  type: github-release
+  icon: github
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    repository: libdb
+    owner: berkeleydb
+
+- name: libevent
+  type: github-release
+  icon: github
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    repository: libevent
+    owner: libevent
+
+- name: libtirpc
   type: git
   icon: tag-outline
   source:
     branch: master
-    uri: https://github.com/autotools-mirror/autoconf
+    uri: git://git.linux-nfs.org/projects/steved/libtirpc.git
+    tag_regex: ^libtirpc\-([0-9]|[1-9][0-9]*)\-([0-9]|[1-9][0-9]*)\-([0-9]|[1-9][0-9]*)$
+
+- name: nfs-utils
+  type: git
+  icon: tag-outline
+  source:
+    branch: ubuntu/jammy
+    uri: https://git.launchpad.net/ubuntu/+source/nfs-utils
+
+- name: rpcbind
+  type: git
+  icon: tag-outline
+  source:
+    branch: ubuntu/jammy
+    uri: https://git.launchpad.net/ubuntu/+source/rpcbind
+
+- name: rpcsvc-proto
+  type: github-release
+  icon: github
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    repository: rpcsvc-proto
+    owner: thkukuk
     tag_filter: v*
+    order_by: time
 
-- name: automake
+- name: sqlite
   type: git
   icon: tag-outline
   source:
     branch: master
-    uri: https://github.com/autotools-mirror/automake
-    tag_filter: v*
+    uri: https://github.com/sqlite/sqlite.git
+    tag_filter: version-*
 
-- name: cifs-utils
+- name: util-linux
   type: git
   icon: tag-outline
   source:
-    branch: master
-    uri: https://git.samba.org/cifs-utils.git
-    tag_filter: cifs-utils-*
+    branch: stable/v2.40
+    uri: https://github.com/util-linux/util-linux.git
+    tag_regex: ^v([0-9]|[1-9][0-9]*)\.([0-9]|[1-9][0-9]*)\.([0-9]|[1-9][0-9]*)$
 
-- name: keyutils
+- name: openldap
   type: git
   icon: tag-outline
   source:
-    branch: master
-    uri: https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/keyutils.git
-    tag_filter: v*
+    branch: OPENLDAP_REL_ENG_2_6
+    uri: https://git.openldap.org/openldap/openldap.git
+    tag_filter: OPENLDAP_REL_ENG_2_6_*
 
-- name: libtool
-  type: git
-  icon: tag-outline
+- name: openssl
+  type: github-release
+  icon: github
   source:
-    branch: master
-    uri: https://git.savannah.gnu.org/git/libtool.git
-    tag_filter: v2.4.*
-
-- name: pkg-config
-  type: git
-  icon: tag-outline
-  source:
-    branch: master
-    uri: https://gitlab.freedesktop.org/pkg-config/pkg-config.git
-    tag_filter: pkg-config-*
-
-- name: talloc
-  type: git
-  icon: tag-outline
-  source:
-    branch: master
-    uri: https://gitlab.com/samba-team/devel/samba.git
-    tag_filter: talloc-*
+    access_token: ((github-tas-runtime-bot/access-token))
+    repository: openssl
+    owner: openssl
 
 #! Define-Jobs
 jobs:
@@ -345,42 +369,46 @@ jobs:
       - get: ci
       - get: repo
       - get: image
-      - get: autoconf
+      - get: berkeleydb
+        trigger: true
+      - get: libevent
+        trigger: true
+      - get: libtirpc
         params:
           fetch_tags: true
         trigger: true
-      - get: automake
+      - get: nfs-utils
         params:
           fetch_tags: true
         trigger: true
-      - get: cifs-utils
+      - get: rpcbind
         params:
           fetch_tags: true
         trigger: true
-      - get: keyutils
+      - get: rpcsvc-proto
+        trigger: true
+      - get: sqlite
         params:
           fetch_tags: true
         trigger: true
-      - get: libtool
+      - get: util-linux
         params:
           fetch_tags: true
         trigger: true
-      - get: pkg-config
+      - get: openldap
         params:
           fetch_tags: true
         trigger: true
-      - get: talloc
-        params:
-          fetch_tags: true
+      - get: openssl
         trigger: true
   - do:
-    - task: bump-bosh-blob-autoconf
+    - task: bump-bosh-blob-berkeleydb
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
-        blob: autoconf
+        blob: berkeleydb
       params:
-        BOSH_BLOB_PATH: autoconf/autoconf-*.tar.gz
+        BOSH_BLOB_PATH: berkeleydb/db-*.tar.gz
         AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-nfs-volume-services-s3/secret-access-key))
         AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-nfs-volume-services-s3/access-key-id))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-nfs-volume-services-s3/assume-role))
@@ -389,13 +417,13 @@ jobs:
        rebase: true
        repository: bumped-repo
   - do:
-    - task: bump-bosh-blob-automake
+    - task: bump-bosh-blob-libevent
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
-        blob: automake
+        blob: libevent
       params:
-        BOSH_BLOB_PATH: automake/automake-*.tar.gz
+        BOSH_BLOB_PATH: nfs-debs/libevent-*-stable.tar.gz
         AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-nfs-volume-services-s3/secret-access-key))
         AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-nfs-volume-services-s3/access-key-id))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-nfs-volume-services-s3/assume-role))
@@ -404,13 +432,13 @@ jobs:
        rebase: true
        repository: bumped-repo
   - do:
-    - task: bump-bosh-blob-cifs-utils
+    - task: bump-bosh-blob-libtirpc
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
-        blob: cifs-utils
+        blob: libtirpc
       params:
-        BOSH_BLOB_PATH: cifs-utils/cifs-utils-*.tar.bz2
+        BOSH_BLOB_PATH: nfs-debs/libtirpc-*.tar.gz
         AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-nfs-volume-services-s3/secret-access-key))
         AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-nfs-volume-services-s3/access-key-id))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-nfs-volume-services-s3/assume-role))
@@ -419,13 +447,13 @@ jobs:
        rebase: true
        repository: bumped-repo
   - do:
-    - task: bump-bosh-blob-keyutils
+    - task: bump-bosh-blob-nfs-utils
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
-        blob: keyutils
+        blob: nfs-utils
       params:
-        BOSH_BLOB_PATH: keyutils/keyutils-*.tar.gz
+        BOSH_BLOB_PATH: nfs-debs/nfs-utils-*.tar.gz
         AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-nfs-volume-services-s3/secret-access-key))
         AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-nfs-volume-services-s3/access-key-id))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-nfs-volume-services-s3/assume-role))
@@ -434,13 +462,13 @@ jobs:
        rebase: true
        repository: bumped-repo
   - do:
-    - task: bump-bosh-blob-libtool
+    - task: bump-bosh-blob-rpcbind
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
-        blob: libtool
+        blob: rpcbind
       params:
-        BOSH_BLOB_PATH: libtool/libtool-*.tar.gz
+        BOSH_BLOB_PATH: nfs-debs/rpcbind-*.tar.gz
         AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-nfs-volume-services-s3/secret-access-key))
         AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-nfs-volume-services-s3/access-key-id))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-nfs-volume-services-s3/assume-role))
@@ -449,13 +477,13 @@ jobs:
        rebase: true
        repository: bumped-repo
   - do:
-    - task: bump-bosh-blob-pkg-config
+    - task: bump-bosh-blob-rpcsvc-proto
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
-        blob: pkg-config
+        blob: rpcsvc-proto
       params:
-        BOSH_BLOB_PATH: pkg-config/pkg-config-*.tar.gz
+        BOSH_BLOB_PATH: nfs-debs/rpcsvc-proto-*.tar.xz
         AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-nfs-volume-services-s3/secret-access-key))
         AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-nfs-volume-services-s3/access-key-id))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-nfs-volume-services-s3/assume-role))
@@ -464,13 +492,13 @@ jobs:
        rebase: true
        repository: bumped-repo
   - do:
-    - task: bump-bosh-blob-talloc
+    - task: bump-bosh-blob-sqlite
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
-        blob: talloc
+        blob: sqlite
       params:
-        BOSH_BLOB_PATH: talloc/talloc-*.tar.gz
+        BOSH_BLOB_PATH: nfs-debs/sqlite-*.tar.gz
         AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-nfs-volume-services-s3/secret-access-key))
         AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-nfs-volume-services-s3/access-key-id))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-nfs-volume-services-s3/assume-role))
@@ -478,7 +506,51 @@ jobs:
       params:
        rebase: true
        repository: bumped-repo
-
+  - do:
+    - task: bump-bosh-blob-util-linux
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: util-linux
+      params:
+        BOSH_BLOB_PATH: nfs-debs/util-linux-*.tar.gz
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-nfs-volume-services-s3/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-nfs-volume-services-s3/access-key-id))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-nfs-volume-services-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-openldap
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: openldap
+      params:
+        BOSH_BLOB_PATH: openldap/openldap-*.tgz
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-nfs-volume-services-s3/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-nfs-volume-services-s3/access-key-id))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-nfs-volume-services-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-openssl
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: openssl
+      params:
+        BOSH_BLOB_PATH: test-dependencies/openssl-*.tar.gz
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-nfs-volume-services-s3/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-nfs-volume-services-s3/access-key-id))
+        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-nfs-volume-services-s3/assume-role))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
 - name: sync-dot-github-dir
   serial: true
   plan:
