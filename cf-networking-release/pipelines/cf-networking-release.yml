@@ -188,11 +188,11 @@ resources:
     tag_filter: v*
 
 #! TIMERS
-- name: daily
+- name: weekly
   type: time
   icon: clock
   source:
-    interval: '24h'  #! 1 day
+    interval: '168h'
 
 - name: env
   type: shepherd
@@ -289,7 +289,7 @@ jobs:
       - get: cf-networking-repo
       - get: silk-repo
       - get: image
-      - get: daily
+      - get: weekly
         trigger: true
   - in_parallel:
     - do:
@@ -488,7 +488,7 @@ jobs:
       - get: ci
       - get: image
       - get:  cf-networking-repo
-      - get: daily
+      - get: weekly
         trigger: true
       - get: cf-networking-readme
         trigger: true
@@ -511,7 +511,7 @@ jobs:
       - get: ci
       - get: image
       - get:  silk-repo
-      - get: daily
+      - get: weekly
         trigger: true
       - get: silk-readme
         trigger: true

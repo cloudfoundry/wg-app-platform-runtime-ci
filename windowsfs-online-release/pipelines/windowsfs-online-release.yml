@@ -176,11 +176,11 @@ resources:
     tag_filter: v*
     uri: https://github.com/bosh-packages/golang-release.git
 
-- name: daily
+- name: weekly
   type: time
   icon: clock
   source:
-    interval: '24h'  #! 1 day 
+    interval: '168h'
 
 #! Define-Jobs
 jobs:
@@ -192,7 +192,7 @@ jobs:
       - get: ci
       - get: repo
       - get: image
-      - get: daily 
+      - get: weekly
         trigger: true
   - task: windowsfs-online-bump-dependencies-go-mod
     image: image

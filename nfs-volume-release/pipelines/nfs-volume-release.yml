@@ -154,11 +154,11 @@ resources:
     branch: main
 
 #! TIMERS
-- name: daily
+- name: weekly
   type: time
   icon: clock
   source:
-    interval: '24h'  #! 1 day
+    interval: '168h'
 
 #! Shepherd pool
 - name: env
@@ -310,7 +310,7 @@ jobs:
       - get: ci
       - get: repo
       - get: image
-      - get: daily
+      - get: weekly
         trigger: true
   - task: nfs-volume-release-bump-dependencies-go-mod
     image: image
@@ -579,7 +579,7 @@ jobs:
       steps:
       - get: ci
       - get: image
-      - get: daily
+      - get: weekly
         trigger: true
       - get: repo
       - get: readme

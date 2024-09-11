@@ -218,11 +218,11 @@ resources:
     name: bosh-google-kvm-ubuntu-bionic-go_agent
 
 #! TIMERS
-- name: daily
+- name: weekly
   type: time
   icon: clock
   source:
-    interval: '24h'  #! 1 day
+    interval: '168h'
 
 #! Deployment Environment pool
 - name: env
@@ -325,7 +325,7 @@ jobs:
       - get: ci
       - get: repo
       - get: image
-      - get: daily
+      - get: weekly
         trigger: true
   - task: routing-release-bump-dependencies-go-mod
     image: image
@@ -504,7 +504,7 @@ jobs:
       steps:
       - get: ci
       - get: image
-      - get: daily
+      - get: weekly
         trigger: true
       - get: repo
 #@ for repo in data.values.internal_repos:

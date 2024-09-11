@@ -191,7 +191,7 @@ resources:
     ignore_paths:
     - scripts
 
-- name: daily
+- name: weekly
   type: time
   icon: clock
   source:
@@ -336,7 +336,7 @@ jobs:
 #@ for repo in data.values.internal_repos:
       - get: #@ "{}-repo".format(repo.name)
 #@ end
-      - get: daily
+      - get: weekly
         trigger: true
       - get: repo-readme
         trigger: true
@@ -428,7 +428,7 @@ jobs:
       - get: repo
       - get: mapfs-repo
       - get: image
-      - get: daily
+      - get: weekly
         trigger: true
   - do:
     - task: mapfs-bump-dependencies-go-mod

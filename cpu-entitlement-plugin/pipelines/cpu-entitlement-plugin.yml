@@ -101,11 +101,11 @@ resources:
     uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
 
 #! TIMERS
-- name: daily
+- name: weekly
   type: time
   icon: clock
   source:
-    interval: '24h'  #! 1 daily
+    interval: '168h'
 
 - name: env
   type: shepherd
@@ -174,7 +174,7 @@ jobs:
       - get: ci
       - get: repo
       - get: image
-      - get: daily 
+      - get: weekly
         trigger: true
   - task: cpu-entitlement-plugin-bump-dependencies-go-mod
     image: image
