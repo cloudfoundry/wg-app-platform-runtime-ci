@@ -81,11 +81,11 @@ resources:
     uri: https://github.com/bosh-packages/golang-release.git
 
 #! TIMERS
-- name: daily
+- name: weekly
   type: time
   icon: clock
   source:
-    interval: '24h'  #! 1 day 
+    interval: '168h'
 
 #! Define-Jobs
 jobs:
@@ -122,7 +122,7 @@ jobs:
       - get: ci
       - get: image
       - get:  #@ repo.name
-      - get: daily
+      - get: weekly
         trigger: true
       - get: readme
         trigger: true
@@ -233,7 +233,7 @@ jobs:
       - resource: #@ package.name
         get: repo
       - get: image
-      - get: daily 
+      - get: weekly
         trigger: true
   - task: #@ "bump-dependencies-{}".format(package.name)
     image: image

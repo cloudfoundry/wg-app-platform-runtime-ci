@@ -195,7 +195,7 @@ function allowed_task_files() {
 
 function allowed_dirs() {
     debug "Running allowed_dirs function"
-    local release_list="garden-runc-release|routing-release|winc-release|nats-release|healthchecker-release|cf-networking-release|silk-release|envoy-nginx-release|cpu-entitlement-plugin|diego-release|test-log-emitter-release|windows-tools-release|windows2019fs-release|windowsfs-online-release|windows2016fs|wg-arp-garden-modules|wg-arp-diego-modules|wg-arp-networking-modules|mapfs-release"
+    local release_list="garden-runc-release|routing-release|winc-release|nats-release|healthchecker-release|cf-networking-release|silk-release|envoy-nginx-release|cpu-entitlement-plugin|diego-release|test-log-emitter-release|windows-tools-release|windows2019fs-release|windowsfs-online-release|windows2016fs|wg-arp-garden-modules|wg-arp-diego-modules|wg-arp-networking-modules|mapfs-release|nfs-volume-release|smb-volume-release"
     local dir_patterns
     dir_patterns="$(cat <<EOF
 ^./bin/*$
@@ -279,7 +279,7 @@ function verify_opsfile_use(){
         opsfile=$(basename "${file}")
         for index in $(find . -name "index.yml")
         do
-            if [[ $(yq ".opsfiles[] | select(.==\"${opsfile}\")" "${index}") == "${opsfile}" ]]; then
+            if [[ $(yq ". | to_entries | map(select(.key | match(\"^opsfiles\"))) | .[].value[] | select(.==\"${opsfile}\")" "${index}") == "${opsfile}" ]]; then
                 matched=true
                 break;
             fi

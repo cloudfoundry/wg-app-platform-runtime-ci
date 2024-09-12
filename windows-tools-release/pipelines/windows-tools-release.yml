@@ -121,6 +121,7 @@ resources:
   source:
     owner: mikefarah
     repository: yq
+    access_token: ((github-tas-runtime-bot/access-token))
 
 - name: staticcheck
   type: github-release
@@ -128,6 +129,7 @@ resources:
   source:
     owner: dominikh
     repository: go-tools
+    access_token: ((github-tas-runtime-bot/access-token))
 
 - name: mingw
   type: github-release
@@ -135,6 +137,7 @@ resources:
   source:
     owner: niXman
     repository: mingw-builds-binaries
+    access_token: ((github-tas-runtime-bot/access-token))
 
 - name: bosh-cli
   type: github-release
@@ -142,6 +145,7 @@ resources:
   source:
     owner: cloudfoundry
     repository: bosh-cli
+    access_token: ((github-tas-runtime-bot/access-token))
 
 - name: git-cli
   type: github-release
@@ -149,6 +153,7 @@ resources:
   source:
     owner: git-for-windows
     repository: git
+    access_token: ((github-tas-runtime-bot/access-token))
 
 - name: vcredist-ucrt
   type: command-runner
@@ -164,6 +169,7 @@ resources:
   source:
     owner: Kitware
     repository: CMake
+    access_token: ((github-tas-runtime-bot/access-token))
 
 - name: ginkgo
   type: github-release
@@ -171,6 +177,7 @@ resources:
   source:
     owner: onsi
     repository: ginkgo
+    access_token: ((github-tas-runtime-bot/access-token))
 
 #! Define-Jobs
 jobs:

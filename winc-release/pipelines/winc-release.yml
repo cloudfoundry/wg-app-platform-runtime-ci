@@ -219,11 +219,11 @@ resources:
     uri: git@github.com:pivotal/garden-windows-environments
 
 #! TIMERS
-- name: daily
+- name: weekly
   type: time
   icon: clock
   source:
-    interval: '24h'  #! 1 day
+    interval: '168h'
 
 - name: github-release
   type: github-release
@@ -327,7 +327,7 @@ jobs:
       - get: updated-go-mod-diff-exporter
       - get: updated-go-mod-groot-windows
       - get: updated-go-mod-winc
-      - get: daily
+      - get: weekly
         trigger: true
   - do:
     - task: cert-injector-bump-dependencies-go-mod

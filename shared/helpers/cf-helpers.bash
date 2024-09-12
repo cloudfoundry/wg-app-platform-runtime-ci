@@ -18,10 +18,14 @@ function cf_system_domain(){
     echo $system_domain
 }
 
+function cf_login(){
+    cf_command api --skip-ssl-validation "https://api.${CF_SYSTEM_DOMAIN}"
+    cf_command auth admin "${CF_ADMIN_PASSWORD}"
+}
+
 function cf_create_tcp_domain(){
     if [[ "$(is_env_cf_deployment)" == "yes" ]]; then
-        cf_command api --skip-ssl-validation "https://api.${CF_SYSTEM_DOMAIN}"
-        cf_command auth admin "${CF_ADMIN_PASSWORD}"
+        cf_login
 
         local domain_exists=$(cf curl /v2/domains | jq ".resources[] | select(.entity.name == \"$CF_TCP_DOMAIN\")")
 

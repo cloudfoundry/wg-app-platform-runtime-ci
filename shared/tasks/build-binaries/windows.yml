@@ -4,6 +4,8 @@ platform: windows
 inputs:
 - name: ci
 - name: repo
+- name: ci-config
+  optional: true
 
 outputs:
 - name: built-binaries

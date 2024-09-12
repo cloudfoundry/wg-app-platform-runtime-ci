@@ -154,11 +154,11 @@ resources:
     branch: main
 
 #! TIMERS
-- name: daily
+- name: weekly
   type: time
   icon: clock
   source:
-    interval: '24h'  #! 1 day
+    interval: '168h'
 
 #! Shepherd pool
 - name: env
@@ -286,7 +286,7 @@ jobs:
       - get: ci
       - get: repo
       - get: image
-      - get: daily
+      - get: weekly
         trigger: true
   - task: smb-volume-release-bump-dependencies-go-mod
     image: image
@@ -507,7 +507,7 @@ jobs:
       steps:
       - get: ci
       - get: image
-      - get: daily
+      - get: weekly
         trigger: true
       - get: repo
       - get: readme
@@ -593,9 +593,9 @@ jobs:
     timeout: 6h
     params:
       action: create
-      duration: 176h
+      duration: 48h
       resource: env
-      description: 'example-release pipeline CHANGEME'
+      description: 'smb-volume-release pipeline'
 
 - name: prepare-env
   serial: true

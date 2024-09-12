@@ -227,11 +227,11 @@ resources:
     paths: [go-version.json]
 
 #! TIMERS
-- name: daily 
+- name: weekly
   type: time
   icon: clock
   source:
-    interval: '24h'  #! 1 day
+    interval: '168h'
 
 #! Toolsmith pool
 - name: env
@@ -480,7 +480,7 @@ jobs:
     - get: updated-go-mod-garden-integration-tests
     - get: updated-go-mod-dontpanic
     - get: image
-    - get: daily
+    - get: weekly
       trigger: true
   - do:
     - task: garden-bump-dependencies-go-mod
@@ -1096,7 +1096,7 @@ jobs:
   - put: env
     params:
       action: create
-      duration: 176h
+      duration: 48h
       resource: env
       description: "garden-runc-release pipeline"
   - task: wait-for-cf-api
@@ -1633,6 +1633,14 @@ jobs:
 - name: release-env-lock
   plan:
   - get: env-lock
+  - try:
+      do:
+      - get: env
+        passed: [claim-env]
+      - put: env
+        params:
+          action: release
+          resource: env
   ensure:
     put: env-lock
     params:

@@ -218,11 +218,11 @@ resources:
     name: bosh-google-kvm-ubuntu-bionic-go_agent
 
 #! TIMERS
-- name: daily
+- name: weekly
   type: time
   icon: clock
   source:
-    interval: '24h'  #! 1 day
+    interval: '168h'
 
 #! Deployment Environment pool
 - name: env
@@ -325,7 +325,7 @@ jobs:
       - get: ci
       - get: repo
       - get: image
-      - get: daily
+      - get: weekly
         trigger: true
   - task: routing-release-bump-dependencies-go-mod
     image: image
@@ -504,7 +504,7 @@ jobs:
       steps:
       - get: ci
       - get: image
-      - get: daily
+      - get: weekly
         trigger: true
       - get: repo
 #@ for repo in data.values.internal_repos:
@@ -641,7 +641,7 @@ jobs:
   - put: env
     params:
       action: create
-      duration: 176h
+      duration: 48h
       resource: env
       description: "routing-release pipeline"
     timeout: 6h
@@ -879,7 +879,7 @@ jobs:
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
       FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
-      OPS_FILES: #@ "\n".join(data.values.opsfiles + data.values.enable_tcp_routing_tls_opsfiles)
+      OPS_FILES: #@ "\n".join(data.values.opsfiles + data.values.opsfiles_enable_tcp_routing_tls)
   - task: run-rats
     file: ci/shared/tasks/run-bin-test/linux.yml
     image: image
@@ -902,7 +902,7 @@ jobs:
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
       FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
-      OPS_FILES: #@ "\n".join(data.values.opsfiles + data.values.disable_tcp_routing_tls_opsfiles)
+      OPS_FILES: #@ "\n".join(data.values.opsfiles + data.values.opsfiles_disable_tcp_routing_tls)
   - task: run-rats
     file: ci/shared/tasks/run-bin-test/linux.yml
     image: image
@@ -1139,13 +1139,23 @@ jobs:
   - put: env-lock
     params:
       release: env-lock #! path to the resource in the above get
+
 - name: release-env-lock
   plan:
   - get: env-lock
+  - try:
+      do:
+      - get: env
+        passed: [claim-env]
+      - put: env
+        params:
+          action: release
+          resource: env
   ensure:
     put: env-lock
     params:
       release: env-lock #! path to the resource in the above get
+
 #! versioning
 - name: patch-bump
   serial_groups: [version]

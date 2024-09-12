@@ -110,11 +110,11 @@ resources:
     paths: [go-version.json]
 
 #! TIMERS
-- name: daily
+- name: weekly
   type: time
   icon: clock
   source:
-    interval: '24h'  #! 1 day 
+    interval: '168h'
 
 - name: env
   type: shepherd
@@ -192,7 +192,7 @@ jobs:
       - get: ci
       - get: repo
       - get: image
-      - get: daily
+      - get: weekly
         trigger: true
   - task: healthchecker-release-bump-dependencies-go-mod
     image: image
@@ -264,7 +264,7 @@ jobs:
       - get: ci
       - get: image
       - get:  repo
-      - get: daily
+      - get: weekly
         trigger: true
       - get: repo-readme
         trigger: true
@@ -333,7 +333,7 @@ jobs:
   - put: env
     params:
       action: create
-      duration: 176h
+      duration: 48h
       resource: env
       description: "healthchecker-release pipeline"
     timeout: 6h
@@ -508,6 +508,14 @@ jobs:
 - name: release-env-lock
   plan:
   - get: env-lock
+  - try:
+      do:
+      - get: env
+        passed: [claim-env]
+      - put: env
+        params:
+          action: release
+          resource: env
   ensure:
     put: env-lock
     params:

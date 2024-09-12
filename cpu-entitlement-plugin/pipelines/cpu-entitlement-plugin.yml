@@ -101,11 +101,11 @@ resources:
     uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
 
 #! TIMERS
-- name: daily
+- name: weekly
   type: time
   icon: clock
   source:
-    interval: '24h'  #! 1 daily
+    interval: '168h'
 
 - name: env
   type: shepherd
@@ -174,7 +174,7 @@ jobs:
       - get: ci
       - get: repo
       - get: image
-      - get: daily 
+      - get: weekly
         trigger: true
   - task: cpu-entitlement-plugin-bump-dependencies-go-mod
     image: image
@@ -225,7 +225,7 @@ jobs:
   - put: env
     params:
       action: create
-      duration: 176h
+      duration: 48h
       resource: env
       description: "cpu-entitlement-plugin pipeline"
     timeout: 6h
@@ -260,7 +260,10 @@ jobs:
       input-01: cf-deployment
     params:
       COPY_ACTIONS: |
+        {input-01/operations/use-compiled-releases.yml,combined-assets}
+        {input-01/operations/experimental/use-compiled-releases-windows.yml,combined-assets}
         {input-01/operations/experimental/set-cpu-weight.yml,combined-assets/}
+        {ci/shared/opsfiles/compiled-windows-windows-runtime-workaround.yml,combined-assets}
         {ci/cpu-entitlement-plugin/opsfiles/*.yml,combined-assets/}
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
@@ -507,6 +510,14 @@ jobs:
 - name: release-env-lock
   plan:
   - get: env-lock
+  - try:
+      do:
+      - get: env
+        passed: [claim-env]
+      - put: env
+        params:
+          action: release
+          resource: env
   ensure:
     put: env-lock
     params:

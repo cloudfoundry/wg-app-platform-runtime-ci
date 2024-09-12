@@ -121,11 +121,11 @@ resources:
     paths: [go-version.json]
 
 #! TIMERS
-- name: daily
+- name: weekly
   type: time
   icon: clock
   source:
-    interval: '24h'  #! 1 day
+    interval: '168h'
 
 #! Shepherd pool
 - name: env
@@ -195,7 +195,7 @@ jobs:
       - get: ci
       - get: repo
       - get: image
-      - get: daily
+      - get: weekly
         trigger: true
   - task: <REPLACE_ME>-bump-dependencies-go-mod
     image: image
@@ -322,7 +322,7 @@ jobs:
     timeout: 6h
     params:
       action: create
-      duration: 176h
+      duration: 48h
       resource: env
       description: 'example-release pipeline CHANGEME'
 
