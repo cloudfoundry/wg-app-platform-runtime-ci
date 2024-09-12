@@ -71,7 +71,7 @@ function verify_gosec(){
  "G301": "0755"
 }
 EOF
-    gosec -conf "${gosec_config_file}" ./...
+    gosec -quiet -conf "${gosec_config_file}" ./...
     popd >/dev/null
 
 }
