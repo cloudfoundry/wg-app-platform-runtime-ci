@@ -307,6 +307,8 @@ jobs:
     - task: sync-dot-github-dir
       file: ci/shared/tasks/sync-dot-github-dir/linux.yml
       image: image
+      params:
+        PARENT_TEMPLATE_DIR: mapfs-release
     - put: repo
       params:
        rebase: true
