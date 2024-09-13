@@ -141,16 +141,6 @@ resources:
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
     paths: [go-version.json]
 
-#@ for repo in data.values.internal_repos:
-- name: #@ "{}-repo".format(repo.name)
-  type: git
-  icon: source-branch
-  source:
-    branch: main
-    uri: #@ "git@github.com:cloudfoundry/{}.git".format(repo.name)
-    private_key: ((github-tas-runtime-bot/private-key))
-#@ end
-
 - name: cf-deployment
   type: git
   icon: source-branch
@@ -290,9 +280,6 @@ jobs:
       - get: ci
       - get: image
       - get:  repo
-#@ for repo in data.values.internal_repos:
-      - get: #@ "{}-repo".format(repo.name)
-#@ end
       - get: weekly
         trigger: true
       - get: repo-readme
@@ -305,18 +292,6 @@ jobs:
       params:
        rebase: true
        repository: synced-repo
-#@ for repo in data.values.internal_repos:
-  - do:
-    - task: #@ "sync-dot-github-dir-{}".format(repo.name)
-      file: ci/shared/tasks/sync-readme/linux.yml
-      image: image
-      input_mapping:
-        repo: #@ "{}-repo".format(repo.name)
-    - put: #@ "{}-repo".format(repo.name)
-      params:
-       rebase: true
-       repository: synced-repo
-#@ end
 
 - name: sync-dot-github-dir
   serial: true
@@ -326,9 +301,6 @@ jobs:
       - get: ci
       - get: image
       - get:  repo
-#@ for repo in data.values.internal_repos:
-      - get: #@ "{}-repo".format(repo.name)
-#@ end
       - get: shared-templates
         trigger: true
   - do:
@@ -339,20 +311,6 @@ jobs:
       params:
        rebase: true
        repository: synced-repo
-#@ for repo in data.values.internal_repos:
-  - do:
-    - task: #@ "sync-dot-github-dir-{}".format(repo.name)
-      file: ci/shared/tasks/sync-dot-github-dir/linux.yml
-      image: image
-      input_mapping:
-        repo: #@ "{}-repo".format(repo.name)
-      params:
-        PARENT_TEMPLATE_DIR: routing-release
-    - put: #@ "{}-repo".format(repo.name)
-      params:
-       rebase: true
-       repository: synced-repo
-#@ end
 
 - name: bump-dependencies-go-mod
   serial: true
@@ -426,12 +384,6 @@ jobs:
     file: ci/shared/tasks/determine-image-tag/linux.yml
   - load_var: image_tag
     file: determined-image-tag/tag
-  - task: build-binaries
-    file: ci/shared/tasks/build-binaries/linux.yml
-    privileged: true
-    vars:
-      image_repository: cloudfoundry/tas-runtime-build
-      image_tag: ((.:image_tag))
   - in_parallel:
       steps:
 #@ for repo in data.values.internal_repos:
