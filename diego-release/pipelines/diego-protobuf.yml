@@ -10,7 +10,7 @@ groups:
   - inigo-mysql-linux
   - inigo-postgres-linux
   - inigo-mysql-windows
-  #! - lint-repo
+  - lint-repo
   - claim-env
   - prepare-env
   - run-cats
@@ -861,19 +861,19 @@ jobs:
         FUNCTIONS: |
           ci/winc-release/helpers/configure-binaries.ps1
 
-#! - name: lint-repo
-#!   serial: true
-#!   plan:
-#!   - in_parallel:
-#!     - get: ci
-#!     - get: repo
-#!       trigger: true
-#!     - get: image
-#!   - task: lint-repo
-#!     file: ci/shared/tasks/lint-repo/linux.yml
-#!     params:
-#!       DEFAULT_PARAMS: ci/diego-release/default-params/lint-repo/linux.yml
-#!     image: image
+- name: lint-repo
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+    - get: image
+  - task: lint-repo
+    file: ci/shared/tasks/lint-repo/linux.yml
+    params:
+      DEFAULT_PARAMS: ci/diego-release/default-params/lint-repo/linux.yml
+    image: image
 
 - name: claim-env
   serial: true
@@ -885,7 +885,7 @@ jobs:
       passed:
         - template-tests
         - unit-and-integration-tests
-        #! - lint-repo
+        - lint-repo
         - inigo-mysql-linux
         - inigo-postgres-linux
         - inigo-mysql-windows
