@@ -13,4 +13,3 @@ opsfiles:
 - enable-restore-nfs-broker.yml
 - enable-nfs-test-server.yml
 - scale-for-cats.yml
-- use-latest-nfs-release.yml

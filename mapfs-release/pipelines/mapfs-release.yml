@@ -179,16 +179,6 @@ resources:
     uri: https://github.com/cloudfoundry/cf-volume-services-acceptance-tests.git
     branch: main
 
-- name: nfs-volume-release
-  type: git
-  icon: source-branch
-  source:
-    branch: master
-    private_key: ((github-tas-runtime-bot/private-key))
-    uri: git@github.com:cloudfoundry/nfs-volume-release.git
-    ignore_paths:
-    - scripts
-
 - name: weekly
   type: time
   icon: clock
@@ -574,7 +564,6 @@ jobs:
       - get: image
       - get: cf-deployment
       - get: ci
-      - get: nfs-volume-release
       - get: repo
         trigger: true
         passed: [ claim-env ]
@@ -597,12 +586,6 @@ jobs:
         {input-01/operations/experimental/fast-deploy-with-downtime-and-danger.yml,combined-assets}
         {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
         {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
-        {ci/mapfs-release/opsfiles/*.yml,combined-assets}
-  - task: upload-latest-nfs-release
-    file: ci/shared/tasks/bosh-upload-dev-releases/linux.yml
-    image: image
-    input_mapping:
-      release-01: nfs-volume-release
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping:
@@ -660,8 +643,6 @@ jobs:
   - in_parallel:
       fail_fast: true
       steps:
-      - get: nfs-volume-release
-        passed: [ prepare-env ]
       - get: env
         passed: [ prepare-env ]
         trigger: true
@@ -704,8 +685,6 @@ jobs:
       - get: env
         passed: [ prepare-env ]
         trigger: true
-      - get: nfs-volume-release
-        passed: [ prepare-env ]
       - get: repo
         passed: [ prepare-env ]
         trigger: true
