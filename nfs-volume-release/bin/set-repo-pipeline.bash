@@ -4,7 +4,7 @@ set -euo pipefail
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 REPO="$DIR/.."
-FLY_TEAM=wg-sm-volume-services
+FLY_TEAM=wg-arp-volume-services
 
 main() {
   local pipeline_dir="$(realpath $REPO/pipelines)"
