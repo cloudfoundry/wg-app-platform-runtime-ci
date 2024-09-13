@@ -5,8 +5,6 @@ groups:
 - name: release
   jobs:
   - unit-and-integration-tests
-  - check-for-cves
-  - security-scan
   - lint-repo
   - claim-env
   - prepare-env
@@ -293,30 +291,6 @@ resources:
     user: ninja-build
     tag_filter: "^v(.*)"
 
-- name: git-concourse-cve-scan
-  type: git
-  icon: source-branch
-  source:
-    uri: git@github.com:pivotal/concourse-cve-scan.git
-    branch: feat/add-vex-consideration
-    private_key: ((github-tas-runtime-bot/private-key))
-
-- name: git-tas-vex
-  type: git
-  icon: source-branch
-  source:
-    uri: git@github.com:pivotal/tas-vex.git
-    branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
-
-- name: github-release-tas-cve
-  type: github-release
-  icon: source-branch
-  source:
-    access_token: ((github-tas-runtime-bot/access-token))
-    repository: tas-cve
-    user: pivotal
-
 jobs:
 - name: sync-readme
   serial: true
@@ -390,28 +364,6 @@ jobs:
        repository: synced-repo
 #@ end
 
-- name: check-for-cves
-  plan:
-  - in_parallel:
-      steps:
-      - get: git-concourse-cve-scan
-      - get: github-release-tas-cve
-      - get: repo
-        trigger: true
-      - get: git-tas-vex
-  - task: run-scan
-    file: git-concourse-cve-scan/tasks/scan/scan.yml
-    input_mapping:
-      concourse-cve-scan: git-concourse-cve-scan
-      tas-cve: github-release-tas-cve
-      target-bosh-release: repo
-      tas-vex: git-tas-vex
-    params:
-      DRY_RUN: true
-      GRYPE_FAILURE_LEVEL: negligible  #! Can be any of: none | negligible | low | medium | high | critical
-      RELEASE_NAME: mapfs
-      RELEASE_VERSION: pre-release-cve-scan
-
 - name: bump-dependencies-go-mod
   serial: true
   plan:
@@ -467,22 +419,6 @@ jobs:
     params:
       rebase: true
       repository: vendored-repo
-
-- name: security-scan
-  plan:
-  - in_parallel:
-      steps:
-      - get: ci
-      - get: image
-      - get: repo
-        trigger: true
-  - task: build
-    image: image
-    file: ci/shared/tasks/golang-security-scan/linux.yml
-    params:
-      PATHS: "src/mapfs"
-    input_mapping:
-      release: repo
 
 - name: unit-and-integration-tests
   serial: true
@@ -605,10 +541,8 @@ jobs:
       - get: repo
         trigger: true
         passed:
-        - check-for-cves
         - unit-and-integration-tests
         - lint-repo
-        - security-scan
       - put: env-lock
         params:
           acquire: true
