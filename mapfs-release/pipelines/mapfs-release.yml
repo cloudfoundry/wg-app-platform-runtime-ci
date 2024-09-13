@@ -266,13 +266,6 @@ resources:
     username: _json_key
     password: ((gcp-tas-runtime-service-account/config-json))
 
-- name: fstest
-  type: git
-  icon: source-branch
-  source:
-    uri: https://github.com/zfsonlinux/fstest.git
-    branch: master
-
 - name: libfuse-git-release
   type: github-release
   icon: github
@@ -426,27 +419,16 @@ jobs:
       steps:
       - get: ci
       - get: repo
-      - get: mapfs-repo
       - get: image
       - get: weekly
         trigger: true
   - do:
-    - task: mapfs-bump-dependencies-go-mod
-      image: image
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      input_mapping:
-        repo: mapfs-repo
-      params:
-        GO_MODS: |
-          go.mod
-    - put: mapfs-repo
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
     - task: mapfs-release-bump-dependencies-go-mod
       image: image
       file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+      params:
+        GO_MODS: |
+          src/code.cloudfoundry.org/mapfs/go.mod
     - put: repo
       params:
         rebase: true
@@ -510,7 +492,6 @@ jobs:
       - get: ci
       - get: repo
         trigger: true
-      - get: fstest
       - get: image
       - get: package-release
         resource: golang-release-latest
@@ -522,8 +503,6 @@ jobs:
   - task: build-binaries
     file: ci/shared/tasks/build-binaries/linux.yml
     privileged: true
-    params:
-      DEFAULT_PARAMS: "ci/mapfs-release/default-params/build-binaries/linux.yml"
     vars:
       image_repository: cloudfoundry/tas-runtime-build
       image_tag: ((.:image_tag))
@@ -536,18 +515,8 @@ jobs:
         vars:
           image_repository: cloudfoundry/tas-runtime-build
           image_tag: ((.:image_tag))
-        input_mapping:
-          input-01: fstest
         params:
-          DIR: #@ "src/{}".format(repo.name)
-          ENVS: |
-            FSTEST_DIR=input-01
-          VERIFICATIONS: |
-            verify_go repo/$DIR
-            verify_go_version_match_bosh_release repo
-            verify_gofmt repo/$DIR
-            verify_govet repo/$DIR
-          DEFAULT_PARAMS: "ci/mapfs-release/default-params/run-bin-test/linux.yml"
+          DIR: #@ "src/code.cloudfoundry.org/{}".format(repo.name)
 #@ end
 
 - name: bump-bosh-blobs
