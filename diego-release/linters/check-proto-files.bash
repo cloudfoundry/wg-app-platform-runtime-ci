@@ -10,7 +10,6 @@ function run() {
 
   pushd "${repo_path}" > /dev/null
   install_protoc "$task_tmp_dir"
-  install_gogoslick "$task_tmp_dir"
 
   pushd src/code.cloudfoundry.org > /dev/null
   go generate -run generate_proto ./...
@@ -23,20 +22,13 @@ function run() {
 install_protoc() {
   local tmpDir="${1:?Provide a dir path}"
   pushd "$tmpDir"
-  wget "https://github.com/protocolbuffers/protobuf/releases/download/v3.10.1/protoc-3.10.1-linux-x86_64.zip"
-  unzip -o "protoc-3.10.1-linux-x86_64.zip" -d protoc/
+  local protobuf_version=$(curl -s https://api.github.com/repos/protocolbuffers/protobuf/releases | jq -r '.[].tag_name as $tags | $tags | select(. | contains("-rc") | not) | [.]' | jq -sr 'add | .[0]')
+  local url=$(curl -s https://api.github.com/repos/protocolbuffers/protobuf/releases | jq --arg pbv "${protobuf_version}" -r '.[] | select(.tag_name == $pbv) | .assets[] | select(.name | contains("linux-x86_64")).browser_download_url')
+  curl -L "${url}" -o protoc-zip
+  unzip -o protoc-zip -d protoc/
   export PATH=$PATH:$PWD/protoc/bin/
   popd
 
-}
-
-install_gogoslick() {
-  local tmpDir="${1:?Provide a dir path}"
-  mkdir -p "$tmpDir/bin"
-  pushd "$PWD/src/code.cloudfoundry.org" > /dev/null
-  go build -o "$tmpDir/bin/protoc-gen-gogoslick" github.com/gogo/protobuf/protoc-gen-gogoslick
-  popd > /dev/null
-  export PATH="$PATH:$tmpDir/bin"
 }
 
 function cleanup() {
