@@ -177,6 +177,7 @@ func (s *spinner) Shortspin(duration int) error {
 	go s.spin()
 	s.isSpinning = true
 	time.AfterFunc(time.Duration(duration)*time.Second, func() {
+		// #nosec G104 - ignore unspin's error. it would only occur if we weren't spinning, and this should never happen since we're mutexed on the spin action
 		s.Unspin()
 	})
 	return nil
