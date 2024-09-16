@@ -41,7 +41,7 @@ function run() {
     for (( i = 0; i <= MAX_RETRIES; i++ ))
     do
         set +e
-        image_info=$(curl -s -H "Accept: application/json"  -H "Authorization: Bearer ${token}" https://hub.docker.com/v2/repositories/${IMAGE}/tags | jq "[.results[] | select(.name | startswith(\"go-${go_minor_version}\")) ] | sort_by(.name) | reverse[0]" 2>/dev/null)
+        image_info=$(curl -s -H "Accept: application/json"  -H "Authorization: Bearer ${token}" https://hub.docker.com/v2/repositories/${IMAGE}/tags | jq "[.results[] | select(.name | startswith(\"go-${go_minor_version}\")) ] | sort_by(.name) | reverse[1]" 2>/dev/null)
         set -e
 
         if [[ -n "$image_info" && "${image_info}" != "null" ]]; then
