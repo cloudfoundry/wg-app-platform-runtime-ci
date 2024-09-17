@@ -103,12 +103,6 @@ resources:
   type: time
   icon: clock
   source:
-    interval: '168h'
-
-- name: weekly
-  type: time
-  icon: clock
-  source:
     interval: '168h' #! 7 days
 
 #! Define-Jobs

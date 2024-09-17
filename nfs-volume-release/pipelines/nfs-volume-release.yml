@@ -677,8 +677,8 @@ jobs:
   - in_parallel:
     - get: ci
     - get: repo
-      #! trigger: true
-      #! passed: [claim-env]
+      trigger: true
+      passed: [claim-env]
     - get: image
     - get: cf-deployment
     - get: cf-deployment-concourse-tasks
