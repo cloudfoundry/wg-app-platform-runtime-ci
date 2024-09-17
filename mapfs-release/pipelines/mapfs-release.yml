@@ -624,7 +624,6 @@ jobs:
       integration-config: built-acceptance-test-configs
     params:
       CONFIG_FILE_PATH: cats.json
-      NODES: 4
 
 - name: volume-services-acceptance-tests
   serial_groups:
