@@ -206,6 +206,7 @@ jobs:
       file: ci/shared/tasks/run-bin-test/linux.yml
       vars:
         image_repository: cloudfoundry/tas-runtime-build
+        image_password: ((gcp-tas-runtime-service-account/config-json))
         image_tag: ((.:image_tag))
 
 - name: claim-env
@@ -316,6 +317,7 @@ jobs:
         --keep-going
     vars:
       image_repository: cloudfoundry/tas-runtime-build
+      image_password: ((gcp-tas-runtime-service-account/config-json))
       image_tag: ((.:image_tag))
 
 - name: run-e2e-tests
@@ -344,6 +346,7 @@ jobs:
       DEFAULT_PARAMS: "ci/cpu-entitlement-plugin/default-params/build-binaries/linux.yml"
     vars:
       image_repository: cloudfoundry/tas-runtime-build
+      image_password: ((gcp-tas-runtime-service-account/config-json))
       image_tag: ((.:image_tag))
   - task: create-cpu-entitlement-config-config
     image: image
@@ -364,6 +367,7 @@ jobs:
         --keep-going
     vars:
       image_repository: cloudfoundry/tas-runtime-build
+      image_password: ((gcp-tas-runtime-service-account/config-json))
       image_tag: ((.:image_tag))
 
 - name: ship-what

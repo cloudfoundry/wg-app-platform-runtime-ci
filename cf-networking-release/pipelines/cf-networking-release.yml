@@ -597,6 +597,7 @@ jobs:
       attempts: 3
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
+        image_password: ((gcp-tas-runtime-service-account/config-json))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -611,6 +612,7 @@ jobs:
       privileged: #@ helpers.privileged(package)
       vars:
         image_repository: cloudfoundry/tas-runtime-build
+        image_password: ((gcp-tas-runtime-service-account/config-json))
         image_tag: ((.:image_tag))
       attempts: 3
       params:
@@ -855,6 +857,7 @@ jobs:
     file: ci/shared/tasks/run-bin-test/linux.yml
     vars:
       image_repository: cloudfoundry/tas-runtime-build
+      image_password: ((gcp-tas-runtime-service-account/config-json))
       image_tag: ((.:image_tag))
     attempts: 2
     input_mapping:
@@ -907,6 +910,7 @@ jobs:
     file: ci/shared/tasks/run-bin-test/linux.yml
     vars:
       image_repository: cloudfoundry/tas-runtime-build
+      image_password: ((gcp-tas-runtime-service-account/config-json))
       image_tag: ((.:image_tag))
     attempts: 2
     input_mapping:

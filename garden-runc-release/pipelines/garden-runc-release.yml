@@ -1037,6 +1037,7 @@ jobs:
         DEFAULT_PARAMS: "ci/garden-runc-release/default-params/build-binaries/linux.yml"
       vars:
         image_repository: cloudfoundry/tas-runtime-build
+        image_password: ((gcp-tas-runtime-service-account/config-json))
         image_tag: ((.:image_tag))
   - in_parallel:
 #@ for repo in data.values.internal_repos:
@@ -1045,6 +1046,7 @@ jobs:
       file: ci/shared/tasks/run-bin-test/linux.yml
       vars:
         image_repository: cloudfoundry/tas-runtime-build
+        image_password: ((gcp-tas-runtime-service-account/config-json))
         image_tag: ((.:image_tag))
       input_mapping:
         input-01: garden-runc-release-rootfs
@@ -1251,6 +1253,7 @@ jobs:
       ENVS: WITH_MUSL=true
     vars:
       image_repository: cloudfoundry/tas-runtime-build
+      image_password: ((gcp-tas-runtime-service-account/config-json))
       image_tag: ((.:image_tag))
   - task: release-standalone-gdn
     file: ci/shared/tasks/run-bin-release-binaries/linux.yml
@@ -1281,6 +1284,7 @@ jobs:
         LIMITS_TEST_URI="docker://busybox"
     vars:
       image_repository: cloudfoundry/tas-runtime-build
+      image_password: ((gcp-tas-runtime-service-account/config-json))
       image_tag: ((.:image_tag))
   - put: artifacts-bucket-gdn
     params:

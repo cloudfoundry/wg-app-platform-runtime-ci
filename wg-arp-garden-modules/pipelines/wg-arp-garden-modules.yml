@@ -189,6 +189,7 @@ jobs:
       privileged: #@ helpers.privileged(package)
       vars:
         image_repository: cloudfoundry/tas-runtime-build
+        image_password: ((gcp-tas-runtime-service-account/config-json))
         image_tag: ((.:image_tag))
       params:
         ENVS: |
@@ -244,6 +245,7 @@ jobs:
       privileged: #@ helpers.privileged(package)
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
+        image_password: ((gcp-tas-runtime-service-account/config-json))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
 #@ if hasattr(package, "params") and hasattr(package.params, "FLAGS"):

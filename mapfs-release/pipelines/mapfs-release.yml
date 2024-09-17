@@ -394,6 +394,7 @@ jobs:
         privileged: true
         vars:
           image_repository: cloudfoundry/tas-runtime-build
+          image_password: ((gcp-tas-runtime-service-account/config-json))
           image_tag: ((.:image_tag))
         params:
           DIR: #@ "src/code.cloudfoundry.org/{}".format(repo.name)
@@ -665,6 +666,7 @@ jobs:
     attempts: 2
     vars:
       image_repository: cloudfoundry/tas-runtime-build
+      image_password: ((gcp-tas-runtime-service-account/config-json))
       image_tag: ((.:image_tag))
     params:
       ENVS: |
