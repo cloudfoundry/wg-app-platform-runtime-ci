@@ -35,13 +35,13 @@ function run() {
 
     token=$(curl -s -H "Content-type: application/json" -X POST --data "{\"username\":\"${DOCKER_REGISTRY_USERNAME}\",\"password\":\"${DOCKER_REGISTRY_PASSWORD}\"}" https://hub.docker.com/v2/users/login | jq -r .token)
 
-    echo "Getting latest tag that starts with go-${go_minor_version} for image ${IMAGE}"
+    echo "Getting latest tag that ends with go-${go_minor_version} for image ${IMAGE}"
 
     local tag
     for (( i = 0; i <= MAX_RETRIES; i++ ))
     do
         set +e
-        image_info=$(curl -s -H "Accept: application/json"  -H "Authorization: Bearer ${token}" https://hub.docker.com/v2/repositories/${IMAGE}/tags | jq "[.results[] | select(.name | startswith(\"go-${go_minor_version}\")) ] | sort_by(.name) | reverse[0]" 2>/dev/null)
+        image_info=$(curl -s -H "Accept: application/json"  -H "Authorization: Bearer ${token}" https://hub.docker.com/v2/repositories/${IMAGE}/tags | jq "[.results[] | select(.name | endswith(\"go-${go_minor_version}\")) ] | sort_by(.name) | reverse[0]" 2>/dev/null)
         set -e
 
         if [[ -n "$image_info" && "${image_info}" != "null" ]]; then
