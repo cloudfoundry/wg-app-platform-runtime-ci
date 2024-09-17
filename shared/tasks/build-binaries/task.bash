@@ -13,6 +13,7 @@ if [[ -n "${DEFAULT_PARAMS:-}" ]] && [[ -f "${DEFAULT_PARAMS}" ]]; then
 fi
 unset THIS_FILE_DIR
 
+echo $(go version)
 function run(){
     local task_tmp_dir="${1:?provide temp dir for task}"
     shift 1
