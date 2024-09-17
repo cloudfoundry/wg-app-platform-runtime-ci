@@ -53,8 +53,14 @@ function run() {
         sleep $RETRY_INTERVAL
     done
 
-    echo "${tag}" > determined-image-tag/tag
-
+    cat > determined-image-tag/image_resource <<EOF
+type: registrty-image
+source:
+  repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+  username: _json_key
+  password: ((gcp-tas-runtime-service-account/config-json))
+  tag: ${tag}
+EOF
     echo "Found image with tag: ${tag}"
 }
 

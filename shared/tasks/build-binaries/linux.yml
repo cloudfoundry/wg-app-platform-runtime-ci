@@ -1,9 +1,7 @@
 ---
 platform: linux
 
-image_resource:
-  version:
-    tag: "0.0.453"
+image_resource: ((image_resource))
 
 inputs:
 - name: ci
