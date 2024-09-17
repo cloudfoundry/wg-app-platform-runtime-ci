@@ -104,7 +104,7 @@ resources:
     region_name: us-east-1
 
 - name: image
-  type: docker-image                             
+  type: registry-image
   icon: docker
   source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build

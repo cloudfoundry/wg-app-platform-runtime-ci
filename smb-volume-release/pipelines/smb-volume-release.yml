@@ -210,13 +210,13 @@ resources:
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: image
-  type: docker-image                             
+  type: registry-image
   icon: docker
   source:                                        
-    repository: cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    username: _json_key
+    password: ((gcp-tas-runtime-service-account/config-json))
     tag: 'latest'
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
 
 #! bosh blobs
 
