@@ -73,9 +73,9 @@ resources:
   type: command-runner
   icon: link-variant
   source:
-    version_key: "dotnet-installer-hardcoded-url"
+    version_key: "dotnet-installer"
     check_command: "echo https://go.microsoft.com/fwlink/?linkid=2088631"
-    in_command:    "curl --silent --fail --output $1/dotnet-48-installer.exe https://go.microsoft.com/fwlink/?linkid=2088631"
+    in_command:    "curl --location --silent --fail --output $1/dotnet-48-installer.exe https://go.microsoft.com/fwlink/?linkid=2088631"
 - name: rewrite-msi
   type: command-runner
   icon: link-variant
