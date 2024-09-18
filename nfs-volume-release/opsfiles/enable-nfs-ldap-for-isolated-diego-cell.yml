@@ -1,5 +1,13 @@
 ---
 - type: replace
+  path: /instance_groups/name=diego-cell/jobs/name=nfsv3driver/consumes?
+  value:
+    mapfs: {from: mapfs-diego-cell}
+- type: replace
+  path: /instance_groups/name=diego-cell/jobs/name=mapfs/provides?
+  value:
+    mapfs: {as: mapfs-diego-cell}
+- type: replace
   path: /instance_groups/name=isolated-diego-cell/jobs/-
   value:
     name: nfsv3driver
