@@ -74,8 +74,8 @@ resources:
   icon: link-variant
   source:
     version_key: "dotnet-installer-hardcoded-url"
-    check_command: "echo https://download.visualstudio.microsoft.com/download/pr/014120d7-d689-4305-befd-3cb711108212/0fd66638cde16859462a6243a4629a50/ndp48-x86-x64-allos-enu.exe"
-    in_command:    "curl --silent --fail --output $1/dotnet-48-installer.exe https://download.visualstudio.microsoft.com/download/pr/014120d7-d689-4305-befd-3cb711108212/0fd66638cde16859462a6243a4629a50/ndp48-x86-x64-allos-enu.exe"
+    check_command: "echo https://go.microsoft.com/fwlink/?linkid=2088631"
+    in_command:    "curl --silent --fail --output $1/dotnet-48-installer.exe https://go.microsoft.com/fwlink/?linkid=2088631"
 - name: rewrite-msi
   type: command-runner
   icon: link-variant
