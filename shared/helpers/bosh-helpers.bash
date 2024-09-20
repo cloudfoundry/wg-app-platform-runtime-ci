@@ -27,6 +27,14 @@ function bosh_cloud_config(){
     bosh cloud-config --name "${name}"
 }
 
+function bosh_is_cf_deployed() {
+    local name=$(bosh ds --column=name --json | jq -r '.Tables[].Rows[] | select (.name |contains("cf")).name')
+    if [[ "${name:=null}" == "null" ]]; then
+        echo no
+    fi
+    echo yes
+}
+
 function bosh_cf_deployment_name(){
     local name=$(bosh ds --column=name --json | jq -r '.Tables[].Rows[] | select (.name |contains("cf")).name')
     # we may not have an active deployment
