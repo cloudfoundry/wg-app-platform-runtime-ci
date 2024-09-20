@@ -21,8 +21,8 @@ function run(){
     cf_target
     if [[ "$(bosh_is_cf_deployed)" == "yes" ]]; then
         cf_create_tcp_domain
+        credhub_save_lb_cert
     fi
-    credhub_save_lb_cert
 
     pushd "repo" > /dev/null
     if [[ -f ./bin/prepare-cf-deployment-env.bash ]]; then
