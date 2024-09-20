@@ -10,12 +10,16 @@ function cf_target(){
 }
 
 function cf_system_domain(){
-    # For cf-deployment
-    local system_domain=$(bosh int <(bosh_manifest) --path /instance_groups/name=singleton-blobstore?/jobs/name=blobstore/properties/system_domain)
-    if [[ "${system_domain:=null}" == "null" ]] ; then 
+    # For cf-deployment bbl envs
+    local system_domain=$(jq -r .cf.api_url < env/metadata | cut -d "." -f2-)
+    # fall back to checking the manifest with multiple instance group name options
+    if [[ "${system_domain:=null}" == "null" ]] ; then
+        local system_domain=$(bosh int <(bosh_manifest) --path /instance_groups/name=singleton-blobstore?/jobs/name=blobstore/properties/system_domain)
+    fi
+    if [[ "${system_domain:=null}" == "null" ]] ; then
         system_domain=$(bosh int <(bosh_manifest) --path /instance_groups/name=blobstore?/jobs/name=blobstore/properties/system_domain)
     fi
-    echo $system_domain
+    echo "$system_domain"
 }
 
 function cf_login(){
@@ -33,7 +37,7 @@ function cf_create_tcp_domain(){
             echo "Create TCP domain"
             cf_command create-shared-domain "$CF_TCP_DOMAIN" --router-group default-tcp
         fi
-    else 
+    else
         echo "Skipping creating cf_domain"
     fi
 
@@ -55,7 +59,10 @@ function cf_password() {
 
 function cf_manifest_version() {
     if [[ "$(is_env_cf_deployment)" == "yes" ]]; then
-        bosh int <(bosh_manifest) --path /manifest_version 
+        local version=$(bosh int <(bosh_manifest) --path /manifest_version)
+        if [[ "${version:=null}" == "null" ]]; then
+            echo "no-version"
+        fi
     else
         echo "no-version"
     fi

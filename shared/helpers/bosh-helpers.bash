@@ -28,7 +28,12 @@ function bosh_cloud_config(){
 }
 
 function bosh_cf_deployment_name(){
-    bosh ds --column=name --json | jq -r '.Tables[].Rows[] | select (.name |contains("cf")).name'
+    local name=$(bosh ds --column=name --json | jq -r '.Tables[].Rows[] | select (.name |contains("cf")).name')
+    # we may not have an active deployment
+    if [[ "${name:=null}" == "null" ]]; then
+        name="cf"
+    fi
+    echo $name
 }
 
 function bosh_extract_manifest_defaults_from_cf(){
