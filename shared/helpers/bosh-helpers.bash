@@ -19,7 +19,11 @@ function bosh_target(){
 }
 
 function bosh_manifest(){
-    bosh -d "$(bosh_cf_deployment_name)" manifest
+    local manifest=$(bosh -d "$(bosh_cf_deployment_name)" manifest)
+    if [[ "${manifest:=null}" == "null" ]]; then
+        manifest="{}"
+    fi
+    echo "${manifest}"
 }
 
 function bosh_cloud_config(){
