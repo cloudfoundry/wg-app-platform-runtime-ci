@@ -669,6 +669,13 @@ jobs:
       ops_files: #@ ["combined-assets/{0}".format(i) for i in data.values.opsfiles]
     get_params:
       skip_export: true
+  - task: create-tcp-domain
+    image: image
+    file: ci/shared/tasks/run-bin-prepare-cf-deployment/env/linux.yml
+    input_mapping:
+      env: pesto-env
+    output_mapping:
+      prepared-env: throw-away-just-using-for-tcp-domain-creation
   - put: pesto-cf-deployment
     attempts: 3
     params:
