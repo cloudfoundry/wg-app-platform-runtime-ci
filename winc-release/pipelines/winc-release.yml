@@ -997,6 +997,13 @@ jobs:
     - get: env
       passed: [ship-what]
       trigger: true
+    #! NOTE: we pass repo + trigger here because the `env` resource is rarely a new
+    #!       version, as it is not a shepherd env. Once we switch to those, this can
+    #!       go away, but until then, we need a more reliable trigger to fire env
+    #!       cleanup.
+    - get: repo
+      passed: [ship-what]
+      trigger: true
     - get: env-lock
     - get: image
     - get: ci
