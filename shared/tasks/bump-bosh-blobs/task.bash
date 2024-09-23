@@ -16,6 +16,9 @@ function run() {
   git_configure_author
   git_configure_safe_directory
 
+  local CI_DIR="$PWD/ci"
+  local CI_CONFIG_DIR="$PWD/ci-config"
+
   pushd blob > /dev/null
   local blob="${PWD}"
   local blob_name
@@ -38,9 +41,12 @@ function run() {
 
   local repo_name=$(git_get_remote_name)
 
-  local bump_bosh_blobs_filepath="../ci/${repo_name}/helpers/bump-bosh-blobs.bash"
-  if [[ -f "${bump_bosh_blobs_filepath}" ]]; then
-    "${bump_bosh_blobs_filepath}" "${PWD}" "${BOSH_BLOB_PATH}" "${blob}" 
+  local bump_bosh_blobs_filepath_in_ci="${CI_DIR}/${repo_name}/helpers/bump-bosh-blobs.bash"
+  local bump_bosh_blobs_filepath_in_ci_config="${CI_CONFIG_DIR}/${repo_name}/helpers/bump-bosh-blobs.bash"
+  if [[ -f "${bump_bosh_blobs_filepath_in_ci}" ]]; then
+    "${bump_bosh_blobs_filepath_in_ci}" "${PWD}" "${BOSH_BLOB_PATH}" "${blob}" 
+  elif [[ -f "${bump_bosh_blobs_filepath_in_ci_config}" ]]; then
+    "${bump_bosh_blobs_filepath_in_ci_config}" "${PWD}" "${BOSH_BLOB_PATH}" "${blob}" 
   else
     echo "🔥 Can't find ${bump_bosh_blobs_filepath}"
     exit 1

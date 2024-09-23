@@ -3,6 +3,8 @@ readme: |
   This task bumps a given bosh blob
 oses:
   - linux
+extra_inputs:
+  ci-config: (Optional) if ci config files needs to be provided from a repo other than this. This would be used when using a private-repo to hold ci configurations
 params:
   BOSH_BLOB_PATH: regex path to a blob
   AWS_ACCESS_KEY_ID: creds for S3 blobstore
