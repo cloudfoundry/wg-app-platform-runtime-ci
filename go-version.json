@@ -1,7 +1,6 @@
 {
     "default": "1.23",
      "releases": {
-        "cf-networking": "1.22",
         "diego": "1.22",
         "envoy-nginx": "1.22",
         "garden-runc": "1.22",
@@ -10,7 +9,6 @@
         "nats": "1.22",
         "nfs-volume": "1.22",
         "routing": "1.22",
-        "silk": "1.22",
         "smb-volume": "1.22",
         "test-log-emitter": "1.22",
         "winc": "1.22",
