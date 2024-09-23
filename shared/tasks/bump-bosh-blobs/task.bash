@@ -40,18 +40,20 @@ function run() {
   bosh sync-blobs 1>/dev/null
 
   local repo_name=$(git_get_remote_name)
+  popd > /dev/null
 
   local bump_bosh_blobs_filepath_in_ci="${CI_DIR}/${repo_name}/helpers/bump-bosh-blobs.bash"
   local bump_bosh_blobs_filepath_in_ci_config="${CI_CONFIG_DIR}/${repo_name}/helpers/bump-bosh-blobs.bash"
   if [[ -f "${bump_bosh_blobs_filepath_in_ci}" ]]; then
-    "${bump_bosh_blobs_filepath_in_ci}" "${PWD}" "${BOSH_BLOB_PATH}" "${blob}" 
+    "${bump_bosh_blobs_filepath_in_ci}" "${PWD}/repo" "${BOSH_BLOB_PATH}" "${blob}"
   elif [[ -f "${bump_bosh_blobs_filepath_in_ci_config}" ]]; then
-    "${bump_bosh_blobs_filepath_in_ci_config}" "${PWD}" "${BOSH_BLOB_PATH}" "${blob}" 
+    "${bump_bosh_blobs_filepath_in_ci_config}" "${PWD}/repo" "${BOSH_BLOB_PATH}" "${blob}"
   else
     echo "🔥 Can't find ${bump_bosh_blobs_filepath_in_ci} or ${bump_bosh_blobs_filepath_in_ci_config}"
     exit 1
   fi
 
+  pushd repo > /dev/null
   bosh upload-blobs
   rm -rf ./config/private.yml
 
