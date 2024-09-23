@@ -159,6 +159,10 @@ resources:
   icon: clock
   source:
     interval: '168h'
+    start: 02:00
+    stop: 02:59
+    days:
+      - Monday
 
 #! Shepherd pool
 - name: env

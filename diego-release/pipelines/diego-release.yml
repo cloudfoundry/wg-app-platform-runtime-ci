@@ -210,6 +210,10 @@ resources:
   icon: clock
   source:
     interval: '168h'
+    start: 01:00
+    stop: 01:59
+    days:
+      - Tuesday
 
 - name: env
   type: shepherd

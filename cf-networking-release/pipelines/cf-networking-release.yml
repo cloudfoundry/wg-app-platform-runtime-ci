@@ -193,6 +193,10 @@ resources:
   icon: clock
   source:
     interval: '168h'
+    start: 03:00
+    stop: 03:59
+    days:
+      - Sunday
 
 - name: env
   type: shepherd

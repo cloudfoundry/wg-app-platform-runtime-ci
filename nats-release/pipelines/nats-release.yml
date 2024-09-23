@@ -139,6 +139,10 @@ resources:
   icon: clock
   source:
     interval: '168h'
+    start: 04:00
+    stop: 04:59
+    days:
+      - Sunday
 
 #! shephard
 - name: env

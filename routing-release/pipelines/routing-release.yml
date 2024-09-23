@@ -223,6 +223,10 @@ resources:
   icon: clock
   source:
     interval: '168h'
+    start: 02:00
+    stop: 02:59
+    days:
+      - Sunday
 
 #! Deployment Environment pool
 - name: env

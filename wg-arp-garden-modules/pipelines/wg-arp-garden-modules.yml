@@ -104,6 +104,10 @@ resources:
   icon: clock
   source:
     interval: '168h' #! 7 days
+    start: 00:00
+    stop: 00:59
+    days:
+      - Wednesday
 
 #! Define-Jobs
 jobs:
