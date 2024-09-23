@@ -48,7 +48,7 @@ function run() {
   elif [[ -f "${bump_bosh_blobs_filepath_in_ci_config}" ]]; then
     "${bump_bosh_blobs_filepath_in_ci_config}" "${PWD}" "${BOSH_BLOB_PATH}" "${blob}" 
   else
-    echo "🔥 Can't find ${bump_bosh_blobs_filepath}"
+    echo "🔥 Can't find ${bump_bosh_blobs_filepath_in_ci} or ${bump_bosh_blobs_filepath_in_ci_config}"
     exit 1
   fi
 
