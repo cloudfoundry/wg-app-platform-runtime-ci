@@ -98,7 +98,7 @@ metrics_in_code() {
         # e.g. domainMetricPrefix+domain which is found in src/code.cloudfoundry.org/bbs/db/sqldb/lrp_convergence.go
         var_name=$(echo $client_call | sed -E "s/.*(${search_term})\(([^,+\)]*).*/\2/g")
         # look for the constant definition, e.g. for a var named foo look for `foo = "...."`
-        metric_name=$(grep -E "[[:blank:]]+$var_name[[:blank:]]+=[[:blank:]]+" $file_location | sed -E 's/.*=[[:blank:]]+"([^"]*)"/\1/')
+        metric_name=$(grep -E "[[:blank:]]+$var_name[[:blank:]]+:?=[[:blank:]]+" $file_location | sed -E 's/.*=[[:blank:]]+"([^"]*)"/\1/')
         if [ ! -z $metric_name ]; then
             echo $metric_name
         else
