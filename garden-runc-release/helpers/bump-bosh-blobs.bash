@@ -155,9 +155,9 @@ function run() {
     elif [[ "$bosh_blob_path" == 'libtool/libtool-*.tar.gz' ]]; then
         echo "Bumping libtool blob"
         pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
+        local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]/')
         local tgz_name="libtool-${version}.tar.gz"
-        wget  -O "${tgz_name}" "https://ftp.wayne.edu/gnu/libtool/libtool-${version}.tar.gz"
+        tar czvf "${tgz_name}" ./*
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
