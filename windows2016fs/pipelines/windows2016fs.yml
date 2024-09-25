@@ -76,6 +76,13 @@ resources:
     version_key: "dotnet-installer"
     check_command: "echo https://go.microsoft.com/fwlink/?linkid=2088631"
     in_command:    "curl --location --silent --fail --output $1/dotnet-48-installer.exe https://go.microsoft.com/fwlink/?linkid=2088631"
+- name: dotnet-48-patch
+  type: command-runner
+  icon: link-variant
+  source:
+    version_key: "dotnet-48-patch"
+    check_command: "echo https://catalog.s.download.windowsupdate.com/c/msdownload/update/software/updt/2024/07/windows10.0-kb5041974-x64-ndp48_e8660214346c8ac124e2f99aa21eef697fff307d.msu"
+    in_command:    "curl --location --silent --fail --output $1/dotnet-48-patch.msu https://catalog.s.download.windowsupdate.com/c/msdownload/update/software/updt/2024/07/windows10.0-kb5041974-x64-ndp48_e8660214346c8ac124e2f99aa21eef697fff307d.msu"
 - name: rewrite-msi
   type: command-runner
   icon: link-variant
@@ -135,6 +142,7 @@ jobs:
     - get: vcredist-2010
     - get: vcredist-2010-x86
     - get: dotnet-48-installer
+    - get: dotnet-48-patch
     - get: rewrite-msi
     - get: version
       params: {bump: patch}
@@ -150,6 +158,7 @@ jobs:
       input-06: dotnet-48-installer
       input-07: rewrite-msi
       input-08: repo
+      input-09: dotnet-48-patch
     params:
       COPY_ACTIONS: |
         {input-01/Git-*-64-bit.exe,combined-assets}
@@ -160,6 +169,7 @@ jobs:
         {input-06/dotnet-48-installer.exe,combined-assets}
         {input-07/rewrite.msi,combined-assets}
         {input-08/2019/Dockerfile,combined-assets}
+        {input-09/dotnet-48-patch.msu,combined-assets}
   - task: build-test-push-windows2016fs
     file: ci/shared/tasks/run-bin-test/windows.yml
     input_mapping:
