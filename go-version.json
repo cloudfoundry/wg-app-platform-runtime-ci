@@ -3,9 +3,6 @@
      "releases": {
         "diego": "1.22",
         "garden-runc": "1.22",
-        "healthchecker": "1.22",
-        "nfs-volume": "1.22",
-        "smb-volume": "1.22",
-        "test-log-emitter": "1.22"
+        "healthchecker": "1.22"
     }
 }
