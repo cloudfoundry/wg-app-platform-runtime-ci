@@ -2,13 +2,9 @@
     "default": "1.23",
      "releases": {
         "diego": "1.22",
-        "envoy-nginx": "1.22",
         "garden-runc": "1.22",
         "healthchecker": "1.22",
-        "mapfs": "1.22",
-        "nats": "1.22",
         "nfs-volume": "1.22",
-        "routing": "1.22",
         "smb-volume": "1.22",
         "test-log-emitter": "1.22"
     }
