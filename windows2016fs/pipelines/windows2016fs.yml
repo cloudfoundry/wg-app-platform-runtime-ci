@@ -29,8 +29,8 @@ resources:
     branch: main
     uri: git@github.com:cloudfoundry/windows2016fs.git
     private_key: ((github-tas-runtime-bot/private-key))
-#! Git for Windows Release
 
+#! Git for Windows Release
 - name: git-setup
   type: github-release
   icon: github
