@@ -1,9 +1,0 @@
----
-readme:
-  This directory contains the opsfiles needed for cpu-entitlement-plugin
-opsfiles:
-  add-test-log-emitter-to-diego-cell.yml: Adds test-log-emitter release to diego cell
-  enable-cpu-throttling.yml: Enable CPU throtlling for garden
-  grootfs-direct-io.yml: <REPLACE_ME>. not clear what this opsfile does and if it's needed
-  single-diego-cell.yml: Scale down to a single cell, because tests expect a single cell
-  emit-legacy-cpu-metrics.yml: Enables the `absolute_entitlement` and `absolute_usage` metrics so the cpu-entitlements plugin can be tested until we archive the project.
