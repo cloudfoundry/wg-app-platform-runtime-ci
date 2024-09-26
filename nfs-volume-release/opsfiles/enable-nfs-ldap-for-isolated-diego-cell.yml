@@ -49,7 +49,7 @@
   value: ((nfs-ldap-fqdn))
 - type: replace
   path: /instance_groups/name=isolated-diego-cell/jobs/name=nfsv3driver/properties/nfsv3driver/ldap_ca_cert?
-  value: ((ldap_test_server_ssl.ca))
+  value: ((ldap_server_ssl.ca))
 - type: replace
   path: /instance_groups/name=isolated-diego-cell/jobs/name=nfsv3driver/properties/nfsv3driver/allowed-in-source?
   value: ""
