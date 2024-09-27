@@ -93,6 +93,26 @@ def packages_names_array(packages = [], prefixes = []):
  return l
 end
 
+def packages_names_array_without_acceptance(packages = [], prefixes = []):
+ l = []
+ for p in packages:
+     if not hasattr(p, "acceptance") or not p.acceptance:
+         if hasattr(p, "name"):
+             if p.name:
+                if len(prefixes) == 0:
+                    l.append(p.name)
+                else:
+                    for prefix in prefixes:
+                        l.append(prefix + p.name)
+                    end
+                end
+            end
+          end
+    end
+ end
+ return l
+end
+
 def on_branch(package):
     if hasattr(package, "on_branch"):
         if package.on_branch:
@@ -107,6 +127,7 @@ helpers = struct.make(
     packages_without_configure_db=packages_without_configure_db,
     packages_with_a_git_repo=packages_with_a_git_repo,
     packages_names_array=packages_names_array,
+    packages_names_array_without_acceptance=packages_names_array_without_acceptance,
     on_windows=on_windows,
     privileged=privileged,
     on_branch=on_branch,

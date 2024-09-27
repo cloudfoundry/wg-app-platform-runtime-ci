@@ -1,0 +1,19 @@
+#@data/values
+---
+#@overlay/match missing_ok=True
+
+#! <MUST> repo/component/package to test in your repo/release
+internal_repos:
+- name: goshims
+  repo: cloudfoundry/goshims
+- name: volumedriver
+  repo: cloudfoundry/volumedriver
+- name: existingvolumebroker
+  repo: cloudfoundry/existingvolumebroker
+- name: service-broker-store
+  repo: cloudfoundry/service-broker-store
+- name: volume-mount-options
+  repo: cloudfoundry/volume-mount-options
+- name: cf-volume-services-acceptance-tests
+  repo: cloudfoundry/cf-volume-services-acceptance-tests
+  acceptance: true
