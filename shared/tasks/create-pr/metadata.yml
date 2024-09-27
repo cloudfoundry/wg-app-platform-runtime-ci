@@ -5,6 +5,7 @@ oses:
   - linux
 params:
   GITHUB_TOKEN: Github token to be used for the user that's openning a pull-request
+  GH_HOST: Only set when using Github Enterprise
   LABEL:  (Defaults to dependencies). Label to use for the PR.
   BRANCH: Branch to use for PR's base
   BASE_BRANCH: (Defaults to develop). If base branch is different, please update this param.
