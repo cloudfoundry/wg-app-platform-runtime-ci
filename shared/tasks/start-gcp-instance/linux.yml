@@ -1,0 +1,12 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+
+params:
+  INSTANCE_NAME:
+  ZONE: 
+  SERVICE_ACCOUNT_KEY:
+run:
+  path: ci/shared/tasks/start-gcp-instance/task.bash

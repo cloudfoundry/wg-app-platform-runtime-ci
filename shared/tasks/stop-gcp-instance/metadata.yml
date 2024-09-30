@@ -1,0 +1,10 @@
+---
+readme: |
+  This task will stop an arbitrary GCP instance.
+oses:
+  - linux
+params:
+  INSTANCE_NAME: name of the GCP instance to stop
+  ZONE: name of the GCP availability zone the instance lives in
+  SERVICE_ACCOUNT_KEY: GCP service account key json
+

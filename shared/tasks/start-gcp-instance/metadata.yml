@@ -1,0 +1,10 @@
+---
+readme: |
+  This task will start an arbitrary GCP instance.
+oses:
+  - linux
+params:
+  INSTANCE_NAME: name of the GCP instance to start
+  ZONE: name of the GCP availability zone the instance lives in
+  SERVICE_ACCOUNT_KEY: GCP service account key json
+

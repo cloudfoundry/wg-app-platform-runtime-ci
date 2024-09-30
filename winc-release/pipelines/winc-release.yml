@@ -726,6 +726,13 @@ jobs:
       toolsmiths-env: pesto-env
     params:
       ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
+  - task: start-sql-server-vm
+    image: image
+    file: ci/shared/tasks/start-gcp-instance/linux.yml
+    params:
+      INSTANCE_NAME: sql-server-pesto
+      ZONE: us-east1-b
+      SERVICE_ACCOUNT_KEY: ((gcp-cf-garden-windows-dev-service-account-json))
   - task: deploy-and-setup-iwa-test-app
     file: ci/winc-release/tasks/setup-iwa-test-app/linux.yml
     image: image
@@ -1039,13 +1046,21 @@ jobs:
     params:
       COPY_ACTIONS: |
         {input-01/pesto/metadata,combined-assets}
-  - task: bosh-deld
-    image: image
-    file: ci/shared/tasks/bosh-deld/linux.yml
-    input_mapping:
-      env: pesto-env
-    params:
-      DEPLOYMENT_NAME: cf
+  - in_parallel:
+    - task: bosh-deld
+      image: image
+      file: ci/shared/tasks/bosh-deld/linux.yml
+      input_mapping:
+        env: pesto-env
+      params:
+        DEPLOYMENT_NAME: cf
+    - task: stop-sql-server-vm
+      image: image
+      file: ci/shared/tasks/stop-gcp-instance/linux.yml
+      params:
+        INSTANCE_NAME: sql-server-pesto
+        ZONE: us-east1-b
+        SERVICE_ACCOUNT_KEY: ((gcp-cf-garden-windows-dev-service-account-json))
   - params:
       release: env-lock #! path to the resource in the above get
     put: env-lock
