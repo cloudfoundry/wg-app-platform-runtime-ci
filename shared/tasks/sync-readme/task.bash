@@ -27,9 +27,9 @@ function run() {
 
   local sub_readme
   if [[ -d "${CI_CONFIG_DIR}" ]]; then
-    sub_readme=$(find "${CI_CONFIG_DIR}" -name "${git_remote_name}.md")
+    sub_readme=$(find "${CI_CONFIG_DIR}" | grep -E "[0-9]{0,2}-?${git_remote_name}.md")
   else
-    sub_readme=$(find "${CI_DIR}" -name "${git_remote_name}.md")
+    sub_readme=$(find "${CI_DIR}" | grep -E "[0-9]{0,2}-?${git_remote_name}.md")
   fi
   local belongs_to_dir
   belongs_to_dir=$(echo "${sub_readme}" | xargs dirname | xargs dirname)
