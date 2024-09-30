@@ -1,8 +1,5 @@
 {
     "default": "1.23",
      "releases": {
-        "diego": "1.22",
-        "garden-runc": "1.22",
-        "healthchecker": "1.22"
     }
 }
