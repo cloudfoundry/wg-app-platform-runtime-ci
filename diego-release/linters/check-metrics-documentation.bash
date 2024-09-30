@@ -49,7 +49,7 @@ function run() {
 
 documented_metrics() {
     # returns a sorted list of documented metrics
-    cat ./docs/metrics.md | grep '`' | awk '{print $2}' |  tr -d '`' | sort -u
+    cat ./docs/010-metrics.md | grep '`' | awk '{print $2}' |  tr -d '`' | sort -u
 }
 
 # Returns a list of functions which are used to send metrics that might need
