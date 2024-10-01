@@ -56,6 +56,27 @@ Running Tests
 
 > [!IMPORTANT]
 > You must set `CONFIG` environment variable pointing to a JSON file containing the credentials for CloudFoundry environment before running any test.
+> This is an example config
+> ```
+> {
+>   "admin_password": "$CF_ADMIN_PASSWORD",
+>   "admin_user": "admin",
+>   "api": "api.${CF_SYSTEM_DOMAIN}",
+>   "apps_domain": "${CF_SYSTEM_DOMAIN}",
+>   "default_timeout": 30,
+>   "skip_ssl_validation": true,
+>   "isolation_segment_name": "persistent_isolation_segment",
+>   "isolation_segment_domain": "iso-seg.${CF_SYSTEM_DOMAIN}",
+>   "isolation_segment_tcp_domain": "tcp.${CF_SYSTEM_DOMAIN}",
+>   "service_name": "${VOLUME_SERVICE_SERVICE_NAME:-}",
+>   "broker_name": "${VOLUME_SERVICE_BROKER_NAME:-}",
+>   "plan_name": "${VOLUME_SERVICE_PLAN_NAME:-}",
+>   "include_multi_cell": true,
+>   "include_isolation_segment": ${WITH_ISOSEG},
+>   "username": "${VOLUME_SERVICE_USERNAME:-}",
+>   "password": "${VOLUME_SERVICE_PASSWORD:-}"
+> }
+> ```
 
 - `./scripts/create-docker-container.bash`: This will create a docker container with appropriate mounts. This
 script can be used for interactive development with a long running container. 
