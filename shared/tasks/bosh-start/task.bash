@@ -14,7 +14,7 @@ function run(){
     local task_tmp_dir="${1:?provide temp dir for task}"
     shift 1
 
-    bosh_target
+    eval "${BOSH_CREDS}"
     bosh -n -d "${DEPLOYMENT_NAME}" start --hard "${INSTANCE_GROUP}"
 }
 

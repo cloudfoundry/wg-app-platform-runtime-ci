@@ -8,6 +8,7 @@ inputs:
 params:
   DEPLOYMENT_NAME:
   INSTANCE_GROUP:
+  BOSH_CREDS:
 
 run:
   path: ci/shared/tasks/bosh-start/task.bash

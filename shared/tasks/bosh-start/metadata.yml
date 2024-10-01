@@ -6,3 +6,4 @@ oses:
 params:
   DEPLOYMENT_NAME: Name of deployment
   INSTANCE_GROUP: Instance Group to be started
+  BOSH_CREDS: All bosh environment variables needed to connect to the director (bbl print-env output)
