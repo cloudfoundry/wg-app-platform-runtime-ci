@@ -15,7 +15,7 @@ function run(){
     shift 1
 
     eval "${BOSH_CREDS}"
-    bosh -n -d "${DEPLOYMENT_NAME}" start --hard "${INSTANCE_GROUP}"
+    bosh -n -d "${DEPLOYMENT_NAME}" start "${INSTANCE_GROUP}"
 }
 
 function cleanup() {
