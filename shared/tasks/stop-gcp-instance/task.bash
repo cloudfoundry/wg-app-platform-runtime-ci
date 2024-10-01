@@ -10,4 +10,4 @@ source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
 echo "${SERVICE_ACCOUNT_KEY}" > /tmp/config.json
 
 gcloud auth activate-service-account --key-file /tmp/config.json
-gcloud compute instances stop "${INSTANCE_NAME}" --zone "${ZONE}"
+gcloud compute instances stop "${INSTANCE_NAME}" --project "${PROJECT}" --zone "${ZONE}"

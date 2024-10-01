@@ -6,5 +6,6 @@ oses:
 params:
   INSTANCE_NAME: name of the GCP instance to start
   ZONE: name of the GCP availability zone the instance lives in
+  PROJECT: GCP project name where the instance exists
   SERVICE_ACCOUNT_KEY: GCP service account key json
 

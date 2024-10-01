@@ -7,6 +7,7 @@ inputs:
 params:
   INSTANCE_NAME:
   ZONE: 
+  PROJECT:
   SERVICE_ACCOUNT_KEY:
 run:
   path: ci/shared/tasks/stop-gcp-instance/task.bash
