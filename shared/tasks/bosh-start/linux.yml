@@ -5,7 +5,7 @@ inputs:
   - name: ci
 
 params:
-  DEPLOYMENT_NAME:
+  DEPLOYMENT:
   INSTANCE_GROUP:
   BOSH_CREDS:
 
