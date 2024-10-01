@@ -44,14 +44,18 @@ cd ~/workspace
 git clone https://github.com/cloudfoundry/wg-app-platform-runtime-ci.git
 
 # clone repo
-git clone https://github.com/cloudfoundry/goshims.git --recursive
-cd goshims
+git clone https://github.com/cloudfoundry/cf-volume-services-acceptance-tests.git --recursive
+cd cf-volume-services-acceptance-tests
 
 ```
-- Concourse and fly cli with Windows workers
+
+- Concourse and fly cli
 
 Running Tests
 ---------------
+
+> [!IMPORTANT]
+> You must set `CONFIG` environment variable pointing to a JSON file containing the credentials for CloudFoundry environment before running any test.
 
 - `./scripts/create-docker-container.bash`: This will create a docker container with appropriate mounts. This
 script can be used for interactive development with a long running container. 
