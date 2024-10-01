@@ -316,7 +316,7 @@ resources:
     tag: latest
 
 - name: garden-runc-release-rootfs
-  type: registry-image
+  type: docker-image
   icon: docker
   source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/garden-rootfs
@@ -1024,6 +1024,8 @@ jobs:
     - get: package-release
       resource: golang-release-latest
     - get: garden-runc-release-rootfs 
+      params:
+        rootfs: true
     - get: garden-runc-release-fuse-rootfs 
       params:
         rootfs: true
