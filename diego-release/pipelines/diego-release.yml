@@ -592,7 +592,7 @@ jobs:
     params:
       DEPLOYMENT: concourse
       INSTANCE_GROUP: worker-diego-windows
-      BOSH_CREDS: ((bosh-concourse-credentials:env_vars))
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
   - in_parallel:
     - task: build-binaries-for-linux
       file: ci/shared/tasks/build-binaries/linux.yml
@@ -676,7 +676,7 @@ jobs:
     params:
       DEPLOYMENT: concourse
       INSTANCE_GROUP: worker-diego-windows
-      BOSH_CREDS: ((bosh-concourse-credentials:env_vars))
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
 
 #@ for db in data.values.db_flavors:
 - name: #@ "inigo-{}-linux".format(db.value)
@@ -804,7 +804,7 @@ jobs:
     params:
       DEPLOYMENT: concourse
       INSTANCE_GROUP: worker-diego-windows
-      BOSH_CREDS: ((bosh-concourse-credentials:env_vars))
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
   - in_parallel:
     - task: build-binaries-for-diego-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
@@ -909,7 +909,7 @@ jobs:
     params:
       DEPLOYMENT: concourse
       INSTANCE_GROUP: worker-diego-windows
-      BOSH_CREDS: ((bosh-concourse-credentials:env_vars))
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
 - name: lint-repo
   serial: true
   plan:
