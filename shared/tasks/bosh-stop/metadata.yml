@@ -1,0 +1,8 @@
+---
+readme: |
+  This task will stop an instance group
+oses:
+  - linux
+params:
+  DEPLOYMENT_NAME: Name of deployment
+  INSTANCE_GROUP: Instance Group to be stopped
