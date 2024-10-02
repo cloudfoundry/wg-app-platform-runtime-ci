@@ -123,6 +123,8 @@ jobs:
       image: image
       input_mapping:
         repo: #@ repo.name
+      params:
+        PARENT_TEMPLATE_DIR: wg-arp-volume-services-modules
     - put: #@ repo.name
       params:
        rebase: true
