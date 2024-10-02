@@ -25,7 +25,7 @@ function cleanup() {
     rm -rf $task_tmp_dir
 }
 
-if [[ -z "${INSTANCE_GROUP}" ]]; then
+if [[ -z "${INSTANCE_GROUP}" || "${INSTANCE_GROUP}" =~ ^[[:space:]]*$ ]]; then
   echo "Cowardly refusing to stop all jobs. Specify INSTANCE_GROUP." >&2
 fi
 
