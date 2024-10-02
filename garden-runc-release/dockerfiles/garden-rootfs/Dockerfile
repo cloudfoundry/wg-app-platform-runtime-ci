@@ -1,15 +1,16 @@
 ARG BUSYBOX_VERSION
-FROM gcc as usemem-builder
+
+FROM gcc AS usemem-builder
 COPY usemem.c ./
 RUN gcc -o ./usemem --static ./usemem.c
 
-FROM golang as throttled-or-not-builder
+FROM golang AS throttled-or-not-builder
 WORKDIR /go/src/app
 ENV CGO_ENABLED 0
 COPY throttled-or-not .
 RUN go build -o /throttled-or-not /go/src/app/throttled-or-not.go
 
-FROM golang as hello-world
+FROM golang AS hello-world
 WORKDIR /go/src/app
 ENV CGO_ENABLED 0
 COPY hello-world.go .
