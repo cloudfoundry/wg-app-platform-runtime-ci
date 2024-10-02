@@ -214,7 +214,7 @@ jobs:
         file: ci/shared/tasks/bosh-start/linux.yml
         params:
           DEPLOYMENT: concourse
-          INSTANCE_NAME: windows-worker
+          INSTANCE_GROUP: windows-worker
           BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
       - task: #@ "{}-windows".format(package.name)
         file: ci/shared/tasks/run-bin-test/windows.yml
@@ -231,7 +231,7 @@ jobs:
           file: ci/shared/tasks/bosh-stop/linux.yml
           params:
             DEPLOYMENT: concourse
-            INSTANCE_NAME: windows-worker
+            INSTANCE_GROUP: windows-worker
             BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
         - put: windows-worker-lock
           params:
@@ -299,7 +299,7 @@ jobs:
         file: ci/shared/tasks/bosh-start/linux.yml
         params:
           DEPLOYMENT: concourse
-          INSTANCE_NAME: windows-worker
+          INSTANCE_GROUP: windows-worker
           BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
       - task: #@ "{}-mysql-windows".format(package.name)
         file: ci/shared/tasks/run-bin-test/windows.yml
@@ -317,7 +317,7 @@ jobs:
           file: ci/shared/tasks/bosh-stop/linux.yml
           params:
             DEPLOYMENT: concourse
-            INSTANCE_NAME: windows-worker
+            INSTANCE_GROUP: windows-worker
             BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
         - put: windows-worker-lock
           params:
