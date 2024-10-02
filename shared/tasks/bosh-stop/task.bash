@@ -27,6 +27,7 @@ function cleanup() {
 
 if [[ -z "${INSTANCE_GROUP}" || "${INSTANCE_GROUP}" =~ ^[[:space:]]*$ ]]; then
   echo "Cowardly refusing to stop all jobs. Specify INSTANCE_GROUP." >&2
+  exit 1
 fi
 
 task_tmp_dir="$(mktemp -d -t 'XXXX-task-tmp-dir')"
