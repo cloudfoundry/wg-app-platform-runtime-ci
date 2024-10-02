@@ -25,6 +25,10 @@ function cleanup() {
     rm -rf $task_tmp_dir
 }
 
+if [[ -z "${INSTANCE_GROUP}" ]]; then
+  echo "Miserly refusing to stop all jobs. Specify INSTANCE_GROUP." >&2
+fi
+
 task_tmp_dir="$(mktemp -d -t 'XXXX-task-tmp-dir')"
 trap cleanup EXIT
 trap 'err_reporter $LINENO' ERR
