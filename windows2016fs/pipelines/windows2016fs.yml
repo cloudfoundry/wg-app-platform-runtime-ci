@@ -221,14 +221,15 @@ jobs:
         params:
           file: version/version
   ensure:
-    do:
-    - task: stop-windows-worker
-      image: image
-      file: ci/shared/bosh-stop/linux.yml
-      params:
-        DEPLOYMENT: concourse
-        INSTANCE_GROUP: windows-worker
-        BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
-    - put: windows-worker-lock
+    task: stop-windows-worker
+    image: image
+    file: ci/shared/bosh-stop/linux.yml
+    params:
+      DEPLOYMENT: concourse
+      INSTANCE_GROUP: windows-worker
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+    ensure:
+      attempts: 3
+      put: windows-worker-lock
       params:
         release: windows-worker-lock
