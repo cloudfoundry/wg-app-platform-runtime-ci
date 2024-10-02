@@ -1,4 +1,4 @@
-FROM ubuntu:jammy
+FROM ubuntu:noble
 
 ARG TARGETARCH
 
@@ -43,8 +43,6 @@ RUN \
     lsof \
     mercurial \
     mingw-w64 \
-    netcat \
-    netcat-openbsd \
     net-tools \
     nginx \
     openssh-client \
