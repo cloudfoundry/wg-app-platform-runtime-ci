@@ -1,4 +1,4 @@
-ARG BUSYBOX_VERSION
+ARG BUSYBOX_VERSION="1.26.2"
 ARG BUSYBOX_IMAGE="busybox"
 
 FROM gcc AS usemem-builder
@@ -7,13 +7,13 @@ RUN gcc -o ./usemem --static ./usemem.c
 
 FROM golang AS throttled-or-not-builder
 WORKDIR /go/src/app
-ENV CGO_ENABLED 0
+ENV CGO_ENABLED=0
 COPY throttled-or-not .
 RUN go build -o /throttled-or-not /go/src/app/throttled-or-not.go
 
 FROM golang AS hello-world
 WORKDIR /go/src/app
-ENV CGO_ENABLED 0
+ENV CGO_ENABLED=0
 COPY hello-world.go .
 RUN go build -o /hello-world /go/src/app/hello-world.go
 
@@ -75,9 +75,9 @@ RUN rm /tmp/symlink && ln -s /etc/link-source /tmp/symlink
 COPY --from=throttled-or-not-builder /throttled-or-not /bin/throttled-or-not
 
 # copied from cfgarden/with-process-env
-ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin:/from-dockerfile
-ENV TEST test-from-dockerfile
-ENV TEST second-test-from-dockerfile:$TEST
+ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin:/from-dockerfile
+ENV TEST=test-from-dockerfile
+ENV TEST=second-test-from-dockerfile:$TEST
 RUN mkdir -p /sbin
 COPY --from=hello-world /hello-world /sbin/hello-world
 

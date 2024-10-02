@@ -1,7 +1,14 @@
+ARCH := $(shell uname -p)
+
+
 all: check-env clean garden-rootfs.tar garden-fuse.tar
 
 garden-rootfs.tar: check-env
-	docker build --build-arg BUSYBOX_VERSION=1.26.1 -t garden-rootfs ./garden-rootfs/
+ifeq ($(ARCH), "aarch64")
+	docker build --build-arg BUSYBOX_VERSION=1.26.2 --build-arg BUSYBOX_IMAGE=busybox -t garden-rootfs ./garden-rootfs/
+else
+	docker build --build-arg BUSYBOX_VERSION=1.26.2 --build-arg BUSYBOX_IMAGE=arm64v8/busybox -t garden-rootfs ./garden-rootfs/
+endif
 	docker run --name garden-rootfs garden-rootfs
 	mkdir -p $(LOCATION)
 	docker export -o $(LOCATION)/garden-rootfs.tar garden-rootfs  
