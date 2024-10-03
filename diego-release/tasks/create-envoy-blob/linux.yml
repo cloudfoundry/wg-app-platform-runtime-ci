@@ -10,8 +10,3 @@ outputs:
 
 run:
   path: ci/diego-release/tasks/create-envoy-blob/task.bash
-
-params:
-  GCP_KEY:
-  IMAGE_NAME: envoyproxy/envoy-build-ubuntu
-  IMAGE_ID: 0a02a76af5951bf7f4c7029c0ea6d29d96c0f682
