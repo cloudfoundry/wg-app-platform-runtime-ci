@@ -35,7 +35,7 @@ resources:
   icon: cloud-lock
   source:
     branch: main
-    pool: windows-worker-pool
+    pool: windows-worker-lock
     private_key: ((github-tas-runtime-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
@@ -229,7 +229,7 @@ jobs:
       INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
     ensure:
-      attempts: 3
       put: windows-worker-lock
+      inputs: detect
       params:
         release: windows-worker-lock

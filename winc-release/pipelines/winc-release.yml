@@ -607,8 +607,8 @@ jobs:
       INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
     ensure:
-      attempts: 3
       put: windows-worker-lock
+      inputs: detect
       params:
         release: windows-worker-lock
 
