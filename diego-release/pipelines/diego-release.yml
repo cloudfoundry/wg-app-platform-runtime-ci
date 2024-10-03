@@ -206,7 +206,7 @@ resources:
     access_token: ((github-tas-runtime-bot/access-token))
     owner: envoyproxy
     repository: envoy
-    tag_filter: "v1.28.*"
+    tag_filter: "v1.*"
 
 - name: routing-release
   type: git
@@ -483,8 +483,6 @@ jobs:
   - file: ci/diego-release/tasks/create-envoy-blob/linux.yml
     task: create-envoy-blob
     image: image
-    params:
-      GCP_KEY: ((gcp-tas-runtime-service-account/config-json))
   - file: ci/diego-release/tasks/bump-dependencies-envoy/linux.yml
     image: image
     params:
