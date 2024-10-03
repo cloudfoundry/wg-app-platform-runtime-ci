@@ -164,7 +164,7 @@ jobs:
       acquire: true
   - task: start-windows-worker
     image: image
-    file: ci/shared/bosh-start/linux.yml
+    file: ci/shared/tasks/bosh-start/linux.yml
     params:
       DEPLOYMENT: concourse
       INSTANCE_GROUP: windows-worker
