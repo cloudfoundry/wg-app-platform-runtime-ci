@@ -349,7 +349,7 @@ jobs:
   ensure:
     task: stop-windows-worker
     image: image
-    file: ci/shared/bosh-stop/linux.yml
+    file: ci/shared/tasks/bosh-stop/linux.yml
     params:
       DEPLOYMENT: concourse
       INSTANCE_GROUP: windows-worker
