@@ -152,3 +152,11 @@ function bosh_release_name() {
     fi
     echo "$release_name"
 }
+
+function wait_for_bosh_lock() {
+    while [[ $(bosh tasks -d concourse --json | jq '.Tables[].Rows| length') != 0 ]]; do
+        echo "Waiting for bosh task lock to clear:"
+        bosh tasks
+        sleep 60
+    done
+}
