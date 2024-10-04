@@ -717,7 +717,8 @@ jobs:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
 #@ end
 #@ end
-  - task: stop-diego-windows-workers
+  ensure:
+    task: stop-diego-windows-workers
     image: image
     file: ci/shared/tasks/bosh-stop/linux.yml
     params:
@@ -839,7 +840,8 @@ jobs:
           GARDEN_TEST_ROOTFS=$PWD/input-03/rootfs.tar
           DB_USER=root
           DB_PASSWORD=password
-    - task: #@ "stop-diego-{}-workers".format(db.value)
+    ensure:
+      task: #@ "stop-diego-{}-workers".format(db.value)
       image: image
       file: ci/shared/tasks/bosh-stop/linux.yml
       params:
@@ -964,7 +966,8 @@ jobs:
           --skip-package volman,executor,certauthority
         FUNCTIONS: |
           ci/winc-release/helpers/configure-binaries.ps1
-  - task: stop-diego-windows-workers
+  ensure:
+    task: stop-diego-windows-workers
     image: image
     file: ci/shared/tasks/bosh-stop/linux.yml
     params:
