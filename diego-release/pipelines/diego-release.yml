@@ -796,6 +796,13 @@ jobs:
         {input-01/*,combined-assets}
         {input-02/*,combined-assets}
   - in_parallel:
+    - task: #@ "start-diego-{}-workers".format(db.value)
+      image: image
+      file: ci/shared/tasks/bosh-start/linux.yml
+      params:
+        DEPLOYMENT: concourse
+        INSTANCE_GROUP: #@ "worker-diego-{}".format(db.value)
+        BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
     - task: #@ "inigo-{}-linux".format(db.value)
       file: ci/shared/tasks/run-bin-test/linux.yml
       attempts: 3
@@ -834,6 +841,13 @@ jobs:
           GARDEN_TEST_ROOTFS=$PWD/input-03/rootfs.tar
           DB_USER=root
           DB_PASSWORD=password
+    - task: #@ "stop-diego-{}-workers".format(db.value)
+      image: image
+      file: ci/shared/tasks/bosh-stop/linux.yml
+      params:
+        DEPLOYMENT: concourse
+        INSTANCE_GROUP: #@ "worker-diego-{}".format(db.value)
+        BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
 #@ end
 - name: inigo-mysql-windows
   serial: true
