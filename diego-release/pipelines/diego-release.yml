@@ -637,8 +637,8 @@ jobs:
     image: image
     file: ci/shared/tasks/bosh-start/linux.yml
     params:
-      DEPLOYMENT: concourse
-      INSTANCE_GROUP: worker-diego-windows
+      DEPLOYMENT: diego-worker-windows
+      INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
   - in_parallel:
     - task: build-binaries-for-linux
@@ -721,8 +721,8 @@ jobs:
     image: image
     file: ci/shared/tasks/bosh-stop/linux.yml
     params:
-      DEPLOYMENT: concourse
-      INSTANCE_GROUP: worker-diego-windows
+      DEPLOYMENT: diego-worker-windows 
+      INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
 
 #@ for db in data.values.db_flavors:
@@ -798,8 +798,8 @@ jobs:
       image: image
       file: ci/shared/tasks/bosh-start/linux.yml
       params:
-        DEPLOYMENT: concourse
-        INSTANCE_GROUP: #@ "worker-diego-{}".format(db.value)
+        DEPLOYMENT: #@ "diego-worker-{}".format(db.value)
+        INSTANCE_GROUP: worker
         BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
     - task: #@ "inigo-{}-linux".format(db.value)
       file: ci/shared/tasks/run-bin-test/linux.yml
@@ -843,8 +843,8 @@ jobs:
       image: image
       file: ci/shared/tasks/bosh-stop/linux.yml
       params:
-        DEPLOYMENT: concourse
-        INSTANCE_GROUP: #@ "worker-diego-{}".format(db.value)
+        DEPLOYMENT: #@ "diego-worker-{}".format(db.value)
+        INSTANCE_GROUP: worker
         BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
 #@ end
 - name: inigo-mysql-windows
@@ -863,8 +863,8 @@ jobs:
     image: image
     file: ci/shared/tasks/bosh-start/linux.yml
     params:
-      DEPLOYMENT: concourse
-      INSTANCE_GROUP: worker-diego-windows
+      DEPLOYMENT: diego-worker-windows
+      INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
   - in_parallel:
     - task: build-binaries-for-diego-release-windows
@@ -968,8 +968,8 @@ jobs:
     image: image
     file: ci/shared/tasks/bosh-stop/linux.yml
     params:
-      DEPLOYMENT: concourse
-      INSTANCE_GROUP: worker-diego-windows
+      DEPLOYMENT: diego-worker-windows
+      INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
 - name: lint-repo
   serial: true
