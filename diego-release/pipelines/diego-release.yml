@@ -793,7 +793,7 @@ jobs:
       COPY_ACTIONS: |
         {input-01/*,combined-assets}
         {input-02/*,combined-assets}
-  - in_parallel:
+  - do:
     - task: #@ "start-diego-{}-workers".format(db.value)
       image: image
       file: ci/shared/tasks/bosh-start/linux.yml
