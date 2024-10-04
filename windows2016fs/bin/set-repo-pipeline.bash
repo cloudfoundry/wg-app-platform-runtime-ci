@@ -9,7 +9,9 @@ FLY_TEAM=wg-arp-garden
 main() {
   local pipeline_dir="$(realpath $REPO/pipelines)"
   fly_login
-  fly_pipeline windows2016fs -f "${pipeline_dir}/windows2016fs.yml" \
+  # fly_pipeline windows2016fs -f "${pipeline_dir}/windows2016fs.yml" \
+    # -f "$REPO/../shared/helpers/ytt-helpers.star"
+  fly_pipeline windows2016fs-autoupdate -f "${pipeline_dir}/windows2016fs-autoupdate.yml" \
     -f "$REPO/../shared/helpers/ytt-helpers.star"
 }
 
