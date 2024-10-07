@@ -878,6 +878,7 @@ jobs:
         DEFAULT_PARAMS: "ci/diego-release/default-params/build-binaries/windows.yml"
     - task: build-binaries-for-winc-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
+      tags: [ diego-windows ]
       input_mapping:
         repo: winc-release
       output_mapping:
@@ -891,6 +892,7 @@ jobs:
           Build-Nstar=src/code.cloudfoundry.org/nstar
     - task: build-binaries-for-garden-runc-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
+      tags: [ diego-windows ]
       input_mapping:
         repo: garden-runc-release
       output_mapping:
@@ -902,6 +904,7 @@ jobs:
           Build-Gdn=src/guardian/cmd/gdn
     - task: build-binaries-for-envoy-nginx-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
+      tags: [ diego-windows ]
       input_mapping:
         repo: envoy-nginx-release
       output_mapping:
