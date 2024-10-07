@@ -802,7 +802,7 @@ jobs:
         VOLUME_SERVICE_PLAN_NAME=Existing
         VOLUME_SERVICE_BROKER_NAME=nfsbroker
         VOLUME_SERVICE_CREATE_CONFIG='{\"share\": \"nfstestserver.service.cf.internal/export/users\"}'
-        VOLUME_SERVICE_BIND_CONFIG='{\"uid\":\"1000\",\"gid\":\"1000\", \"domain\":\"foo\"}'
+        VOLUME_SERVICE_BIND_CONFIG='{\"uid\":\"1000\",\"gid\":\"1000\"}'
       CONFIGS: cats
       WITH_VOLUME_SERVICES: true
       WITH_ISOSEG: false
