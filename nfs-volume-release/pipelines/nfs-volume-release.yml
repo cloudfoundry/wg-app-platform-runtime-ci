@@ -113,8 +113,8 @@ resources:
   type: git
   icon: git
   source:
-    branch: release-candidate
-    uri: https://github.com/cloudfoundry/cf-acceptance-tests
+    branch: with-broker-name
+    uri: https://github.com/winkingturtle-vmw/cf-acceptance-tests.git
 
 - name: go-version
   type: git
@@ -800,6 +800,7 @@ jobs:
       ENVS: |
         VOLUME_SERVICE_SERVICE_NAME=nfs
         VOLUME_SERVICE_PLAN_NAME=Existing
+        VOLUME_SERVICE_BORKER_NAME=nfsbroker
       CONFIGS: cats
       WITH_VOLUME_SERVICES: true
       WITH_ISOSEG: false

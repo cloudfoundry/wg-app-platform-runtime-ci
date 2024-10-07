@@ -96,7 +96,8 @@ function cats() {
     "volume_service_name": "${VOLUME_SERVICE_SERVICE_NAME:-}",
     "volume_service_plan_name": "${VOLUME_SERVICE_PLAN_NAME:-}",
     "volume_service_create_config": "${VOLUME_SERVICE_CREATE_CONFIG:-}",
-    "volume_service_bind_config": "${VOLUME_SERVICE_BIND_CONFIG:-}"
+    "volume_service_bind_config": "${VOLUME_SERVICE_BIND_CONFIG:-}",
+    "volume_service_broker_name": "${VOLUME_SERVICE_BROKER_NAME:-}"
 }
 EOF
 }
