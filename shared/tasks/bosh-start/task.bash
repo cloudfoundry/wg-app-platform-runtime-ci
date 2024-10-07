@@ -20,9 +20,6 @@ function run(){
     chmod 600 "${JUMPBOX_PRIVATE_KEY}"
     wait_for_bosh_lock
     bosh -n -d "${DEPLOYMENT}" start "${INSTANCE_GROUP}"
-
-    echo "Waiting 60s for VMs to register with any external services (like concourse workers registering with ATC)"
-    sleep 60
 }
 
 function cleanup() {
