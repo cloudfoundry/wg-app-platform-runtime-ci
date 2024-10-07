@@ -800,7 +800,7 @@ jobs:
       ENVS: |
         VOLUME_SERVICE_SERVICE_NAME=nfs
         VOLUME_SERVICE_PLAN_NAME=Existing
-        VOLUME_SERVICE_BORKER_NAME=nfsbroker
+        VOLUME_SERVICE_BROKER_NAME=nfsbroker
       CONFIGS: cats
       WITH_VOLUME_SERVICES: true
       WITH_ISOSEG: false
