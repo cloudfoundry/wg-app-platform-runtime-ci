@@ -932,6 +932,7 @@ jobs:
   - in_parallel:
     - task: inigo-mysql-windows
       file: ci/shared/tasks/run-bin-test/windows.yml
+      tags: [ diego-windows ]
       privileged: true
       input_mapping:
         built-binaries: built-binaries
