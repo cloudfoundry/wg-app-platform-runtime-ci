@@ -1,7 +1,8 @@
 ARG BUSYBOX_VERSION="1.26.2"
 ARG BUSYBOX_IMAGE="busybox"
+ARG GCC_IMAGE="gcc"
 
-FROM gcc AS usemem-builder
+FROM ${GCC_IMAGE} AS usemem-builder
 COPY usemem.c ./
 RUN gcc -o ./usemem --static ./usemem.c
 

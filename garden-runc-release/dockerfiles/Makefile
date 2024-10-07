@@ -4,7 +4,7 @@ all: check-env clean garden-rootfs.tar garden-fuse.tar
 
 garden-rootfs.tar: check-env
 ifeq ($(ARCH), aarch64)
-	docker build --build-arg BUSYBOX_VERSION=1.26.2 --build-arg BUSYBOX_IMAGE=arm64v8/busybox -t garden-rootfs ./garden-rootfs/
+	docker build --build-arg BUSYBOX_VERSION=1.26.2 --build-arg BUSYBOX_IMAGE=arm64v8/busybox --build-arg GCC_IMAGE=arm64v8/gcc -t garden-rootfs ./garden-rootfs/
 else
 	docker build --build-arg BUSYBOX_VERSION=1.26.2 --build-arg BUSYBOX_IMAGE=busybox -t garden-rootfs ./garden-rootfs/
 endif
