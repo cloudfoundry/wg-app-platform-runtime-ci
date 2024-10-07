@@ -113,8 +113,8 @@ resources:
   type: git
   icon: git
   source:
-    branch: with-broker-name
-    uri: https://github.com/winkingturtle-vmw/cf-acceptance-tests.git
+    branch: release-candidate
+    uri: https://github.com/cloudfoundry/cf-acceptance-tests.git
 
 - name: go-version
   type: git
