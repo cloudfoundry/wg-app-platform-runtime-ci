@@ -54,7 +54,12 @@ func main() {
 	r.HandleFunc("/maxavg", maxavgHandler)
 	r.HandleFunc("/cpucgroup", cpuCgroupHandler)
 	r.HandleFunc("/ping", pingHandler)
-	if err := http.ListenAndServe(":8080", r); err != nil {
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: r,
+	}
+	err := server.ListenAndServe()
+	if err != nil {
 		panic(err)
 	}
 }
