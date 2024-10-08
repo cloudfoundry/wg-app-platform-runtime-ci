@@ -50,6 +50,7 @@ function run() {
 
   scan_for_broken_links .
   for dir in ${INTERNAL_REPOS:=$(git config --file .gitmodules --get-regexp path | awk '{ print $2 }')}; do
+    echo "Scanning for broken links in ${dir}"
     scan_for_broken_links "${dir}"
   done
 
