@@ -47,25 +47,7 @@ function run() {
 
   pandoc ${sub_readme} ${docs_md_file} ${parent_readme} ${CI_DIR}/shared/00-shared.md -f markdown -t markdown --atx-headers -o README.md
 
-
-  scan_for_broken_links .
-  if [[ -n "${INTERNAL_REPOS}" ]]; then
-    declare -a repos_to_scan
-    for repo in ${INTERNAL_REPOS}; do
-      mapfile -t candidates <<< "$(find . -type d -name "${repo}")"
-      for candidate in "${candidates[@]}"; do
-        if git_submodules | grep "${candidate}" > /dev/null 2>&1; then
-          repos_to_scan+=("${candidate}")
-        fi
-      done
-    done
-  else 
-    mapfile -t repos_to_scan <<< "$(git_submodules)"
-  fi
-  for dir in "${repos_to_scan[@]}"; do
-    echo "Scanning for broken links in ${dir}"
-    scan_for_broken_links "${dir}"
-  done
+  git ls-tree --name-only --full-name --full-tree -r HEAD | grep '\.md$' | grep -Ev '.github|vendor' | xargs -I {} lychee {} -nqq
 
   if [[ $(git status --porcelain) ]]; then
     git add -A .
@@ -102,17 +84,6 @@ for f in ${files}; do pandoc $f --template ${pandoc_tmpl} | jq '.title' | xargs 
     echo "${expired}"
     exit 1
   fi
-}
-
-function scan_for_broken_links() {
-  local dir=${1:?Please provide a directory to find markdown files in}
-  pushd "${dir}" > /dev/null
-  git ls-tree --name-only --full-name --full-tree -r HEAD | grep '\.md$' | grep -Ev '.github|vendor' | xargs -I {} lychee {} -nqq
-  popd > /dev/null
-}
-
-function git_submodules() {
-  git config --file .gitmodules --get-regexp path | awk '{ print "./" $2 }'
 }
 
 

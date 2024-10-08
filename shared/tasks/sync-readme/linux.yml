@@ -12,6 +12,3 @@ outputs:
 
 run:
   path: ci/shared/tasks/sync-readme/task.bash
-
-params:
-  INTERNAL_REPOS:

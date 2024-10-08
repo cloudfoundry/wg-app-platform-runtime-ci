@@ -573,19 +573,13 @@ jobs:
       - task: sync-readme
         file: ci/shared/tasks/sync-readme/linux.yml
         image: image
-        params:
-#@ repos = ""
-#@ for repo in data.values.internal_repos:
-#@   repos = repos + " " + repo["name"]
-#@ end
-          INTERNAL_REPOS: #@ repos
       - put: repo
         params:
           rebase: true
           repository: synced-repo
 #@ for repo in data.values.internal_repos:
   - do:
-    - task: #@ "sync-dot-github-dir-{}".format(repo.name)
+    - task: #@ "sync-readme-{}".format(repo.name)
       file: ci/shared/tasks/sync-readme/linux.yml
       image: image
       input_mapping:
