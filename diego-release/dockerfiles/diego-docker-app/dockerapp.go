@@ -67,7 +67,11 @@ func main() {
 	// used to synchronize with tests
 	fmt.Printf("Hello World from index '%d'\n", env.InstanceIndex)
 
-	err = http.ListenAndServe(addr, nil)
+	server := &http.Server{
+		Addr:    addr,
+		Handler: nil,
+	}
+	err = server.ListenAndServe()
 	if err != nil {
 		panic("ListenAndServe: " + err.Error())
 	}
