@@ -112,7 +112,7 @@ function scan_for_broken_links() {
 }
 
 function git_submodules() {
-  git config --file .gitmodules --get-regexp path | awk '{ print "./" $2 }
+  git config --file .gitmodules --get-regexp path | awk '{ print "./" $2 }'
 }
 
 
