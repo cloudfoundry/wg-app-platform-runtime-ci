@@ -16,3 +16,6 @@ extra_inputs:
 
 oses:
   - linux
+
+params:
+  INTERNAL_REPOS: Optional list of internal repos to limit searching broken links inside

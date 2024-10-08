@@ -47,7 +47,11 @@ function run() {
 
   pandoc ${sub_readme} ${docs_md_file} ${parent_readme} ${CI_DIR}/shared/00-shared.md -f markdown -t markdown --atx-headers -o README.md
 
-  find . -name \*.md | grep -Ev "vendor|.github" | xargs -I {} lychee {} -nqq
+
+  scan_for_broken_links .
+  for dir in ${INTERNAL_REPOS:=$(git config --file .gitmodules --get-regexp path | awk '{ print $2 }')}; do
+    scan_for_broken_links "${dir}"
+  done
 
   if [[ $(git status --porcelain) ]]; then
     git add -A .
@@ -84,6 +88,13 @@ for f in ${files}; do pandoc $f --template ${pandoc_tmpl} | jq '.title' | xargs 
     echo "${expired}"
     exit 1
   fi
+}
+
+function scan_for_broken_links() {
+  local dir=${1:?Please provide a directory to find markdown files in}
+  pushd "${dir}" > /dev/null
+  git ls-tree --name-only --full-name --full-tree -r HEAD | grep '\.md$' | grep -Ev '.github|vendor' | xargs -I {} lychee {} -nqq
+  popd "${dir}" > /dev/null
 }
 
 
