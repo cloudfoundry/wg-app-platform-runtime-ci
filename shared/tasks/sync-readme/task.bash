@@ -94,7 +94,7 @@ function scan_for_broken_links() {
   local dir=${1:?Please provide a directory to find markdown files in}
   pushd "${dir}" > /dev/null
   git ls-tree --name-only --full-name --full-tree -r HEAD | grep '\.md$' | grep -Ev '.github|vendor' | xargs -I {} lychee {} -nqq
-  popd "${dir}" > /dev/null
+  popd > /dev/null
 }
 
 
