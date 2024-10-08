@@ -49,7 +49,20 @@ function run() {
 
 
   scan_for_broken_links .
-  for dir in ${INTERNAL_REPOS:=$(git config --file .gitmodules --get-regexp path | awk '{ print $2 }')}; do
+  if [[ -n "${INTERNAL_REPOS}" ]]; then
+    declare -a repos_to_scan
+    for repo in ${INTERNAL_REPOS}; do
+      mapfile -t candidates <<< "$(find . -type d -name "${repo}")"
+      for candidate in "${candidates[@]}"; do
+        if git_submodules | grep "${candidate}" > /dev/null 2>&1; then
+          repos_to_scan+=("${candidate}")
+        fi
+      done
+    done
+  else 
+    mapfile -t repos_to_scan <<< "$(git_submodules)"
+  fi
+  for dir in "${repos_to_scan[@]}"; do
     echo "Scanning for broken links in ${dir}"
     scan_for_broken_links "${dir}"
   done
@@ -96,6 +109,10 @@ function scan_for_broken_links() {
   pushd "${dir}" > /dev/null
   git ls-tree --name-only --full-name --full-tree -r HEAD | grep '\.md$' | grep -Ev '.github|vendor' | xargs -I {} lychee {} -nqq
   popd > /dev/null
+}
+
+function git_submodules() {
+  git config --file .gitmodules --get-regexp path | awk '{ print "./" $2 }
 }
 
 
