@@ -579,7 +579,7 @@ jobs:
           repository: synced-repo
 #@ for repo in data.values.internal_repos:
   - do:
-    - task: #@ "sync-dot-github-dir-{}".format(repo.name)
+    - task: #@ "sync-readme-{}".format(repo.name)
       file: ci/shared/tasks/sync-readme/linux.yml
       image: image
       input_mapping:

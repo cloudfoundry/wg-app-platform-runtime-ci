@@ -47,7 +47,7 @@ function run() {
 
   pandoc ${sub_readme} ${docs_md_file} ${parent_readme} ${CI_DIR}/shared/00-shared.md -f markdown -t markdown --atx-headers -o README.md
 
-  find . -name \*.md | grep -Ev "vendor|.github" | xargs -I {} lychee {} -nqq
+  git ls-tree --name-only --full-name --full-tree -r HEAD | grep '\.md$' | grep -Ev '.github|vendor' | xargs -I {} lychee {} -nqq
 
   if [[ $(git status --porcelain) ]]; then
     git add -A .
