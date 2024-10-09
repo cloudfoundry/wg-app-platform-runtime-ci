@@ -637,8 +637,8 @@ jobs:
     image: image
     file: ci/shared/tasks/bosh-start/linux.yml
     params:
-      DEPLOYMENT: concourse
-      INSTANCE_GROUP: worker-diego-windows
+      DEPLOYMENT: diego-worker-windows
+      INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
   - in_parallel:
     - task: build-binaries-for-linux
@@ -717,12 +717,13 @@ jobs:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
 #@ end
 #@ end
-  - task: stop-diego-windows-workers
+  ensure:
+    task: stop-diego-windows-workers
     image: image
     file: ci/shared/tasks/bosh-stop/linux.yml
     params:
-      DEPLOYMENT: concourse
-      INSTANCE_GROUP: worker-diego-windows
+      DEPLOYMENT: diego-worker-windows 
+      INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
 
 #@ for db in data.values.db_flavors:
@@ -793,13 +794,13 @@ jobs:
       COPY_ACTIONS: |
         {input-01/*,combined-assets}
         {input-02/*,combined-assets}
-  - in_parallel:
+  - do:
     - task: #@ "start-diego-{}-workers".format(db.value)
       image: image
       file: ci/shared/tasks/bosh-start/linux.yml
       params:
-        DEPLOYMENT: concourse
-        INSTANCE_GROUP: #@ "worker-diego-{}".format(db.value)
+        DEPLOYMENT: #@ "diego-worker-{}".format(db.value)
+        INSTANCE_GROUP: worker
         BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
     - task: #@ "inigo-{}-linux".format(db.value)
       file: ci/shared/tasks/run-bin-test/linux.yml
@@ -839,12 +840,13 @@ jobs:
           GARDEN_TEST_ROOTFS=$PWD/input-03/rootfs.tar
           DB_USER=root
           DB_PASSWORD=password
-    - task: #@ "stop-diego-{}-workers".format(db.value)
+    ensure:
+      task: #@ "stop-diego-{}-workers".format(db.value)
       image: image
       file: ci/shared/tasks/bosh-stop/linux.yml
       params:
-        DEPLOYMENT: concourse
-        INSTANCE_GROUP: #@ "worker-diego-{}".format(db.value)
+        DEPLOYMENT: #@ "diego-worker-{}".format(db.value)
+        INSTANCE_GROUP: worker
         BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
 #@ end
 - name: inigo-mysql-windows
@@ -863,8 +865,8 @@ jobs:
     image: image
     file: ci/shared/tasks/bosh-start/linux.yml
     params:
-      DEPLOYMENT: concourse
-      INSTANCE_GROUP: worker-diego-windows
+      DEPLOYMENT: diego-worker-windows
+      INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
   - in_parallel:
     - task: build-binaries-for-diego-release-windows
@@ -876,6 +878,7 @@ jobs:
         DEFAULT_PARAMS: "ci/diego-release/default-params/build-binaries/windows.yml"
     - task: build-binaries-for-winc-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
+      tags: [ diego-windows ]
       input_mapping:
         repo: winc-release
       output_mapping:
@@ -889,6 +892,7 @@ jobs:
           Build-Nstar=src/code.cloudfoundry.org/nstar
     - task: build-binaries-for-garden-runc-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
+      tags: [ diego-windows ]
       input_mapping:
         repo: garden-runc-release
       output_mapping:
@@ -900,6 +904,7 @@ jobs:
           Build-Gdn=src/guardian/cmd/gdn
     - task: build-binaries-for-envoy-nginx-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
+      tags: [ diego-windows ]
       input_mapping:
         repo: envoy-nginx-release
       output_mapping:
@@ -927,6 +932,7 @@ jobs:
   - in_parallel:
     - task: inigo-mysql-windows
       file: ci/shared/tasks/run-bin-test/windows.yml
+      tags: [ diego-windows ]
       privileged: true
       input_mapping:
         built-binaries: built-binaries
@@ -964,12 +970,13 @@ jobs:
           --skip-package volman,executor,certauthority
         FUNCTIONS: |
           ci/winc-release/helpers/configure-binaries.ps1
-  - task: stop-diego-windows-workers
+  ensure:
+    task: stop-diego-windows-workers
     image: image
     file: ci/shared/tasks/bosh-stop/linux.yml
     params:
-      DEPLOYMENT: concourse
-      INSTANCE_GROUP: worker-diego-windows
+      DEPLOYMENT: diego-worker-windows
+      INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
 - name: lint-repo
   serial: true

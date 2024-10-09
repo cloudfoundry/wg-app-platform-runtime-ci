@@ -709,8 +709,9 @@ jobs:
       ENVS: |
         VOLUME_SERVICE_SERVICE_NAME=smb
         VOLUME_SERVICE_PLAN_NAME=Existing
+        VOLUME_SERVICE_BROKER_NAME=smbbroker
         VOLUME_SERVICE_CREATE_CONFIG='{\"share\": \"//smbtestserver.service.cf.internal/vol\"}'
-          VOLUME_SERVICE_BIND_CONFIG='{\"username\":\"((smb-volume-release-smbtestserver-credentials/username))\",\"password\":\"((smb-volume-release-smbtestserver-credentials/password))\", \"domain\":\"foo\"}'
+        VOLUME_SERVICE_BIND_CONFIG='{\"username\":\"((smb-volume-release-smbtestserver-credentials/username))\",\"password\":\"((smb-volume-release-smbtestserver-credentials/password))\", \"domain\":\"foo\"}'
       CONFIGS: cats
       WITH_VOLUME_SERVICES: true
       WITH_ISOSEG: false

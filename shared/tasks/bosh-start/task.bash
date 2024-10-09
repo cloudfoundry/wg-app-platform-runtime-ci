@@ -18,6 +18,7 @@ function run(){
     mkdir -p "$(dirname "${JUMPBOX_PRIVATE_KEY}")"
     echo "${SSH_PRIVATE_KEY}" > "${JUMPBOX_PRIVATE_KEY}"
     chmod 600 "${JUMPBOX_PRIVATE_KEY}"
+    wait_for_bosh_lock
     bosh -n -d "${DEPLOYMENT}" start "${INSTANCE_GROUP}"
 }
 
