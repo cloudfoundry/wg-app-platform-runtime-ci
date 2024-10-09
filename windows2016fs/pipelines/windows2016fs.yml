@@ -39,6 +39,17 @@ resources:
     private_key: ((github-tas-runtime-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
+#! MS dockerfile we can pull update URLs from
+- name: dotnet-dockerfile
+  type: git
+  icon: source-branch
+  source:
+    uri: git@github.com:microsoft/dotnet-framework-docker.git
+    branch: main
+    private_key: ((github-tas-runtime-bot/private-key))
+    paths:
+      - src/runtime/4.8/windowsservercore-ltsc2019/Dockerfile
+
 #! Git for Windows Release
 - name: git-setup
   type: github-release
@@ -48,43 +59,6 @@ resources:
     user: git-for-windows
     repository: git
     access_token: ((github-tas-runtime-bot/access-token))
-
-#!  version management
-- name: vcredist-ucrt
-  type: command-runner
-  icon: link-variant
-  source:
-    version_key: "url"
-    check_command: "curl --location --silent --write-out %{url_effective} --request HEAD https://aka.ms/vs/16/release/vc_redist.x64.exe"
-    in_command:    "curl --location --silent --fail --output $1/vcredist-ucrt.x64.exe https://aka.ms/vs/16/release/vc_redist.x64.exe"
-- name: vcredist-ucrt-x86
-  type: command-runner
-  icon: link-variant
-  source:
-    version_key: "url"
-    check_command: "curl --location --silent --write-out %{url_effective} --request HEAD https://aka.ms/vs/16/release/vc_redist.x86.exe"
-    in_command:    "curl --location --silent --fail --output $1/vcredist-ucrt.x86.exe https://aka.ms/vs/16/release/vc_redist.x86.exe"
-- name: vcredist-2010
-  type: command-runner
-  icon: link-variant
-  source:
-    version_key: "2010-hardcoded-url"
-    check_command: "echo https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe"
-    in_command:    "curl --silent --fail --output $1/vcredist-2010.x64.exe https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe"
-- name: vcredist-2010-x86
-  type: command-runner
-  icon: link-variant
-  source:
-    version_key: "2010-hardcoded-url"
-    check_command: "echo https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe"
-    in_command:    "curl --silent --fail --output $1/vcredist-2010.x86.exe https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe"
-- name: rewrite-msi
-  type: command-runner
-  icon: link-variant
-  source:
-    version_key: "rewrite-msi-url"
-    check_command: "echo https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi"
-    in_command:    "curl --silent --fail --output $1/rewrite.msi https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi"
 
 - name: ci
   type: git
@@ -129,36 +103,25 @@ jobs:
         save: false
         rootfs: false
         skip_download: true
+    - get: dotnet-dockerfile
+      trigger: true
     - get: git-setup
       params:
         globs: [Git-*-64-bit.exe]
-    - get: vcredist-ucrt
-    - get: vcredist-ucrt-x86
-    - get: vcredist-2010
-    - get: vcredist-2010-x86
-    - get: rewrite-msi
     - get: version
       params: {bump: patch}
   - task: combine-assets
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
     input_mapping:
-      input-01: git-setup
-      input-02: vcredist-ucrt
-      input-03: vcredist-ucrt-x86
-      input-04: vcredist-2010-x86
-      input-05: vcredist-2010
-      input-06: rewrite-msi
-      input-07: repo
+      input-01: repo
+      input-02: git-setup
+      input-03: dotnet-dockerfile
     params:
       COPY_ACTIONS: |
-        {input-01/Git-*-64-bit.exe,combined-assets}
-        {input-02/vcredis*.exe,combined-assets}
-        {input-03/vcredis*.exe,combined-assets}
-        {input-04/vcredis*.exe,combined-assets}
-        {input-05/vcredis*.exe,combined-assets}
-        {input-06/rewrite.msi,combined-assets}
-        {input-07/2019/Dockerfile,combined-assets}
+        {input-01/2019/Dockerfile,combined-assets}
+        {input-02/Git-*-64-bit.exe,combined-assets}
+        {input-03/src/runtime/4.8/windowsservercore-ltsc2019/Dockerfile,combined-assets/dotnet-dockerfile}
   - put: windows-worker-lock
     params:
       acquire: true
