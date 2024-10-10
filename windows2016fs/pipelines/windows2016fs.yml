@@ -142,6 +142,7 @@ jobs:
       ENVS: |
         UPSTREAM_IMAGE_DIGEST=$PWD/input-01/digest
         VERSION_NUMBER=$PWD/input-02/number
+        DOTNET_DOCKERFILE=$PWD/built-binaries/dotnet-dockerfile
         BUILT_BINARIES=$PWD/built-binaries
         IMAGE_NAME=cloudfoundry/windows2016fs
         DOCKER_USERNAME=((dockerhub-tasruntime-username))
