@@ -14,6 +14,5 @@ fly_pipeline() {
 }
 
 fly_login() {
-  fly --target "${FLY_TEAM}" sync
   fly --target "${FLY_TEAM}" status || fly --target "${FLY_TEAM}" login --open-browser
 }
