@@ -9,7 +9,7 @@ FLY_TEAM=wg-arp-diego
 main() {
   local pipeline_dir="$(realpath $REPO/pipelines)"
   fly_login
-  fly_pipeline diego-release -f "${pipeline_dir}/diego-release.yml" \
+  fly_pipeline diego-protobuf -f "${pipeline_dir}/diego-protobuf.yml" \
     -f "$REPO/index.yml" \
     -f "$REPO/../shared/helpers/ytt-helpers.star"
 
