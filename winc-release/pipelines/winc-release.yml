@@ -79,7 +79,7 @@ resources:
     - docs/
     - releases/
 
-- name: release-branch 
+- name: release-branch
   type: git
   icon: source-branch
   source:
@@ -108,7 +108,7 @@ resources:
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
-    paths: 
+    paths:
       - shared/github
       - winc-release/github
 
@@ -207,7 +207,7 @@ resources:
   source:
     branch: master
     uri: https://github.com/cloudfoundry/windows-utilities-release.git
-      
+
 #! Environments
 - name: env
   type: git
@@ -224,6 +224,10 @@ resources:
   icon: clock
   source:
     interval: '168h'
+    start: 03:00
+    stop: 03:59
+    days:
+      - Wednesday
 
 - name: github-release
   type: github-release
@@ -233,7 +237,7 @@ resources:
     repository: winc-release
     owner: cloudfoundry
 
-- name: draft-github-release 
+- name: draft-github-release
   type: github-release
   icon: github
   source:
@@ -259,14 +263,23 @@ resources:
   icon: cloud-lock
   source:
     branch: main
-    pool: winc-release-env-lock 
+    pool: winc-release-env-lock
+    private_key: ((github-tas-runtime-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+
+- name: windows-worker-lock
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: windows-worker-lock
     private_key: ((github-tas-runtime-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: image
-  type: docker-image                             
+  type: registry-image
   icon: docker
-  source:                                        
+  source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
     password: ((gcp-tas-runtime-service-account/config-json))
@@ -295,6 +308,13 @@ resources:
   icon: tag-outline
   source:
     name: bosh-google-kvm-windows2019-go_agent
+
+#! Grab the latest published winc-release so we can test upgrading from it to the dev version, since our opsfiles override it to 'latest' and it isn't on the director already.
+- name: winc-release
+  type: bosh-io-release
+  icon: tag-outline
+  source:
+    repository: cloudfoundry-incubator/winc-release #! bosh.io still lists this as incubator despite it being cloudfoundry
 
 - name: seven-zip
   type: github-release
@@ -465,7 +485,7 @@ jobs:
       input_mapping:
         blob: mingw
       params:
-        BOSH_BLOB_PATH: mingw/x86_64-*-release-posix-seh-ucrt-*-*.7z 
+        BOSH_BLOB_PATH: mingw/x86_64-*-release-posix-seh-ucrt-*-*.7z
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
@@ -480,7 +500,7 @@ jobs:
       input_mapping:
         blob: seven-zip
       params:
-        BOSH_BLOB_PATH: 7zip/7z*.msi 
+        BOSH_BLOB_PATH: 7zip/7z*.msi
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
@@ -550,6 +570,16 @@ jobs:
     - get: image
     - get: package-release
       resource: golang-release-latest
+  - put: windows-worker-lock
+    params:
+      acquire: true
+  - task: start-windows-worker
+    image: image
+    file: ci/shared/tasks/bosh-start/linux.yml
+    params:
+      DEPLOYMENT: windows-worker
+      INSTANCE_GROUP: windows-worker
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
   - task: build-binaries
     file: ci/shared/tasks/build-binaries/windows.yml
     params:
@@ -568,6 +598,19 @@ jobs:
       ENVS: |
         WINC_TEST_ROOTFS=docker:///cloudfoundry/windows2016fs:2019
 #@ end
+  ensure:
+    task: stop-windows-worker
+    image: image
+    file: ci/shared/tasks/bosh-stop/linux.yml
+    params:
+      DEPLOYMENT: windows-worker
+      INSTANCE_GROUP: windows-worker
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+    ensure:
+      put: windows-worker-lock
+      inputs: detect
+      params:
+        release: windows-worker-lock
 
 - name: lint-repo
   serial: true
@@ -615,6 +658,7 @@ jobs:
       passed: [claim-env]
     - get: linux-stemcell
     - get: windows-stemcell
+    - get: winc-release
   - task: create-toolsmiths-env
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
@@ -661,6 +705,8 @@ jobs:
       stemcells:
       - linux-stemcell/*.tgz
       - windows-stemcell/*.tgz
+      releases:
+      - winc-release/*.tgz
       vars_files:
       - env/pesto/cf/vars.yml
       vars:
@@ -669,6 +715,13 @@ jobs:
       ops_files: #@ ["combined-assets/{0}".format(i) for i in data.values.opsfiles]
     get_params:
       skip_export: true
+  - task: create-tcp-domain
+    image: image
+    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+    input_mapping:
+      env: pesto-env
+    output_mapping:
+      prepared-env: throw-away-just-using-for-tcp-domain-creation
   - put: pesto-cf-deployment
     attempts: 3
     params:
@@ -705,6 +758,22 @@ jobs:
       toolsmiths-env: pesto-env
     params:
       ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
+  - task: start-sql-server-vm
+    image: image
+    file: ci/shared/tasks/start-gcp-instance/linux.yml
+    params:
+      INSTANCE_NAME: sql-server-pesto
+      ZONE: us-east1-b
+      PROJECT: cf-garden-windows-dev
+      SERVICE_ACCOUNT_KEY: ((gcp-cf-garden-windows-dev-service-account-json))
+  - task: start-sql-server-vm
+    image: image
+    file: ci/shared/tasks/start-gcp-instance/linux.yml
+    params:
+      INSTANCE_NAME: manager
+      ZONE: us-central1-a
+      PROJECT: cf-diego-pivotal
+      SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
   - task: deploy-and-setup-iwa-test-app
     file: ci/winc-release/tasks/setup-iwa-test-app/linux.yml
     image: image
@@ -867,6 +936,16 @@ jobs:
     - get: env
       passed: [prepare-env]
       trigger: true
+  - put: windows-worker-lock
+    params:
+      acquire: true
+  - task: start-windows-worker
+    image: image
+    file: ci/shared/tasks/bosh-start/linux.yml
+    params:
+      DEPLOYMENT: windows-worker
+      INSTANCE_GROUP: windows-worker
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
   - task: verify-iwa-login
     attempts: 5
     file: ci/winc-release/tasks/verify-iwa-login/windows.yml
@@ -875,6 +954,19 @@ jobs:
       IWA_DOMAIN: ((gcp-garden-windows-env-pesto/iwa-domain))
       IWA_USERNAME: ((gcp-garden-windows-env-pesto/iwa-username))
       IWA_PASSWORD: ((gcp-garden-windows-env-pesto/iwa-password))
+  ensure:
+    task: stop-windows-worker
+    image: image
+    file: ci/shared/tasks/bosh-stop/linux.yml
+    params:
+      DEPLOYMENT: windows-worker
+      INSTANCE_GROUP: windows-worker
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+    ensure:
+      put: windows-worker-lock
+      inputs: detect
+      params:
+        release: windows-worker-lock
 
 - name: ship-what
   plan:
@@ -997,6 +1089,13 @@ jobs:
     - get: env
       passed: [ship-what]
       trigger: true
+    #! NOTE: we pass repo + trigger here because the `env` resource is rarely a new
+    #!       version, as it is not a shepherd env. Once we switch to those, this can
+    #!       go away, but until then, we need a more reliable trigger to fire env
+    #!       cleanup.
+    - get: repo
+      passed: [ship-what]
+      trigger: true
     - get: env-lock
     - get: image
     - get: ci
@@ -1011,13 +1110,30 @@ jobs:
     params:
       COPY_ACTIONS: |
         {input-01/pesto/metadata,combined-assets}
-  - task: bosh-deld
-    image: image
-    file: ci/shared/tasks/bosh-deld/linux.yml
-    input_mapping:
-      env: pesto-env
-    params:
-      DEPLOYMENT_NAME: cf
+  - in_parallel:
+    - task: bosh-deld
+      image: image
+      file: ci/shared/tasks/bosh-deld/linux.yml
+      input_mapping:
+        env: pesto-env
+      params:
+        DEPLOYMENT_NAME: cf
+    - task: stop-sql-server-vm
+      image: image
+      file: ci/shared/tasks/stop-gcp-instance/linux.yml
+      params:
+        INSTANCE_NAME: sql-server-pesto
+        ZONE: us-east1-b
+        PROJECT: cf-garden-windows-dev
+        SERVICE_ACCOUNT_KEY: ((gcp-cf-garden-windows-dev-service-account-json))
+    - task: stop-sql-server-vm
+      image: image
+      file: ci/shared/tasks/stop-gcp-instance/linux.yml
+      params:
+        INSTANCE_NAME: manager
+        ZONE: us-central1-a
+        PROJECT: cf-diego-pivotal
+        SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
   - params:
       release: env-lock #! path to the resource in the above get
     put: env-lock

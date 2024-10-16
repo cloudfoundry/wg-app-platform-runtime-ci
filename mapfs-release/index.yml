@@ -1,14 +1,8 @@
 #@data/values
 ---
 #@overlay/match missing_ok=True
-db_flavors:
-- image: postgres
-  value: postgres
-- image: mysql-8.0
-  value: mysql
-
 internal_repos:
-- name: "mapfs"
+- name: mapfs
 
 opsfiles:
 - add-lb-ca-cert.yml
@@ -19,4 +13,3 @@ opsfiles:
 - enable-restore-nfs-broker.yml
 - enable-nfs-test-server.yml
 - scale-for-cats.yml
-- use-latest-nfs-release.yml

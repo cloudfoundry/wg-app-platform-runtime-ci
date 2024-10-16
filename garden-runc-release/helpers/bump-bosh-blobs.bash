@@ -13,6 +13,7 @@ function run() {
     local repo_path=${1:?Provide a path to the repository}
     local bosh_blob_path=${2:?Provide a regex path for bosh-blob}
     local blob=${3:?Provide a path to new blob}
+    pushd "$repo_path" > /dev/null
 
     if [[ "$bosh_blob_path" == 'autoconf/autoconf-*.tar.gz' ]]; then
         echo "Bumping autoconf blob"
@@ -154,9 +155,9 @@ function run() {
     elif [[ "$bosh_blob_path" == 'libtool/libtool-*.tar.gz' ]]; then
         echo "Bumping libtool blob"
         pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
+        local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]/')
         local tgz_name="libtool-${version}.tar.gz"
-        wget  -O "${tgz_name}" "https://ftp.wayne.edu/gnu/libtool/libtool-${version}.tar.gz"
+        tar czvf "${tgz_name}" ./*
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
@@ -292,6 +293,7 @@ function run() {
         echo "can't find ${bosh_blob_path}"
         exit 1
     fi
+    popd > /dev/null
 }
 
 run "$@"

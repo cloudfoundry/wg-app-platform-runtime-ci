@@ -113,7 +113,7 @@ resources:
 
 
 - name: image
-  type: docker-image                             
+  type: registry-image
   icon: docker
   source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
@@ -181,6 +181,10 @@ resources:
   icon: clock
   source:
     interval: '168h'
+    start: 04:00
+    stop: 04:59
+    days:
+      - Wednesday
 
 #! Define-Jobs
 jobs:

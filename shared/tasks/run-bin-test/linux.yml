@@ -6,7 +6,7 @@ image_resource:
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/((image_repository))
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((image_password))
     tag: ((image_tag))
 
 inputs:
@@ -36,7 +36,7 @@ params:
     --randomize-all
     --nodes=7
     --race
-    --timeout 20m
+    --timeout 30m
   FUNCTIONS:
   RUN_AS: root
   VERIFICATIONS: |

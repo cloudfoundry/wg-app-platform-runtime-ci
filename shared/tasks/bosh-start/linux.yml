@@ -1,0 +1,13 @@
+---
+platform: linux
+
+inputs:
+  - name: ci
+
+params:
+  DEPLOYMENT:
+  INSTANCE_GROUP:
+  BOSH_CREDS:
+
+run:
+  path: ci/shared/tasks/bosh-start/task.bash

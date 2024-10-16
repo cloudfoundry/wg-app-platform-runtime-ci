@@ -126,6 +126,21 @@ resources:
   icon: clock
   source:
     interval: '168h'
+    #! - wg-*-modules pipelines should run at 00:00 to 00:59 on unique days from other wg-*-modules pipelines
+    #!   all boshreleases in a WG should run independently at different hours, on the same day that its
+    #!   wg-*-modules pipeline ran. For example, wg-arp-garden runs on the following schedule:
+    #!     wg-arp-garden-modules:    Wednesdays at 00:00 to 00:59
+    #!     envoy-nginx-release:      Wednesdays at 01:00 to 01:59
+    #!     garden-runc-release:      Wednesdays at 02:00 to 02:59
+    #!     winc-release:             Wednesdays at 03:00 to 03:59
+    #!     windowsfs-online-release: Wednesdays at 04:00 to 04:59
+    #!     windows2019fs-release:    Wednesdays at 05:00 to 05:59
+    #! - This is done to ensure we don't overwhelm concourse all at once with these periodic checks, to allow us
+    #!   to keep worker counts lower.
+    start: 01:00
+    stop: 01:59
+    days:
+      - Monday
 
 #! Shepherd pool
 - name: env
@@ -177,7 +192,7 @@ resources:
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: image
-  type: docker-image                             
+  type: registry-image
   icon: docker
   source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
@@ -277,6 +292,7 @@ jobs:
       DEFAULT_PARAMS: "ci/<REPLACE_ME>/default-params/build-binaries/linux.yml"
     vars:
       image_repository: cloudfoundry/tas-runtime-build
+      image_password: ((gcp-tas-runtime-service-account/config-json))
       image_tag: ((.:image_tag))
   - in_parallel:
 #@ for repo in data.values.internal_repos:
@@ -284,6 +300,7 @@ jobs:
       file: ci/shared/tasks/run-bin-test/linux.yml
       vars:
         image_repository: cloudfoundry/tas-runtime-build
+        image_password: ((gcp-tas-runtime-service-account/config-json))
         image_tag: ((.:image_tag))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(repo)

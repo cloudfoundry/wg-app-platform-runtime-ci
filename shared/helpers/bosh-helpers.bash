@@ -19,7 +19,11 @@ function bosh_target(){
 }
 
 function bosh_manifest(){
-    bosh -d "$(bosh_cf_deployment_name)" manifest
+    local manifest=$(bosh -d "$(bosh_cf_deployment_name)" manifest)
+    if [[ "${manifest:=null}" == "null" ]]; then
+        manifest="{}"
+    fi
+    echo "${manifest}"
 }
 
 function bosh_cloud_config(){
@@ -27,8 +31,21 @@ function bosh_cloud_config(){
     bosh cloud-config --name "${name}"
 }
 
+function bosh_is_cf_deployed() {
+    local name=$(bosh ds --column=name --json | jq -r '.Tables[].Rows[] | select (.name |contains("cf")).name')
+    if [[ "${name:=null}" == "null" ]]; then
+        echo no
+    fi
+    echo yes
+}
+
 function bosh_cf_deployment_name(){
-    bosh ds --column=name --json | jq -r '.Tables[].Rows[] | select (.name |contains("cf")).name'
+    local name=$(bosh ds --column=name --json | jq -r '.Tables[].Rows[] | select (.name |contains("cf")).name')
+    # we may not have an active deployment
+    if [[ "${name:=null}" == "null" ]]; then
+        name="cf"
+    fi
+    echo $name
 }
 
 function bosh_extract_manifest_defaults_from_cf(){
@@ -134,4 +151,12 @@ function bosh_release_name() {
         exit 1
     fi
     echo "$release_name"
+}
+
+function wait_for_bosh_lock() {
+    while [[ $(bosh tasks -d concourse --json | jq '.Tables[].Rows| length') != 0 ]]; do
+        echo "Waiting for bosh task lock to clear:"
+        bosh tasks
+        sleep 60
+    done
 }

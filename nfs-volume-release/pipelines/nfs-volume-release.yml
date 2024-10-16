@@ -114,7 +114,7 @@ resources:
   icon: git
   source:
     branch: release-candidate
-    uri: https://github.com/cloudfoundry/cf-acceptance-tests
+    uri: https://github.com/cloudfoundry/cf-acceptance-tests.git
 
 - name: go-version
   type: git
@@ -159,6 +159,10 @@ resources:
   icon: clock
   source:
     interval: '168h'
+    start: 03:00
+    stop: 03:59
+    days:
+      - Monday
 
 #! Shepherd pool
 - name: env
@@ -210,13 +214,13 @@ resources:
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: image
-  type: docker-image                             
+  type: registry-image
   icon: docker
   source:                                        
-    repository: cloudfoundry/tas-runtime-build
-    tag: 'latest'
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
+    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    username: _json_key
+    password: ((gcp-tas-runtime-service-account/config-json))
+    tag: latest
 
 #! bosh blobs
 
@@ -628,6 +632,7 @@ jobs:
       file: ci/shared/tasks/run-bin-test/linux.yml
       vars:
         image_repository: cloudfoundry/tas-runtime-build
+        image_password: ((gcp-tas-runtime-service-account/config-json))
         image_tag: ((.:image_tag))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(repo.name)
@@ -676,8 +681,8 @@ jobs:
   - in_parallel:
     - get: ci
     - get: repo
-      #! trigger: true
-      #! passed: [claim-env]
+      trigger: true
+      passed: [claim-env]
     - get: image
     - get: cf-deployment
     - get: cf-deployment-concourse-tasks
@@ -795,6 +800,9 @@ jobs:
       ENVS: |
         VOLUME_SERVICE_SERVICE_NAME=nfs
         VOLUME_SERVICE_PLAN_NAME=Existing
+        VOLUME_SERVICE_BROKER_NAME=nfsbroker
+        VOLUME_SERVICE_CREATE_CONFIG='{\"share\": \"nfstestserver.service.cf.internal/export/users\"}'
+        VOLUME_SERVICE_BIND_CONFIG='{\"uid\":\"1000\",\"gid\":\"1000\"}'
       CONFIGS: cats
       WITH_VOLUME_SERVICES: true
       WITH_ISOSEG: false
@@ -851,6 +859,7 @@ jobs:
         attempts: 2
         vars:
           image_repository: cloudfoundry/tas-runtime-build
+          image_password: ((gcp-tas-runtime-service-account/config-json))
           image_tag: ((.:image_tag))
         params:
           ENVS: |
@@ -876,6 +885,7 @@ jobs:
         attempts: 2
         vars:
           image_repository: cloudfoundry/tas-runtime-build
+          image_password: ((gcp-tas-runtime-service-account/config-json))
           image_tag: ((.:image_tag))
         params:
           ENVS: |

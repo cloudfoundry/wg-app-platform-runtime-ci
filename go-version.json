@@ -1,6 +1,5 @@
 {
-    "default": "1.22",
+    "default": "1.23",
      "releases": {
-        "windows-tools": "1.22"
     }
 }

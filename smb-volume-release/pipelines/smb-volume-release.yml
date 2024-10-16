@@ -159,6 +159,10 @@ resources:
   icon: clock
   source:
     interval: '168h'
+    start: 02:00
+    stop: 02:59
+    days:
+      - Monday
 
 #! Shepherd pool
 - name: env
@@ -210,13 +214,13 @@ resources:
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: image
-  type: docker-image                             
+  type: registry-image
   icon: docker
   source:                                        
-    repository: cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    username: _json_key
+    password: ((gcp-tas-runtime-service-account/config-json))
     tag: 'latest'
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
 
 #! bosh blobs
 
@@ -556,6 +560,7 @@ jobs:
       file: ci/shared/tasks/run-bin-test/linux.yml
       vars:
         image_repository: cloudfoundry/tas-runtime-build
+        image_password: ((gcp-tas-runtime-service-account/config-json))
         image_tag: ((.:image_tag))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(repo.name)
@@ -704,7 +709,9 @@ jobs:
       ENVS: |
         VOLUME_SERVICE_SERVICE_NAME=smb
         VOLUME_SERVICE_PLAN_NAME=Existing
-        VOLUME_SERVICE_CREATE_CONFIG='{\"share\": \"//smbtestserver.serivce.cf.internal/vol\", \"username\": \"((smb-volume-release-smbtestserver-credentials/username))\", \"password\": \"((smb-volume-release-smbtestserver-credentials/password))\"}'
+        VOLUME_SERVICE_BROKER_NAME=smbbroker
+        VOLUME_SERVICE_CREATE_CONFIG='{\"share\": \"//smbtestserver.service.cf.internal/vol\"}'
+        VOLUME_SERVICE_BIND_CONFIG='{\"username\":\"((smb-volume-release-smbtestserver-credentials/username))\",\"password\":\"((smb-volume-release-smbtestserver-credentials/password))\", \"domain\":\"foo\"}'
       CONFIGS: cats
       WITH_VOLUME_SERVICES: true
       WITH_ISOSEG: false
@@ -759,6 +766,7 @@ jobs:
     attempts: 2
     vars:
       image_repository: cloudfoundry/tas-runtime-build
+      image_password: ((gcp-tas-runtime-service-account/config-json))
       image_tag: ((.:image_tag))
     params:
       ENVS: |

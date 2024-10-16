@@ -115,6 +115,10 @@ resources:
   icon: clock
   source:
     interval: '168h'
+    start: 01:00
+    stop: 01:59
+    days:
+      - Sunday
 
 - name: env
   type: shepherd
@@ -174,7 +178,7 @@ resources:
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: image
-  type: docker-image                             
+  type: registry-image
   icon: docker
   source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
@@ -298,6 +302,7 @@ jobs:
       file: ci/shared/tasks/run-bin-test/linux.yml
       vars:
         image_repository: cloudfoundry/tas-runtime-build
+        image_password: ((gcp-tas-runtime-service-account/config-json))
         image_tag: ((.:image_tag))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)

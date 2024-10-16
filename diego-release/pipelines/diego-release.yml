@@ -30,6 +30,7 @@ groups:
   - bump-dependencies-envoy
   - create-envoy-pr
   - sync-dot-github-dir
+  - sync-readme
 
 - name: manual
   jobs:
@@ -134,6 +135,17 @@ resources:
       - shared/github
       - diego-release/github
 
+- name: readme
+  type: git
+  icon: source-branch
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths:
+      - shared/*.md
+      - diego-release/*.md
+      - diego-release/readme/*.md
+
 #@ for repo in data.values.internal_repos:
 - name: #@ "{}-repo".format(repo.name)
   type: git
@@ -194,7 +206,7 @@ resources:
     access_token: ((github-tas-runtime-bot/access-token))
     owner: envoyproxy
     repository: envoy
-    tag_filter: "v1.28.*"
+    tag_filter: "v1.*"
 
 - name: routing-release
   type: git
@@ -210,6 +222,10 @@ resources:
   icon: clock
   source:
     interval: '168h'
+    start: 01:00
+    stop: 01:59
+    days:
+      - Tuesday
 
 - name: env
   type: shepherd
@@ -260,13 +276,22 @@ resources:
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: image
-  type: docker-image                             
+  type: registry-image
   icon: docker
   source:                                        
-    repository: cloudfoundry/tas-runtime-build
-    tag: 'latest'
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
+    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    username: _json_key
+    password: ((gcp-tas-runtime-service-account/config-json))
+    tag: latest
+
+- name: grace-image
+  type: registry-image
+  icon: docker
+  source:
+    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/grace
+    username: _json_key
+    password: ((gcp-tas-runtime-service-account/config-json))
+    tag: latest
 
 - name: diego-inigo-ci-rootfs
   type: docker-image
@@ -458,8 +483,6 @@ jobs:
   - file: ci/diego-release/tasks/create-envoy-blob/linux.yml
     task: create-envoy-blob
     image: image
-    params:
-      GCP_KEY: ((gcp-tas-runtime-service-account/config-json))
   - file: ci/diego-release/tasks/bump-dependencies-envoy/linux.yml
     image: image
     params:
@@ -529,6 +552,43 @@ jobs:
        repository: synced-repo
 #@ end
 
+- name: sync-readme
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get: weekly
+        trigger: true
+      - get: repo
+        trigger: true
+#@ for repo in data.values.internal_repos:
+      - get: #@ "{}-repo".format(repo.name)
+        trigger: true
+#@ end
+      - get: readme
+        trigger: true
+  - do:
+      - task: sync-readme
+        file: ci/shared/tasks/sync-readme/linux.yml
+        image: image
+      - put: repo
+        params:
+          rebase: true
+          repository: synced-repo
+#@ for repo in data.values.internal_repos:
+  - do:
+    - task: #@ "sync-readme-{}".format(repo.name)
+      file: ci/shared/tasks/sync-readme/linux.yml
+      image: image
+      input_mapping:
+        repo: #@ "{}-repo".format(repo.name)
+    - put: #@ "{}-repo".format(repo.name)
+      params:
+       rebase: true
+       repository: synced-repo
+#@ end
 
 - name: template-tests
   serial: true
@@ -545,6 +605,7 @@ jobs:
 
 - name: unit-and-integration-tests
   serial: true
+  serial_groups: [ diego-windows-worker ]
   plan:
   - in_parallel:
     - get: ci
@@ -572,6 +633,13 @@ jobs:
       - load_var: #@ "image_tag_{}".format(db.image.replace("-", "_").replace(".", "_"))
         file: #@ "determined-image-tag-{}/tag".format(db.image)
 #@ end
+  - task: start-diego-windows-workers
+    image: image
+    file: ci/shared/tasks/bosh-start/linux.yml
+    params:
+      DEPLOYMENT: diego-worker-windows
+      INSTANCE_GROUP: windows-worker
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
   - in_parallel:
     - task: build-binaries-for-linux
       file: ci/shared/tasks/build-binaries/linux.yml
@@ -582,6 +650,7 @@ jobs:
         DEFAULT_PARAMS: "ci/diego-release/default-params/build-binaries/linux.yml"
       vars:
         image_repository: cloudfoundry/tas-runtime-build
+        image_password: ((gcp-tas-runtime-service-account/config-json))
         image_tag: ((.:image_tag))
     - task: build-binaries-for-windows
       tags: [ diego-windows ]
@@ -601,6 +670,7 @@ jobs:
         built-binaries: linux-built-binaries
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
+        image_password: ((gcp-tas-runtime-service-account/config-json))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -631,6 +701,7 @@ jobs:
         built-binaries: linux-built-binaries
       vars:
         image_repository: cloudfoundry/tas-runtime-build
+        image_password: ((gcp-tas-runtime-service-account/config-json))
         image_tag: ((.:image_tag))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -646,6 +717,15 @@ jobs:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
 #@ end
 #@ end
+  ensure:
+    task: stop-diego-windows-workers
+    image: image
+    file: ci/shared/tasks/bosh-stop/linux.yml
+    params:
+      DEPLOYMENT: diego-worker-windows 
+      INSTANCE_GROUP: windows-worker
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+
 #@ for db in data.values.db_flavors:
 - name: #@ "inigo-{}-linux".format(db.value)
   serial: true
@@ -688,6 +768,7 @@ jobs:
         DEFAULT_PARAMS: "ci/diego-release/default-params/build-binaries/linux.yml"
       vars:
         image_repository: cloudfoundry/tas-runtime-build
+        image_password: ((gcp-tas-runtime-service-account/config-json))
         image_tag: ((.:image_tag))
     - task: build-binaries-for-garden-runc-release-linux
       file: ci/shared/tasks/build-binaries/linux.yml
@@ -699,6 +780,7 @@ jobs:
         DEFAULT_PARAMS: "ci/garden-runc-release/default-params/build-binaries/linux.yml"
       vars:
         image_repository: cloudfoundry/tas-runtime-build
+        image_password: ((gcp-tas-runtime-service-account/config-json))
         image_tag: ((.:image_tag))
   - task: combine-built-binaries
     file: ci/shared/tasks/combine-assets/linux.yml
@@ -712,7 +794,14 @@ jobs:
       COPY_ACTIONS: |
         {input-01/*,combined-assets}
         {input-02/*,combined-assets}
-  - in_parallel:
+  - do:
+    - task: #@ "start-diego-{}-workers".format(db.value)
+      image: image
+      file: ci/shared/tasks/bosh-start/linux.yml
+      params:
+        DEPLOYMENT: #@ "diego-worker-{}".format(db.value)
+        INSTANCE_GROUP: worker
+        BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
     - task: #@ "inigo-{}-linux".format(db.value)
       file: ci/shared/tasks/run-bin-test/linux.yml
       attempts: 3
@@ -725,6 +814,7 @@ jobs:
         input-03: diego-inigo-ci-rootfs
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
+        image_password: ((gcp-tas-runtime-service-account/config-json))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DIR: src/code.cloudfoundry.org/inigo
@@ -750,9 +840,18 @@ jobs:
           GARDEN_TEST_ROOTFS=$PWD/input-03/rootfs.tar
           DB_USER=root
           DB_PASSWORD=password
+    ensure:
+      task: #@ "stop-diego-{}-workers".format(db.value)
+      image: image
+      file: ci/shared/tasks/bosh-stop/linux.yml
+      params:
+        DEPLOYMENT: #@ "diego-worker-{}".format(db.value)
+        INSTANCE_GROUP: worker
+        BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
 #@ end
 - name: inigo-mysql-windows
   serial: true
+  serial_groups: [ diego-windows-worker ]
   plan:
   - in_parallel:
     - get: ci
@@ -762,6 +861,13 @@ jobs:
     - get: garden-runc-release
     - get: winc-release
     - get: envoy-nginx-release
+  - task: start-diego-windows-workers
+    image: image
+    file: ci/shared/tasks/bosh-start/linux.yml
+    params:
+      DEPLOYMENT: diego-worker-windows
+      INSTANCE_GROUP: windows-worker
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
   - in_parallel:
     - task: build-binaries-for-diego-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
@@ -772,6 +878,7 @@ jobs:
         DEFAULT_PARAMS: "ci/diego-release/default-params/build-binaries/windows.yml"
     - task: build-binaries-for-winc-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
+      tags: [ diego-windows ]
       input_mapping:
         repo: winc-release
       output_mapping:
@@ -785,6 +892,7 @@ jobs:
           Build-Nstar=src/code.cloudfoundry.org/nstar
     - task: build-binaries-for-garden-runc-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
+      tags: [ diego-windows ]
       input_mapping:
         repo: garden-runc-release
       output_mapping:
@@ -796,6 +904,7 @@ jobs:
           Build-Gdn=src/guardian/cmd/gdn
     - task: build-binaries-for-envoy-nginx-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
+      tags: [ diego-windows ]
       input_mapping:
         repo: envoy-nginx-release
       output_mapping:
@@ -823,6 +932,7 @@ jobs:
   - in_parallel:
     - task: inigo-mysql-windows
       file: ci/shared/tasks/run-bin-test/windows.yml
+      tags: [ diego-windows ]
       privileged: true
       input_mapping:
         built-binaries: built-binaries
@@ -860,6 +970,14 @@ jobs:
           --skip-package volman,executor,certauthority
         FUNCTIONS: |
           ci/winc-release/helpers/configure-binaries.ps1
+  ensure:
+    task: stop-diego-windows-workers
+    image: image
+    file: ci/shared/tasks/bosh-stop/linux.yml
+    params:
+      DEPLOYMENT: diego-worker-windows
+      INSTANCE_GROUP: windows-worker
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
 - name: lint-repo
   serial: true
   plan:
@@ -915,6 +1033,7 @@ jobs:
       trigger: true
       passed: [claim-env]
     - get: image
+    - get: grace-image
     - get: cf-deployment
     - get: cf-deployment-concourse-tasks
     - get: env
@@ -927,15 +1046,9 @@ jobs:
       image: image
       file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
     - do:
-      - task: determine-image-tag
-        image: image
-        file: ci/shared/tasks/determine-image-tag/linux.yml
-      - load_var: image_tag
-        file: determined-image-tag/tag
       - task: copy-grace-opsfile
+        image: grace-image
         file: ci/diego-release/tasks/copy-grace-opsfile/linux.yml
-        vars:
-          image_tag: ((.:image_tag))
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image

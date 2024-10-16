@@ -112,7 +112,7 @@ resources:
     uri: https://github.com/cloudfoundry/cf-acceptance-tests
 
 - name: image
-  type: docker-image                             
+  type: registry-image
   icon: docker
   source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
@@ -180,6 +180,10 @@ resources:
   icon: clock
   source:
     interval: '168h'
+    start: 05:00
+    stop: 05:59
+    days:
+      - Wednesday
 
 #! Define-Jobs
 jobs:
@@ -269,6 +273,7 @@ jobs:
       DEFAULT_PARAMS: "ci/windows2019fs-release/default-params/build-binaries/linux.yml"
     vars:
       image_repository: cloudfoundry/tas-runtime-build
+      image_password: ((gcp-tas-runtime-service-account/config-json))
       image_tag: ((.:image_tag))
   - task: bump-repo-windows2019fs-release-version
     file: ci/shared/tasks/bump-repo-version-file/linux.yml
@@ -350,6 +355,7 @@ jobs:
       DEFAULT_PARAMS: "ci/windows2019fs-release/default-params/build-binaries/linux.yml"
     vars:
       image_repository: cloudfoundry/tas-runtime-build
+      image_password: ((gcp-tas-runtime-service-account/config-json))
       image_tag: ((.:image_tag))
   - task: bump-repo-windows2019fs-release-version
     file: ci/shared/tasks/bump-repo-version-file/linux.yml

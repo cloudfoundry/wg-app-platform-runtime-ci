@@ -27,9 +27,9 @@ function run() {
 
   local sub_readme
   if [[ -d "${CI_CONFIG_DIR}" ]]; then
-    sub_readme=$(find "${CI_CONFIG_DIR}" -name "${git_remote_name}.md")
+    sub_readme=$(find "${CI_CONFIG_DIR}" | grep -E "[0-9]{0,2}-?${git_remote_name}.md")
   else
-    sub_readme=$(find "${CI_DIR}" -name "${git_remote_name}.md")
+    sub_readme=$(find "${CI_DIR}" | grep -E "[0-9]{0,2}-?${git_remote_name}.md")
   fi
   local belongs_to_dir
   belongs_to_dir=$(echo "${sub_readme}" | xargs dirname | xargs dirname)
@@ -47,7 +47,7 @@ function run() {
 
   pandoc ${sub_readme} ${docs_md_file} ${parent_readme} ${CI_DIR}/shared/00-shared.md -f markdown -t markdown --atx-headers -o README.md
 
-  find . -name \*.md | grep -Ev "vendor|.github" | xargs -I {} lychee {} -nqq
+  git ls-tree --name-only --full-name --full-tree -r HEAD | grep '\.md$' | grep -Ev '.github|vendor' | xargs -I {} lychee {} -nqq
 
   if [[ $(git status --porcelain) ]]; then
     git add -A .

@@ -13,6 +13,7 @@ function run() {
     local repo_path=${1:?Provide a path to the repository}
     local bosh_blob_path=${2:?Provide a regex path for bosh-blob}
     local blob=${3:?Provide a path to new blob}
+    pushd "$repo_path" > /dev/null
 
     if [[ "$bosh_blob_path" == 'mingw/x86_64-*-release-posix-seh-ucrt-*-*.7z' ]]; then
         echo "Bumping mingw64 blob"
@@ -52,6 +53,7 @@ function run() {
         echo "can't find ${bosh_blob_path}"
         exit 1
     fi
+    popd > /dev/null
 }
 
 run "$@"

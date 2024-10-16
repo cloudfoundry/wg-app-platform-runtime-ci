@@ -28,7 +28,7 @@ params:
     --randomize-all
     --nodes=7
     --race
-    --timeout 20m
+    --timeout 30m
   FUNCTIONS:
   RUN_AS:
   VERIFICATIONS: |

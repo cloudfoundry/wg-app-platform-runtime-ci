@@ -5,6 +5,8 @@ inputs:
   - name: ci
   - name: repo
   - name: blob
+  - name: ci-config
+    optional: true
 
 outputs:
   - name: bumped-repo

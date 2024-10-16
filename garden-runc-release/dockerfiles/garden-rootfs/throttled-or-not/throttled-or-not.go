@@ -54,7 +54,12 @@ func main() {
 	r.HandleFunc("/maxavg", maxavgHandler)
 	r.HandleFunc("/cpucgroup", cpuCgroupHandler)
 	r.HandleFunc("/ping", pingHandler)
-	if err := http.ListenAndServe(":8080", r); err != nil {
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: r,
+	}
+	err := server.ListenAndServe()
+	if err != nil {
 		panic(err)
 	}
 }
@@ -177,6 +182,7 @@ func (s *spinner) Shortspin(duration int) error {
 	go s.spin()
 	s.isSpinning = true
 	time.AfterFunc(time.Duration(duration)*time.Second, func() {
+		// #nosec G104 - ignore unspin's error. it would only occur if we weren't spinning, and this should never happen since we're mutexed on the spin action
 		s.Unspin()
 	})
 	return nil

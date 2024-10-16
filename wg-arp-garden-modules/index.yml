@@ -17,9 +17,6 @@ internal_repos:
   repo: cloudfoundry/commandrunner
   on_windows: true
   initial_version: 0.4.0
-- name: cpu-entitlement-admin-plugin
-  repo: cloudfoundry/cpu-entitlement-admin-plugin
-  initial_version: 0.8.0
 - name: groot
   repo: cloudfoundry/groot
   on_windows: true

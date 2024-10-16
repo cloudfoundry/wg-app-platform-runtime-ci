@@ -14,6 +14,8 @@ function run() {
     local bosh_blob_path=${2:?Provide a regex path for bosh-blob}
     local blob=${3:?Provide a path to new blob}
 
+    pushd "$repo_path" > /dev/null
+
     if [[ "$bosh_blob_path" == 'envoy-nginx/envoy-nginx-*.zip' ]]; then
         echo "Bumping nginx blob"
         pushd "${blob}" > /dev/null
@@ -39,6 +41,7 @@ function run() {
         echo "can't find ${bosh_blob_path}"
         exit 1
     fi
+    popd > /dev/null
 }
 
 run "$@"

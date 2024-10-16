@@ -1,21 +1,24 @@
-ARG BUSYBOX_VERSION
-FROM gcc as usemem-builder
+ARG BUSYBOX_VERSION="1.26.2"
+ARG BUSYBOX_IMAGE="busybox"
+ARG GCC_IMAGE="gcc"
+
+FROM ${GCC_IMAGE} AS usemem-builder
 COPY usemem.c ./
 RUN gcc -o ./usemem --static ./usemem.c
 
-FROM golang as throttled-or-not-builder
+FROM golang AS throttled-or-not-builder
 WORKDIR /go/src/app
-ENV CGO_ENABLED 0
+ENV CGO_ENABLED=0
 COPY throttled-or-not .
 RUN go build -o /throttled-or-not /go/src/app/throttled-or-not.go
 
-FROM golang as hello-world
+FROM golang AS hello-world
 WORKDIR /go/src/app
-ENV CGO_ENABLED 0
+ENV CGO_ENABLED=0
 COPY hello-world.go .
 RUN go build -o /hello-world /go/src/app/hello-world.go
 
-FROM busybox:${BUSYBOX_VERSION}
+FROM ${BUSYBOX_IMAGE}:${BUSYBOX_VERSION}
 
 LABEL org.cloudfoundry.garden-rootfs.dockerfile.url="https://github.com/cloudfoundry/wg-app-platform-runtime-ci/blob/main/garden-runc-release/dockerfiles/garden-rootfs/Dockerfile"
 LABEL org.cloudfoundry.garden-rootfs.notes.md="Used by garden-runc-release \
@@ -73,9 +76,9 @@ RUN rm /tmp/symlink && ln -s /etc/link-source /tmp/symlink
 COPY --from=throttled-or-not-builder /throttled-or-not /bin/throttled-or-not
 
 # copied from cfgarden/with-process-env
-ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin:/from-dockerfile
-ENV TEST test-from-dockerfile
-ENV TEST second-test-from-dockerfile:$TEST
+ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin:/from-dockerfile
+ENV TEST=test-from-dockerfile
+ENV TEST=second-test-from-dockerfile:$TEST
 RUN mkdir -p /sbin
 COPY --from=hello-world /hello-world /sbin/hello-world
 

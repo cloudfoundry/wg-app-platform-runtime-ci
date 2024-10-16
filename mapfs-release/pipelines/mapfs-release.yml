@@ -5,8 +5,6 @@ groups:
 - name: release
   jobs:
   - unit-and-integration-tests
-  - check-for-cves
-  - security-scan
   - lint-repo
   - claim-env
   - prepare-env
@@ -143,16 +141,6 @@ resources:
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
     paths: [go-version.json]
 
-#@ for repo in data.values.internal_repos:
-- name: #@ "{}-repo".format(repo.name)
-  type: git
-  icon: source-branch
-  source:
-    branch: main
-    uri: #@ "git@github.com:cloudfoundry/{}.git".format(repo.name)
-    private_key: ((github-tas-runtime-bot/private-key))
-#@ end
-
 - name: cf-deployment
   type: git
   icon: source-branch
@@ -181,21 +169,15 @@ resources:
     uri: https://github.com/cloudfoundry/cf-volume-services-acceptance-tests.git
     branch: main
 
-- name: nfs-volume-release
-  type: git
-  icon: source-branch
-  source:
-    branch: master
-    private_key: ((github-tas-runtime-bot/private-key))
-    uri: git@github.com:cloudfoundry/nfs-volume-release.git
-    ignore_paths:
-    - scripts
-
 - name: weekly
   type: time
   icon: clock
   source:
     interval: 24h
+    start: 01:00
+    stop: 01:59
+    days:
+      - Monday
 
 - name: env
   type: pcf-pool
@@ -258,20 +240,13 @@ resources:
     uri: git@github.com:/cloudfoundry/runtime-ci-pools.git
 
 - name: image
-  type: docker-image
+  type: registry-image
   icon: docker
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     tag: 'latest'
     username: _json_key
     password: ((gcp-tas-runtime-service-account/config-json))
-
-- name: fstest
-  type: git
-  icon: source-branch
-  source:
-    uri: https://github.com/zfsonlinux/fstest.git
-    branch: master
 
 - name: libfuse-git-release
   type: github-release
@@ -300,30 +275,6 @@ resources:
     user: ninja-build
     tag_filter: "^v(.*)"
 
-- name: git-concourse-cve-scan
-  type: git
-  icon: source-branch
-  source:
-    uri: git@github.com:pivotal/concourse-cve-scan.git
-    branch: feat/add-vex-consideration
-    private_key: ((github-tas-runtime-bot/private-key))
-
-- name: git-tas-vex
-  type: git
-  icon: source-branch
-  source:
-    uri: git@github.com:pivotal/tas-vex.git
-    branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
-
-- name: github-release-tas-cve
-  type: github-release
-  icon: source-branch
-  source:
-    access_token: ((github-tas-runtime-bot/access-token))
-    repository: tas-cve
-    user: pivotal
-
 jobs:
 - name: sync-readme
   serial: true
@@ -333,9 +284,6 @@ jobs:
       - get: ci
       - get: image
       - get:  repo
-#@ for repo in data.values.internal_repos:
-      - get: #@ "{}-repo".format(repo.name)
-#@ end
       - get: weekly
         trigger: true
       - get: repo-readme
@@ -348,18 +296,6 @@ jobs:
       params:
        rebase: true
        repository: synced-repo
-#@ for repo in data.values.internal_repos:
-  - do:
-    - task: #@ "sync-dot-github-dir-{}".format(repo.name)
-      file: ci/shared/tasks/sync-readme/linux.yml
-      image: image
-      input_mapping:
-        repo: #@ "{}-repo".format(repo.name)
-    - put: #@ "{}-repo".format(repo.name)
-      params:
-       rebase: true
-       repository: synced-repo
-#@ end
 
 - name: sync-dot-github-dir
   serial: true
@@ -369,55 +305,18 @@ jobs:
       - get: ci
       - get: image
       - get:  repo
-#@ for repo in data.values.internal_repos:
-      - get: #@ "{}-repo".format(repo.name)
-#@ end
       - get: shared-templates
         trigger: true
   - do:
     - task: sync-dot-github-dir
       file: ci/shared/tasks/sync-dot-github-dir/linux.yml
       image: image
+      params:
+        PARENT_TEMPLATE_DIR: mapfs-release
     - put: repo
       params:
        rebase: true
        repository: synced-repo
-#@ for repo in data.values.internal_repos:
-  - do:
-    - task: #@ "sync-dot-github-dir-{}".format(repo.name)
-      file: ci/shared/tasks/sync-dot-github-dir/linux.yml
-      image: image
-      input_mapping:
-        repo: #@ "{}-repo".format(repo.name)
-      params:
-        PARENT_TEMPLATE_DIR: routing-release
-    - put: #@ "{}-repo".format(repo.name)
-      params:
-       rebase: true
-       repository: synced-repo
-#@ end
-
-- name: check-for-cves
-  plan:
-  - in_parallel:
-      steps:
-      - get: git-concourse-cve-scan
-      - get: github-release-tas-cve
-      - get: repo
-        trigger: true
-      - get: git-tas-vex
-  - task: run-scan
-    file: git-concourse-cve-scan/tasks/scan/scan.yml
-    input_mapping:
-      concourse-cve-scan: git-concourse-cve-scan
-      tas-cve: github-release-tas-cve
-      target-bosh-release: repo
-      tas-vex: git-tas-vex
-    params:
-      DRY_RUN: true
-      GRYPE_FAILURE_LEVEL: negligible  #! Can be any of: none | negligible | low | medium | high | critical
-      RELEASE_NAME: mapfs
-      RELEASE_VERSION: pre-release-cve-scan
 
 - name: bump-dependencies-go-mod
   serial: true
@@ -426,27 +325,16 @@ jobs:
       steps:
       - get: ci
       - get: repo
-      - get: mapfs-repo
       - get: image
       - get: weekly
         trigger: true
   - do:
-    - task: mapfs-bump-dependencies-go-mod
-      image: image
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      input_mapping:
-        repo: mapfs-repo
-      params:
-        GO_MODS: |
-          go.mod
-    - put: mapfs-repo
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
     - task: mapfs-release-bump-dependencies-go-mod
       image: image
       file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+      params:
+        GO_MODS: |
+          src/code.cloudfoundry.org/mapfs/go.mod
     - put: repo
       params:
         rebase: true
@@ -486,22 +374,6 @@ jobs:
       rebase: true
       repository: vendored-repo
 
-- name: security-scan
-  plan:
-  - in_parallel:
-      steps:
-      - get: ci
-      - get: image
-      - get: repo
-        trigger: true
-  - task: build
-    image: image
-    file: ci/shared/tasks/golang-security-scan/linux.yml
-    params:
-      PATHS: "src/mapfs"
-    input_mapping:
-      release: repo
-
 - name: unit-and-integration-tests
   serial: true
   plan:
@@ -510,7 +382,6 @@ jobs:
       - get: ci
       - get: repo
         trigger: true
-      - get: fstest
       - get: image
       - get: package-release
         resource: golang-release-latest
@@ -519,14 +390,6 @@ jobs:
     file: ci/shared/tasks/determine-image-tag/linux.yml
   - load_var: image_tag
     file: determined-image-tag/tag
-  - task: build-binaries
-    file: ci/shared/tasks/build-binaries/linux.yml
-    privileged: true
-    params:
-      DEFAULT_PARAMS: "ci/mapfs-release/default-params/build-binaries/linux.yml"
-    vars:
-      image_repository: cloudfoundry/tas-runtime-build
-      image_tag: ((.:image_tag))
   - in_parallel:
       steps:
 #@ for repo in data.values.internal_repos:
@@ -535,19 +398,10 @@ jobs:
         privileged: true
         vars:
           image_repository: cloudfoundry/tas-runtime-build
+          image_password: ((gcp-tas-runtime-service-account/config-json))
           image_tag: ((.:image_tag))
-        input_mapping:
-          input-01: fstest
         params:
-          DIR: #@ "src/{}".format(repo.name)
-          ENVS: |
-            FSTEST_DIR=input-01
-          VERIFICATIONS: |
-            verify_go repo/$DIR
-            verify_go_version_match_bosh_release repo
-            verify_gofmt repo/$DIR
-            verify_govet repo/$DIR
-          DEFAULT_PARAMS: "ci/mapfs-release/default-params/run-bin-test/linux.yml"
+          DIR: #@ "src/code.cloudfoundry.org/{}".format(repo.name)
 #@ end
 
 - name: bump-bosh-blobs
@@ -636,10 +490,8 @@ jobs:
       - get: repo
         trigger: true
         passed:
-        - check-for-cves
         - unit-and-integration-tests
         - lint-repo
-        - security-scan
       - put: env-lock
         params:
           acquire: true
@@ -671,7 +523,6 @@ jobs:
       - get: image
       - get: cf-deployment
       - get: ci
-      - get: nfs-volume-release
       - get: repo
         trigger: true
         passed: [ claim-env ]
@@ -694,12 +545,6 @@ jobs:
         {input-01/operations/experimental/fast-deploy-with-downtime-and-danger.yml,combined-assets}
         {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
         {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
-        {ci/mapfs-release/opsfiles/*.yml,combined-assets}
-  - task: upload-latest-nfs-release
-    file: ci/shared/tasks/bosh-upload-dev-releases/linux.yml
-    image: image
-    input_mapping:
-      release-01: nfs-volume-release
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping:
@@ -757,8 +602,6 @@ jobs:
   - in_parallel:
       fail_fast: true
       steps:
-      - get: nfs-volume-release
-        passed: [ prepare-env ]
       - get: env
         passed: [ prepare-env ]
         trigger: true
@@ -775,6 +618,9 @@ jobs:
       ENVS: |
         VOLUME_SERVICE_SERVICE_NAME=nfs
         VOLUME_SERVICE_PLAN_NAME=Existing
+        VOLUME_SERVICE_BROKER_NAME=nfsbroker
+        VOLUME_SERVICE_CREATE_CONFIG='{\"share\": \"nfstestserver.service.cf.internal/export/users\"}'
+        VOLUME_SERVICE_BIND_CONFIG='{\"uid\":\"1000\",\"gid\":\"1000\"}'
       CONFIGS: cats
       WITH_VOLUME_SERVICES: true
       WITH_ISOSEG: false
@@ -786,7 +632,6 @@ jobs:
       integration-config: built-acceptance-test-configs
     params:
       CONFIG_FILE_PATH: cats.json
-      NODES: 4
 
 - name: volume-services-acceptance-tests
   serial_groups:
@@ -801,8 +646,6 @@ jobs:
       - get: env
         passed: [ prepare-env ]
         trigger: true
-      - get: nfs-volume-release
-        passed: [ prepare-env ]
       - get: repo
         passed: [ prepare-env ]
         trigger: true
@@ -830,6 +673,7 @@ jobs:
     attempts: 2
     vars:
       image_repository: cloudfoundry/tas-runtime-build
+      image_password: ((gcp-tas-runtime-service-account/config-json))
       image_tag: ((.:image_tag))
     params:
       ENVS: |

@@ -1,0 +1,9 @@
+---
+readme: |
+  This task will stop an instance group
+oses:
+  - linux
+params:
+  DEPLOYMENT: Name of deployment
+  INSTANCE_GROUP: Instance Group to be stopped
+  BOSH_CREDS: All bosh environment variables needed to connect to the director (bbl print-env output)

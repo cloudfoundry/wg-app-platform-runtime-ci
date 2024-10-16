@@ -13,6 +13,7 @@ function run() {
     local repo_path=${1:?Provide a path to the repository}
     local bosh_blob_path=${2:?Provide a regex path for bosh-blob}
     local blob=${3:?Provide a path to new blob}
+    pushd "$repo_path" > /dev/null
 
     if [[ "$bosh_blob_path" =~ ^build-deps/ninja- ]]; then
         echo "Bumping ninja blob"
@@ -73,6 +74,7 @@ function run() {
         bosh remove-blob "${dir_name}/${old_blob_name}"
         bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
     fi
+    popd > /dev/null
 }
 
 run "$@"

@@ -9,7 +9,15 @@ function create_pr() {
     gh pr create --title "${title}" --body "${description}" --label "${LABEL}" --base "${BASE_BRANCH}" --head "${BRANCH}"
 }
 
+function configure_github_enterprise() {
+    # docs: https://cli.github.com/manual/
+    if [[ "${GH_HOST:-empty}" != "empty" ]]; then
+        export GH_ENTERPRISE_TOKEN="${GITHUB_TOKEN}"
+    fi
+}
+
 function run(){
+    configure_github_enterprise
     pushd repo > /dev/null
 
     local title=$(git show "origin/$BRANCH" --pretty=format:"%s" --no-patch)

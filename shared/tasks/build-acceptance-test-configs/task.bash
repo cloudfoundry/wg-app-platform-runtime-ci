@@ -37,8 +37,6 @@ function run(){
             cf_networking_acceptance_tests "built-acceptance-test-configs/cf-networking-acceptance-tests.json"
         elif [[ "$entry" == "service-discovery-acceptance-tests" ]]; then
             cf_networking_acceptance_tests "built-acceptance-test-configs/service-discovery-acceptance-tests.json"
-        elif [[ "$entry" == "cpu-entitlement-plugin" ]]; then
-            cpu_entitlement_plugin "built-acceptance-test-configs/cpu-entitlement-plugin.json"
         elif [[ "$entry" == "uptimer-bosh-restart" ]]; then
             uptimer_bosh_restart "built-acceptance-test-configs/uptimer-bosh-restart.json"
         elif [[ "$entry" == "volume-services-acceptance-tests" ]]; then
@@ -97,7 +95,9 @@ function cats() {
     "use_http": true,
     "volume_service_name": "${VOLUME_SERVICE_SERVICE_NAME:-}",
     "volume_service_plan_name": "${VOLUME_SERVICE_PLAN_NAME:-}",
-    "volume_service_create_config": "${VOLUME_SERVICE_CREATE_CONFIG:-}"
+    "volume_service_create_config": "${VOLUME_SERVICE_CREATE_CONFIG:-}",
+    "volume_service_bind_config": "${VOLUME_SERVICE_BIND_CONFIG:-}",
+    "volume_service_broker_name": "${VOLUME_SERVICE_BROKER_NAME:-}"
 }
 EOF
 }
@@ -298,22 +298,6 @@ function volume_services_acceptance_tests() {
   "password": "${VOLUME_SERVICE_PASSWORD:-}"
 }
 EOF
-}
-
-function cpu_entitlement_plugin() {
-    local file="${1?Provide config file}"
-    echo "Creating ${file}"
-    jq -n \
-      --arg api "https://api.${CF_SYSTEM_DOMAIN}" \
-      --arg username "admin" \
-      --arg password "${CF_ADMIN_PASSWORD}" \
-      --arg ca_cert "$(echo '' | openssl s_client -showcerts -servername api.${CF_SYSTEM_DOMAIN} -connect api.${CF_SYSTEM_DOMAIN}:443 -prexit 2>/dev/null | openssl x509 )" \
-      '{
-        "api": $api,
-        "admin_password": $password,
-        "admin_username": $username,
-        "ca_cert": $ca_cert
-      }' > $file
 }
 
 function uptimer_bosh_restart() {
