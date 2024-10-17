@@ -12,6 +12,8 @@ main() {
   fly_pipeline winc-release -f "${pipeline_dir}/winc-release.yml" \
     -f "$REPO/index.yml" \
     -f "$REPO/../shared/helpers/ytt-helpers.star"
+
+  fly_pipeline winc-docker-images -f "${pipeline_dir}/winc-docker-images.yml"
 }
 
 main

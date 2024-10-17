@@ -1,0 +1,8 @@
+---
+readme:
+  This directory contains the dockerfiles needed for diego-release.
+opsfiles:
+  link: For testing symbolick links
+  regularfile: For testing standard files
+  servercore: For testing images based on servercore
+  whiteout: For testing whiteout files (files that have been removed)
