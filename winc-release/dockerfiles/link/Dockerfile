@@ -1,4 +1,4 @@
-FROM microsoft/nanoserver:1709
+FROM mcr.microsoft.com/windows/nanoserver:1709
 
 LABEL org.cloudfoundry.groot-windows-test-link.dockerfile.url="https://github.com/cloudfoundry/wg-app-platform-runtime-ci/blob/main/winc-release/dockerfiles/link/Dockerfile"
 LABEL org.cloudfoundry.groot-windows-test-link.notes.md="Used by winc-release \
