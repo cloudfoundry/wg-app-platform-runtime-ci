@@ -106,7 +106,7 @@ resources:
   type: git
   icon: source-branch
   source:
-    branch: bump-envoy
+    branch: bump-envoy-protobuf
     private_key: ((github-tas-runtime-bot/private-key))
     uri: git@github.com:cloudfoundry/diego-release.git
 
