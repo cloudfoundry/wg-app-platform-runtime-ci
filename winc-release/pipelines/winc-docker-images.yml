@@ -112,6 +112,15 @@ resources:
     check_command: "echo https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"
     in_command:    "curl --silent --fail --output $1/golang.tgz https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"
 
+- name: windows-worker-lock
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: windows-worker-lock
+    private_key: ((github-tas-runtime-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+
 jobs:
 - name: groot-windows-test-link
   serial: true
@@ -123,6 +132,16 @@ jobs:
       trigger: true
     - get: ci
     - get: image
+  - put: windows-worker-lock
+    params:
+      acquire: true
+  - task: start-windows-worker
+    image: image
+    file: ci/shared/tasks/bosh-start/linux.yml
+    params:
+      DEPLOYMENT: windows-worker
+      INSTANCE_GROUP: windows-worker
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
   - put: groot-windows-test-link
     params:
       build: groot-windows-test-link-dockerfile/winc-release/dockerfiles/link
@@ -131,6 +150,19 @@ jobs:
     image: image
     input_mapping:
       docker-image: groot-windows-test-link
+  ensure:
+    task: stop-windows-worker
+    image: image
+    file: ci/shared/tasks/bosh-stop/linux.yml
+    params:
+      DEPLOYMENT: windows-worker
+      INSTANCE_GROUP: windows-worker
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+    ensure:
+      put: windows-worker-lock
+      inputs: detect
+      params:
+        release: windows-worker-lock
 
 - name: groot-windows-test-regularfile
   serial: true
@@ -142,6 +174,16 @@ jobs:
       trigger: true
     - get: ci
     - get: image
+  - put: windows-worker-lock
+    params:
+      acquire: true
+  - task: start-windows-worker
+    image: image
+    file: ci/shared/tasks/bosh-start/linux.yml
+    params:
+      DEPLOYMENT: windows-worker
+      INSTANCE_GROUP: windows-worker
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
   - put: groot-windows-test-regularfile
     params:
       build: groot-windows-test-regularfile-dockerfile/winc-release/dockerfiles/regularfile
@@ -150,6 +192,19 @@ jobs:
     image: image
     input_mapping:
       docker-image: groot-windows-test-regularfile
+  ensure:
+    task: stop-windows-worker
+    image: image
+    file: ci/shared/tasks/bosh-stop/linux.yml
+    params:
+      DEPLOYMENT: windows-worker
+      INSTANCE_GROUP: windows-worker
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+    ensure:
+      put: windows-worker-lock
+      inputs: detect
+      params:
+        release: windows-worker-lock
 
 - name: groot-windows-test-servercore
   serial: true
@@ -161,6 +216,16 @@ jobs:
       trigger: true
     - get: ci
     - get: image
+  - put: windows-worker-lock
+    params:
+      acquire: true
+  - task: start-windows-worker
+    image: image
+    file: ci/shared/tasks/bosh-start/linux.yml
+    params:
+      DEPLOYMENT: windows-worker
+      INSTANCE_GROUP: windows-worker
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
   - put: groot-windows-test-servercore
     params:
       build: groot-windows-test-servercore-dockerfile/winc-release/dockerfiles/link
@@ -169,6 +234,19 @@ jobs:
     image: image
     input_mapping:
       docker-image: groot-windows-test-servercore
+  ensure:
+    task: stop-windows-worker
+    image: image
+    file: ci/shared/tasks/bosh-stop/linux.yml
+    params:
+      DEPLOYMENT: windows-worker
+      INSTANCE_GROUP: windows-worker
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+    ensure:
+      put: windows-worker-lock
+      inputs: detect
+      params:
+        release: windows-worker-lock
 
 - name: groot-windows-test-whiteout
   serial: true
@@ -180,6 +258,16 @@ jobs:
       trigger: true
     - get: ci
     - get: image
+  - put: windows-worker-lock
+    params:
+      acquire: true
+  - task: start-windows-worker
+    image: image
+    file: ci/shared/tasks/bosh-start/linux.yml
+    params:
+      DEPLOYMENT: windows-worker
+      INSTANCE_GROUP: windows-worker
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
   - put: groot-windows-test-whiteout
     params:
       build: groot-windows-test-whiteout-dockerfile/winc-release/dockerfiles/link
@@ -188,4 +276,17 @@ jobs:
     image: image
     input_mapping:
       docker-image: groot-windows-test-whiteout
+  ensure:
+    task: stop-windows-worker
+    image: image
+    file: ci/shared/tasks/bosh-stop/linux.yml
+    params:
+      DEPLOYMENT: windows-worker
+      INSTANCE_GROUP: windows-worker
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+    ensure:
+      put: windows-worker-lock
+      inputs: detect
+      params:
+        release: windows-worker-lock
 
