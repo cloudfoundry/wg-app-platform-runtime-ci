@@ -1,0 +1,15 @@
+---
+readme: |
+  This task will build a dockerfile for the groot-windows test suite and push it to DockerHub.
+oses:
+  - windows
+params:
+  DEFAULT_PARAMS: Path to .yml file containing repo's default-params to use instead. If this value is set, it will override other params set explicitly.
+  ENVS: |
+    This parameter defines a list of environment variables will be loaded at runtime, as opposed to
+    container-creation time. The purpose here is to allow users to extend the list of environment
+    variables used by the task simply by updating the pipeline config, rather than by updating the task definition
+    in windows.yml.
+  DOCKERFILE: Path to the dockerfile to be built
+  DOCKER_USERNAME: Username for login to DockerHub
+  DOCKER_PASSWORD: Password for login to DockerHub

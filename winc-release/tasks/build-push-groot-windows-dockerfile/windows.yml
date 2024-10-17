@@ -1,0 +1,18 @@
+---
+platform: windows
+
+inputs:
+- name: ci
+
+params:
+  DEFAULT_PARAMS:
+  ENVS:
+
+run:
+  path: powershell
+  args:
+  - "-ExecutionPolicy"
+  - "Bypass"
+  - "-File"
+  - ci/winc-release/tasks/build-push-groot-windows-dockerfile/task.ps1
+
