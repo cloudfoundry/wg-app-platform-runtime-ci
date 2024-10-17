@@ -1,0 +1,191 @@
+---
+resource_types:
+- name: command-runner
+  type: docker-image
+  source:
+    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
+    username: _json_key
+    password: ((gcp-tas-runtime-service-account/config-json))
+    tag: latest
+
+resources:
+- name: groot-windows-test-link
+  type: docker-image
+  icon: docker
+  source:
+    email: tas-runtime.pdl+tas-runtime-bot@broadcom.com
+    username: ((dockerhub-tasruntime-username))
+    password: ((dockerhub-tasruntime-password))
+    repository: cloudfoundry/groot-windows-test
+    tag: test-link
+
+- name: groot-windows-test-regularfile
+  type: docker-image
+  icon: docker
+  source:
+    email: tas-runtime.pdl+tas-runtime-bot@broadcom.com
+    username: ((dockerhub-tasruntime-username))
+    password: ((dockerhub-tasruntime-password))
+    repository: cloudfoundry/groot-windows-test
+    tag: test-regularfile
+
+- name: groot-windows-test-servercore
+  type: docker-image
+  icon: docker
+  source:
+    email: tas-runtime.pdl+tas-runtime-bot@broadcom.com
+    username: ((dockerhub-tasruntime-username))
+    password: ((dockerhub-tasruntime-password))
+    repository: cloudfoundry/groot-windows-test
+    tag: test-servercore
+
+- name: groot-windows-test-whiteout
+  type: docker-image
+  icon: docker
+  source:
+    email: tas-runtime.pdl+tas-runtime-bot@broadcom.com
+    username: ((dockerhub-tasruntime-username))
+    password: ((dockerhub-tasruntime-password))
+    repository: cloudfoundry/groot-windows-test
+    tag: test-whiteout
+
+- name: groot-windows-test-link-dockerfile
+  type: git
+  icon: source-branch
+  source:
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci.git
+    branch: groot-windows-docker-images
+    private_key: ((github-tas-runtime-bot/private-key))
+    paths:
+    - winc-release/dockerfiles/link/Dockerfile
+
+- name: groot-windows-test-regularfile-dockerfile
+  type: git
+  icon: source-branch
+  source:
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci.git
+    branch: groot-windows-docker-images
+    private_key: ((github-tas-runtime-bot/private-key))
+    paths:
+    - winc-release/dockerfiles/regularfile/Dockerfile
+
+- name: groot-windows-test-servercore-dockerfile
+  type: git
+  icon: source-branch
+  source:
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci.git
+    branch: groot-windows-docker-images
+    private_key: ((github-tas-runtime-bot/private-key))
+    paths:
+    - winc-release/dockerfiles/servercore/Dockerfile
+
+- name: groot-windows-test-whiteout-dockerfile
+  type: git
+  icon: source-branch
+  source:
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci.git
+    branch: groot-windows-docker-images
+    private_key: ((github-tas-runtime-bot/private-key))
+    paths:
+    - winc-release/dockerfiles/whiteout/Dockerfile
+
+- name: ci
+  type: git
+  icon: source-branch
+  source:
+    branch: groot-windows-docker-images
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+
+- name: image
+  type: registry-image
+  icon: docker
+  source:
+    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    username: _json_key
+    password: ((gcp-tas-runtime-service-account/config-json))
+
+- name: http-golang-download
+  type: command-runner
+  icon: link-variant
+  source:
+    version_key: "latest-golang"
+    check_command: "echo https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"
+    in_command:    "curl --silent --fail --output $1/golang.tgz https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"
+
+jobs:
+- name: groot-windows-test-link
+  serial: true
+  plan:
+  - in_parallel:
+    - get: http-golang-download
+      trigger: true
+    - get: groot-windows-test-link-dockerfile
+      trigger: true
+    - get: ci
+    - get: image
+  - put: groot-windows-test-link
+    params:
+      build: groot-windows-test-link-dockerfile/winc-release/dockerfiles/link
+  - task: validate-label-urls
+    file: ci/shared/tasks/lint-docker-image/linux.yml
+    image: image
+    input_mapping:
+      docker-image: groot-windows-test-link
+
+- name: groot-windows-test-regularfile
+  serial: true
+  plan:
+  - in_parallel:
+    - get: http-golang-download
+      trigger: true
+    - get: groot-windows-test-regularfile-dockerfile
+      trigger: true
+    - get: ci
+    - get: image
+  - put: groot-windows-test-regularfile
+    params:
+      build: groot-windows-test-regularfile-dockerfile/winc-release/dockerfiles/regularfile
+  - task: validate-label-urls
+    file: ci/shared/tasks/lint-docker-image/linux.yml
+    image: image
+    input_mapping:
+      docker-image: groot-windows-test-regularfile
+
+- name: groot-windows-test-servercore
+  serial: true
+  plan:
+  - in_parallel:
+    - get: http-golang-download
+      trigger: true
+    - get: groot-windows-test-servercore-dockerfile
+      trigger: true
+    - get: ci
+    - get: image
+  - put: groot-windows-test-servercore
+    params:
+      build: groot-windows-test-servercore-dockerfile/winc-release/dockerfiles/link
+  - task: validate-label-urls
+    file: ci/shared/tasks/lint-docker-image/linux.yml
+    image: image
+    input_mapping:
+      docker-image: groot-windows-test-servercore
+
+- name: groot-windows-test-whiteout
+  serial: true
+  plan:
+  - in_parallel:
+    - get: http-golang-download
+      trigger: true
+    - get: groot-windows-test-whiteout-dockerfile
+      trigger: true
+    - get: ci
+    - get: image
+  - put: groot-windows-test-whiteout
+    params:
+      build: groot-windows-test-whiteout-dockerfile/winc-release/dockerfiles/link
+  - task: validate-label-urls
+    file: ci/shared/tasks/lint-docker-image/linux.yml
+    image: image
+    input_mapping:
+      docker-image: groot-windows-test-whiteout
+
