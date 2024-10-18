@@ -55,8 +55,9 @@ func main() {
 	r.HandleFunc("/cpucgroup", cpuCgroupHandler)
 	r.HandleFunc("/ping", pingHandler)
 	server := &http.Server{
-		Addr:    ":8080",
-		Handler: r,
+		Addr:              ":8080",
+		Handler:           r,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 	err := server.ListenAndServe()
 	if err != nil {
