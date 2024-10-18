@@ -1,6 +1,6 @@
 ARCH := $(shell uname -p)
 
-all: check-env clean garden-rootfs.tar garden-fuse.tar garden-oom
+all: check-env clean garden-rootfs.tar garden-fuse.tar
 
 garden-rootfs.tar: check-env
 ifeq ($(ARCH), aarch64)
@@ -24,18 +24,10 @@ endif
 	docker export -o $(LOCATION)/garden-fuse.tar garden-fuse  
 	docker rm -f garden-fuse
 
-garden-oom.image:
-ifeq ($(ARCH), aarch64)
-	docker build --build-arg GCC_IMAGE=arm64v8/gcc -f garden-oom/Dockerfile -t cloudfoundry/garden-oom .
-else
-	docker build -f garden-oom/Dockerfile -t cloudfoundry/garden-oom .
-endif
-
 clean: check-env
 	rm -f $(LOCATION)/*.tar
 	docker rm -f garden-rootfs
 	docker rm -f garden-fuse
-	docker rm -f cloudfoundry/garden-oom
 
 check-env:
 ifndef LOCATION
