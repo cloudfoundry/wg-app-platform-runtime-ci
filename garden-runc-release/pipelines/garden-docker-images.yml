@@ -53,6 +53,8 @@ jobs:
     - get: image
   - task: build-garden-fuse
     privileged: true
+    output_mapping:
+      image: garden-fuse
     config:
       platform: linux
       run:
@@ -64,7 +66,7 @@ jobs:
       inputs:
         - name: garden-fuse-dockerfile
       outputs:
-        - name: garden-fuse
+        - name: image
       image_resource:
         type: registry-image
         source:
