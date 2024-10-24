@@ -9,13 +9,11 @@ FLY_TEAM=wg-arp-garden
 main() {
   local pipeline_dir="$(realpath $REPO/pipelines)"
   fly_login
-  # fly_pipeline winc-release -f "${pipeline_dir}/winc-release.yml" \
-  #   -f "$REPO/index.yml" \
-  #   -f "$REPO/../shared/helpers/ytt-helpers.star"
-
-  fly_pipeline winc-docker-images -f "${pipeline_dir}/winc-docker-images.yml" \
+  fly_pipeline winc-release -f "${pipeline_dir}/winc-release.yml" \
     -f "$REPO/index.yml" \
     -f "$REPO/../shared/helpers/ytt-helpers.star"
+
+  fly_pipeline winc-docker-images -f "${pipeline_dir}/winc-docker-images.yml"
 }
 
 main
