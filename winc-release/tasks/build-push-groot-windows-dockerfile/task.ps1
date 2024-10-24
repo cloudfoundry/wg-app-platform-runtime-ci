@@ -29,7 +29,7 @@ function Run
 
     Run-Docker "images", "-a"
     Run-Docker "login", "-u", "${env:DOCKER_USERNAME}", "-p", "${env:DOCKER_PASSWORD}"
-    Run-Docker "push", "${env:IMAGE_NAME}:${env:IMAGE_TAG}"
+    # Run-Docker "push", "${env:IMAGE_NAME}:${env:IMAGE_TAG}"
 }
 
 Run
