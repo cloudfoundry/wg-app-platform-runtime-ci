@@ -1,4 +1,4 @@
-FROM microsoft/nanoserver:1709
+FROM mcr.microsoft.com/windows/nanoserver:1809
 
 LABEL org.cloudfoundry.groot-windows-test-whiteout.dockerfile.url="https://github.com/cloudfoundry/wg-app-platform-runtime-ci/blob/main/winc-release/dockerfiles/whiteout/Dockerfile"
 LABEL org.cloudfoundry.groot-windows-test-whiteout.notes.md="Used by winc-release \
