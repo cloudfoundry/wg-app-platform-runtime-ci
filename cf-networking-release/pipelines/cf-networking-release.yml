@@ -188,6 +188,14 @@ resources:
     tag_filter: v*
 
 #! TIMERS
+- name: daily-at-midnight
+  type: time
+  icon: clock
+  source:
+    interval: '24h'
+    start: 00:00
+    stop: 00:59
+
 - name: weekly
   type: time
   icon: clock
@@ -492,10 +500,10 @@ jobs:
       - get: ci
       - get: image
       - get:  cf-networking-repo
-      - get: weekly
+      - get: daily-at-midnight
         trigger: true
       - get: cf-networking-readme
-        trigger: true
+        trigger: false
   - do:
     - task: sync-readme
       file: ci/shared/tasks/sync-readme/linux.yml
@@ -515,10 +523,10 @@ jobs:
       - get: ci
       - get: image
       - get:  silk-repo
-      - get: weekly
+      - get: daily-at-midnight
         trigger: true
       - get: silk-readme
-        trigger: true
+        trigger: false
   - do:
     - task: sync-readme
       file: ci/shared/tasks/sync-readme/linux.yml
