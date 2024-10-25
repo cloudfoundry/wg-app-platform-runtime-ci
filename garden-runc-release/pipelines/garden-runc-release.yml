@@ -658,8 +658,8 @@ jobs:
       vendored-repo: modified-release-linux
     params:
       PACKAGE_NAME: golang-*-linux
-      AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-      AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+      AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+      AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
 
   - task: bump-golang-package-name-windows
     image: image
@@ -681,8 +681,8 @@ jobs:
       vendored-repo: modified-release-windows
     params:
       PACKAGE_NAME: golang-*-windows
-      AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-      AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+      AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+      AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
 
   - put: repo
     params:
