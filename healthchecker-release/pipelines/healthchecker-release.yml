@@ -110,6 +110,14 @@ resources:
     paths: [go-version.json]
 
 #! TIMERS
+- name: daily-at-midnight
+  type: time
+  icon: clock
+  source:
+    interval: '24h'
+    start: 00:00
+    stop: 00:59
+
 - name: weekly
   type: time
   icon: clock
@@ -267,11 +275,11 @@ jobs:
       steps:
       - get: ci
       - get: image
-      - get:  repo
-      - get: weekly
+      - get: repo
+      - get: daily-at-midnight
         trigger: true
       - get: repo-readme
-        trigger: true
+        trigger: false
   - do:
     - task: sync-readme
       file: ci/shared/tasks/sync-readme/linux.yml

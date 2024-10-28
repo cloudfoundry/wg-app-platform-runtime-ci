@@ -218,6 +218,14 @@ resources:
     name: bosh-google-kvm-ubuntu-bionic-go_agent
 
 #! TIMERS
+- name: daily-at-midnight
+  type: time
+  icon: clock
+  source:
+    interval: '24h'
+    start: 00:00
+    stop: 00:59
+
 - name: weekly
   type: time
   icon: clock
@@ -508,15 +516,15 @@ jobs:
       steps:
       - get: ci
       - get: image
-      - get: weekly
+      - get: daily-at-midnight
         trigger: true
       - get: repo
 #@ for repo in data.values.internal_repos:
       - get: #@ "{}-repo".format(repo.name)
 #@ end
-        trigger: true
+        trigger: false
       - get: readme
-        trigger: true
+        trigger: false
   - do:
     - task: sync-readme
       file: ci/shared/tasks/sync-readme/linux.yml
