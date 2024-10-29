@@ -217,6 +217,14 @@ resources:
     tag_filter: v0.285.0
 
 #! TIMERS
+- name: daily-at-midnight
+  type: time
+  icon: clock
+  source:
+    interval: '24h'
+    start: 00:00
+    stop: 00:59
+
 - name: weekly
   type: time
   icon: clock
@@ -559,16 +567,16 @@ jobs:
       steps:
       - get: ci
       - get: image
-      - get: weekly
+      - get: daily-at-midnight
         trigger: true
       - get: repo
-        trigger: true
+        trigger: false
 #@ for repo in data.values.internal_repos:
       - get: #@ "{}-repo".format(repo.name)
-        trigger: true
+        trigger: false
 #@ end
       - get: readme
-        trigger: true
+        trigger: false
   - do:
       - task: sync-readme
         file: ci/shared/tasks/sync-readme/linux.yml

@@ -1,3 +1,5 @@
+$env:Path = 'C:\var\vcap\packages\git\bin;' + $env:Path
+
 # work around https://github.com/golang/go/issues/27515
 function Update-Dir-If-Symlink {
   $dir = $args[0]

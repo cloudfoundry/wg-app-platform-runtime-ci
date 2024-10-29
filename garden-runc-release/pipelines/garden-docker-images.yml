@@ -10,11 +10,32 @@ jobs:
       trigger: true
     - get: ci
     - get: image
+  - task: build-garden-rootfs
+    privileged: true
+    output_mapping:
+      image: garden-rootfs
+    config:
+      platform: linux
+      run:
+        path: build
+      params:
+        CONTEXT: garden-rootfs-dockerfile/garden-runc-release/dockerfiles/garden-rootfs
+        OUTPUT_OCI: true
+        IMAGE_PLATFORM: linux/amd64,linux/arm64
+      inputs:
+        - name: garden-rootfs-dockerfile
+      outputs:
+        - name: image
+      image_resource:
+        type: registry-image
+        source:
+          repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/concourse/oci-build-task
+          username: _json_key
+          password: ((gcp-tas-runtime-service-account/config-json))
   - put: garden-rootfs
     params:
-      build: garden-rootfs-dockerfile/garden-runc-release/dockerfiles/garden-rootfs
-      build_args: 
-        BUSYBOX_VERSION: 1.26.1
+      image: garden-rootfs/image
+      bump_aliases: true
   - task: validate-label-urls
     file: ci/shared/tasks/lint-docker-image/linux.yml
     image: image
@@ -30,9 +51,32 @@ jobs:
       trigger: true
     - get: ci
     - get: image
+  - task: build-garden-fuse
+    privileged: true
+    output_mapping:
+      image: garden-fuse
+    config:
+      platform: linux
+      run:
+        path: build
+      params:
+        CONTEXT: garden-fuse-dockerfile/garden-runc-release/dockerfiles/garden-fuse
+        OUTPUT_OCI: true
+        IMAGE_PLATFORM: linux/amd64,linux/arm64
+      inputs:
+        - name: garden-fuse-dockerfile
+      outputs:
+        - name: image
+      image_resource:
+        type: registry-image
+        source:
+          repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/concourse/oci-build-task
+          username: _json_key
+          password: ((gcp-tas-runtime-service-account/config-json))
   - put: garden-fuse
     params:
-      build: garden-fuse-dockerfile/garden-runc-release/dockerfiles/garden-fuse
+      image: garden-fuse/image
+      bump_aliases: true
   - task: validate-label-urls
     file: ci/shared/tasks/lint-docker-image/linux.yml
     image: image
@@ -41,20 +85,18 @@ jobs:
 
 resources:
 - name: garden-rootfs
-  type: docker-image
+  type: registry-image
   icon: docker
   source:
-    email: tas-runtime.pdl+tas-runtime-bot@broadcom.com
     username: ((dockerhub-tasruntime-username))
     password: ((dockerhub-tasruntime-password))
     repository: cloudfoundry/garden-rootfs
     tag: latest
 
 - name: garden-fuse
-  type: docker-image
+  type: registry-image
   icon: docker
   source:
-    email: tas-runtime.pdl+tas-runtime-bot@broadcom.com
     username: ((dockerhub-tasruntime-username))
     password: ((dockerhub-tasruntime-password))
     repository: cloudfoundry/garden-fuse

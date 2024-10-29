@@ -1,8 +1,6 @@
-ARG BUSYBOX_VERSION="1.26.2"
-ARG BUSYBOX_IMAGE="busybox"
-ARG GCC_IMAGE="gcc"
+ARG BUSYBOX_VERSION="1.27.2"
 
-FROM ${GCC_IMAGE} AS usemem-builder
+FROM  gcc AS usemem-builder
 COPY usemem.c ./
 RUN gcc -o ./usemem --static ./usemem.c
 
@@ -18,7 +16,7 @@ ENV CGO_ENABLED=0
 COPY hello-world.go .
 RUN go build -o /hello-world /go/src/app/hello-world.go
 
-FROM ${BUSYBOX_IMAGE}:${BUSYBOX_VERSION}
+FROM  busybox:${BUSYBOX_VERSION}
 
 LABEL org.cloudfoundry.garden-rootfs.dockerfile.url="https://github.com/cloudfoundry/wg-app-platform-runtime-ci/blob/main/garden-runc-release/dockerfiles/garden-rootfs/Dockerfile"
 LABEL org.cloudfoundry.garden-rootfs.notes.md="Used by garden-runc-release \

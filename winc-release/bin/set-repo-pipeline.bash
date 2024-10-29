@@ -13,6 +13,8 @@ main() {
   fly_pipeline winc-shepherd -f "${pipeline_dir}/winc-shepherd.yml" \
     -f "$REPO/index.yml" \
     -f "$REPO/../shared/helpers/ytt-helpers.star"
+
+  fly_pipeline winc-docker-images -f "${pipeline_dir}/winc-docker-images.yml"
 }
 
 main
