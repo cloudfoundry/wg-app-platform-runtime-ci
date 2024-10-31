@@ -374,9 +374,8 @@ jobs:
       package-release: golang-release-latest
     params:
       PACKAGE_NAME: golang-*-linux
-      AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-mapfs-volume-services-s3/access-key-id))
-      AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-mapfs-volume-services-s3/secret-access-key))
-      AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-mapfs-volume-services-s3/assume-role))
+      AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+      AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
   - put: repo
     params:
       rebase: true
@@ -436,9 +435,8 @@ jobs:
         blob: meson-git-release
       params:
         BOSH_BLOB_PATH: build-deps/meson-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-mapfs-volume-services-s3/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-mapfs-volume-services-s3/secret-access-key))
-        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-mapfs-volume-services-s3/assume-role))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -451,9 +449,8 @@ jobs:
         blob: ninja-git-release
       params:
         BOSH_BLOB_PATH: build-deps/ninja-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-mapfs-volume-services-s3/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-mapfs-volume-services-s3/secret-access-key))
-        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-mapfs-volume-services-s3/assume-role))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -466,9 +463,8 @@ jobs:
         blob: libfuse-git-release
       params:
         BOSH_BLOB_PATH: fuse/fuse-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-mapfs-volume-services-s3/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-mapfs-volume-services-s3/secret-access-key))
-        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-mapfs-volume-services-s3/assume-role))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -777,9 +773,8 @@ jobs:
     image: image
     file: ci/shared/tasks/bosh-finalize-release/linux.yml
     params:
-      AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-mapfs-volume-services-s3/secret-access-key))
-      AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-mapfs-volume-services-s3/access-key-id))
-      AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-mapfs-volume-services-s3/assume-role))
+      AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+      AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
 
   - put: release-branch
     params:

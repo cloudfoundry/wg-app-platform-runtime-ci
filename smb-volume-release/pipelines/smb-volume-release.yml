@@ -339,9 +339,8 @@ jobs:
       package-release: golang-release-latest
     params:
       PACKAGE_NAME: golang-*-linux
-      AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-smb-volume-services-s3/secret-access-key))
-      AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-smb-volume-services-s3/access-key-id))
-      AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-smb-volume-services-s3/assume-role))
+      AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+      AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
 
 
   - put: repo
@@ -393,9 +392,8 @@ jobs:
         blob: autoconf
       params:
         BOSH_BLOB_PATH: autoconf/autoconf-*.tar.gz
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-smb-volume-services-s3/secret-access-key))
-        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-smb-volume-services-s3/access-key-id))
-        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-smb-volume-services-s3/assume-role))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -408,9 +406,8 @@ jobs:
         blob: automake
       params:
         BOSH_BLOB_PATH: automake/automake-*.tar.gz
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-smb-volume-services-s3/secret-access-key))
-        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-smb-volume-services-s3/access-key-id))
-        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-smb-volume-services-s3/assume-role))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -423,9 +420,8 @@ jobs:
         blob: cifs-utils
       params:
         BOSH_BLOB_PATH: cifs-utils/cifs-utils-*.tar.bz2
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-smb-volume-services-s3/secret-access-key))
-        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-smb-volume-services-s3/access-key-id))
-        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-smb-volume-services-s3/assume-role))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -438,9 +434,8 @@ jobs:
         blob: keyutils
       params:
         BOSH_BLOB_PATH: keyutils/keyutils-*.tar.gz
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-smb-volume-services-s3/secret-access-key))
-        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-smb-volume-services-s3/access-key-id))
-        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-smb-volume-services-s3/assume-role))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -453,9 +448,8 @@ jobs:
         blob: libtool
       params:
         BOSH_BLOB_PATH: libtool/libtool-*.tar.gz
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-smb-volume-services-s3/secret-access-key))
-        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-smb-volume-services-s3/access-key-id))
-        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-smb-volume-services-s3/assume-role))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -468,9 +462,8 @@ jobs:
         blob: pkg-config
       params:
         BOSH_BLOB_PATH: pkg-config/pkg-config-*.tar.gz
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-smb-volume-services-s3/secret-access-key))
-        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-smb-volume-services-s3/access-key-id))
-        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-smb-volume-services-s3/assume-role))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -483,9 +476,8 @@ jobs:
         blob: talloc
       params:
         BOSH_BLOB_PATH: talloc/talloc-*.tar.gz
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-smb-volume-services-s3/secret-access-key))
-        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-smb-volume-services-s3/access-key-id))
-        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-smb-volume-services-s3/assume-role))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -894,9 +886,8 @@ jobs:
       image: image
       file: ci/shared/tasks/bosh-finalize-release/linux.yml
       params:
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-smb-volume-services-s3/secret-access-key))
-        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-smb-volume-services-s3/access-key-id))
-        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-smb-volume-services-s3/assume-role))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
 
     - put: release-branch
       params:
