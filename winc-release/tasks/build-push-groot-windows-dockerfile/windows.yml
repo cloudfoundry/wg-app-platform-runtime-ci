@@ -7,6 +7,9 @@ inputs:
 params:
   DEFAULT_PARAMS:
   ENVS:
+  DOCKERFILE:
+  DOCKER_USERNAME:
+  DOCKER_PASSWORD:
 
 run:
   path: powershell
