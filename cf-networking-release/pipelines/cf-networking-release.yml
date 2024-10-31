@@ -301,7 +301,7 @@ jobs:
       - get: cf-networking-repo
       - get: silk-repo
       - get: image
-      - get: weekly
+      - get: daily-at-midnight
         trigger: true
   - in_parallel:
     - do:

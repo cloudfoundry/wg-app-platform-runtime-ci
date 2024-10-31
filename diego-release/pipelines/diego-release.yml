@@ -225,6 +225,14 @@ resources:
     start: 00:00
     stop: 00:59
 
+- name: daily-at-1-oclock
+  type: time
+  icon: clock
+  source:
+    interval: '24h'
+    start: 01:00
+    stop: 01:59
+
 - name: weekly
   type: time
   icon: clock
@@ -342,7 +350,7 @@ jobs:
       - get: ci
       - get: repo
       - get: image
-      - get: weekly
+      - get: daily-at-1-oclock
         trigger: true
   - task: diego-release-bump-dependencies-go-mod
     image: image

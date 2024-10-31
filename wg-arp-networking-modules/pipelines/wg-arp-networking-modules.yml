@@ -306,7 +306,7 @@ jobs:
       - resource: #@ package.name
         get: repo
       - get: image
-      - get: weekly
+      - get: daily-at-midnight
         trigger: true
   - task: #@ "bump-dependencies-{}".format(package.name)
     image: image

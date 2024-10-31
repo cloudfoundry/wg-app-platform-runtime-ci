@@ -141,6 +141,14 @@ resources:
     days:
       - Wednesday
 
+- name: daily-at-midnight
+  type: time
+  icon: clock
+  source:
+    interval: '24h'
+    start: 00:00
+    stop: 00:59
+
 - name: env
   type: shepherd
   icon: sheep
@@ -225,7 +233,7 @@ jobs:
       - get: ci
       - get: repo
       - get: image
-      - get: weekly
+      - get: daily-at-midnight
         trigger: true
   - task: envoy-nginx-release-bump-dependencies-go-mod
     image: image

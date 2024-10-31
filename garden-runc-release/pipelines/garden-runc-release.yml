@@ -237,6 +237,14 @@ resources:
     days:
       - Wednesday
 
+- name: daily-at-midnight
+  type: time
+  icon: clock
+  source:
+    interval: '24h'
+    start: 00:00
+    stop: 00:59
+
 #! Toolsmith pool
 - name: env
   type: shepherd
@@ -493,7 +501,7 @@ jobs:
     - get: updated-go-mod-garden-integration-tests
     - get: updated-go-mod-dontpanic
     - get: image
-    - get: weekly
+    - get: daily-at-midnight
       trigger: true
   - do:
     - task: garden-bump-dependencies-go-mod

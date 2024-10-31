@@ -334,7 +334,7 @@ jobs:
       - get: ci
       - get: repo
       - get: image
-      - get: weekly
+      - get: daily-at-midnight
         trigger: true
   - do:
     - task: mapfs-release-bump-dependencies-go-mod

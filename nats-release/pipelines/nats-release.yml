@@ -229,7 +229,7 @@ jobs:
       - get: ci
       - get: repo
       - get: image
-      - get: weekly
+      - get: daily-at-midnight
         trigger: true
   - task: nats-release-bump-dependencies-go-mod
     image: image

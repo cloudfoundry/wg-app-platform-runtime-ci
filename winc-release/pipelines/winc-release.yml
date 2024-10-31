@@ -229,6 +229,14 @@ resources:
     days:
       - Wednesday
 
+- name: daily-at-midnight
+  type: time
+  icon: clock
+  source:
+    interval: '24h'
+    start: 00:00
+    stop: 00:59
+
 - name: github-release
   type: github-release
   icon: github
@@ -347,7 +355,7 @@ jobs:
       - get: updated-go-mod-diff-exporter
       - get: updated-go-mod-groot-windows
       - get: updated-go-mod-winc
-      - get: weekly
+      - get: daily-at-midnight
         trigger: true
   - do:
     - task: cert-injector-bump-dependencies-go-mod
