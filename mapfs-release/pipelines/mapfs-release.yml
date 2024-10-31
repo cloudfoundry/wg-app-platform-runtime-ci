@@ -230,13 +230,11 @@ resources:
   type: semver
   icon: counter
   source:
-    access_key_id: ((aws-s3-107350105730-mapfs-volume-services-s3/access-key-id))
-    bucket: mapfs-versions
-    initial_version: 1.2.4
-    key: current-version
-    region_name: us-east-1
-    secret_access_key: ((aws-s3-107350105730-mapfs-volume-services-s3/secret-access-key))
-    assume_role_arn: ((aws-s3-107350105730-mapfs-volume-services-s3/assume-role))
+    initial_version: 1.6.0
+    driver: gcs
+    bucket: ci-release-versions
+    key: mapfs-release/version
+    json_key: ((gcp-tas-runtime-service-account/config-json))
 
 - name: env-lock
   type: pool
