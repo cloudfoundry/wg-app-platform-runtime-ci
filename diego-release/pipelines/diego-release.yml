@@ -58,6 +58,11 @@ resource_types:
   source:
     repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
     tag: v1  #! This may be bumped in the future
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: latest
 
 #! Define-Resources
 resources:
@@ -235,6 +240,11 @@ resources:
     days:
       - Tuesday
 
+- name: slack-ci-channel
+  type: slack-notification
+  source:
+    url: ((slack-ci-channel/webhook))
+
 - name: env
   type: shepherd
   icon: sheep
@@ -336,6 +346,10 @@ resources:
 jobs:
 - name: bump-dependencies-go-mod
   serial: true
+  on_failure: &ci-notification
+    put: slack-ci-channel
+    params:
+      text: ":concourse-failed: $BUILD_PIPELINE_NAME failed on <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_JOB_NAME>."
   plan:
   - in_parallel:
       steps:
@@ -360,6 +374,7 @@ jobs:
 - name: bump-golang
   old_name: bump-package-golang
   serial: true
+  on_failure: *ci-notification
   plan:
   - in_parallel:
       steps:
@@ -417,6 +432,7 @@ jobs:
 
 - name: bump-bosh-blobs
   serial: true
+  on_failure: *ci-notification
   plan:
   - in_parallel:
       steps:
@@ -480,6 +496,7 @@ jobs:
 
 - name: bump-dependencies-envoy
   serial: true
+  on_failure: *ci-notification
   plan:
   - in_parallel:
       steps:

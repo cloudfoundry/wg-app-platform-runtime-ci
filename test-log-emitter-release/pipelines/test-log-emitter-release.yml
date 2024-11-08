@@ -6,6 +6,14 @@ groups:
   jobs:
   - bump-package-golang
 
+#! Define-ResourceGroups
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: latest
+
 #! Define-Resources
 resources:
 - name: repo
@@ -47,9 +55,18 @@ resources:
     password: ((gcp-tas-runtime-service-account/config-json))
     tag: 'latest'
 
+- name: slack-ci-channel
+  type: slack-notification
+  source:
+    url: ((slack-ci-channel/webhook))
+
 #! Define-Jobs
 jobs:
 - name: bump-package-golang
+  on_failure: &ci-notification
+    put: slack-ci-channel
+    params:
+      text: ":concourse-failed: $BUILD_PIPELINE_NAME failed on <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_JOB_NAME>."
   plan:
   - in_parallel:
     - get: ci

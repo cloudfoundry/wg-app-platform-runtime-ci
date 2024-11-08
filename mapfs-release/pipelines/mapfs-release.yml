@@ -73,6 +73,12 @@ resource_types:
     username: _json_key
     password: ((gcp-tas-runtime-service-account/config-json))
 
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: latest
+
 resources:
 - name: golang-release-latest
   type: git
@@ -186,6 +192,11 @@ resources:
     stop: 01:59
     days:
       - Monday
+
+- name: slack-ci-channel
+  type: slack-notification
+  source:
+    url: ((slack-ci-channel/webhook))
 
 - name: env
   type: pcf-pool
@@ -326,6 +337,10 @@ jobs:
 
 - name: bump-dependencies-go-mod
   serial: true
+  on_failure: &ci-notification
+    put: slack-ci-channel
+    params:
+      text: ":concourse-failed: $BUILD_PIPELINE_NAME failed on <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_JOB_NAME>."
   plan:
   - in_parallel:
       steps:
@@ -347,6 +362,7 @@ jobs:
         repository: bumped-repo
 
 - name: bump-golang
+  on_failure: *ci-notification
   plan:
   - in_parallel:
       steps:
@@ -410,6 +426,7 @@ jobs:
 #@ end
 
 - name: bump-bosh-blobs
+  on_failure: *ci-notification
   serial: true
   plan:
   - in_parallel:
