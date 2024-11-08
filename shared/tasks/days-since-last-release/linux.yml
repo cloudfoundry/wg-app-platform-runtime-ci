@@ -1,0 +1,17 @@
+---
+image_resource:
+  type: registry-image
+  source:
+    repository: cloudfoundry/tas-runtime-build
+
+platform: linux
+
+inputs:
+- name: ci
+
+outputs:
+- name: gchat-text
+- name: slack-text
+
+run:
+  path: ci/shared/tasks/days-since-last-release/task.bash
