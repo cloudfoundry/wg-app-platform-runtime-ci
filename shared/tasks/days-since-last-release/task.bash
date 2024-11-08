@@ -89,6 +89,7 @@ EOM
 > $slack_card_file
 cat > $slack_card_file <<- EOM
 🐱 days since last release 🐱
+
 EOM
 
 
@@ -107,7 +108,7 @@ jq '. | sort_by(.days_since_release)|reverse | .[] | if .days_since_release > 30
     fi
 
     cat >> $slack_card_file <<- EOM
-* ${emoji} ${days_since_release} days - ${release_name}
+${emoji} ${days_since_release} days - ${release_name}
 EOM
 
     if [[ $index == "${last_release_index}" ]]; then
