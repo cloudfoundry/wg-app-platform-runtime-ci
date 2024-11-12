@@ -6,4 +6,3 @@ opsfiles:
   set-rep-max-idle-conns.yml: <TODO> figure out what test needs this opsfile
   turn-on-debug-mode.yml: Turn on debug mode for all diego's components
   resize-grootfs-store.yml: <TODO> figure out what test needs this opsfile
-  use-latest-routing-release.yml: Sets routing-release to the latest version provided by the pipeline, overriding cf-deployment's copy
