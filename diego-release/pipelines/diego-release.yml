@@ -58,6 +58,11 @@ resource_types:
   source:
     repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
     tag: v1  #! This may be bumped in the future
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: latest
 
 #! Define-Resources
 resources:
@@ -78,7 +83,7 @@ resources:
     ignore_paths:
     - .github/
     - .gitignore
-    - .final_build
+    - .final_builds/
     - CODEOWNERS
     - LICENSE
     - NOTICE
@@ -217,6 +222,14 @@ resources:
     tag_filter: v0.285.0
 
 #! TIMERS
+- name: daily-at-midnight
+  type: time
+  icon: clock
+  source:
+    interval: '24h'
+    start: 00:00
+    stop: 00:59
+
 - name: weekly
   type: time
   icon: clock
@@ -226,6 +239,11 @@ resources:
     stop: 01:59
     days:
       - Tuesday
+
+- name: slack-ci-channel
+  type: slack-notification
+  source:
+    url: ((slack-ci-channel/webhook))
 
 - name: env
   type: shepherd
@@ -328,6 +346,10 @@ resources:
 jobs:
 - name: bump-dependencies-go-mod
   serial: true
+  on_failure: &ci-notification
+    put: slack-ci-channel
+    params:
+      text: ":concourse-failed: $BUILD_PIPELINE_NAME failed on <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_JOB_NAME>."
   plan:
   - in_parallel:
       steps:
@@ -352,6 +374,7 @@ jobs:
 - name: bump-golang
   old_name: bump-package-golang
   serial: true
+  on_failure: *ci-notification
   plan:
   - in_parallel:
       steps:
@@ -409,6 +432,7 @@ jobs:
 
 - name: bump-bosh-blobs
   serial: true
+  on_failure: *ci-notification
   plan:
   - in_parallel:
       steps:
@@ -472,6 +496,7 @@ jobs:
 
 - name: bump-dependencies-envoy
   serial: true
+  on_failure: *ci-notification
   plan:
   - in_parallel:
       steps:
@@ -559,16 +584,16 @@ jobs:
       steps:
       - get: ci
       - get: image
-      - get: weekly
+      - get: daily-at-midnight
         trigger: true
       - get: repo
-        trigger: true
+        trigger: false
 #@ for repo in data.values.internal_repos:
       - get: #@ "{}-repo".format(repo.name)
-        trigger: true
+        trigger: false
 #@ end
       - get: readme
-        trigger: true
+        trigger: false
   - do:
       - task: sync-readme
         file: ci/shared/tasks/sync-readme/linux.yml

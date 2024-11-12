@@ -1,60 +1,59 @@
 load("@ytt:struct", "struct")
 
 def packages_with_configure_db(packages = []):
-    l = []
- for p in packages:
-     if hasattr(p, "configure_db"):
-         if p.configure_db:
-     if hasattr(p, "acceptance"):
-         if not p.acceptance:
-             l.append(p)
-     end
-     else:
-             l.append(p)
-     end
-     end
-   end
- end
- return l
+    result = []
+    for package in packages:
+        if hasattr(package, "configure_db"):
+            if package.configure_db:
+                if hasattr(package, "acceptance"):
+                    if not package.acceptance:
+                        result.append(package)
+                    end
+                else:
+                    result.append(package)
+                end
+            end
+        end
+    end
+    return result
 end
 
 def packages_without_configure_db(packages = []):
-    l = []
- for p in packages:
-     if not hasattr(p, "configure_db"):
-     if hasattr(p, "acceptance"):
-         if not p.acceptance:
-             l.append(p)
-     end
-     else:
-             l.append(p)
-     end
-   elif not p.configure_db:
-     if hasattr(p, "acceptance"):
-         if not p.acceptance:
-             l.append(p)
-     end
-     else:
-             l.append(p)
-     end
-   end
- end
- return l
+    result = []
+    for package in packages:
+        if not hasattr(package, "configure_db"):
+            if hasattr(package, "acceptance"):
+                if not package.acceptance:
+                    result.append(package)
+                end
+            else:
+                result.append(package)
+            end
+        elif not package.configure_db:
+            if hasattr(package, "acceptance"):
+                if not package.acceptance:
+                    result.append(package)
+                end
+            else:
+                result.append(package)
+            end
+        end
+    end
+    return result
 end
 
 def packages_with_a_git_repo(packages = []):
-    l = []
- for p in packages:
-     if hasattr(p, "same_repo"):
-         if not p.same_repo:
-             l.append(p)
-     end
-     else:
-         l.append(p)
-
-   end
- end
- return l
+    result = []
+    for package in packages:
+        if hasattr(package, "same_repo"):
+            if not package.same_repo:
+                result.append(package)
+            end
+        else:
+            result.append(package)
+        end
+    end
+    return result
 end
 
 def on_windows(package):
@@ -76,41 +75,39 @@ def privileged(package):
 end
 
 def packages_names_array(packages = [], prefixes = []):
-    l = []
- for p in packages:
-     if hasattr(p, "name"):
-         if p.name:
-            if len(prefixes) == 0:
-                l.append(p.name)
-            else:
-                for prefix in prefixes:
-                    l.append(prefix + p.name)
+    result = []
+    for package in packages:
+        if hasattr(package, "name"):
+            if package.name:
+                if len(prefixes) == 0:
+                    result.append(package.name)
+                else:
+                    for prefix in prefixes:
+                        result.append(prefix + package.name)
+                    end
                 end
             end
         end
     end
- end
- return l
+    return result
 end
 
 def packages_names_array_without_acceptance(packages = [], prefixes = []):
- l = []
- for p in packages:
-     if not hasattr(p, "acceptance") or not p.acceptance:
-         if hasattr(p, "name"):
-             if p.name:
+    result = []
+    for package in packages:
+        if hasattr(package, "name"):
+            if package.name:
                 if len(prefixes) == 0:
-                    l.append(p.name)
+                    result.append(package.name)
                 else:
                     for prefix in prefixes:
-                        l.append(prefix + p.name)
+                        result.append(prefix + package.name)
                     end
                 end
             end
-          end
+        end
     end
- end
- return l
+    return result
 end
 
 def on_branch(package):
