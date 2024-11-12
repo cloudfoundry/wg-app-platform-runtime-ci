@@ -9,6 +9,7 @@ RUN \
   export DEBIAN_FRONTEND=noninteractive && \
   apt-get update -y && apt-get install --assume-yes --no-install-recommends \
     apparmor \
+    ansible \
     bsdextrautils \
     build-essential \
     ca-certificates \
@@ -66,12 +67,14 @@ RUN \
     zip \
     zlib1g-dev
 
+RUN pip install ansible
+
 # APT/DEB/GPG Config for extra APT repos + pkgs
 #    Terraform CLI
 RUN \
   curl -L "https://apt.releases.hashicorp.com/gpg" | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg; \
   echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(cat /etc/os-release | grep VERSION_CODENAME | cut -d '=' -f 2) main" | tee /etc/apt/sources.list.d/hashicorp.list; \
-  apt-get update && apt-get install --assume-yes --no-install-recommends terraform
+  apt-get update && apt-get install --assume-yes --no-install-recommends terraform packer
 
 #    gCloud CLI / SDK
 RUN \
@@ -183,6 +186,7 @@ RUN go install github.com/onsi/ginkgo/v2/ginkgo@latest
 RUN go install github.com/stephendotcarter/unpack@latest
 RUN go install github.com/vito/gosub@master
 RUN go install github.com/cloudfoundry/uptimer@latest
+RUN go install github.com/vmware/govmomi/govc@latest
 
 #    credhub cli
 RUN \
