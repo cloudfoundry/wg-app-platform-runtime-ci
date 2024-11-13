@@ -219,7 +219,7 @@ resources:
   source:
     branch: develop
     uri: https://github.com/cloudfoundry/routing-release.git
-    tag_filter: v0.285.0
+    tag_filter: "v2.*"
 
 #! TIMERS
 - name: daily-at-midnight
