@@ -1,5 +1,5 @@
 $gopath = resolve-path '\var\vcap\packages\go*\go\bin'
-$env:Path = 'C:\var\vcap\packages\git\bin;C:\var\vcap\packages\staticcheck;C:\var\vcap\packages\yq;' + $gopath + ';"'+ $env:Path
+$env:Path = 'C:\var\vcap\packages\git\bin;C:\var\vcap\packages\staticcheck;C:\var\vcap\packages\yq;' + $gopath + ';'+ $env:Path
 
 # work around https://github.com/golang/go/issues/27515
 function Update-Dir-If-Symlink {
