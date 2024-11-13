@@ -13,7 +13,7 @@ unset THIS_FILE_DIR
 function run(){
   local name
   if [[ "${NAME:-undefined}" == "undefined" ]]; then
-    name="$(openssl rand -base64 12)"
+    name="$(openssl rand -hex 12)"
   else
     name=${NAME}
   fi
