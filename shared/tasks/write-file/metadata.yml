@@ -1,0 +1,10 @@
+
+---
+readme: |
+  This task will write a file to output dir
+oses:
+  - linux
+params:
+  NAME: (Defaults to randomly generated) Filename of the file.
+  CONTENT: |
+    Multiline Content for the file
