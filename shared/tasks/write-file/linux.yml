@@ -13,4 +13,4 @@ run:
 params:
   NAME:
   CONTENT:
-  CMD:
+  CMD: echo
