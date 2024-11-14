@@ -8,3 +8,4 @@ params:
   NAME: (Defaults to randomly generated) Filename of the file.
   CONTENT: |
     Multiline Content for the file
+  CMD: Command to run after adding Content

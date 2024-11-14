@@ -17,9 +17,15 @@ function run(){
   else
     name=${NAME}
   fi
+  if [[ "${CMD:-undefined}" == "undefined" ]]; then
   cat > "written-file/${name}" <<EOF
 ${CONTENT}
 EOF
+  else
+  cat > "written-file/${name}" <<EOF
+$(echo ${CONTENT} | ${CMD})
+EOF
+  fi
 }
 
 trap 'err_reporter $LINENO' ERR
