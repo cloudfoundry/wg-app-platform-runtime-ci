@@ -50,6 +50,7 @@ resource_types:
   source:
     repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
     tag: v1  #! This may be bumped in the future
+
 - name: slack-notification
   type: docker-image
   source:
@@ -1018,6 +1019,10 @@ jobs:
       repo: silk-repo
 
 - name: ship-what
+  on_success:
+    put: slack-ci-channel
+    params:
+      text: ":concourse-succeeded: $BUILD_PIPELINE_NAME ship-what just ran. Maybe you should cut a release? $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME"
   plan:
     - in_parallel:
         steps:
