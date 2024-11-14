@@ -18,10 +18,15 @@ function run(){
     name=${NAME}
   fi
 
-  cat > "written-file/${name}" <<EOF
+  if [[ "${EVAL:-false}" == "false" ]]; then
+    cat > "written-file/${name}" <<EOF
 ${CONTENT}
-$(eval "${CMD}")
 EOF
+else
+  cat > "written-file/${name}" <<EOF
+$(eval "${CONTENT}")
+EOF
+  fi
 }
 
 trap 'err_reporter $LINENO' ERR

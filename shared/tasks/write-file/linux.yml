@@ -13,4 +13,5 @@ run:
 params:
   NAME:
   CONTENT:
-  CMD: echo
+  INTERPOLATED_VALUE:
+  EVAL: false
