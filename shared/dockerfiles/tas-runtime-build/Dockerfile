@@ -42,6 +42,7 @@ RUN \
     libxslt-dev \
     libyaml-dev \
     lsof \
+    mkisofs \
     mercurial \
     mingw-w64 \
     netcat \
@@ -64,6 +65,7 @@ RUN \
     vim \
     wget \
     xfsprogs \
+    xorriso \
     zip \
     zlib1g-dev
 
