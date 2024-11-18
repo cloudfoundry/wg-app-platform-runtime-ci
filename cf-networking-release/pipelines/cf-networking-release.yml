@@ -216,14 +216,6 @@ resources:
     tag_filter: v*
 
 #! TIMERS
-- name: daily-at-midnight
-  type: time
-  icon: clock
-  source:
-    interval: '24h'
-    start: 00:00
-    stop: 00:59
-
 - name: weekly
   type: time
   icon: clock
@@ -540,7 +532,7 @@ jobs:
       - get: ci
       - get: image
       - get:  cf-networking-repo
-      - get: daily-at-midnight
+      - get: weekly
         trigger: true
       - get: cf-networking-readme
         trigger: false
@@ -563,7 +555,7 @@ jobs:
       - get: ci
       - get: image
       - get:  silk-repo
-      - get: daily-at-midnight
+      - get: weekly
         trigger: true
       - get: silk-readme
         trigger: false

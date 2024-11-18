@@ -234,14 +234,6 @@ resources:
     name: bosh-google-kvm-ubuntu-bionic-go_agent
 
 #! TIMERS
-- name: daily-at-midnight
-  type: time
-  icon: clock
-  source:
-    interval: '24h'
-    start: 00:00
-    stop: 00:59
-
 - name: weekly
   type: time
   icon: clock
@@ -545,7 +537,7 @@ jobs:
       steps:
       - get: ci
       - get: image
-      - get: daily-at-midnight
+      - get: weekly
         trigger: true
       - get: repo
 #@ for repo in data.values.internal_repos:
