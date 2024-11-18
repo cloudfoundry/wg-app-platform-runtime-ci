@@ -744,7 +744,7 @@ jobs:
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
     input_mapping:
-      ops-files: combined-opsfiles
+      ops-files: combined-assets
       vars-files: prepared-env
       toolsmiths-env: env-ad-shepherd
   - task: create-tcp-domain
@@ -758,7 +758,7 @@ jobs:
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
     input_mapping:
-      ops-files: combined-opsfiles
+      ops-files: combined-assets
       vars-files: prepared-env
       toolsmiths-env: env-ad-shepherd
   #!- put: pesto-cf-deployment
