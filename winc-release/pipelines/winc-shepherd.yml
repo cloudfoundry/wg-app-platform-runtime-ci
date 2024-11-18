@@ -751,7 +751,7 @@ jobs:
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
       FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
-      OPS_FILES: #@ ["combined-assets/{0}".format(i) for i in data.values.opsfiles]
+      OPS_FILES: #@ "\n".join(data.values.opsfiles)
   - task: create-tcp-domain
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
@@ -770,7 +770,7 @@ jobs:
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
       FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
-      OPS_FILES: #@ ["combined-assets/{0}".format(i) for i in data.values.opsfiles]
+      OPS_FILES: #@ "\n".join(data.values.opsfiles)
   #!- put: pesto-cf-deployment
   #!  attempts: 3
   #!  params:
