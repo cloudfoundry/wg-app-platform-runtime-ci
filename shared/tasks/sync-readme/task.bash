@@ -37,6 +37,7 @@ function run() {
     belongs_to_dir="${CI_DIR}/$(echo "${sub_readme#"${CI_DIR}/"}" | cut -d "/" -f1)"
     parent_readme=$(find "${CI_DIR}" -name "01-*.md" -ipath "${belongs_to_dir}/*")
   fi
+  sub_readme=$(echo "${sub_readme}" | grep -v "${parent_readme}" || true)
 
   local docs_md_file
   docs_md_file="$(mktemp -p "${task_tmp_dir}" -t 'XXXXX-docs.md')"
