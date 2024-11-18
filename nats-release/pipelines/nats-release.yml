@@ -75,6 +75,17 @@ resources:
     - docs/
     - releases/
 
+#! repo-synced is a write-only resource to prevent readme
+#! changes from triggering pipeline runs. See the description of "ignore_path"
+#! here for more info: https://github.com/concourse/git-resource
+- name: repo-synced
+  type: git
+  icon: git
+  source:
+    branch: develop
+    uri: git@github.com:cloudfoundry/nats-release
+    private_key: ((github-tas-runtime-bot/private-key))
+
 - name: release-branch 
   type: git
   icon: source-branch
@@ -304,7 +315,7 @@ jobs:
     - task: sync-dot-github-dir
       file: ci/shared/tasks/sync-dot-github-dir/linux.yml
       image: image
-    - put: repo
+    - put: repo-synced
       params:
        rebase: true
        repository: synced-repo
@@ -338,7 +349,7 @@ jobs:
     - task: sync-readme
       file: ci/shared/tasks/sync-readme/linux.yml
       image: image
-    - put: repo
+    - put: repo-synced
       params:
        rebase: true
        repository: synced-repo
