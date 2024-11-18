@@ -1094,7 +1094,7 @@ jobs:
         {input-01/operations/add-persistent-isolation-segment-router.yml,combined-assets}
         {input-02/grace-opsfile.yml,combined-assets}
         {ci/shared/opsfiles/scale-to-HA.yml,combined-assets}
-        {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}}
+        {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
         {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
         {ci/diego-release/opsfiles/*,combined-assets}
   - task: deploy-cf-deployment
