@@ -7,8 +7,8 @@
     properties:
       ccg:
         enabled: true
-        plugin_input: ((iwa_plugin_input))
-        credential_spec: ((iwa_credential_spec))
+        plugin_input: ((gcp-garden-windows-iwa-vars/iwa_plugin_input))
+        credential_spec: ((gcp-garden-windows-iwa-vars/iwa_credential_spec))
 
 - type: replace
   path: /instance_groups/name=windows2019-cell/jobs/name=garden-windows/properties/garden/runtime_plugin_extra_args?
