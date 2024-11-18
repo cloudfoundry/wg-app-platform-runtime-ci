@@ -72,6 +72,7 @@ opsfiles:
 - add-persistent-isolation-segment-diego-cell.yml
 - add-persistent-isolation-segment-router.yml
 - scale-to-HA.yml
+- scale-for-cats.yml
 - add-vizzini-errand.yml
 - grace-opsfile.yml
 - set-rep-max-idle-conns.yml
