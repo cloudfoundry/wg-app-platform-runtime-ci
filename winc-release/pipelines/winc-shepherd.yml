@@ -715,14 +715,12 @@ jobs:
         {input-01/operations/use-online-windows2019fs.yml,combined-assets}
         {input-01/operations/use-latest-windows2019-stemcell.yml,combined-assets}
         {input-01/operations/experimental/enable-nginx-routing-integrity-windows2019.yml,combined-assets}
-        {ci/winc-release/opsfiles/latest-winc.yml,combined-assets}
         {ci/winc-release/opsfiles/scale-down-windows2019.yml,combined-assets}
         {ci/winc-release/opsfiles/enable-rdp-2019.yml,combined-assets}
         {ci/winc-release/opsfiles/decrease-rep-evacuation-timeout.yml,combined-assets}
         {ci/winc-release/opsfiles/use-2-azs-for-router.yml,combined-assets}
         {ci/winc-release/opsfiles/enable-windows-auth.yml,combined-assets}
         {ci/winc-release/opsfiles/enable-windows-tcp-routes.yml,combined-assets}
-        {ci/winc-release/opsfiles/windows2019-cell-with-static-ip.yml,combined-assets}
         {ci/winc-release/opsfiles/enable-sticky-sessions-for-auth-negotiate.yml,combined-assets}
   #!- put: pesto-cf-deployment
   #!  attempts: 3
