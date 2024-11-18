@@ -104,7 +104,7 @@ resources:
   type: git
   icon: source-branch
   source:
-    branch: main
+    branch: winc-shepherd-ad
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: shared-templates
