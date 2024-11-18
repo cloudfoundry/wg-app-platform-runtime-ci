@@ -1,8 +1,8 @@
 #@data/values
 ---
 #@overlay/match missing_ok=True
-internal_repos:
-- name: "nats-v2-migrate"
+internal_repos: []
+
 opsfiles:
 - add-lb-ca-cert.yml
 - scale-for-cats.yml

@@ -1,5 +1,4 @@
 #@data/values
 ---
 #@overlay/match missing_ok=True
-internal_repos:
-- name: "healthchecker"
+internal_repos: []
