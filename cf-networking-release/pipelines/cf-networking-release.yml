@@ -134,6 +134,22 @@ resources:
     uri: git@github.com:cloudfoundry/silk-release.git
     private_key: ((github-tas-runtime-bot/private-key))
 
+- name: cf-networking-repo-synced
+  type: git
+  icon: source-branch
+  source:
+    branch: develop
+    uri: git@github.com:cloudfoundry/cf-networking-release.git
+    private_key: ((github-tas-runtime-bot/private-key))
+
+- name: silk-repo-synced
+  type: git
+  icon: source-branch
+  source:
+    branch: develop
+    uri: git@github.com:cloudfoundry/silk-release.git
+    private_key: ((github-tas-runtime-bot/private-key))
+
 - name: ci
   type: git
   icon: source-branch
@@ -484,7 +500,7 @@ jobs:
       image: image
       input_mapping:
         repo: cf-networking-repo
-    - put: cf-networking-repo
+    - put: cf-networking-repo-synced
       params:
        rebase: true
        repository: synced-repo
@@ -505,7 +521,7 @@ jobs:
       image: image
       input_mapping:
         repo: silk-repo
-    - put: silk-repo
+    - put: silk-repo-synced
       params:
        rebase: true
        repository: synced-repo
@@ -528,7 +544,7 @@ jobs:
       image: image
       input_mapping:
         repo:  cf-networking-repo
-    - put: cf-networking-repo
+    - put: cf-networking-repo-synced
       params:
        rebase: true
        repository: synced-repo
@@ -551,7 +567,7 @@ jobs:
       image: image
       input_mapping:
         repo:  silk-repo
-    - put: silk-repo
+    - put: silk-repo-synced
       params:
        rebase: true
        repository: synced-repo
