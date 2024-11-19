@@ -117,7 +117,7 @@ Function Expand-Envs
         $key=$items[0]
         $value=$items[1]
         Write-Host "Setting env $key"
-        Invoke-Expression "Set-Item -Path Env:$key -Value $value"
+        Invoke-Expression "Set-Item -Path \"Env:$key\" -Value \"$value\""
     }
     Debug "Expand-Envs Ending"
 }
