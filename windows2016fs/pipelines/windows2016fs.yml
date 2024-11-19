@@ -148,11 +148,11 @@ jobs:
         DOCKER_USERNAME=((dockerhub-tasruntime-username))
         DOCKER_PASSWORD=((dockerhub-tasruntime-password))
         OS_VERSION="2019"
-        SHARE_IP=((azure-storage-acct-gardenwindowzcismb/ip))
-        SHARE_FQDN=((azure-storage-acct-gardenwindowzcismb/fqdn))
-        SHARE_NAME=((azure-storage-acct-gardenwindowzcismb/name))
-        SHARE_USERNAME=((azure-storage-acct-gardenwindowzcismb/username))
-        SHARE_PASSWORD=((azure-storage-acct-gardenwindowzcismb/password))
+        SHARE_IP=((gcp-garden-windows-ci-smb-server/ip))
+        SHARE_FQDN=((gcp-garden-windows-ci-smb-server/fqdn))
+        SHARE_NAME=((gcp-garden-windows-ci-smb-server/share_name))
+        SHARE_USERNAME=((gcp-garden-windows-ci-smb-server/username))
+        SHARE_PASSWORD="((gcp-garden-windows-ci-smb-server/password))"
   - task: build-rootfs-metadata
     file: ci/windows2016fs/tasks/build-rootfs-metadata/windows.yml
   - task: add-kb-metadata
