@@ -719,7 +719,6 @@ jobs:
         {ci/winc-release/opsfiles/enable-rdp-2019.yml,combined-assets}
         {ci/winc-release/opsfiles/decrease-rep-evacuation-timeout.yml,combined-assets}
         {ci/winc-release/opsfiles/use-2-azs-for-router.yml,combined-assets}
-        {ci/winc-release/opsfiles/enable-windows-auth.yml,combined-assets}
         {ci/winc-release/opsfiles/enable-windows-tcp-routes.yml,combined-assets}
         {ci/winc-release/opsfiles/enable-sticky-sessions-for-auth-negotiate.yml,combined-assets}
   #!- put: pesto-cf-deployment
