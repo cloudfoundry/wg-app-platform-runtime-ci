@@ -206,9 +206,9 @@ jobs:
         inputs: detect
         params:
           release: windows-worker-lock
-    - task: start-smb-server-vm
+    - task: stop-smb-server-vm
       image: image
-      file: ci/shared/tasks/start-gcp-instance/linux.yml
+      file: ci/shared/tasks/stop-gcp-instance/linux.yml
       params:
         INSTANCE_NAME: garden-windows-ci-smb-server
         ZONE: us-central1-c
