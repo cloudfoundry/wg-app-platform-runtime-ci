@@ -334,21 +334,16 @@ function build_containerd() {
     target="$target/containerd"
     mkdir -p "${target}"
 
-    verify_go
-
     pushd "$source" || exit
     BUILDTAGS=no_btrfs make ./bin/containerd
-    BUILDTAGS=no_btrfs make ./bin/containerd-shim
-    BUILDTAGS=no_btrfs make ./bin/containerd-shim-runc-v1
     BUILDTAGS=no_btrfs make ./bin/containerd-shim-runc-v2
     BUILDTAGS=no_btrfs make ./bin/ctr
     mv -f bin/* "${target}"
+
     popd || exit
 
     cat > "${target}/run.bash" << EOF
 export CONTAINERD_BINARY="\$PWD/${built_dir}/containerd/containerd"
-export CONTAINERD_SHIM_BINARY="\$PWD/${built_dir}/containerd/containerd-shim"
-export CONTAINERD_SHIM_RUNC_V1_BINARY="\$PWD/${built_dir}/containerd/containerd-shim-runc-v1"
 export CONTAINERD_SHIM_RUNC_V2_BINARY="\$PWD/${built_dir}/containerd/containerd-shim-runc-v2"
 export CONTAINERD_CTR_BINARY="\$PWD/${built_dir}/containerd/ctr"
 EOF
