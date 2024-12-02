@@ -21,6 +21,7 @@ groups:
   - bump-package-golang
   - bump-bosh-blobs
   - sync-dot-github-dir
+  - sync-readme
 
 - name: manual
   jobs:
@@ -73,6 +74,17 @@ resources:
     - docs/
     - releases/
 
+#! repo-synced is a write-only resource to prevent readme
+#! changes from triggering pipeline runs. See the description of "ignore_path"
+#! here for more info: https://github.com/concourse/git-resource
+- name: repo-synced
+  type: git
+  icon: git
+  source:
+    branch: develop
+    uri: git@github.com:cloudfoundry/envoy-nginx-release.git
+    private_key: ((github-tas-runtime-bot/private-key))
+
 - name: release-branch
   type: git
   icon: source-branch
@@ -105,6 +117,17 @@ resources:
     paths:
       - shared/github
       - envoy-nginx-release/github
+
+- name: readme
+  type: git
+  icon: source-branch
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: 
+      - shared/*.md
+      - envoy-nginx-release/*.md
+      - envoy-nginx-release/readme/*.md
 
 - name: go-version
   type: git
@@ -332,6 +355,27 @@ jobs:
       params:
         PARENT_TEMPLATE_DIR: envoy-nginx-release
     - put: repo
+      params:
+       rebase: true
+       repository: synced-repo
+
+- name: sync-readme
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get: weekly
+        trigger: true
+      - get: repo
+      - get: readme
+        trigger: false
+  - do:
+    - task: sync-readme
+      file: ci/shared/tasks/sync-readme/linux.yml
+      image: image
+    - put: repo-synced
       params:
        rebase: true
        repository: synced-repo
