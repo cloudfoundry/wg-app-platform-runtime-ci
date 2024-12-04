@@ -1,0 +1,12 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+
+outputs:
+- name: gchat-text
+- name: slack-text
+
+run:
+  path: ci/shared/tasks/days-since-last-release/task.bash

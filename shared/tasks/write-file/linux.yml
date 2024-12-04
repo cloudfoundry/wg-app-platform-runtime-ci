@@ -1,0 +1,17 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+
+outputs:
+- name: written-file
+
+run:
+  path: ci/shared/tasks/write-file/task.bash
+
+params:
+  NAME:
+  CONTENT:
+  INTERPOLATED_VALUE:
+  EVAL: false

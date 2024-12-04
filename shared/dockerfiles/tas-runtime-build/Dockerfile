@@ -9,6 +9,7 @@ RUN \
   export DEBIAN_FRONTEND=noninteractive && \
   apt-get update -y && apt-get install --assume-yes --no-install-recommends \
     apparmor \
+    ansible \
     bsdextrautils \
     build-essential \
     ca-certificates \
@@ -41,6 +42,7 @@ RUN \
     libxslt-dev \
     libyaml-dev \
     lsof \
+    mkisofs \
     mercurial \
     mingw-w64 \
     netcat \
@@ -63,15 +65,18 @@ RUN \
     vim \
     wget \
     xfsprogs \
+    xorriso \
     zip \
     zlib1g-dev
+
+RUN pip install ansible
 
 # APT/DEB/GPG Config for extra APT repos + pkgs
 #    Terraform CLI
 RUN \
   curl -L "https://apt.releases.hashicorp.com/gpg" | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg; \
   echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(cat /etc/os-release | grep VERSION_CODENAME | cut -d '=' -f 2) main" | tee /etc/apt/sources.list.d/hashicorp.list; \
-  apt-get update && apt-get install --assume-yes --no-install-recommends terraform
+  apt-get update && apt-get install --assume-yes --no-install-recommends terraform packer
 
 #    gCloud CLI / SDK
 RUN \
@@ -166,6 +171,14 @@ RUN \
   echo "${url}" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/lychee /usr/local/bin/lychee
+
+# install govc
+RUN \
+  if [ "${TARGETARCH}" = "amd64" ]; then arch="x86_64"; else arch="arm64"; fi; \
+  url="$(curl -s https://api.github.com/repos/vmware/govmomi/releases | jq -r --arg arch "$arch" '.[0].assets[] | select((.name | contains("Linux")) and (.name | contains($arch)) and (.name | contains("govc")) ).browser_download_url')" && \
+  echo "${url}" && \
+  curl -L "${url}" | tar -xz -C /tmp/ && \
+  install /tmp/govc /usr/local/bin/govc
 
 #   cleanup afterwards
 RUN \

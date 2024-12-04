@@ -29,6 +29,11 @@ resource_types:
   source:
     repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
     tag: v1  #! This may be bumped in the future
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: latest
 
 #! Define-Resources
 resources:
@@ -50,11 +55,11 @@ resources:
     ignore_paths:
     - .github/
     - .gitignore
-    - .final_build
+    - .final_builds/
     - CODEOWNERS
     - LICENSE
     - NOTICE
-    - README*
+    - README.md
     - docs/
     - releases/
 
@@ -119,6 +124,11 @@ resources:
     username: _json_key
     password: ((gcp-tas-runtime-service-account/config-json))
     tag: 'latest'
+
+- name: slack-ci-channel
+  type: slack-notification
+  source:
+    url: ((slack-ci-channel/webhook))
 
 - name: env
   type: shepherd
@@ -189,6 +199,10 @@ resources:
 jobs:
 - name: bump-dependencies-go-mod
   serial: true
+  on_failure: &ci-notification
+    put: slack-ci-channel
+    params:
+      text: ":concourse-failed: $BUILD_PIPELINE_NAME failed on <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_JOB_NAME>."
   plan:
   - in_parallel:
       steps:
@@ -206,6 +220,7 @@ jobs:
       repository: bumped-repo
 
 - name: bump-package-golang
+  on_failure: *ci-notification
   plan:
   - in_parallel:
     - get: ci
@@ -240,6 +255,7 @@ jobs:
       repository: vendored-repo
 
 - name: bump-windows2019fs-release
+  on_failure: *ci-notification
   serial: true
   plan:
   - in_parallel:
@@ -473,6 +489,10 @@ jobs:
       OS: windows
 
 - name: ship-what
+  on_success:
+    put: slack-ci-channel
+    params:
+      text: ":concourse-succeeded: $BUILD_PIPELINE_NAME ship-what just ran. Maybe you should cut a release? $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME"
   plan:
     - in_parallel:
         steps:

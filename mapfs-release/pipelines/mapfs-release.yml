@@ -73,6 +73,12 @@ resource_types:
     username: _json_key
     password: ((gcp-tas-runtime-service-account/config-json))
 
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: latest
+
 resources:
 - name: golang-release-latest
   type: git
@@ -91,13 +97,24 @@ resources:
     ignore_paths:
     - .github/
     - .gitignore
-    - .final_build
+    - .final_builds/
     - CODEOWNERS
     - LICENSE
     - NOTICE
-    - README*
+    - README.md
     - docs/
     - releases/
+
+#! repo-synced is a write-only resource to prevent readme
+#! changes from triggering pipeline runs. See the description of "ignore_path"
+#! here for more info: https://github.com/concourse/git-resource
+- name: repo-synced
+  type: git
+  icon: git
+  source:
+    branch: develop
+    uri: git@github.com:cloudfoundry/mapfs-release.git
+    private_key: ((github-tas-runtime-bot/private-key))
 
 - name: release-branch
   type: git
@@ -187,6 +204,11 @@ resources:
     days:
       - Monday
 
+- name: slack-ci-channel
+  type: slack-notification
+  source:
+    url: ((slack-ci-channel/webhook))
+
 - name: env
   type: pcf-pool
   icon: sheep
@@ -230,13 +252,11 @@ resources:
   type: semver
   icon: counter
   source:
-    access_key_id: ((aws-s3-107350105730-mapfs-volume-services-s3/access-key-id))
-    bucket: mapfs-versions
-    initial_version: 1.2.4
-    key: current-version
-    region_name: us-east-1
-    secret_access_key: ((aws-s3-107350105730-mapfs-volume-services-s3/secret-access-key))
-    assume_role_arn: ((aws-s3-107350105730-mapfs-volume-services-s3/assume-role))
+    initial_version: 1.6.0
+    driver: gcs
+    bucket: ci-release-versions
+    key: mapfs-release/version
+    json_key: ((gcp-tas-runtime-service-account/config-json))
 
 - name: env-lock
   type: pool
@@ -300,7 +320,7 @@ jobs:
     - task: sync-readme
       file: ci/shared/tasks/sync-readme/linux.yml
       image: image
-    - put: repo
+    - put: repo-synced
       params:
        rebase: true
        repository: synced-repo
@@ -321,13 +341,17 @@ jobs:
       image: image
       params:
         PARENT_TEMPLATE_DIR: mapfs-release
-    - put: repo
+    - put: repo-synced
       params:
        rebase: true
        repository: synced-repo
 
 - name: bump-dependencies-go-mod
   serial: true
+  on_failure: &ci-notification
+    put: slack-ci-channel
+    params:
+      text: ":concourse-failed: $BUILD_PIPELINE_NAME failed on <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_JOB_NAME>."
   plan:
   - in_parallel:
       steps:
@@ -349,6 +373,7 @@ jobs:
         repository: bumped-repo
 
 - name: bump-golang
+  on_failure: *ci-notification
   plan:
   - in_parallel:
       steps:
@@ -374,9 +399,8 @@ jobs:
       package-release: golang-release-latest
     params:
       PACKAGE_NAME: golang-*-linux
-      AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-mapfs-volume-services-s3/access-key-id))
-      AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-mapfs-volume-services-s3/secret-access-key))
-      AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-mapfs-volume-services-s3/assume-role))
+      AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+      AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
   - put: repo
     params:
       rebase: true
@@ -413,6 +437,7 @@ jobs:
 #@ end
 
 - name: bump-bosh-blobs
+  on_failure: *ci-notification
   serial: true
   plan:
   - in_parallel:
@@ -436,9 +461,8 @@ jobs:
         blob: meson-git-release
       params:
         BOSH_BLOB_PATH: build-deps/meson-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-mapfs-volume-services-s3/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-mapfs-volume-services-s3/secret-access-key))
-        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-mapfs-volume-services-s3/assume-role))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -451,9 +475,8 @@ jobs:
         blob: ninja-git-release
       params:
         BOSH_BLOB_PATH: build-deps/ninja-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-mapfs-volume-services-s3/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-mapfs-volume-services-s3/secret-access-key))
-        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-mapfs-volume-services-s3/assume-role))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -466,9 +489,8 @@ jobs:
         blob: libfuse-git-release
       params:
         BOSH_BLOB_PATH: fuse/fuse-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-mapfs-volume-services-s3/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-mapfs-volume-services-s3/secret-access-key))
-        AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-mapfs-volume-services-s3/assume-role))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -707,6 +729,10 @@ jobs:
     image: image
 
 - name: ship-what
+  on_success:
+    put: slack-ci-channel
+    params:
+      text: ":concourse-succeeded: $BUILD_PIPELINE_NAME ship-what just ran. Maybe you should cut a release? $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME"
   plan:
     - in_parallel:
         steps:
@@ -777,9 +803,8 @@ jobs:
     image: image
     file: ci/shared/tasks/bosh-finalize-release/linux.yml
     params:
-      AWS_SECRET_ACCESS_KEY: ((aws-s3-107350105730-mapfs-volume-services-s3/secret-access-key))
-      AWS_ACCESS_KEY_ID: ((aws-s3-107350105730-mapfs-volume-services-s3/access-key-id))
-      AWS_ASSUME_ROLE_ARN: ((aws-s3-107350105730-mapfs-volume-services-s3/assume-role))
+      AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+      AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
 
   - put: release-branch
     params:

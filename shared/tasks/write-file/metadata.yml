@@ -1,0 +1,12 @@
+
+---
+readme: |
+  This task will write a file to output dir
+oses:
+  - linux
+params:
+  NAME: (Defaults to randomly generated) Filename of the file.
+  CONTENT: |
+    Multiline Content for the file
+  INTERPOLATED_VALUE: If a value needs to be injected from concourse, but can't be parsed in CONTENT.
+  EVAL: (Default to false). Determine whether to eval the CONTENT or not

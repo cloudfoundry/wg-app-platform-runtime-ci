@@ -27,6 +27,7 @@ groups:
   - bump-package-golang
   - bump-bosh-blobs
   - sync-dot-github-dir
+  - sync-readme
 
 - name: manual
   jobs:
@@ -60,6 +61,11 @@ resource_types:
     username: _json_key
     password: ((gcp-tas-runtime-service-account/config-json))
     tag: latest
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: latest
 
 #! Define-Resources
 resources:
@@ -80,13 +86,24 @@ resources:
     ignore_paths:
     - .github/
     - .gitignore
-    - .final_build
+    - .final_builds/
     - CODEOWNERS
     - LICENSE
     - NOTICE
-    - README*
+    - README.md
     - docs/
     - releases/
+
+#! repo-synced is a write-only resource to prevent readme
+#! changes from triggering pipeline runs. See the description of "ignore_path"
+#! here for more info: https://github.com/concourse/git-resource
+- name: repo-synced
+  type: git
+  icon: git
+  source:
+    branch: develop
+    uri: git@github.com:cloudfoundry/garden-runc-release.git
+    private_key: ((github-tas-runtime-bot/private-key))
 
 - name: release-branch
   type: git
@@ -237,6 +254,11 @@ resources:
     days:
       - Wednesday
 
+- name: slack-ci-channel
+  type: slack-notification
+  source:
+    url: ((slack-ci-channel/webhook))
+
 #! Toolsmith pool
 - name: env
   type: shepherd
@@ -277,6 +299,17 @@ resources:
     paths:
       - shared/github
       - garden-runc-release/github
+
+- name: readme
+  type: git
+  icon: source-branch
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: 
+      - shared/*.md
+      - garden-runc-release/*.md
+      - garden-runc-release/readme/*.md
 
 #@ for repo in helpers.packages_with_a_git_repo(data.values.internal_repos):
 - name: #@ "{}-repo".format(repo.name)
@@ -480,6 +513,10 @@ resources:
 #! Define-Jobs
 jobs:
 - name: bump-dependencies-go-mod
+  on_failure: &ci-notification
+    put: slack-ci-channel
+    params:
+      text: ":concourse-failed: $BUILD_PIPELINE_NAME failed on <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_JOB_NAME>."
   plan:
   - in_parallel:
     - get: ci
@@ -630,6 +667,7 @@ jobs:
         repository: bumped-repo
 
 - name: bump-package-golang
+  on_failure: *ci-notification
   plan:
   - in_parallel:
     - get: ci
@@ -690,6 +728,7 @@ jobs:
       repository: modified-release-windows
 
 - name: bump-bosh-blobs
+  on_failure: *ci-notification
   serial: true
   plan:
   - in_parallel:
@@ -765,8 +804,8 @@ jobs:
         blob: autoconf
       params:
         BOSH_BLOB_PATH: autoconf/autoconf-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -779,8 +818,8 @@ jobs:
         blob: automake
       params:
         BOSH_BLOB_PATH: automake/automake-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -793,8 +832,8 @@ jobs:
         blob: busybox
       params:
         BOSH_BLOB_PATH: busybox/busybox-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -808,8 +847,8 @@ jobs:
         blob: gperf
       params:
         BOSH_BLOB_PATH: gperf/gperf-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -822,8 +861,8 @@ jobs:
         blob: iptables
       params:
         BOSH_BLOB_PATH: iptables/iptables-*.tar.xz
-        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -836,8 +875,8 @@ jobs:
         blob: libmnl
       params:
         BOSH_BLOB_PATH: iptables/libmnl-*.tar.bz2
-        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -850,8 +889,8 @@ jobs:
         blob: libnftnl
       params:
         BOSH_BLOB_PATH: iptables/libnftnl-*.tar.xz
-        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -864,8 +903,8 @@ jobs:
         blob: libseccomp
       params:
         BOSH_BLOB_PATH: libseccomp/libseccomp-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -878,8 +917,8 @@ jobs:
         blob: libtool
       params:
         BOSH_BLOB_PATH: libtool/libtool-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -892,8 +931,8 @@ jobs:
         blob: musl
       params:
         BOSH_BLOB_PATH: musl/musl-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -906,8 +945,8 @@ jobs:
         blob: pkg-config
       params:
         BOSH_BLOB_PATH: pkg-config/pkg-config-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -921,8 +960,8 @@ jobs:
         blob: tar
       params:
         BOSH_BLOB_PATH: tar/tar-*.tar.xz
-        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -935,8 +974,8 @@ jobs:
         blob: tini
       params:
         BOSH_BLOB_PATH: tini/tini-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -949,8 +988,8 @@ jobs:
         blob: util-linux
       params:
         BOSH_BLOB_PATH: util-linux/util-linux-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -963,8 +1002,8 @@ jobs:
         blob: zlib
       params:
         BOSH_BLOB_PATH: zlib/zlib-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
       params:
        rebase: true
@@ -1002,6 +1041,43 @@ jobs:
         repo: #@ "{}-repo".format(repo.name)
       params:
         PARENT_TEMPLATE_DIR: garden-runc-release
+    - put: #@ "{}-repo".format(repo.name)
+      params:
+       rebase: true
+       repository: synced-repo
+#@ end
+
+- name: sync-readme
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get: weekly
+        trigger: true
+      - get: repo
+#@ for repo in helpers.packages_with_a_git_repo(data.values.internal_repos):
+      - get: #@ "{}-repo".format(repo.name)
+#@ end
+        trigger: false
+      - get: readme
+        trigger: false
+  - do:
+    - task: sync-readme
+      file: ci/shared/tasks/sync-readme/linux.yml
+      image: image
+    - put: repo-synced
+      params:
+       rebase: true
+       repository: synced-repo
+#@ for repo in helpers.packages_with_a_git_repo(data.values.internal_repos):
+  - do:
+    - task: #@ "sync-readme-{}".format(repo.name)
+      file: ci/shared/tasks/sync-readme/linux.yml
+      image: image
+      input_mapping:
+        repo: #@ "{}-repo".format(repo.name)
     - put: #@ "{}-repo".format(repo.name)
       params:
        rebase: true
@@ -1515,6 +1591,10 @@ jobs:
     image: image
 
 - name: ship-what
+  on_success:
+    put: slack-ci-channel
+    params:
+      text: ":concourse-succeeded: $BUILD_PIPELINE_NAME ship-what just ran. Maybe you should cut a release? $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME"
   plan:
     - in_parallel:
         steps:
@@ -1613,8 +1693,8 @@ jobs:
       image: image
       file: ci/shared/tasks/bosh-finalize-release/linux.yml
       params:
-        AWS_ACCESS_KEY_ID: ((aws-s3-garden-linux-release/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-garden-linux-release/secret-access-key))
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
 
     - put: release-branch
       params:
