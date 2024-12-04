@@ -27,6 +27,7 @@ groups:
   - bump-package-golang
   - bump-bosh-blobs
   - sync-dot-github-dir
+  - sync-readme
 
 - name: manual
   jobs:
@@ -92,6 +93,17 @@ resources:
     - README.md
     - docs/
     - releases/
+
+#! repo-synced is a write-only resource to prevent readme
+#! changes from triggering pipeline runs. See the description of "ignore_path"
+#! here for more info: https://github.com/concourse/git-resource
+- name: repo-synced
+  type: git
+  icon: git
+  source:
+    branch: develop
+    uri: git@github.com:cloudfoundry/garden-runc-release.git
+    private_key: ((github-tas-runtime-bot/private-key))
 
 - name: release-branch
   type: git
@@ -287,6 +299,17 @@ resources:
     paths:
       - shared/github
       - garden-runc-release/github
+
+- name: readme
+  type: git
+  icon: source-branch
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: 
+      - shared/*.md
+      - garden-runc-release/*.md
+      - garden-runc-release/readme/*.md
 
 #@ for repo in helpers.packages_with_a_git_repo(data.values.internal_repos):
 - name: #@ "{}-repo".format(repo.name)
@@ -1018,6 +1041,43 @@ jobs:
         repo: #@ "{}-repo".format(repo.name)
       params:
         PARENT_TEMPLATE_DIR: garden-runc-release
+    - put: #@ "{}-repo".format(repo.name)
+      params:
+       rebase: true
+       repository: synced-repo
+#@ end
+
+- name: sync-readme
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get: weekly
+        trigger: true
+      - get: repo
+#@ for repo in helpers.packages_with_a_git_repo(data.values.internal_repos):
+      - get: #@ "{}-repo".format(repo.name)
+#@ end
+        trigger: false
+      - get: readme
+        trigger: false
+  - do:
+    - task: sync-readme
+      file: ci/shared/tasks/sync-readme/linux.yml
+      image: image
+    - put: repo-synced
+      params:
+       rebase: true
+       repository: synced-repo
+#@ for repo in helpers.packages_with_a_git_repo(data.values.internal_repos):
+  - do:
+    - task: #@ "sync-readme-{}".format(repo.name)
+      file: ci/shared/tasks/sync-readme/linux.yml
+      image: image
+      input_mapping:
+        repo: #@ "{}-repo".format(repo.name)
     - put: #@ "{}-repo".format(repo.name)
       params:
        rebase: true
