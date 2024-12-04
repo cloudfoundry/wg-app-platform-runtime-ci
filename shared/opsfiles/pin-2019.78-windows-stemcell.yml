@@ -1,0 +1,8 @@
+---
+- type: replace
+  path: /stemcells/os=windows2019
+  value:
+    alias: "windows2019"
+    os: "windows2019"
+    version: "2019.78"
+    url: "https://bosh.io/d/stemcells/bosh-google-kvm-windows2019-go_agent?v=2019.78"

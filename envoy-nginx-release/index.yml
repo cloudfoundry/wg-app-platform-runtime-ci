@@ -17,3 +17,5 @@ opsfiles:
   - scale-down-windows2019.yml
   - decrease-rep-evacuation-timeout.yml
   - use-2-azs-for-router.yml
+    # FIXME: REVERT THIS OPSFILE AFTER FIXING THE WINDOWS STEMCELL + FS ISSUE
+  - pin-2019.78-windows-stemcell.yml
