@@ -334,17 +334,12 @@ function build_containerd() {
     target="$target/containerd"
     mkdir -p "${target}"
 
-    local tmpDir=$(mktemp -d -p /tmp "build-containerd-XXXX")
-    local containerd_version=$(grep "containerd/v2" "$source"/go.mod | awk '{print $2}')
-    git clone -b "$containerd_version"  https://github.com/containerd/containerd.git "$tmpDir"
-
-    pushd "$tmpDir" || exit
-    verify_go
-
+    pushd "$source" || exit
     BUILDTAGS=no_btrfs make ./bin/containerd
     BUILDTAGS=no_btrfs make ./bin/containerd-shim-runc-v2
     BUILDTAGS=no_btrfs make ./bin/ctr
     mv -f bin/* "${target}"
+
     popd || exit
 
     cat > "${target}/run.bash" << EOF
