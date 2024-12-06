@@ -1,7 +1,7 @@
 # idmapper
 
-[![Go Report Card](https://goreportcard.com/badge/code.cloudfoundry.org/idmapper)](https://goreportcard.com/report/code.cloudfoundry.org/gorouter)
-[![Go Reference](https://pkg.go.dev/badge/code.cloudfoundry.org/idmapper.svg)](https://pkg.go.dev/code.cloudfoundry.org/gorouter)
+[![Go Report Card](https://goreportcard.com/badge/code.cloudfoundry.org/idmapper)](https://goreportcard.com/report/code.cloudfoundry.org/idmapper)
+[![Go Reference](https://pkg.go.dev/badge/code.cloudfoundry.org/idmapper.svg)](https://pkg.go.dev/code.cloudfoundry.org/idmapper)
 
 idmapper is a package which will map a process to the highest usera id available.
 

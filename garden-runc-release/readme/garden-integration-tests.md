@@ -1,7 +1,7 @@
 # garden-integration-tests
 
-[![Go Report Card](https://goreportcard.com/badge/code.cloudfoundry.org/garden-integration-tests)](https://goreportcard.com/report/code.cloudfoundry.org/gorouter)
-[![Go Reference](https://pkg.go.dev/badge/code.cloudfoundry.org/garden-integration-tests.svg)](https://pkg.go.dev/code.cloudfoundry.org/gorouter)
+[![Go Report Card](https://goreportcard.com/badge/code.cloudfoundry.org/garden-integration-tests)](https://goreportcard.com/report/code.cloudfoundry.org/garden-integration-tests)
+[![Go Reference](https://pkg.go.dev/badge/code.cloudfoundry.org/garden-integration-tests.svg)](https://pkg.go.dev/code.cloudfoundry.org/garden-integration-tests)
 
 Tests that run against a remote garden server
 
