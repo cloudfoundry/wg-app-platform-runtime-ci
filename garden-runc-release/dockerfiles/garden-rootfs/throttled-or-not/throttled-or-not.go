@@ -144,7 +144,7 @@ func cpuCgroupHandler(w http.ResponseWriter, r *http.Request) {
 
 		lineParts = strings.Split(line, "::")
 		if len(lineParts) < 3 {
-			http.Error(w, fmt.Sprintf("can't parse cpu cgroup path: %s, %d, %s", string(contents), len(lineParts), line), http.StatusInternalServerError)
+			http.Error(w, "can't parse cpu cgroup path", http.StatusInternalServerError)
 
 			return
 		}
