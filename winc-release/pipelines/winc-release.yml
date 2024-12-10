@@ -612,7 +612,8 @@ jobs:
       FUNCTIONS: ci/winc-release/helpers/configure-binaries.ps1
       DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
       ENVS: |
-        WINC_TEST_ROOTFS=docker:///cloudfoundry/windows2016fs:2019
+        #! FIXME: revert this to the `2019` tag after windows2016fs issues are fixed
+        WINC_TEST_ROOTFS=docker:///cloudfoundry/windows2016fs:2019.0.168
 #@ end
   ensure:
     task: stop-windows-worker
