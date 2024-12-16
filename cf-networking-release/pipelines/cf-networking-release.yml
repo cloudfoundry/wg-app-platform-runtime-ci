@@ -1063,14 +1063,6 @@ jobs:
         - get: cf-networking-github-release
         - get: silk-github-release
         - get: version
-        - get: env
-          passed:
-            - run-cats
-            - run-cf-networking-acceptance-tests
-            - run-service-discovery-acceptance-tests
-            - run-service-discovery-performance-tests
-            - export-release
-          trigger: true
     - in_parallel:
         steps:
         - task: check-safe-to-release-cf-networking
@@ -1241,7 +1233,12 @@ jobs:
   serial: true
   plan:
   - get: env
-    passed: [ship-what]
+    passed: 
+    - run-cats
+    - run-cf-networking-acceptance-tests
+    - run-service-discovery-acceptance-tests
+    - run-service-discovery-performance-tests
+    - export-release
     trigger: true
   - get: env-lock
   - put: env
