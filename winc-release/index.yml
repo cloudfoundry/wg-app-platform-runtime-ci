@@ -27,5 +27,3 @@ opsfiles:
 - enable-windows-tcp-routes.yml
 - windows2019-cell-with-static-ip.yml
 - enable-sticky-sessions-for-auth-negotiate.yml
-  # FIXME: REVERT THIS OPSFILE AFTER FIXING THE WINDOWS STEMCELL + FS ISSUE
-- pin-2019.78-windows-stemcell.yml

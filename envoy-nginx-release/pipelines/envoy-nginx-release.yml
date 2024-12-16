@@ -492,7 +492,6 @@ jobs:
         {ci/envoy-nginx-release/opsfiles/*.yml,combined-assets}
         {ci/shared/opsfiles//scale-to-HA.yml,combined-assets}
         {ci/shared/opsfiles/compiled-windows-windows-runtime-workaround.yml,combined-assets}
-        {ci/shared/opsfiles/pin-2019.78-windows-stemcell.yml,combined-assets}
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
     input_mapping:

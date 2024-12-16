@@ -7,4 +7,3 @@ opsfiles:
   scale-for-cats.yml: This is used for testing with a cf-deployment pooled env. They are provisioned pretty light, so we need to scale them up. Otherwise, CATS becomes very flakey. Adds diego cells and increase their size.
   scale-to-HA.yml: This is used to scale up every instance to a high-availibity (HA) installation
   compiled-windows-windows-runtime-workaround.yml: A workaround to enable compiled-releases to not be recompiled when Windows VMs are present
-  pin-2019.78-windows-stemcell.yml: Used to pin back the windows stemcell temporarily to one that will work, so we can release updates to our software while trying to figure out what broke against the newer stemcell
