@@ -15,7 +15,11 @@ function run() {
 
   pushd "${repo_path}" > /dev/null
 
-  BUILD_FLAGS="--tags cgo,seccomp,apparmor" sync_package runc guardian \
+  sync_package runc guardian \
+    -app github.com/seccomp/libseccomp-golang \
+    -app github.com/opencontainers/runc/libcontainer/seccomp \
+    -app github.com/opencontainers/runc/libcontainer/seccomp/patchbpf \
+    -app golang.org/x/net/bpf \
     -app github.com/opencontainers/runc &
 
   BUILD_FLAGS="--tags cloudfoundry" sync_package grootfs grootfs \
