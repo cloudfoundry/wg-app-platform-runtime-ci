@@ -834,7 +834,7 @@ jobs:
       APP_NAME: iwa-test-app
       APP_HOSTNAME: windows-auth
       APP_TCP_PORT: 1030
-      APP_DOMAIN: pesto.cf-app.com
+      #!APP_DOMAIN: pesto.cf-app.com
       APP_ORG: iwa-org
       APP_SPACE: iwa-space
       AD_SUBNET: 10.1.0.0/24

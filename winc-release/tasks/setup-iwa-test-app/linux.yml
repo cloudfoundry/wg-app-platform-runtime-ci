@@ -11,7 +11,6 @@ run:
 
 params:
   AD_SUBNET:
-  APP_DOMAIN:
   APP_NAME:
   APP_TCP_PORT:
   APP_HOSTNAME:
