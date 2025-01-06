@@ -16,6 +16,7 @@ function run() {
 
   rm -rf /tmp/packages
   cat > /tmp/packages <<EOF
+containerd
 dontpanic
 garden
 garden-integration-tests
