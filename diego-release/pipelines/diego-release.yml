@@ -984,7 +984,7 @@ jobs:
           GARDEN_RUNC_RELEASE_PATH=$PWD/input-02
           WINC_RELEASE_PATH=$PWD/input-03
           DIEGO_RELEASE_PATH=$PWD/repo
-          GARDEN_TEST_ROOTFS=docker:///cloudfoundry/windows2016fs:2019.0.54
+          GARDEN_TEST_ROOTFS=docker:///cloudfoundry/windows2016fs:2019
           DB_USER=diego
           DB_PASSWORD=diego_password
         FLAGS: |
