@@ -824,20 +824,20 @@ jobs:
       ZONE: us-central1-a
       PROJECT: cf-diego-pivotal
       SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
-  - task: deploy-and-setup-iwa-test-app
-    file: ci/winc-release/tasks/setup-iwa-test-app/linux.yml
-    image: image
-    input_mapping:
-      #!env: pesto-env
-      env: env-ad-shepherd
-    params:
-      APP_NAME: iwa-test-app
-      APP_HOSTNAME: windows-auth
-      APP_TCP_PORT: 1030
-      #!APP_DOMAIN: pesto.cf-app.com
-      APP_ORG: iwa-org
-      APP_SPACE: iwa-space
-      AD_SUBNET: 10.1.0.0/24
+#!  - task: deploy-and-setup-iwa-test-app
+#!  file: ci/winc-release/tasks/setup-iwa-test-app/linux.yml
+#!  image: image
+#!    input_mapping:
+#!    env: pesto-env
+#!      env: env-ad-shepherd
+#!    params:
+#!      APP_NAME: iwa-test-app
+#!      APP_HOSTNAME: windows-auth
+#!      APP_TCP_PORT: 1030
+#!      APP_DOMAIN: pesto.cf-app.com
+#!      APP_ORG: iwa-org
+#!      APP_SPACE: iwa-space
+#!      AD_SUBNET: 10.1.0.0/24
 
 - name: run-wats
   serial: true
