@@ -549,7 +549,7 @@ jobs:
       input_mapping:
         blob: openldap
       params:
-        BOSH_BLOB_PATH: openldap/openldap-*.tgz
+        BOSH_BLOB_PATH: openldap/openldap-*.tar.gz
         AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
