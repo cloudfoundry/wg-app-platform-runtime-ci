@@ -609,7 +609,7 @@ jobs:
   - in_parallel:
     - get: ci
     - get: repo
-      trigger: true
+      trigger: false
     - get: image
     - get: package-release
       resource: golang-release-latest
@@ -732,7 +732,7 @@ jobs:
   - in_parallel:
     - get: ci
     - get: repo
-      trigger: true
+      trigger: false
     - get: image
     - get: package-release
       resource: golang-release-latest
@@ -855,7 +855,7 @@ jobs:
   - in_parallel:
     - get: ci
     - get: repo
-      trigger: true
+      trigger: false
     - get: image
     - get: garden-runc-release
     - get: winc-release
