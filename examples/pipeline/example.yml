@@ -69,9 +69,20 @@ resources:
     - CODEOWNERS
     - LICENSE
     - NOTICE
-    - README*
+    - README.md
     - docs/
     - releases/
+
+#! repo-synced is a write-only resource to prevent readme
+#! changes from triggering pipeline runs. See the description of "ignore_path"
+#! here for more info: https://github.com/concourse/git-resource
+- name: repo-synced
+  type: git
+  icon: git
+  source:
+    branch: develop
+    uri: git@github.com:<REPLACE_ME>
+    private_key: ((github-tas-runtime-bot/private-key))
 
 - name: release-branch 
   type: git
@@ -492,6 +503,10 @@ jobs:
     image: image
 
 - name: ship-what
+  on_success:
+    put: slack-ci-channel
+    params:
+      text: ":concourse-succeeded: $BUILD_PIPELINE_NAME ship-what just ran. Maybe you should cut a release? $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME"
   plan:
     - in_parallel:
         steps:

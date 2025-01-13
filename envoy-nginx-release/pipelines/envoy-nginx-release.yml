@@ -21,6 +21,7 @@ groups:
   - bump-package-golang
   - bump-bosh-blobs
   - sync-dot-github-dir
+  - sync-readme
 
 - name: manual
   jobs:
@@ -69,9 +70,20 @@ resources:
     - CODEOWNERS
     - LICENSE
     - NOTICE
-    - README*
+    - README.md
     - docs/
     - releases/
+
+#! repo-synced is a write-only resource to prevent readme
+#! changes from triggering pipeline runs. See the description of "ignore_path"
+#! here for more info: https://github.com/concourse/git-resource
+- name: repo-synced
+  type: git
+  icon: git
+  source:
+    branch: develop
+    uri: git@github.com:cloudfoundry/envoy-nginx-release.git
+    private_key: ((github-tas-runtime-bot/private-key))
 
 - name: release-branch
   type: git
@@ -105,6 +117,17 @@ resources:
     paths:
       - shared/github
       - envoy-nginx-release/github
+
+- name: readme
+  type: git
+  icon: source-branch
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: 
+      - shared/*.md
+      - envoy-nginx-release/*.md
+      - envoy-nginx-release/readme/*.md
 
 - name: go-version
   type: git
@@ -336,6 +359,27 @@ jobs:
        rebase: true
        repository: synced-repo
 
+- name: sync-readme
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get: weekly
+        trigger: true
+      - get: repo
+      - get: readme
+        trigger: false
+  - do:
+    - task: sync-readme
+      file: ci/shared/tasks/sync-readme/linux.yml
+      image: image
+    - put: repo-synced
+      params:
+       rebase: true
+       repository: synced-repo
+
 - name: unit-and-integration-tests
   serial: true
   plan:
@@ -556,6 +600,10 @@ jobs:
       OS: windows
 
 - name: ship-what
+  on_success:
+    put: slack-ci-channel
+    params:
+      text: ":concourse-succeeded: $BUILD_PIPELINE_NAME ship-what just ran. Maybe you should cut a release? $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME"
   plan:
     - in_parallel:
         steps:

@@ -42,6 +42,7 @@ RUN \
     libxslt-dev \
     libyaml-dev \
     lsof \
+    mkisofs \
     mercurial \
     mingw-w64 \
     netcat \
@@ -64,6 +65,7 @@ RUN \
     vim \
     wget \
     xfsprogs \
+    xorriso \
     zip \
     zlib1g-dev
 
@@ -170,6 +172,14 @@ RUN \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/lychee /usr/local/bin/lychee
 
+# install govc
+RUN \
+  if [ "${TARGETARCH}" = "amd64" ]; then arch="x86_64"; else arch="arm64"; fi; \
+  url="$(curl -s https://api.github.com/repos/vmware/govmomi/releases | jq -r --arg arch "$arch" '.[0].assets[] | select((.name | contains("Linux")) and (.name | contains($arch)) and (.name | contains("govc")) ).browser_download_url')" && \
+  echo "${url}" && \
+  curl -L "${url}" | tar -xz -C /tmp/ && \
+  install /tmp/govc /usr/local/bin/govc
+
 #   cleanup afterwards
 RUN \
   rm -rf /tmp/*; \
@@ -186,7 +196,6 @@ RUN go install github.com/onsi/ginkgo/v2/ginkgo@latest
 RUN go install github.com/stephendotcarter/unpack@latest
 RUN go install github.com/vito/gosub@master
 RUN go install github.com/cloudfoundry/uptimer@latest
-RUN go install github.com/vmware/govmomi/govc@latest
 
 #    credhub cli
 RUN \

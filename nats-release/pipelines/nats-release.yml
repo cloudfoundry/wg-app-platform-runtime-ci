@@ -71,9 +71,20 @@ resources:
     - CODEOWNERS
     - LICENSE
     - NOTICE
-    - README*
+    - README.md
     - docs/
     - releases/
+
+#! repo-synced is a write-only resource to prevent readme
+#! changes from triggering pipeline runs. See the description of "ignore_path"
+#! here for more info: https://github.com/concourse/git-resource
+- name: repo-synced
+  type: git
+  icon: git
+  source:
+    branch: develop
+    uri: git@github.com:cloudfoundry/nats-release
+    private_key: ((github-tas-runtime-bot/private-key))
 
 - name: release-branch 
   type: git
@@ -139,14 +150,6 @@ resources:
     uri: https://github.com/cloudfoundry/cf-acceptance-tests
 
 #! TIMERS
-- name: daily-at-midnight
-  type: time
-  icon: clock
-  source:
-    interval: '24h'
-    start: 00:00
-    stop: 00:59
-
 - name: weekly
   type: time
   icon: clock
@@ -304,7 +307,7 @@ jobs:
     - task: sync-dot-github-dir
       file: ci/shared/tasks/sync-dot-github-dir/linux.yml
       image: image
-    - put: repo
+    - put: repo-synced
       params:
        rebase: true
        repository: synced-repo
@@ -330,7 +333,7 @@ jobs:
       - get: ci
       - get: image
       - get:  repo
-      - get: daily-at-midnight
+      - get: weekly
         trigger: true
       - get: repo-readme
         trigger: false
@@ -338,7 +341,7 @@ jobs:
     - task: sync-readme
       file: ci/shared/tasks/sync-readme/linux.yml
       image: image
-    - put: repo
+    - put: repo-synced
       params:
        rebase: true
        repository: synced-repo
@@ -553,6 +556,10 @@ jobs:
     image: image
 
 - name: ship-what
+  on_success:
+    put: slack-ci-channel
+    params:
+      text: ":concourse-succeeded: $BUILD_PIPELINE_NAME ship-what just ran. Maybe you should cut a release? $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME"
   plan:
     - in_parallel:
         steps:

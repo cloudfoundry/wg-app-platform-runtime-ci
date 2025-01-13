@@ -13,3 +13,5 @@ run:
 params:
   NAME:
   CONTENT:
+  INTERPOLATED_VALUE:
+  EVAL: false

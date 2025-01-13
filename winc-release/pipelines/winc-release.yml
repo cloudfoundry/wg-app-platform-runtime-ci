@@ -80,7 +80,7 @@ resources:
     - CODEOWNERS
     - LICENSE
     - NOTICE
-    - README*
+    - README.md
     - docs/
     - releases/
 
@@ -985,6 +985,10 @@ jobs:
         release: windows-worker-lock
 
 - name: ship-what
+  on_success:
+    put: slack-ci-channel
+    params:
+      text: ":concourse-succeeded: $BUILD_PIPELINE_NAME ship-what just ran. Maybe you should cut a release? $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME"
   plan:
     - in_parallel:
         steps:

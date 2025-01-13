@@ -26,19 +26,18 @@ function run() {
   git_remote_name=$(git_get_remote_name)
 
   local sub_readme
-  if [[ -d "${CI_CONFIG_DIR}" ]]; then
-    sub_readme=$(find "${CI_CONFIG_DIR}" | grep -E "[0-9]{0,2}-?${git_remote_name}.md")
-  else
-    sub_readme=$(find "${CI_DIR}" | grep -E "[0-9]{0,2}-?${git_remote_name}.md")
-  fi
   local belongs_to_dir
-  belongs_to_dir=$(echo "${sub_readme}" | xargs dirname | xargs dirname)
   local parent_readme
   if [[ -d "${CI_CONFIG_DIR}" ]]; then
+    sub_readme=$(find "${CI_CONFIG_DIR}" | grep -E "[0-9]{0,2}-?${git_remote_name}.md")
+    belongs_to_dir="${CI_CONFIG_DIR}/$(echo "${sub_readme#"${CI_CONFIG_DIR}/"}" | cut -d "/" -f1)"
     parent_readme=$(find "${CI_CONFIG_DIR}" -name "01-*.md" -ipath "${belongs_to_dir}/*")
   else
+    sub_readme=$(find "${CI_DIR}" | grep -E "[0-9]{0,2}-?${git_remote_name}.md")
+    belongs_to_dir="${CI_DIR}/$(echo "${sub_readme#"${CI_DIR}/"}" | cut -d "/" -f1)"
     parent_readme=$(find "${CI_DIR}" -name "01-*.md" -ipath "${belongs_to_dir}/*")
   fi
+  sub_readme=$(echo "${sub_readme}" | grep -v "${parent_readme}" || true)
 
   local docs_md_file
   docs_md_file="$(mktemp -p "${task_tmp_dir}" -t 'XXXXX-docs.md')"

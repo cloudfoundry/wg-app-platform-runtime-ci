@@ -132,6 +132,14 @@ jobs:
       DEPLOYMENT: windows-worker
       INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+  - task: start-smb-server-vm
+    image: image
+    file: ci/shared/tasks/start-gcp-instance/linux.yml
+    params:
+      INSTANCE_NAME: garden-windows-ci-smb-server
+      ZONE: us-central1-c
+      PROJECT: cf-diego-pivotal
+      SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
   - task: build-test-push-windows2016fs
     file: ci/shared/tasks/run-bin-test/windows.yml
     input_mapping:
@@ -148,11 +156,11 @@ jobs:
         DOCKER_USERNAME=((dockerhub-tasruntime-username))
         DOCKER_PASSWORD=((dockerhub-tasruntime-password))
         OS_VERSION="2019"
-        SHARE_IP=((azure-storage-acct-gardenwindowzcismb/ip))
-        SHARE_FQDN=((azure-storage-acct-gardenwindowzcismb/fqdn))
-        SHARE_NAME=((azure-storage-acct-gardenwindowzcismb/name))
-        SHARE_USERNAME=((azure-storage-acct-gardenwindowzcismb/username))
-        SHARE_PASSWORD=((azure-storage-acct-gardenwindowzcismb/password))
+        SHARE_IP=((gcp-garden-windows-ci-smb-server/ip))
+        SHARE_FQDN=((gcp-garden-windows-ci-smb-server/fqdn))
+        SHARE_NAME=((gcp-garden-windows-ci-smb-server/share_name))
+        SHARE_USERNAME=((gcp-garden-windows-ci-smb-server/username))
+        SHARE_PASSWORD="((gcp-garden-windows-ci-smb-server/password))"
   - task: build-rootfs-metadata
     file: ci/windows2016fs/tasks/build-rootfs-metadata/windows.yml
   - task: add-kb-metadata
@@ -185,15 +193,24 @@ jobs:
         params:
           file: version/version
   ensure:
-    task: stop-windows-worker
-    image: image
-    file: ci/shared/tasks/bosh-stop/linux.yml
-    params:
-      DEPLOYMENT: windows-worker
-      INSTANCE_GROUP: windows-worker
-      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
-    ensure:
-      put: windows-worker-lock
-      inputs: detect
+    in_parallel:
+    - task: stop-windows-worker
+      image: image
+      file: ci/shared/tasks/bosh-stop/linux.yml
       params:
-        release: windows-worker-lock
+        DEPLOYMENT: windows-worker
+        INSTANCE_GROUP: windows-worker
+        BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+      ensure:
+        put: windows-worker-lock
+        inputs: detect
+        params:
+          release: windows-worker-lock
+    - task: stop-smb-server-vm
+      image: image
+      file: ci/shared/tasks/stop-gcp-instance/linux.yml
+      params:
+        INSTANCE_NAME: garden-windows-ci-smb-server
+        ZONE: us-central1-c
+        PROJECT: cf-diego-pivotal
+        SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
