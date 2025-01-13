@@ -78,11 +78,11 @@ resources:
     ignore_paths:
     - .github/
     - .gitignore
-    - .final_build
+    - .final_builds/
     - CODEOWNERS
     - LICENSE
     - NOTICE
-    - README*
+    - README.md
     - docs/
     - releases/
 
@@ -561,13 +561,13 @@ jobs:
       - get: weekly
         trigger: true
       - get: repo
-        trigger: true
+        trigger: false
 #@ for repo in data.values.internal_repos:
       - get: #@ "{}-repo".format(repo.name)
-        trigger: true
+        trigger: false
 #@ end
       - get: readme
-        trigger: true
+        trigger: false
   - do:
       - task: sync-readme
         file: ci/shared/tasks/sync-readme/linux.yml
@@ -956,7 +956,7 @@ jobs:
           GARDEN_RUNC_RELEASE_PATH=$PWD/input-02
           WINC_RELEASE_PATH=$PWD/input-03
           DIEGO_RELEASE_PATH=$PWD/repo
-          GARDEN_TEST_ROOTFS=docker:///cloudfoundry/windows2016fs:2019.0.54
+          GARDEN_TEST_ROOTFS=docker:///cloudfoundry/windows2016fs:2019
           DB_USER=diego
           DB_PASSWORD=diego_password
         FLAGS: |
