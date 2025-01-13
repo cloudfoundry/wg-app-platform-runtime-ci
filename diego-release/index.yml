@@ -44,7 +44,7 @@ internal_repos:
   branch: main
 - name: "locket"
   configure_db: true
-  branch: main
+  branch: protobuf-with-plugin
 - name: "operationq"
   on_windows: true
   branch: main
