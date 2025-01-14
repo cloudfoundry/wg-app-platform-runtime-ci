@@ -234,7 +234,7 @@ resources:
       template:
         namespace: thomasto
         name: gcp-ad-template
-        revision: "1.0"
+        revision: "1.1"
     compatibility-mode: environments-app
 
 #! TIMERS
