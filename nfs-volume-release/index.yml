@@ -17,4 +17,5 @@ opsfiles:
 - add-lb-ca-cert.yml
 - scale-for-cats.yml
 - add-dockerdriver-integration-errand.yml
+- add-map-fs-performance-acceptance-tests.yml
 - enable-nfs-ldap-for-isolated-diego-cell.yml

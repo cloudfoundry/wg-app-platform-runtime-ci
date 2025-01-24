@@ -13,6 +13,7 @@ groups:
   - run-cats
   - volume-services-acceptance-tests
   - dockerdriver-integration
+  - map-fs-performance-acceptance-tests
   - export-release
   - ship-what
   - ship-it
@@ -929,6 +930,30 @@ jobs:
     params:
       DEPLOYMENT_NAME: cf
       ERRAND_NAME: dockerdriver-integration
+
+- name: map-fs-performance-acceptance-tests
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+      fail_fast: true
+      steps:
+      - get: ci
+      - get: image
+      - get: env
+        passed: [ prepare-env ]
+        trigger: true
+      - get: repo
+        passed: [ prepare-env ]
+        trigger: true
+      - get: cf-deployment-concourse-tasks
+  - task: run-map-fs-performace-acceptance-tests-errand
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      DEPLOYMENT_NAME: cf
+      ERRAND_NAME: map-fs-performance-acceptance-tests
 
 - name: export-release
   serial: true
