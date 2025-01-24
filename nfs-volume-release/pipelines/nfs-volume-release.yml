@@ -646,6 +646,7 @@ jobs:
 #@ for repo in data.values.internal_repos:
     - task: #@ "{}".format(repo.name)
       file: ci/shared/tasks/run-bin-test/linux.yml
+      privileged: #@ helpers.privileged(repo)
       vars:
         image_repository: cloudfoundry/tas-runtime-build
         image_password: ((gcp-tas-runtime-service-account/config-json))

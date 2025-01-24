@@ -7,6 +7,7 @@ internal_repos:
 - name: nfsbroker
 - name: nfsv3driver
 - name: mapfs
+  privileged: true
 
 #! <OPTIONAL> set to a list of opsfile if pipeline needs to update cf-deployment
 opsfiles:
