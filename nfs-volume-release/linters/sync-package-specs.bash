@@ -25,6 +25,10 @@ function run() {
     -app github.com/onsi/ginkgo/v2/ginkgo \
     -test code.cloudfoundry.org/dockerdriver/integration/... &
 
+  sync_package map-fs-performance-acceptance-tests mapfs-performance-acceptance-tests \
+    -app github.com/onsi/ginkgo/v2/ginkgo \
+    -test code.cloudfoundry.org/mapfs-performance-acceptance-tests/... &
+
   wait
 
   git diff --name-only packages/*/spec
