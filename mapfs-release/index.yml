@@ -1,7 +1,8 @@
 #@data/values
 ---
 #@overlay/match missing_ok=True
-internal_repos: []
+internal_repos:
+- name: mapfs
 
 opsfiles:
 - add-lb-ca-cert.yml
