@@ -93,13 +93,6 @@ resources:
     uri: https://github.com/bosh-packages/golang-release.git
 
 #! TIMERS
-- name: daily-at-midnight
-  type: time
-  icon: clock
-  source:
-    interval: '24h'
-    start: 00:00
-    stop: 00:59
 
 - name: weekly
   type: time
@@ -148,10 +141,10 @@ jobs:
       - get: ci
       - get: image
       - get:  #@ repo.name
-      - get: daily-at-midnight
+      - get: weekly
         trigger: true
       - get: readme
-        trigger: false
+        trigger: true
   - do:
     - task: sync-readme
       file: ci/shared/tasks/sync-readme/linux.yml
