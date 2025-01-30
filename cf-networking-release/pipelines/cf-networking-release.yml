@@ -754,6 +754,7 @@ jobs:
         {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
         {input-01/operations/use-compiled-releases.yml,combined-assets}
         {input-01/operations/experimental/enable-iptables-logger.yml,combined-assets}
+        {input-01/operations/enable-v2-api.yml,combined-assets}
   - task: combine-acceptance-test-release-files
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
