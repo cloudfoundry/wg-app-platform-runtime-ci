@@ -349,6 +349,8 @@ jobs:
       GO_MODS: |
         src/code.cloudfoundry.org/nfsbroker/go..mod
         src/code.cloudfoundry.org/nfsv3driver/go.mod
+        src/code.cloudfoundry.org/mapfs/go.mod
+        src/code.cloudfoundry.org/mapfs-performance-acceptance-tests/go.mod
   - put: repo
     params:
       rebase: true
@@ -734,6 +736,7 @@ jobs:
         {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
         {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
         {ci/nfs-volume-release/opsfiles/add-dockerdriver-integration-errand.yml,combined-assets}
+        {ci/nfs-volume-release/opsfiles/add-map-fs-performance-acceptance-tests.yml,combined-assets}
         {ci/nfs-volume-release/opsfiles/enable-nfs-ldap-for-isolated-diego-cell.yml,combined-assets}
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
