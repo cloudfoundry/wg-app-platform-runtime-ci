@@ -2,7 +2,7 @@
 - type: replace
   path: /instance_groups/-
   value:
-    name: dockerdriver-integration-vm
+    name: mapfs-performance-acceptance-tests-vm
     lifecycle: errand
     azs:
     - z1
@@ -15,7 +15,7 @@
     networks:
     - name: default
     jobs:
-    - name: dockerdriver-integration
+    - name: map-fs-performance-acceptance-tests
       release: nfs-volume
     - name: nfsv3driver
       properties:

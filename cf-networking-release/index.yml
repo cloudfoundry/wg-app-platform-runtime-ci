@@ -37,3 +37,21 @@ opsfiles:
 - enable-iptables-logger.yml
 - limit-app-outbound-connections.yml
 - enable-comma-delimited-asg-destinations.yml
+- enable-v2-api.yml
+  #! - overlay-network.yml // eventually we want this here!
+
+#! we need this because overlay-network sets an array of CIDRS
+#! and this wont work in the initial deploy before this code is released
+#! we should be able to remove this block and set the overlay network above.
+#! ask amelia about this if it is still here summer 2025.
+opsfiles_second_deploy:
+- add-lb-ca-cert.yml
+- use-compiled-releases.yml
+- use-latest.yml
+- add-apps-internal-search-domain.yml
+- add-acceptance-test-jobs.yml
+- enable-iptables-logger.yml
+- limit-app-outbound-connections.yml
+- enable-comma-delimited-asg-destinations.yml
+- enable-v2-api.yml
+- overlay-network.yml

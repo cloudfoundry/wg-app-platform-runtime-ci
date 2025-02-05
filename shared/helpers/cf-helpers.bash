@@ -31,7 +31,7 @@ function cf_create_tcp_domain(){
     if [[ "$(is_env_cf_deployment)" == "yes" ]]; then
         cf_login
 
-        local domain_exists=$(cf curl /v2/domains | jq ".resources[] | select(.entity.name == \"$CF_TCP_DOMAIN\")")
+        local domain_exists=$(cf curl /v3/domains | jq ".resources[] | select(.name == \"$CF_TCP_DOMAIN\")")
 
         if [[ "${domain_exists:=empty}" == "empty" ]] ; then
             echo "Create TCP domain"

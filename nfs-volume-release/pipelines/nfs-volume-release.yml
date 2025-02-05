@@ -13,6 +13,7 @@ groups:
   - run-cats
   - volume-services-acceptance-tests
   - dockerdriver-integration
+  - map-fs-performance-acceptance-tests
   - export-release
   - ship-what
   - ship-it
@@ -348,6 +349,8 @@ jobs:
       GO_MODS: |
         src/code.cloudfoundry.org/nfsbroker/go..mod
         src/code.cloudfoundry.org/nfsv3driver/go.mod
+        src/code.cloudfoundry.org/mapfs/go.mod
+        src/code.cloudfoundry.org/mapfs-performance-acceptance-tests/go.mod
   - put: repo
     params:
       rebase: true
@@ -645,6 +648,7 @@ jobs:
 #@ for repo in data.values.internal_repos:
     - task: #@ "{}".format(repo.name)
       file: ci/shared/tasks/run-bin-test/linux.yml
+      privileged: #@ helpers.privileged(repo)
       vars:
         image_repository: cloudfoundry/tas-runtime-build
         image_password: ((gcp-tas-runtime-service-account/config-json))
@@ -732,6 +736,7 @@ jobs:
         {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
         {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
         {ci/nfs-volume-release/opsfiles/add-dockerdriver-integration-errand.yml,combined-assets}
+        {ci/nfs-volume-release/opsfiles/add-map-fs-performance-acceptance-tests.yml,combined-assets}
         {ci/nfs-volume-release/opsfiles/enable-nfs-ldap-for-isolated-diego-cell.yml,combined-assets}
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
@@ -929,6 +934,30 @@ jobs:
     params:
       DEPLOYMENT_NAME: cf
       ERRAND_NAME: dockerdriver-integration
+
+- name: map-fs-performance-acceptance-tests
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+      fail_fast: true
+      steps:
+      - get: ci
+      - get: image
+      - get: env
+        passed: [ prepare-env ]
+        trigger: true
+      - get: repo
+        passed: [ prepare-env ]
+        trigger: true
+      - get: cf-deployment-concourse-tasks
+  - task: run-map-fs-performace-acceptance-tests-errand
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      DEPLOYMENT_NAME: cf
+      ERRAND_NAME: map-fs-performance-acceptance-tests
 
 - name: export-release
   serial: true
