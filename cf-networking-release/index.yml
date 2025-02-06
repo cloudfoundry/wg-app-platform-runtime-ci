@@ -37,7 +37,6 @@ opsfiles:
 - enable-iptables-logger.yml
 - limit-app-outbound-connections.yml
 - enable-comma-delimited-asg-destinations.yml
-- enable-v2-api.yml
   #! - overlay-network.yml // eventually we want this here!
 
 #! we need this because overlay-network sets an array of CIDRS
@@ -53,5 +52,4 @@ opsfiles_second_deploy:
 - enable-iptables-logger.yml
 - limit-app-outbound-connections.yml
 - enable-comma-delimited-asg-destinations.yml
-- enable-v2-api.yml
 - overlay-network.yml
