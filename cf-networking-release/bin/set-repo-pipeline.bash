@@ -9,7 +9,7 @@ FLY_TEAM=wg-arp-networking
 main() {
   local pipeline_dir="$(realpath $REPO/pipelines)"
   fly_login
-  fly_pipeline cf-networking-release -f "${pipeline_dir}/cf-networking-release.yml" \
+  fly_pipeline cf-networking-protobuf -f "${pipeline_dir}/cf-networking-protobuf.yml" \
     -f "$REPO/index.yml" \
     -f "$REPO/../silk-release/index.yml" \
     -f "$REPO/../shared/helpers/ytt-helpers.star"
