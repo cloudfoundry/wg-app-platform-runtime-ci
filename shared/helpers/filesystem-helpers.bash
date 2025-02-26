@@ -1,8 +1,11 @@
 # copied from https://github.com/concourse/concourse/blob/master/jobs/baggageclaim/templates/baggageclaim_ctl.erb#L54
 # break out of bosh-lite device limitations
 function filesystem_permit_device_control() {
-  if [ -f /sys/fs/cgroup/cgroup.controllers ]; then
+  if grep -q cgroup2 /proc/filesystems; then
     echo "skipping devices setup for cgroups v2"
+    if [ ! -f /sys/fs/cgroup/cgroup.controllers ]; then
+      mount cgroup2 /sys/fs/cgroup --type cgroup2
+    fi
   else
     local devices_mount_info
     devices_mount_info="$( cat /proc/self/cgroup | grep devices )"
