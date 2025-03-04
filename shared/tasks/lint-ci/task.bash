@@ -276,11 +276,10 @@ function verify_opsfile_use(){
     do
         local matched=false
         local opsfile
-        set -x
         opsfile=$(basename "${file}")
         for index in $(find . -name "index.yml")
         do
-            if [[ $(yq ". | to_entries | map(select(.key | match(\"^opsfiles\"))) | .[0].value[] | select(.==\"${opsfile}\")" "${index}") == "${opsfile}" ]]; then
+            if [[ $(yq ". | to_entries | map(select(.key | match(\"^opsfiles*\"))) | .[].value[] | select(.==\"${opsfile}\")" "${index}" | head -n1) == "${opsfile}" ]]; then
                 matched=true
                 break;
             fi
