@@ -1157,6 +1157,24 @@ jobs:
           GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs.tar
           GARDEN_FUSE_TEST_ROOTFS=$PWD/input-02/rootfs.tar
         DIR: #@ "src/{}".format(repo.name)
+    - task: #@ "{}-cgroupsv2".format(repo.name)
+      tags: [ diego-cgroupsv2 ]
+      privileged: #@ helpers.privileged(repo)
+      file: ci/shared/tasks/run-bin-test/linux.yml
+      vars:
+        image_repository: cloudfoundry/tas-runtime-build
+        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_tag: ((.:image_tag))
+      input_mapping:
+        input-01: garden-runc-release-rootfs
+        input-02: garden-runc-release-fuse-rootfs
+      params:
+        ENVS: |
+          DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime-username))
+          DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime-password))
+          GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs.tar
+          GARDEN_FUSE_TEST_ROOTFS=$PWD/input-02/rootfs.tar
+        DIR: #@ "src/{}".format(repo.name)
 #@ if helpers.on_windows(repo):
     - task: #@ "{}-windows".format(repo.name)
       file: ci/shared/tasks/run-bin-test/windows.yml
