@@ -20,7 +20,6 @@ function run(){
     configure_github_enterprise
     pushd repo > /dev/null
 
-    git fetch --all
     local title=$(git show "origin/$BRANCH" --pretty=format:"%s" --no-patch)
     local description=$(git show "origin/$BRANCH" --pretty=format:"%b" --no-patch)
 
