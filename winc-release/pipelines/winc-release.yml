@@ -224,9 +224,9 @@ resources:
   icon: source-branch
   #! icon: sheep # add this when it transitions to shepherd envs
   source:
-    branch: master
+    branch: main
     private_key: ((github-tas-runtime-bot/private-key))
-    uri: git@github.com:pivotal/garden-windows-environments
+    uri: git@github.com:cloudfoundry/app-runtime-platform-envs
 
 #! TIMERS
 - name: weekly
