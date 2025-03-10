@@ -311,6 +311,7 @@ jobs:
       action: create
       duration: 48h
       resource: env
+      description: "(ClaimedBy: ci) windowsfs-online-release pipeline"
     timeout: 6h
 
 - name: prepare-env

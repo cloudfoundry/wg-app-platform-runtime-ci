@@ -691,7 +691,7 @@ jobs:
       action: create
       duration: 48h
       resource: env
-      description: 'nfs-volume-release pipeline'
+      description: '(ClaimedBy: ci) nfs-volume-release pipeline'
 
 - name: prepare-env
   serial: true

@@ -679,7 +679,7 @@ jobs:
       action: create
       duration: 48h
       resource: env
-      description: "routing-release pipeline"
+      description: "(ClaimedBy: ci) routing-release pipeline"
     timeout: 6h
   - task: wait-for-cf-api
     file: ci/shared/tasks/wait-for-cf-api/linux.yml

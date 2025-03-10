@@ -1230,7 +1230,7 @@ jobs:
       action: create
       duration: 48h
       resource: env
-      description: "garden-runc-release pipeline"
+      description: "(ClaimedBy: ci) garden-runc-release pipeline"
   - task: wait-for-cf-api
     file: ci/shared/tasks/wait-for-cf-api/linux.yml
     input_mapping:
