@@ -684,7 +684,7 @@ jobs:
       combined-assets: pesto-env
     params:
       COPY_ACTIONS: |
-        {input-01/pesto/metadata,combined-assets}
+        {input-01/winc-release/pesto/metadata,combined-assets}
   - task: prepare-cf-deployment-env
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
@@ -876,7 +876,7 @@ jobs:
       combined-assets: pesto-env
     params:
       COPY_ACTIONS: |
-        {input-01/pesto/metadata,combined-assets}
+        {input-01/winc-release/pesto/metadata,combined-assets}
   - task: bosh-deploy-gatsw
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -930,7 +930,7 @@ jobs:
       combined-assets: pesto-env
     params:
       COPY_ACTIONS: |
-        {input-01/pesto/metadata,combined-assets}
+        {input-01/winc-release/pesto/metadata,combined-assets}
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
@@ -1129,7 +1129,7 @@ jobs:
       combined-assets: pesto-env
     params:
       COPY_ACTIONS: |
-        {input-01/pesto/metadata,combined-assets}
+        {input-01/winc-release/pesto/metadata,combined-assets}
   - in_parallel:
     - task: bosh-deld
       image: image
