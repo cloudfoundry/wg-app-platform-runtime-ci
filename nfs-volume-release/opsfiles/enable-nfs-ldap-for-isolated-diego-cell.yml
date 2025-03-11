@@ -1,13 +1,5 @@
 ---
 - type: replace
-  path: /instance_groups/name=diego-cell/jobs/name=nfsv3driver/consumes?
-  value:
-    mapfs: {from: mapfs-diego-cell}
-- type: replace
-  path: /instance_groups/name=diego-cell/jobs/name=mapfs/provides?
-  value:
-    mapfs: {as: mapfs-diego-cell}
-- type: replace
   path: /instance_groups/name=isolated-diego-cell/jobs/-
   value:
     name: nfsv3driver
@@ -20,15 +12,6 @@
           server_cert: ((nfsv3driver_cert.certificate))
           server_key: ((nfsv3driver_cert.private_key))
     release: nfs-volume
-    consumes:
-      mapfs: {from: mapfs-isolated-diego-cell}
-- type: replace
-  path: /instance_groups/name=isolated-diego-cell/jobs/name=mapfs?
-  value:
-    name: mapfs
-    release: mapfs
-    provides:
-        mapfs: {as: mapfs-isolated-diego-cell}
 - type: replace
   path: /instance_groups/name=isolated-diego-cell/jobs/name=nfsv3driver/properties/nfsv3driver/ldap_svc_user?
   value: ((nfs-ldap-service-user))

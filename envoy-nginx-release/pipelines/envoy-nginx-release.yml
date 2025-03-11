@@ -451,7 +451,7 @@ jobs:
       action: create
       duration: 48h
       resource: env
-      description: "envoy-nginx pipeline"
+      description: "(ClaimedBy: ci) envoy-nginx pipeline"
     timeout: 6h
   - task: wait-for-cf-api
     file: ci/shared/tasks/wait-for-cf-api/linux.yml

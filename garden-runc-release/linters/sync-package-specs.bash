@@ -15,18 +15,12 @@ function run() {
 
   pushd "${repo_path}" > /dev/null
 
-  BUILD_FLAGS="--tags cgo,no_btrfs" sync_package containerd guardian \
-    -app github.com/containerd/containerd/cmd/ctr \
-    -app github.com/containerd/containerd/cmd/containerd \
-    -app github.com/containerd/containerd/cmd/containerd-shim \
-    -app github.com/containerd/containerd/cmd/containerd-shim-runc-v1 \
-    -app github.com/containerd/containerd/cmd/containerd-shim-runc-v2 &
-
-  BUILD_FLAGS="--tags cgo,seccomp,apparmor" sync_package runc guardian \
+  BUILD_FLAGS="--tags cgo,seccomp" sync_package runc guardian \
     -app github.com/opencontainers/runc &
 
   BUILD_FLAGS="--tags cloudfoundry" sync_package grootfs grootfs \
     -app code.cloudfoundry.org/grootfs \
+    -app code.cloudfoundry.org/idmapper \
     -app code.cloudfoundry.org/grootfs/store/filesystems/overlayxfs/tardis &
 
   sync_package gats garden-integration-tests -app github.com/onsi/ginkgo/v2/ginkgo \

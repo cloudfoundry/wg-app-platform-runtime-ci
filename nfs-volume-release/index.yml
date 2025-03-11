@@ -3,7 +3,11 @@
 #@overlay/match missing_ok=True
 
 #! <MUST> repo/component/package to test in your repo/release
-internal_repos: []
+internal_repos:
+- name: nfsbroker
+- name: nfsv3driver
+- name: mapfs
+  privileged: true
 
 #! <OPTIONAL> set to a list of opsfile if pipeline needs to update cf-deployment
 opsfiles:
@@ -17,4 +21,5 @@ opsfiles:
 - add-lb-ca-cert.yml
 - scale-for-cats.yml
 - add-dockerdriver-integration-errand.yml
+- add-map-fs-performance-acceptance-tests.yml
 - enable-nfs-ldap-for-isolated-diego-cell.yml

@@ -619,7 +619,7 @@ jobs:
       action: create
       duration: 48h
       resource: env
-      description: 'smb-volume-release pipeline'
+      description: '(ClaimedBy: ci) smb-volume-release pipeline'
 
 - name: prepare-env
   serial: true

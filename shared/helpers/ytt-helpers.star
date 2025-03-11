@@ -95,13 +95,15 @@ end
 def packages_names_array_without_acceptance(packages = [], prefixes = []):
     result = []
     for package in packages:
-        if hasattr(package, "name"):
-            if package.name:
-                if len(prefixes) == 0:
-                    result.append(package.name)
-                else:
-                    for prefix in prefixes:
-                        result.append(prefix + package.name)
+        if not hasattr(package, "acceptance") or not package.acceptance:
+            if hasattr(package, "name"):
+                if package.name:
+                    if len(prefixes) == 0:
+                        result.append(package.name)
+                    else:
+                        for prefix in prefixes:
+                            result.append(prefix + package.name)
+                        end
                     end
                 end
             end

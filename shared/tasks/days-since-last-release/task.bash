@@ -21,7 +21,6 @@ release_repos=(
     "windows2019fs-release"
     "windowsfs-online-release"
     "windows-tools-release"
-    "mapfs-release"
     "smb-volume-release"
     "nfs-volume-release"
 )

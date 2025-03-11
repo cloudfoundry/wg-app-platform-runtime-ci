@@ -713,7 +713,7 @@ jobs:
       action: create
       duration: 48h
       resource: env
-      description: "cf-networking pipeline"
+      description: "(ClaimedBy: ci) cf-networking pipeline"
     timeout: 6h
   - task: wait-for-cf-api
     file: ci/shared/tasks/wait-for-cf-api/linux.yml
@@ -805,7 +805,7 @@ jobs:
       APP_SYSLOG_AVAILABILITY_THRESHOLD: "50"
       USE_SINGLE_APP_INSTANCE: "false"
       VARS_FILES: vars.yml
-      OPS_FILES: #@ "\n".join(data.values.opsfiles)
+      OPS_FILES: #@ "\n".join(data.values.opsfiles_second_deploy)
   - task: open-asg-for-credhub
     file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
     input_mapping:

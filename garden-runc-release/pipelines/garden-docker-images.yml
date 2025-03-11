@@ -6,7 +6,7 @@ jobs:
   - in_parallel:
     - get: http-golang-download
       trigger: true
-    - get: garden-rootfs-dockerfile
+    - get: garden-rootfs-repo
       trigger: true
     - get: ci
     - get: image
@@ -19,11 +19,11 @@ jobs:
       run:
         path: build
       params:
-        CONTEXT: garden-rootfs-dockerfile/garden-runc-release/dockerfiles/garden-rootfs
+        CONTEXT: garden-rootfs-repo/garden-runc-release/dockerfiles/garden-rootfs
         OUTPUT_OCI: true
         IMAGE_PLATFORM: linux/amd64,linux/arm64
       inputs:
-        - name: garden-rootfs-dockerfile
+        - name: garden-rootfs-repo
       outputs:
         - name: image
       image_resource:
@@ -47,7 +47,7 @@ jobs:
   - in_parallel:
     - get: http-golang-download
       trigger: true
-    - get: garden-fuse-dockerfile
+    - get: garden-fuse-repo
       trigger: true
     - get: ci
     - get: image
@@ -60,11 +60,11 @@ jobs:
       run:
         path: build
       params:
-        CONTEXT: garden-fuse-dockerfile/garden-runc-release/dockerfiles/garden-fuse
+        CONTEXT: garden-fuse-repo/garden-runc-release/dockerfiles/garden-fuse
         OUTPUT_OCI: true
         IMAGE_PLATFORM: linux/amd64,linux/arm64
       inputs:
-        - name: garden-fuse-dockerfile
+        - name: garden-fuse-repo
       outputs:
         - name: image
       image_resource:
@@ -102,7 +102,7 @@ resources:
     repository: cloudfoundry/garden-fuse
     tag: latest
 
-- name: garden-rootfs-dockerfile
+- name: garden-rootfs-repo
   type: git
   icon: source-branch
   source:
@@ -110,9 +110,9 @@ resources:
     branch: main
     private_key: ((github-tas-runtime-bot/private-key))
     paths:
-    - garden-runc-release/dockerfiles/garden-rootfs/Dockerfile
+    - garden-runc-release/dockerfiles/garden-rootfs
 
-- name: garden-fuse-dockerfile
+- name: garden-fuse-repo
   type: git
   icon: source-branch
   source:
@@ -120,7 +120,7 @@ resources:
     branch: main
     private_key: ((github-tas-runtime-bot/private-key))
     paths:
-    - garden-runc-release/dockerfiles/garden-fuse/Dockerfile
+    - garden-runc-release/dockerfiles/garden-fuse
 
 - name: ci
   type: git

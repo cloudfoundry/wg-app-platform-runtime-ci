@@ -13,8 +13,6 @@ main() {
   fly_pipeline "shared-docker-images" -f "${pipeline_dir}/shared-docker-images.yml"
 
   fly_pipeline "linters" -f "${pipeline_dir}/linters.yml"
-
-  fly_pipeline "periodics" -f "${pipeline_dir}/periodics.yml"
 }
 
 main
