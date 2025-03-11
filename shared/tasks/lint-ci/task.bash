@@ -279,7 +279,7 @@ function verify_opsfile_use(){
         opsfile=$(basename "${file}")
         for index in $(find . -name "index.yml")
         do
-            if [[ $(yq ". | to_entries | map(select(.key | match(\"^opsfiles\"))) | .[].value[] | select(.==\"${opsfile}\")" "${index}") == "${opsfile}" ]]; then
+            if [[ $(yq ". | to_entries | map(select(.key | match(\"^opsfiles*\"))) | .[].value[] | select(.==\"${opsfile}\")" "${index}" | head -n1) == "${opsfile}" ]]; then
                 matched=true
                 break;
             fi

@@ -713,7 +713,7 @@ jobs:
       action: create
       duration: 48h
       resource: env
-      description: "cf-networking pipeline"
+      description: "(ClaimedBy: ci) cf-networking pipeline"
     timeout: 6h
   - task: wait-for-cf-api
     file: ci/shared/tasks/wait-for-cf-api/linux.yml

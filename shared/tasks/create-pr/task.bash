@@ -20,8 +20,8 @@ function run(){
     configure_github_enterprise
     pushd repo > /dev/null
 
-    local title=$(git show "origin/$BRANCH" --pretty=format:"%s" --no-patch)
-    local description=$(git show "origin/$BRANCH" --pretty=format:"%b" --no-patch)
+    local title=$(git show --pretty=format:"%s" --no-patch)
+    local description=$(git show --pretty=format:"%b" --no-patch)
 
     set +e
     create_pr "${title}" "${description}"
