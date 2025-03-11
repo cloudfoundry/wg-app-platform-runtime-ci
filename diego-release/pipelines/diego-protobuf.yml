@@ -1015,7 +1015,7 @@ jobs:
       action: create
       duration: 48h
       resource: env
-      description: "protobuf diego pipeline"
+      description: "(ClaimedBy: ci) protobuf diego pipeline"
   - task: wait-for-cf-api
     file: ci/shared/tasks/wait-for-cf-api/linux.yml
     input_mapping:
