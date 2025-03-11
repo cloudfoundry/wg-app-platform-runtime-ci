@@ -213,16 +213,6 @@ resources:
     branch: master
     uri: https://github.com/cloudfoundry/windows-utilities-release.git
 
-#! Environments
-#! - name: env
-#!   type: git
-#!   icon: source-branch
-#!   #! icon: sheep #!add this when it transitions to shepherd envs
-#!   source:
-#!     branch: master
-#!     private_key: ((github-tas-runtime-bot/private-key))
-#!     uri: git@github.com:pivotal/garden-windows-environments
-
 - name: env-ad-shepherd
   type: shepherd
   icon: sheep
@@ -303,18 +293,6 @@ resources:
     username: _json_key
     password: ((gcp-tas-runtime-service-account/config-json))
     tag: 'latest'
-
-#! - name: pesto-cf-deployment
-#!   type: bosh-deployment
-#!   icon: server-network
-#!   source:
-#!     deployment: cf
-#!     client: ((gcp-garden-windows-env-pesto/bosh-client-id))
-#!     client_secret: ((gcp-garden-windows-env-pesto/bosh-client-secret))
-#!     ca_cert: ((gcp-garden-windows-env-pesto/bosh-ca-cert))
-#!     target: ((gcp-garden-windows-env-pesto/bosh-env))
-#!     jumpbox_url: ((gcp-garden-windows-env-pesto/jumpbox-ip)):22
-#!     jumpbox_ssh_key: ((gcp-garden-windows-env-pesto/jumpbox-ssh-key))
 
 - name: linux-stemcell
   type: bosh-io-stemcell
@@ -684,21 +662,10 @@ jobs:
     - get: linux-stemcell
     - get: windows-stemcell
     - get: winc-release
-  #!- task: create-toolsmiths-env
-  #!  file: ci/shared/tasks/combine-assets/linux.yml
-  #!  image: image
-  #!  input_mapping:
-  #!    input-01: env
-  #!  output_mapping:
-  #!    combined-assets: pesto-env
-  #!  params:
-  #!    COPY_ACTIONS: |
-  #!      {input-01/pesto/metadata,combined-assets}
   - task: prepare-cf-deployment-env
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
     input_mapping:
-      #!env: pesto-env
       env: env-ad-shepherd
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
@@ -720,23 +687,6 @@ jobs:
         {ci/winc-release/opsfiles/use-2-azs-for-router.yml,combined-assets}
         {ci/winc-release/opsfiles/enable-windows-tcp-routes.yml,combined-assets}
         {ci/winc-release/opsfiles/enable-sticky-sessions-for-auth-negotiate.yml,combined-assets}
-  #!- put: pesto-cf-deployment
-  #!  attempts: 3
-  #!  params:
-  #!    manifest: cf-deployment/cf-deployment.yml
-  #!    stemcells:
-  #!    - linux-stemcell/*.tgz
-  #!    - windows-stemcell/*.tgz
-  #!    releases:
-  #!    - winc-release/*.tgz
-  #!    vars_files:
-  #!    - env/pesto/cf/vars.yml
-  #!    vars:
-  #!      cf_admin_password: ((gcp-garden-windows-env-pesto/cf-admin-password))
-  #!    cleanup: true
-  #!    ops_files: #@ ["combined-assets/{0}".format(i) for i in data.values.opsfiles]
-  #!  get_params:
-  #!    skip_export: true
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
     input_mapping:
@@ -767,26 +717,9 @@ jobs:
       FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
       OPS_FILES: #@ "\n".join(data.values.opsfiles)
-  #!- put: pesto-cf-deployment
-  #!  attempts: 3
-  #!  params:
-  #!    manifest: cf-deployment/cf-deployment.yml
-  #!    stemcells:
-  #!    - linux-stemcell/*.tgz
-  #!    - windows-stemcell/*.tgz
-  #!    releases:
-  #!    - prepared-env/winc-release*.tgz
-  #!    ops_files: #@ ["combined-assets/{0}".format(i) for i in data.values.opsfiles]
-  #!    vars:
-  #!      cf_admin_password: ((gcp-garden-windows-env-pesto/cf-admin-password))
-  #!    vars_files:
-  #!    - env/pesto/cf/vars.yml
-  #!  get_params:
-  #!    skip_export: true
   - task: open-asg-for-credhub
     file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
     input_mapping:
-      #!toolsmiths-env: pesto-env
       toolsmiths-env: env-ad-shepherd
     params:
       INSTANCE_GROUP_NAME: credhub
@@ -794,7 +727,6 @@ jobs:
   - task: open-asg-for-uaa
     file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
     input_mapping:
-      #!toolsmiths-env: pesto-env
       toolsmiths-env: env-ad-shepherd
     params:
       INSTANCE_GROUP_NAME: uaa
@@ -802,7 +734,6 @@ jobs:
   - task: enable-feature-flags-for-wats
     file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
     input_mapping:
-      #!toolsmiths-env: pesto-env
       toolsmiths-env: env-ad-shepherd
     params:
       ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
@@ -822,6 +753,7 @@ jobs:
       ZONE: us-central1-a
       PROJECT: cf-diego-pivotal
       SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+#! keep this commented until AD peering is confirmed working
 #!  - task: deploy-and-setup-iwa-test-app
 #!  file: ci/winc-release/tasks/setup-iwa-test-app/linux.yml
 #!  image: image
@@ -853,22 +785,10 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests
     - get: cf-deployment
-  #!- task: create-toolsmiths-env
-  #!  file: ci/shared/tasks/combine-assets/linux.yml
-  #!  image: image
-  #!  input_mapping:
-  #!    input-01: env
-  #!  output_mapping:
-  #!    #!combined-assets: pesto-env
-  #!    combined-assets: env-ad-shepherd
-  #!  params:
-  #!    COPY_ACTIONS: |
-  #!      {input-01/pesto/metadata,combined-assets}
   - task: create-wats-config
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
     input_mapping:
-      #!env: pesto-env
       env: env-ad-shepherd
     params:
       CONFIGS: wats
@@ -902,17 +822,6 @@ jobs:
     - get: garden-runc-release
     - get: windows-utilities-release
     - get: cf-deployment-concourse-tasks
-  #!- task: create-toolsmiths-env
-  #!  file: ci/shared/tasks/combine-assets/linux.yml
-  #!  image: image
-  #!  input_mapping:
-  #!    input-01: env
-  #!  output_mapping:
-  #!    #!combined-assets: pesto-env
-  #!    combined-assets: env-ad-shepherd
-  #!  params:
-  #!    COPY_ACTIONS: |
-  #!      {input-01/pesto/metadata,combined-assets}
   - task: bosh-deploy-gatsw
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -920,7 +829,6 @@ jobs:
       release-01: garden-ci-artifacts-release
       release-02: garden-runc-release
       release-03: windows-utilities-release
-      #!env: pesto-env
       env: env-ad-shepherd
     params:
       MANIFEST: ci/shared/manifests/gatsw.yml
@@ -933,7 +841,6 @@ jobs:
   - task: run-gatsw-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
-      #!toolsmiths-env: pesto-env
       toolsmiths-env: env-ad-shepherd
     params:
       DEPLOYMENT_NAME: gatsw
@@ -942,7 +849,6 @@ jobs:
     image: image
     file: ci/shared/tasks/bosh-deld/linux.yml
     input_mapping:
-      #!env: pesto-env
       env: env-ad-shepherd
     params:
       DEPLOYMENT_NAME: gatsw
@@ -960,22 +866,10 @@ jobs:
       passed: [prepare-env]
       trigger: true
     - get: cf-deployment-concourse-tasks
-  #!- task: create-toolsmiths-env
-  #!  file: ci/shared/tasks/combine-assets/linux.yml
-  #!  image: image
-  #!  input_mapping:
-  #!    input-01: env
-  #!  output_mapping:
-  #!    #!combined-assets: pesto-env
-  #!    combined-assets: env-ad-shepherd
-  #!  params:
-  #!    COPY_ACTIONS: |
-  #!      {input-01/pesto/metadata,combined-assets}
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
     input_mapping:
-      #!env: pesto-env
       env: env-ad-shepherd
     params:
       OS: windows
@@ -990,7 +884,6 @@ jobs:
       passed: [prepare-env]
       trigger: true
     - get: image
-    #!- get: env-
     - get: env-ad-shepherd
       passed: [prepare-env]
       trigger: true
@@ -1044,7 +937,6 @@ jobs:
             submodules: none
         - get: github-release
         - get: version
-        #!- get: env
         - get: env-ad-shepherd
           passed:
             - run-wats
@@ -1145,42 +1037,16 @@ jobs:
   serial: true
   plan:
   - in_parallel:
-    #!- get: env
     - get: env-ad-shepherd
       passed: [ship-what]
       trigger: true
-    #! NOTE: we pass repo + trigger here because the `env` resource is rarely a new
-    #!       version, as it is not a shepherd env. Once we switch to those, this can
-    #!       go away, but until then, we need a more reliable trigger to fire env
-    #!       cleanup.
     - get: repo
       passed: [ship-what]
-      #!trigger: true
     - get: env-lock
     - get: image
     - get: ci
 
-  #!- task: create-toolsmiths-env
-  #!  file: ci/shared/tasks/combine-assets/linux.yml
-  #!  image: image
-  #!  input_mapping:
-  #!    #!input-01: env
-  #!    input-01: env-ad-shepherd
-  #!  output_mapping:
-  #!    #!combined-assets: pesto-env
-  #!    combined-assets: env-ad-shepherd
-  #!  params:
-  #!    COPY_ACTIONS: |
-  #!      {input-01/pesto/metadata,combined-assets}
   - in_parallel:
-    #!- task: bosh-deld
-    #!  image: image
-    #!  file: ci/shared/tasks/bosh-deld/linux.yml
-    #!  input_mapping:
-    #!  #!env: pesto-env
-    #!  env: env-ad-shepherd
-    #!  params:
-    #!    DEPLOYMENT_NAME: cf
     - task: stop-sql-server-vm
       image: image
       file: ci/shared/tasks/stop-gcp-instance/linux.yml
