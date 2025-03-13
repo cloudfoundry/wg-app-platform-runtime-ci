@@ -685,6 +685,12 @@ jobs:
     params:
       COPY_ACTIONS: |
         {input-01/winc-release/pesto/metadata,combined-assets}
+  - task: deploy-base-cf-deployment
+    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    input_mapping:
+      toolsmiths-env: pesto-env
+    params:
+      SYSTEM_DOMAIN: pesto.funtime.lol
   - task: prepare-cf-deployment-env
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
@@ -799,7 +805,7 @@ jobs:
       APP_NAME: iwa-test-app
       APP_HOSTNAME: windows-auth
       APP_TCP_PORT: 1030
-      APP_DOMAIN: pesto.cf-app.com
+      APP_DOMAIN: pesto.funtime.lol
       APP_ORG: iwa-org
       APP_SPACE: iwa-space
       AD_SUBNET: 10.1.0.0/24
@@ -966,7 +972,7 @@ jobs:
     attempts: 5
     file: ci/winc-release/tasks/verify-iwa-login/windows.yml
     params:
-      IWA_TEST_APP_ROUTE: windows-auth.pesto.cf-app.com/auth
+      IWA_TEST_APP_ROUTE: windows-auth.pesto.funtime.lol/auth
       IWA_DOMAIN: ((gcp-garden-windows-env-pesto/iwa-domain))
       IWA_USERNAME: ((gcp-garden-windows-env-pesto/iwa-username))
       IWA_PASSWORD: ((gcp-garden-windows-env-pesto/iwa-password))
