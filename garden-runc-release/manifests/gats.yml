@@ -5,7 +5,7 @@ releases:
   version: latest
 - name: bpm
   url: https://bosh.io/d/github.com/cloudfoundry/bpm-release
-  version: create
+  version: latest
 
 stemcells:
 - alias: stemcell
