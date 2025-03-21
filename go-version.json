@@ -1,5 +1,11 @@
 {
-    "default": "1.23",
+    "default": "1.24",
      "releases": {
+        "cf-networking": "1.23",
+        "silk": "1.23",
+        "envoy-nginx": "1.23",
+        "garden-runc": "1.23",
+        "winc": "1.23",
+        "diego": "1.23"
     }
 }
