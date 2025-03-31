@@ -1,0 +1,5 @@
+#! bosh-lite doesn't have any differences in vm_types so just make this something in the default cloud config
+- type: replace
+  path: /instance_groups/name=diego-cell/vm_type
+  value: medium
+
