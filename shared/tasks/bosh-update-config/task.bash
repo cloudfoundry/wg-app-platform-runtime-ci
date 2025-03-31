@@ -14,12 +14,13 @@ function run(){
     local task_tmp_dir="${1:?provide temp dir for task}"
     shift 1
 
+    bosh_target
+
     arguments=""
     if [[ "${SKIP_DEFAULT_VAR_GENERATION}" != "true" ]]; then
 
         local cf_manifest="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-cf.yml')"
         local cloud_config="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-cc.yml')"
-        bosh_target
         bosh_manifest > "${cf_manifest}"
         bosh_cloud_config > "${cloud_config}"
         local default_envs_file="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-env.bash')"
