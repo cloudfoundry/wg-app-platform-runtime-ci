@@ -17,6 +17,7 @@ params:
   NAME:
   RUNTIME_CONFIG:
   TYPE:
+  SKIP_DEFAULT_VAR_GENERATION:
 
 run:
   path: ci/shared/tasks/bosh-update-config/task.bash

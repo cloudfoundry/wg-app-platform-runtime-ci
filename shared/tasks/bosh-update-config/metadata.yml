@@ -11,3 +11,4 @@ params:
   NAME: Bosh Config Name
   RUNTIME_CONFIG: Path to runtime-config yml file
   TYPE: Bosh Config Type
+  SKIP_DEFAULT_VAR_GENERATION: whether or not to skip default variable generation (for use when updating a config that doesn't have a CF already deployed)
