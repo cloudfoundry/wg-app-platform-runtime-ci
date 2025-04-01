@@ -19,6 +19,7 @@ groups:
 - name: periodics
   jobs:
   - bump-dependencies-go-mod
+  - bump-bosh-blobs
   - bump-package-golang
   - sync-dot-github-dir
   - sync-readme
@@ -232,6 +233,14 @@ resources:
     password: ((gcp-tas-runtime-service-account/config-json))
     tag: 'latest'
 
+- name: nats-server-gh-release
+  type: github-release
+  icon: github
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    owner: nats-io
+    repository: nats-server
+
 #! Define-Jobs
 jobs:
 - name: bump-dependencies-go-mod
@@ -259,6 +268,34 @@ jobs:
     params:
       rebase: true
       repository: bumped-repo
+
+- name: bump-bosh-blobs
+  on_failure: *ci-notification
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: repo
+      - get: image
+      - get: nats-server-gh-release
+        params:
+          globs:
+            - nats-server-*-linux-amd64.tar.gz
+        trigger: true
+  - do:
+    - task: bump-bosh-blob-nats-server
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: nats-server-gh-release
+      params:
+        BOSH_BLOB_PATH: nats-server-gh-release/nats-server-*-linux-amd64.tar.gz
+        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
 
 - name: bump-package-golang
   on_failure: *ci-notification
