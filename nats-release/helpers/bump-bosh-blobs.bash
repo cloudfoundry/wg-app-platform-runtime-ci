@@ -15,7 +15,7 @@ function run() {
     local blob=${3:?Provide a path to new blob}
     pushd "$repo_path" > /dev/null
 
-    elif [[ "$bosh_blob_path" == 'nats-server-gh-release/nats-server-*-linux-amd64.tar.gz' ]]; then
+    if [[ "$bosh_blob_path" == 'nats-server-gh-release/nats-server-*-linux-amd64.tar.gz' ]]; then
         echo "Bumping nats-server blob"
         pushd "${blob}" > /dev/null
         local version=$(cat version)
