@@ -4,6 +4,5 @@
 internal_repos:
 - name: "nats-v2-migrate"
 opsfiles:
-- add-lb-ca-cert.yml
 - scale-for-cats.yml
 - use-compiled-releases.yml
