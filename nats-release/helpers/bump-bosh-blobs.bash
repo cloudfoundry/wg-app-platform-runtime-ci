@@ -19,7 +19,7 @@ function run() {
         echo "Bumping nats-server blob"
         pushd "${blob}" > /dev/null
         local version=$(cat version)
-        local tgz_name="nats-server-${version}-linux-amd64.tar.gz"
+        local tgz_name="nats-server-v${version}-linux-amd64.tar.gz"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
