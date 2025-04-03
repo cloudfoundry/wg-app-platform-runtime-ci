@@ -203,7 +203,11 @@ RUN \
   go install "code.cloudfoundry.org/credhub-cli@$credhub_version" && \
   mv "$(which credhub-cli)" "$(dirname "$(which credhub-cli)")/credhub"
 
-
+# nats-server cli
+#
+RUN \
+  nats_url="$(curl -s https://api.github.com/repos/nats-io/nats-server/releases | jq -r --arg arch "$TARGETARCH" '.[0].assets[] | select((.name | contains("-linux-")) and (.name | contains($arch)) and (.name | contains(".tar.gz"))).browser_download_url')" && \
+  curl -L "${nats_url}" | tar -zx --strip-components=1 -C /usr/local/bin '*/nats-server'
 
 #    ruby
 ARG RUBY_INSTALLER_VERSION

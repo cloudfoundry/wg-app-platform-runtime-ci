@@ -167,6 +167,14 @@ resources:
     version_key: "latest-golang"
     check_command: "echo https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"
     in_command:    "curl --silent --fail --output $1/golang.tgz https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"
+- name: nats-server-binary
+  type: github-release
+  icon: github
+  source:
+    access_token: ((github-tas-runtime-bot/access-token))
+    owner: nats-io
+    repository: nats-server
+
 jobs:
 - name: build-build-image
   serial: true
@@ -187,6 +195,8 @@ jobs:
     - get: go-version
       trigger: true
     - get: build-image
+    - get: nats-server-binary
+      trigger: true
   - task: print-go-version-tag
     image: build-image
     file: ci/shared/tasks/build-golang-version-tags/linux.yml
