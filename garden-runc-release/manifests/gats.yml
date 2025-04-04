@@ -4,6 +4,7 @@ releases:
 - name: garden-runc
   version: latest
 - name: bpm
+  url: https://bosh.io/d/github.com/cloudfoundry/bpm-release
   version: latest
 
 stemcells:
