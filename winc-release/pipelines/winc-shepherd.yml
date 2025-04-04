@@ -70,7 +70,7 @@ resources:
   type: git
   icon: source-branch
   source:
-    branch:  with-shepherd
+    branch:  develop
     uri: git@github.com:cloudfoundry/winc-release
     private_key: ((github-tas-runtime-bot/private-key))
     ignore_paths:
