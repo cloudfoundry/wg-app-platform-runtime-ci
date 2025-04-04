@@ -1,0 +1,6 @@
+#@data/values
+---
+#@overlay/match missing_ok=True
+environments:
+  - name: nats-release
+    bosh_lite: true

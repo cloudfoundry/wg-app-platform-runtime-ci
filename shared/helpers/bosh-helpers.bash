@@ -1,14 +1,14 @@
 function bosh_target(){
     if [[ "$(is_env_cf_deployment)" == "yes" ]]; then
-        eval "$(bbl print-env --metadata-file env/metadata)"
-        export ENVIRONMENT_NAME="$(jq -r .name env/metadata)"
+        eval "$(bbl print-env --metadata-file "$(env_metadata)")"
+        export ENVIRONMENT_NAME="$(jq -r .name "$(env_metadata)")"
     else
-        export OM_USERNAME="$(jq -r .ops_manager.username env/metadata)"
-        export OM_PASSWORD="$(jq -r .ops_manager.password env/metadata)"
-        export OM_TARGET="$(jq -r .ops_manager.url env/metadata)"
-        export OM_PRIVATE_KEY="$(jq -r .ops_manager_private_key env/metadata)"
-        export OM_PUBLIC_IP="$(jq -r .ops_manager_public_ip env/metadata)"
-        export ENVIRONMENT_NAME="$(jq -r .name env/metadata)"
+        export OM_USERNAME="$(jq -r .ops_manager.username "$(env_metadata)")"
+        export OM_PASSWORD="$(jq -r .ops_manager.password "$(env_metadata)")"
+        export OM_TARGET="$(jq -r .ops_manager.url "$(env_metadata)")"
+        export OM_PRIVATE_KEY="$(jq -r .ops_manager_private_key "$(env_metadata)")"
+        export OM_PUBLIC_IP="$(jq -r .ops_manager_public_ip "$(env_metadata)")"
+        export ENVIRONMENT_NAME="$(jq -r .name "$(env_metadata)")"
         echo "${OM_PRIVATE_KEY}" > /tmp/${ENVIRONMENT_NAME}.key
         chmod 600 /tmp/${ENVIRONMENT_NAME}.key
         export BOSH_ALL_PROXY="ssh+socks5://ubuntu@${OM_PUBLIC_IP}:22?private-key=/tmp/${ENVIRONMENT_NAME}.key"

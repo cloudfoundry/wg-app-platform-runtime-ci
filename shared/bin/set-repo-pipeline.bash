@@ -13,6 +13,9 @@ main() {
   fly_pipeline "shared-docker-images" -f "${pipeline_dir}/shared-docker-images.yml"
 
   fly_pipeline "linters" -f "${pipeline_dir}/linters.yml"
+
+  fly_pipeline "release-environments" -f "${pipeline_dir}/release-environments.yml" \
+    -f "${REPO}/index.yml"
 }
 
 main

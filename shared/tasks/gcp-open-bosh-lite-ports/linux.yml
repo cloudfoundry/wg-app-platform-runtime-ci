@@ -1,0 +1,15 @@
+---
+platform: linux
+
+inputs:
+  - name: ci
+  - name: bbl-state
+
+run:
+  path: ci/shared/tasks/gcp-open-bosh-lite-ports/task.sh
+
+params:
+  BBL_STATE_DIR:
+  SERVICE_ACCOUNT_KEY:
+  PROJECT:
+  CLOUDSDK_CORE_DISABLE_PROMPTS: 1
