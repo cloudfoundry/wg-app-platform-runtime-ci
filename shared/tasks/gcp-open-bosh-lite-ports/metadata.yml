@@ -1,0 +1,10 @@
+---
+readme: |
+  This task will create open firewall ports on a bosh-lite director in GCP
+oses:
+  - linux
+params:
+  SERVICE_ACCOUNT_KEY: GCP service account key json
+  BBL_STATE_DIR: name of the bbl state directory to try to find the instance name from. If specified, will stop both jumpbox + bosh director
+  CLOUDSDK_CORE_DISABLE_PROMPTS: make things less interactive
+  PROJECT: project to find the DNS zone in

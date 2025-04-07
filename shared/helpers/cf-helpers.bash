@@ -3,7 +3,7 @@ function cf_target(){
     export CF_SYSTEM_DOMAIN="$(cf_system_domain)"
     export CF_ADMIN_PASSWORD=$(cf_password)
     export CF_DEPLOYMENT=$(bosh_cf_deployment_name)
-    export CF_ENVIRONMENT_NAME=$(jq -r .name env/metadata)
+    export CF_ENVIRONMENT_NAME=$(jq -r .name "$(env_metadata)")
     export CF_TCP_DOMAIN="tcp.${CF_SYSTEM_DOMAIN}"
     export CF_MANIFEST_VERSION=$(cf_manifest_version)
     export CF_MANIFEST_FILE="env/cf.yml"
@@ -11,7 +11,7 @@ function cf_target(){
 
 function cf_system_domain(){
     # For cf-deployment bbl envs
-    local system_domain=$(jq -r .cf.api_url < env/metadata | cut -d "." -f2-)
+    local system_domain=$(jq -r .cf.api_url < "$(env_metadata)" | cut -d "." -f2-)
     # fall back to checking the manifest with multiple instance group name options
     if [[ "${system_domain:=null}" == "null" ]] ; then
         local system_domain=$(bosh int <(bosh_manifest) --path /instance_groups/name=singleton-blobstore?/jobs/name=blobstore/properties/system_domain)

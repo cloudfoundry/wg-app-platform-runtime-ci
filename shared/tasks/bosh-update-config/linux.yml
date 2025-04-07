@@ -4,6 +4,7 @@ platform: linux
 inputs:
   - name: ci
   - name: repo
+    optional: true
   - name: env
   - name: ci-config
     optional: true
@@ -18,6 +19,7 @@ params:
   RUNTIME_CONFIG:
   TYPE:
   SKIP_DEFAULT_VAR_GENERATION:
+  BBL_STATE_DIR:
 
 run:
   path: ci/shared/tasks/bosh-update-config/task.bash

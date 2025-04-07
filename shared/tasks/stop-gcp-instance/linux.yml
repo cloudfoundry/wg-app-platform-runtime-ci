@@ -3,11 +3,16 @@ platform: linux
 
 inputs:
 - name: ci
+- name: bbl-state
+  optional: true
 
 params:
   INSTANCE_NAME:
   ZONE: 
   PROJECT:
   SERVICE_ACCOUNT_KEY:
+  BBL_STATE_DIR:
+  SUSPEND:
+
 run:
   path: ci/shared/tasks/stop-gcp-instance/task.bash

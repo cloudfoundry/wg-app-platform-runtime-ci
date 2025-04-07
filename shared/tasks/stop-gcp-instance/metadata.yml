@@ -8,4 +8,5 @@ params:
   ZONE: name of the GCP availability zone the instance lives in
   PROJECT: GCP project name where the instance exists
   SERVICE_ACCOUNT_KEY: GCP service account key json
-
+  BBL_STATE_DIR: name of the bbl state directory to try to find the instance name from. If specified, will stop both jumpbox + bosh director
+  SUSPEND: suspend the vm instead of stopping it (set to "true")
