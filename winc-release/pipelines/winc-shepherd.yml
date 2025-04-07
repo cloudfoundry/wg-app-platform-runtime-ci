@@ -973,7 +973,7 @@ jobs:
         - get: version
         - get: develop-branch-mergeback
           params:
-            submodules: uone
+            submodules: none
 
     - task: check-safe-to-release-branch
       image: image
