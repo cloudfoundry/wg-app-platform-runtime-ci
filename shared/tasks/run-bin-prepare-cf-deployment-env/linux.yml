@@ -10,6 +10,7 @@ outputs:
 - name: prepared-env
 
 params:
+  BBL_STATE_DIR:
   FUNCTIONS:
   VARS:
 run:

@@ -11,6 +11,7 @@ outputs:
 params:
   CONFIGS:
   ENVS:
+  BBL_STATE_DIR:
   WITH_ISOSEG: false
   WITH_DYNAMIC_ASG: false
   WITH_COMMA_DELIMITED_ASG_DESTINATIONS: false

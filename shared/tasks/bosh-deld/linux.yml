@@ -6,6 +6,7 @@ inputs:
   - name: env
 
 params:
+  BBL_STATE_DIR:
   DEPLOYMENT_NAME:
 
 run:
