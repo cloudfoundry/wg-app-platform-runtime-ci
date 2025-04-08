@@ -51,7 +51,7 @@ create_dns_record() {
       gcloud dns record-sets transaction remove --name "*.${DNS_DOMAIN}" --type=A --zone="${SHARED_DNS_ZONE_NAME}" --ttl=300 "${existing_record_ip}" --verbosity=debug
     fi
 
-    director_external_ip="$(bbl jumpbox-address)"
+    director_external_ip="$(bbl outputs | yq .director__external_ip)"
     gcloud dns record-sets transaction add --name "*.${DNS_DOMAIN}" --type=A --zone="${SHARED_DNS_ZONE_NAME}" --ttl=300 "${director_external_ip}" --verbosity=debug
 
     echo "Contents of transaction.yaml:"

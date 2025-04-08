@@ -502,7 +502,7 @@ jobs:
       BOSH_LITE: true
       BBL_STATE_DIR: bbl-nats-env
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
-      SYSTEM_DOMAIN: nats-release.arp.cloudfoundry.org
+      SYSTEM_DOMAIN: bbl-nats-env.arp.cloudfoundry.org
       FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
       OPS_FILES: #@ "\n".join(data.values.opsfiles)
