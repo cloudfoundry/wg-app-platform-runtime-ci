@@ -30,7 +30,7 @@ open_bosh_lite_ports() {
   if ! gcloud compute firewall-rules describe "${firewall_rule_name}"; then
     gcloud compute firewall-rules \
       create "${firewall_rule_name}" \
-      --allow=tcp:80,tcp:443,tcp:2222 \
+      --allow=tcp:80,tcp:443,tcp:2222,tcp:1024-1123 \
       --source-ranges 0.0.0.0/0 \
       --target-tags "${director_tag}" \
       --network "${director_network}"
