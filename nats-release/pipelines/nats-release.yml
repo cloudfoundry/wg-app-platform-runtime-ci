@@ -426,6 +426,10 @@ jobs:
 
 - name: claim-env
   serial: true
+  on_failure:
+    put: env-lock
+    params:
+      release: env-lock #! path to the resource in the above get
   plan:
   - in_parallel:
     - get: ci
@@ -516,7 +520,7 @@ jobs:
       bbl-state: env
     params:
       BBL_STATE_DIR: bbl-nats-env
-      SYSTEM_DOMAIN: nats-release.arp.cloudfoundry.org
+      SYSTEM_DOMAIN: bbl-nats-env.arp.cloudfoundry.org
       BOSH_LITE: true
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "true"
       APP_PUSHABILITY_THRESHOLD: "20"
