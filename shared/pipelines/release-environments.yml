@@ -99,6 +99,7 @@ jobs:
           params:
             SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
             BBL_STATE_DIR: #@ env.name
+            RESUME: true
     - try:
         do:
         - task: bbl-destroy
