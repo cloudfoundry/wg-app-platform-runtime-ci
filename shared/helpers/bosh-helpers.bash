@@ -15,12 +15,13 @@ function bosh_target(){
         OM_PRIVATE_KEY="$(jq -r .ops_manager_private_key "$(env_metadata)")"
         OM_PUBLIC_IP="$(jq -r .ops_manager_public_ip "$(env_metadata)")"
         ENVIRONMENT_NAME="$(jq -r .name "$(env_metadata)")"
+        export OM_USERNAME OM_PASSWORD OM_TARGET OM_PRIVATE_KEY OM_PUBLIC_IP ENVIRONMENT_NAME 
         echo "${OM_PRIVATE_KEY}" > /tmp/${ENVIRONMENT_NAME}.key
         chmod 600 /tmp/${ENVIRONMENT_NAME}.key
         BOSH_ALL_PROXY="ssh+socks5://ubuntu@${OM_PUBLIC_IP}:22?private-key=/tmp/${ENVIRONMENT_NAME}.key"
         CREDHUB_PROXY="ssh+socks5://ubuntu@${OM_PUBLIC_IP}:22?private-key=/tmp/${ENVIRONMENT_NAME}.key"
         GCP_SERVICE_ACCOUNT_KEY_JSON="$(om curl -sp /api/v0/staged/director/manifest | jq -r .manifest.cloud_provider.properties.google.json_key -r)"
-        export OM_USERNAME OM_PASSWORD OM_TARGET OM_PRIVATE_KEY OM_PUBLIC_IP ENVIRONMENT_NAME BOSH_ALL_PROXY CREDHUB_PROXY GCP_SERVICE_ACCOUNT_KEY_JSON
+        export BOSH_ALL_PROXY CREDHUB_PROXY GCP_SERVICE_ACCOUNT_KEY_JSON
         eval "$(om bosh-env)"
     fi
 }

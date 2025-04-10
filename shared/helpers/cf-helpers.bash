@@ -1,5 +1,6 @@
 function cf_target(){
     bosh_manifest > ./env/cf.yml
+    CF_SYSTEM_DOMAIN="$(cf_system_domain)"
     CF_ADMIN_PASSWORD=$(cf_password)
     CF_DEPLOYMENT=$(bosh_cf_deployment_name)
     CF_ENVIRONMENT_NAME=$(jq -r .name "$(env_metadata)")
