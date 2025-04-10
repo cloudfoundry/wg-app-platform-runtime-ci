@@ -27,7 +27,8 @@ function bosh_target(){
 }
 
 function bosh_manifest(){
-    local manifest=$(bosh -d "$(bosh_cf_deployment_name)" manifest)
+    local manifest
+    manifest=$(bosh -d "$(bosh_cf_deployment_name)" manifest)
     if [[ "${manifest:=null}" == "null" ]]; then
         manifest="{}"
     fi
@@ -40,7 +41,8 @@ function bosh_cloud_config(){
 }
 
 function bosh_is_cf_deployed() {
-    local name=$(bosh ds --column=name --json | jq -r '.Tables[].Rows[] | select (.name |contains("cf")).name')
+    local name
+    name=$(bosh ds --column=name --json | jq -r '.Tables[].Rows[] | select (.name |contains("cf")).name')
     if [[ "${name:=null}" == "null" ]]; then
         echo no
     fi
@@ -48,7 +50,8 @@ function bosh_is_cf_deployed() {
 }
 
 function bosh_cf_deployment_name(){
-    local name=$(bosh ds --column=name --json | jq -r '.Tables[].Rows[] | select (.name |contains("cf")).name')
+    local name
+    name=$(bosh ds --column=name --json | jq -r '.Tables[].Rows[] | select (.name |contains("cf")).name')
     # we may not have an active deployment
     if [[ "${name:=null}" == "null" ]]; then
         name="cf"
@@ -60,39 +63,39 @@ function bosh_extract_manifest_defaults_from_cf(){
     local manifest="${1:?Provide a manifest}"
     local cloud_config="${2:?Provide a cloud-config}"
     if [[ "$(is_env_cf_deployment)" == "yes" ]]; then
-        echo  "export CF_STEMCELL_OS=$(bosh int $manifest --path /stemcells/alias=default/os)
-export CF_AZ=$(bosh int $manifest --path /instance_groups/0/azs/0)
-export CF_NETWORK=$(bosh int $manifest --path /instance_groups/0/networks/0/name)
-export CF_VM_TYPE=$(bosh int $manifest --path /instance_groups/0/vm_type)"
+        echo  "export CF_STEMCELL_OS=$(bosh int "${manifest}" --path /stemcells/alias=default/os)
+export CF_AZ=$(bosh int "${manifest}" --path /instance_groups/0/azs/0)
+export CF_NETWORK=$(bosh int "${manifest}" --path /instance_groups/0/networks/0/name)
+export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)"
     else
-        echo  "export CF_STEMCELL_OS=$(bosh int $manifest --path /stemcells/0/os)
-export CF_AZ=$(bosh int $manifest --path /instance_groups/0/azs/0)
-export CF_NETWORK=$(bosh int $cloud_config --path /networks/1/name)
-export CF_NETWORK_CIDR=$(bosh int $cloud_config --path /networks/1/subnets/0/range)
-export CF_VM_TYPE=$(bosh int $manifest --path /instance_groups/0/vm_type)
+        echo  "export CF_STEMCELL_OS=$(bosh int "${manifest}" --path /stemcells/0/os)
+export CF_AZ=$(bosh int "${manifest}" --path /instance_groups/0/azs/0)
+export CF_NETWORK=$(bosh int "${cloud_config}" --path /networks/1/name)
+export CF_NETWORK_CIDR=$(bosh int "${cloud_config}" --path /networks/1/subnets/0/range)
+export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)
 export CF_LARGE_VM_TYPE=e2-standard-8
-export CF_NETWORK_SERVICES=$(bosh int $cloud_config --path /networks/2/name)
-export CF_NETWORK_SERVICES_CIDR=$(bosh int $cloud_config --path /networks/2/subnets/0/range)"
+export CF_NETWORK_SERVICES=$(bosh int "${cloud_config}" --path /networks/2/name)
+export CF_NETWORK_SERVICES_CIDR=$(bosh int "${cloud_config}" --path /networks/2/subnets/0/range)"
     fi
 }
 
 function bosh_extract_vars_from_env_files(){
-    local files=${@}
-    debug "Creating bosh vars files from the following files: $files"
+    local files=("${@}")
+    debug "Creating bosh vars files from the following files: ${files[*]}"
     local arguments=""
     IFS=$' '
-    for file in ${files}
+    for file in "${files[@]}"
     do
         debug "Adding arugment for file: $file"
-        IFS=$'\n'
-        for entry in $(cat $file)
+        while IFS= read -r entry < "${file}"
         do
-            local key=$(echo ${entry} | cut -d "=" -f1 | cut -d " " -f2)
-            eval $entry
+            local key
+            key="$(echo "${entry}" | cut -d "=" -f1 | cut -d " " -f2)"
+            eval "$entry"
             arguments="${arguments} --var=${key}=${!key}"
         done
     done
-    echo ${arguments}
+    echo "${arguments}"
 }
 
 #Copied from https://github.com/cloudfoundry/cf-deployment-concourse-tasks/blob/9d60cd05a75ae674706201fd083ae46617147373/shared-functions#L351-L369
@@ -100,8 +103,10 @@ function bosh_get_password_from_credhub() {
     local bosh_manifest_password_variable_name=$1
     local field="${2:-.value}"
 
-    local credential_path=$(credhub find -j -n ${bosh_manifest_password_variable_name} | jq -r .credentials[].name )
-    local credential_paths_len=$(echo ${credential_path} | tr ' ' '\n' | wc -l)
+    local credential_path
+    credential_path=$(credhub find -j -n "${bosh_manifest_password_variable_name}" | jq -r .credentials[].name )
+    local credential_paths_len
+    credential_paths_len=$(echo "${credential_path}" | tr ' ' '\n' | wc -l)
 
     if [ "${credential_paths_len}" -gt 1 ]; then
         echo "ambiguous ${bosh_manifest_password_variable_name} variable name; expected one got ${credential_paths_len}" >&2
@@ -112,7 +117,7 @@ function bosh_get_password_from_credhub() {
         return
     fi
 
-    echo $(credhub find -j -n ${bosh_manifest_password_variable_name} | jq -r .credentials[].name | xargs credhub get -j -n | jq -r $field)
+    credhub find -j -n "${bosh_manifest_password_variable_name}" | jq -r .credentials[].name | xargs credhub get -j -n | jq -r "$field"
 }
 
 function bosh_configure_private_yml() {
@@ -120,7 +125,8 @@ function bosh_configure_private_yml() {
     local private_yml="${1?Provide private yml path}"
     if [[ "${GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY:-null}" != "null"  ]]; then
         debug "Using GCP"
-        local formatted_key="$(sed 's/^/      /' <(echo "${GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY}"))"
+        local formatted_key
+        formatted_key="$(sed 's/^/      /' <(echo "${GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY}"))"
         cat > "$private_yml" <<EOF
 ---
 blobstore:
@@ -149,7 +155,8 @@ EOF
 }
 
 function bosh_release_name() {
-    local release_name="$(yq -r '.final_name|select(.)' < ./config/final.yml)"
+    local release_name
+    release_name="$(yq -r '.final_name|select(.)' < ./config/final.yml)"
     if [[ -z "$release_name" ]] ; then
         release_name="$(yq -r .name < ./config/final.yml)"
     fi
