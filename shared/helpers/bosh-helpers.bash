@@ -6,19 +6,21 @@ function bosh_target(){
         else
             eval "$(bbl print-env --metadata-file "$(env_metadata)")"
         fi
-        export ENVIRONMENT_NAME="$(jq -r .name "$(env_metadata)")"
+        ENVIRONMENT_NAME="$(jq -r .name "$(env_metadata)")"
+        export ENVIRONMENT_NAME
     else
-        export OM_USERNAME="$(jq -r .ops_manager.username "$(env_metadata)")"
-        export OM_PASSWORD="$(jq -r .ops_manager.password "$(env_metadata)")"
-        export OM_TARGET="$(jq -r .ops_manager.url "$(env_metadata)")"
-        export OM_PRIVATE_KEY="$(jq -r .ops_manager_private_key "$(env_metadata)")"
-        export OM_PUBLIC_IP="$(jq -r .ops_manager_public_ip "$(env_metadata)")"
-        export ENVIRONMENT_NAME="$(jq -r .name "$(env_metadata)")"
+        OM_USERNAME="$(jq -r .ops_manager.username "$(env_metadata)")"
+        OM_PASSWORD="$(jq -r .ops_manager.password "$(env_metadata)")"
+        OM_TARGET="$(jq -r .ops_manager.url "$(env_metadata)")"
+        OM_PRIVATE_KEY="$(jq -r .ops_manager_private_key "$(env_metadata)")"
+        OM_PUBLIC_IP="$(jq -r .ops_manager_public_ip "$(env_metadata)")"
+        ENVIRONMENT_NAME="$(jq -r .name "$(env_metadata)")"
         echo "${OM_PRIVATE_KEY}" > /tmp/${ENVIRONMENT_NAME}.key
         chmod 600 /tmp/${ENVIRONMENT_NAME}.key
-        export BOSH_ALL_PROXY="ssh+socks5://ubuntu@${OM_PUBLIC_IP}:22?private-key=/tmp/${ENVIRONMENT_NAME}.key"
-        export CREDHUB_PROXY="ssh+socks5://ubuntu@${OM_PUBLIC_IP}:22?private-key=/tmp/${ENVIRONMENT_NAME}.key"
-        export GCP_SERVICE_ACCOUNT_KEY_JSON="$(om curl -sp /api/v0/staged/director/manifest | jq -r .manifest.cloud_provider.properties.google.json_key -r)"
+        BOSH_ALL_PROXY="ssh+socks5://ubuntu@${OM_PUBLIC_IP}:22?private-key=/tmp/${ENVIRONMENT_NAME}.key"
+        CREDHUB_PROXY="ssh+socks5://ubuntu@${OM_PUBLIC_IP}:22?private-key=/tmp/${ENVIRONMENT_NAME}.key"
+        GCP_SERVICE_ACCOUNT_KEY_JSON="$(om curl -sp /api/v0/staged/director/manifest | jq -r .manifest.cloud_provider.properties.google.json_key -r)"
+        export OM_USERNAME OM_PASSWORD OM_TARGET OM_PRIVATE_KEY OM_PUBLIC_IP ENVIRONMENT_NAME BOSH_ALL_PROXY CREDHUB_PROXY GCP_SERVICE_ACCOUNT_KEY_JSON
         eval "$(om bosh-env)"
     fi
 }

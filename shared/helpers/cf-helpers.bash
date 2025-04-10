@@ -1,12 +1,12 @@
 function cf_target(){
     bosh_manifest > ./env/cf.yml
-    export CF_SYSTEM_DOMAIN="$(cf_system_domain)"
-    export CF_ADMIN_PASSWORD=$(cf_password)
-    export CF_DEPLOYMENT=$(bosh_cf_deployment_name)
-    export CF_ENVIRONMENT_NAME=$(jq -r .name "$(env_metadata)")
-    export CF_TCP_DOMAIN="tcp.${CF_SYSTEM_DOMAIN}"
-    export CF_MANIFEST_VERSION=$(cf_manifest_version)
-    export CF_MANIFEST_FILE="env/cf.yml"
+    CF_ADMIN_PASSWORD=$(cf_password)
+    CF_DEPLOYMENT=$(bosh_cf_deployment_name)
+    CF_ENVIRONMENT_NAME=$(jq -r .name "$(env_metadata)")
+    CF_TCP_DOMAIN="tcp.${CF_SYSTEM_DOMAIN}"
+    CF_MANIFEST_VERSION=$(cf_manifest_version)
+    CF_MANIFEST_FILE="env/cf.yml"
+    export CF_SYSTEM_DOMAIN CF_ADMIN_PASSWORD CF_DEPLOYMENT CF_ENVIRONMENT_NAME CF_TCP_DOMAIN CF_MANIFEST_VERSION CF_MANIFEST_FILE
 }
 
 function cf_system_domain(){
