@@ -3,7 +3,11 @@ function cf_target(){
     CF_SYSTEM_DOMAIN="$(cf_system_domain)"
     CF_ADMIN_PASSWORD=$(cf_password)
     CF_DEPLOYMENT=$(bosh_cf_deployment_name)
-    CF_ENVIRONMENT_NAME=$(jq -r .name "$(env_metadata)")
+    if [[ -n "${BBL_STATE_DIR}" ]]; then
+        CF_ENVIRONMENT_NAME=$(jq -r .envID "$(env_metadata)")
+    else
+        CF_ENVIRONMENT_NAME=$(jq -r .name "$(env_metadata)")
+    fi
     CF_TCP_DOMAIN="tcp.${CF_SYSTEM_DOMAIN}"
     CF_MANIFEST_VERSION=$(cf_manifest_version)
     CF_MANIFEST_FILE="env/cf.yml"
