@@ -4,7 +4,7 @@ resource_types:
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: latest
 resources:
 - name: ci
@@ -13,7 +13,7 @@ resources:
   source:
     branch: main
     uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 - name: go-version
   type: git
   icon: source-branch
@@ -26,7 +26,7 @@ resources:
   type: git
   icon: source-branch
   source:
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci.git
     branch: main
     paths:
@@ -35,8 +35,8 @@ resources:
   type: registry-image
   icon: docker
   source:
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
+    username: ((dockerhub-appruntimeplatform-username))
+    password: ((dockerhub-appruntimeplatform-password))
     repository: cloudfoundry/tas-runtime-build
 
 - name: build-image-version
@@ -46,13 +46,13 @@ resources:
     driver: gcs
     bucket: ci-image-versions
     key: tas-runtime-build/version
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-service-account/config-json))
     initial_version: 0.0.147
 - name: ruby-installer-git
   type: git
   icon: source-branch
   source:
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:postmodern/ruby-install.git
     tag_filter: v0.*
     fetch_tags: true
@@ -60,14 +60,14 @@ resources:
   type: git
   icon: source-branch
   source:
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:ruby/ruby.git
     tag_filter: v3_2_2
 - name: postgres-dockerfile
   type: git
   icon: source-branch
   source:
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci.git
     branch: main
     paths:
@@ -76,8 +76,8 @@ resources:
   type: registry-image 
   icon: docker
   source:
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
+    username: ((dockerhub-appruntimeplatform-username))
+    password: ((dockerhub-appruntimeplatform-password))
     repository: cloudfoundry/tas-runtime-postgres
 - name: postgres-image-version
   type: semver
@@ -86,20 +86,20 @@ resources:
     driver: gcs
     bucket: ci-image-versions
     key: tas-runtime-postgres/version
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-service-account/config-json))
     initial_version: 0.0.1
 - name: postgres-docker-repo
   type: git
   icon: source-branch
   source:
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:docker-library/postgres.git
     branch: master
 - name: mysql-8.0-dockerfile
   type: git
   icon: source-branch
   source:
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci.git
     branch: main
     paths:
@@ -108,8 +108,8 @@ resources:
   type: registry-image
   icon: docker
   source:
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
+    username: ((dockerhub-appruntimeplatform-username))
+    password: ((dockerhub-appruntimeplatform-password))
     repository: cloudfoundry/tas-runtime-mysql-8.0
 - name: mysql-8.0-image-version
   type: semver
@@ -118,20 +118,20 @@ resources:
     driver: gcs
     bucket: ci-image-versions
     key: tas-runtime-mysql-8.0/version
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-service-account/config-json))
     initial_version: 0.0.1
 - name: mysql-docker-repo
   type: git
   icon: source-branch
   source:
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:docker-library/mysql.git
     branch: master
 - name: mysql-5.7-dockerfile
   type: git
   icon: source-branch
   source:
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci.git
     branch: main
     paths:
@@ -140,8 +140,8 @@ resources:
   type: registry-image 
   icon: docker
   source:
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
+    username: ((dockerhub-appruntimeplatform-username))
+    password: ((dockerhub-appruntimeplatform-password))
     repository: cloudfoundry/tas-runtime-mysql-5.7
 - name: mysql-5.7-image-version
   type: semver
@@ -150,14 +150,14 @@ resources:
     driver: gcs
     bucket: ci-image-versions
     key: tas-runtime-mysql-5.7/version
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-service-account/config-json))
     initial_version: 0.0.1
 - name: official-mysql-5.7-image
   type: docker-image
   icon: docker
   source:
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
+    username: ((dockerhub-appruntimeplatform-username))
+    password: ((dockerhub-appruntimeplatform-password))
     repository: mysql
     tag: 5.7-debian
 - name: http-golang-download
@@ -171,7 +171,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     owner: nats-io
     repository: nats-server
 
@@ -248,7 +248,7 @@ jobs:
         source:
           repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/concourse/oci-build-task
           username: _json_key
-          password: ((gcp-tas-runtime-service-account/config-json))
+          password: ((gcp-wg-arp-service-account/config-json))
       inputs:
         - name: build-dockerfile
         - name: dockerfile-build-args
@@ -349,7 +349,7 @@ jobs:
         source:
           repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/concourse/oci-build-task
           username: _json_key
-          password: ((gcp-tas-runtime-service-account/config-json))
+          password: ((gcp-wg-arp-service-account/config-json))
   - load_var: postgres-image-version
     file: postgres-image-version/version
     format: raw
@@ -456,7 +456,7 @@ jobs:
         source:
           repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/concourse/oci-build-task
           username: _json_key
-          password: ((gcp-tas-runtime-service-account/config-json))
+          password: ((gcp-wg-arp-service-account/config-json))
   - load_var: mysql8-image-version
     file: mysql-8.0-image-version/version
     format: raw
@@ -556,7 +556,7 @@ jobs:
         source:
           repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/concourse/oci-build-task
           username: _json_key
-          password: ((gcp-tas-runtime-service-account/config-json))
+          password: ((gcp-wg-arp-service-account/config-json))
   - load_var: mysql57-image-version
     file: mysql-5.7-image-version/version
     format: raw

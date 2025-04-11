@@ -19,7 +19,7 @@ resource_types:
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: latest
 - name: slack-notification
   type: docker-image
@@ -42,7 +42,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/windows-tools-release.git
     branch: develop
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     ignore_paths:
     - .github/
     - .gitignore
@@ -60,7 +60,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/windows-tools-release.git
     branch: release
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: develop-branch-mergeback
   type: git
@@ -68,7 +68,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/windows-tools-release.git
     branch: develop
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: ci
   type: git
@@ -81,7 +81,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     repository: windows-tools-release
     owner: cloudfoundry
 
@@ -89,7 +89,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     drafts: true
     repository: windows-tools-release
     owner: cloudfoundry
@@ -101,7 +101,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: windows-tools-release/version
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-service-account/config-json))
 
 - name: go-version
   type: git
@@ -117,7 +117,7 @@ resources:
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: 'latest'
 
 - name: yq
@@ -126,7 +126,7 @@ resources:
   source:
     owner: mikefarah
     repository: yq
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
 
 - name: staticcheck
   type: github-release
@@ -134,7 +134,7 @@ resources:
   source:
     owner: dominikh
     repository: go-tools
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
 
 - name: mingw
   type: github-release
@@ -142,7 +142,7 @@ resources:
   source:
     owner: niXman
     repository: mingw-builds-binaries
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
 
 - name: bosh-cli
   type: github-release
@@ -150,7 +150,7 @@ resources:
   source:
     owner: cloudfoundry
     repository: bosh-cli
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
 
 - name: git-cli
   type: github-release
@@ -158,7 +158,7 @@ resources:
   source:
     owner: git-for-windows
     repository: git
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
 
 - name: vcredist-ucrt
   type: command-runner
@@ -174,7 +174,7 @@ resources:
   source:
     owner: Kitware
     repository: CMake
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
 
 - name: ginkgo
   type: github-release
@@ -182,7 +182,7 @@ resources:
   source:
     owner: onsi
     repository: ginkgo
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
 
 - name: slack-ci-channel
   type: slack-notification

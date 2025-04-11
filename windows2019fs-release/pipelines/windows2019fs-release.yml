@@ -51,7 +51,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/windows2019fs-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     ignore_paths:
     - .github/
     - .gitignore
@@ -69,7 +69,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/windows2019fs-release.git
     branch: release
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: develop-branch-mergeback
   type: git
@@ -77,7 +77,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/windows2019fs-release.git
     branch: develop
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     
 - name: ci
   type: git
@@ -92,7 +92,7 @@ resources:
   source:
     branch: main
     pool: windows2019fs-release-env-lock 
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: cf-deployment
@@ -122,7 +122,7 @@ resources:
   source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: 'latest'
 
 - name: slack-ci-channel
@@ -147,7 +147,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     repository: windows2019fs-release
     owner: cloudfoundry
 
@@ -155,7 +155,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     drafts: true
     repository: windows2019fs-release
     owner: cloudfoundry
@@ -167,7 +167,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: windows2019fs-release//version
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-service-account/config-json))
     initial_version: 2.63.0
 
 - name: go-version
@@ -289,7 +289,7 @@ jobs:
       DEFAULT_PARAMS: "ci/windows2019fs-release/default-params/build-binaries/linux.yml"
     vars:
       image_repository: cloudfoundry/tas-runtime-build
-      image_password: ((gcp-tas-runtime-service-account/config-json))
+      image_password: ((gcp-wg-arp-service-account/config-json))
       image_tag: ((.:image_tag))
   - task: bump-repo-windows2019fs-release-version
     file: ci/shared/tasks/bump-repo-version-file/linux.yml
@@ -372,7 +372,7 @@ jobs:
       DEFAULT_PARAMS: "ci/windows2019fs-release/default-params/build-binaries/linux.yml"
     vars:
       image_repository: cloudfoundry/tas-runtime-build
-      image_password: ((gcp-tas-runtime-service-account/config-json))
+      image_password: ((gcp-wg-arp-service-account/config-json))
       image_tag: ((.:image_tag))
   - task: bump-repo-windows2019fs-release-version
     file: ci/shared/tasks/bump-repo-version-file/linux.yml

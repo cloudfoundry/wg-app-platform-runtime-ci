@@ -72,7 +72,7 @@ resources:
   source:
     branch:  "develop"
     uri: git@github.com:cloudfoundry/cf-networking-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     ignore_paths:
     - .github/
     - .gitignore
@@ -90,7 +90,7 @@ resources:
   source:
     branch:  "develop"
     uri: git@github.com:cloudfoundry/silk-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     ignore_paths:
     - .github/
     - .gitignore
@@ -108,7 +108,7 @@ resources:
   source:
     branch: release
     uri: git@github.com:cloudfoundry/cf-networking-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: silk-release-branch
   type: git
@@ -116,7 +116,7 @@ resources:
   source:
     branch: release
     uri: git@github.com:cloudfoundry/silk-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: cf-networking-develop-branch-mergeback
   type: git
@@ -124,7 +124,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/cf-networking-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: silk-develop-branch-mergeback
   type: git
@@ -132,7 +132,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/silk-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 #! cf-networking-repo-synced is a write-only resource to prevent readme
 #! changes from triggering pipeline runs. See the description of "ignore_path"
@@ -143,7 +143,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/cf-networking-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 #! silk-repo-synced is a write-only resource to prevent readme
 #! changes from triggering pipeline runs. See the description of "ignore_path"
@@ -154,7 +154,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/silk-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: ci
   type: git
@@ -211,7 +211,7 @@ resources:
   icon: tag-outline
   source:
     uri: git@github.com:cloudfoundry/healthchecker-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     branch: release
     tag_filter: v*
 
@@ -248,7 +248,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     repository: cf-networking-release
     owner: cloudfoundry
 
@@ -256,7 +256,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     repository: silk-release
     owner: cloudfoundry
 
@@ -264,7 +264,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     drafts: true
     repository: cf-networking-release
     owner: cloudfoundry
@@ -273,7 +273,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     drafts: true
     repository: silk-release
     owner: cloudfoundry
@@ -294,7 +294,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: cf-networking-release/version #! One version number manages both cf-networking and silk
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-service-account/config-json))
 
 - name: env-lock
   type: pool
@@ -302,7 +302,7 @@ resources:
   source:
     branch: main
     pool: cf-networking-release-env-lock 
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: image
@@ -312,7 +312,7 @@ resources:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     tag: 'latest'
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
 
 
 #! Define-Jobs
@@ -403,7 +403,7 @@ jobs:
           vendored-repo: cf-networking-vendored-repo
         params:
           PACKAGE_NAME: golang-*-linux
-          GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+          GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
       - put: cf-networking-repo
         params:
           rebase: true
@@ -428,7 +428,7 @@ jobs:
           vendored-repo: silk-vendored-repo
         params:
           PACKAGE_NAME: golang-*-linux
-          GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+          GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
       - put: silk-repo
         params:
           rebase: true
@@ -452,7 +452,7 @@ jobs:
     params:
       PACKAGE_NAME: healthchecker
       PACKAGE_PREFIX: cf-networking
-      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
   - put: cf-networking-repo
     params:
       rebase: true
@@ -476,7 +476,7 @@ jobs:
     params:
       PACKAGE_NAME: healthchecker
       PACKAGE_PREFIX: silk
-      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
   - put: silk-repo
     params:
       rebase: true
@@ -641,7 +641,7 @@ jobs:
       attempts: 3
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -656,7 +656,7 @@ jobs:
       privileged: #@ helpers.privileged(package)
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: ((.:image_tag))
       attempts: 3
       params:
@@ -901,7 +901,7 @@ jobs:
     file: ci/shared/tasks/run-bin-test/linux.yml
     vars:
       image_repository: cloudfoundry/tas-runtime-build
-      image_password: ((gcp-tas-runtime-service-account/config-json))
+      image_password: ((gcp-wg-arp-service-account/config-json))
       image_tag: ((.:image_tag))
     attempts: 2
     input_mapping:
@@ -954,7 +954,7 @@ jobs:
     file: ci/shared/tasks/run-bin-test/linux.yml
     vars:
       image_repository: cloudfoundry/tas-runtime-build
-      image_password: ((gcp-tas-runtime-service-account/config-json))
+      image_password: ((gcp-wg-arp-service-account/config-json))
       image_tag: ((.:image_tag))
     attempts: 2
     input_mapping:
@@ -1154,7 +1154,7 @@ jobs:
               finalized-release-repo: finalized-cf-networking-release-repo
               finalized-release-tarball: finalized-cf-networking-release-tarball
             params:
-              GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+              GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
           - put: cf-networking-release-branch
             params:
               repository: finalized-cf-networking-release-repo
@@ -1193,7 +1193,7 @@ jobs:
               finalized-release-repo: finalized-silk-release-repo
               finalized-release-tarball: finalized-silk-release-tarball
             params:
-              GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+              GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
           - put: silk-release-branch
             params:
               repository: finalized-silk-release-repo

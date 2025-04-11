@@ -62,7 +62,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/envoy-nginx-release
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     ignore_paths:
     - .github/
     - .gitignore
@@ -83,7 +83,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/envoy-nginx-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: release-branch
   type: git
@@ -91,7 +91,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/envoy-nginx-release.git
     branch: release
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: develop-branch-mergeback
   type: git
@@ -99,7 +99,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/envoy-nginx-release.git
     branch: develop
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: ci
   type: git
@@ -191,7 +191,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     repository: envoy-nginx-release
     owner: cloudfoundry
 
@@ -199,7 +199,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     drafts: true
     repository: envoy-nginx-release
     owner: cloudfoundry
@@ -211,7 +211,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: envoy-nginx-release/version
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-service-account/config-json))
     initial_version: 0.21.0
 
 - name: env-lock
@@ -220,7 +220,7 @@ resources:
   source:
     branch: main
     pool: envoy-nginx-release-env-lock
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: windows-worker-lock
@@ -229,7 +229,7 @@ resources:
   source:
     branch: main
     pool: windows-worker-lock
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: image
@@ -238,7 +238,7 @@ resources:
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: 'latest'
 
 - name: nginx

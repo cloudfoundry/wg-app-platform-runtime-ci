@@ -31,7 +31,7 @@ jobs:
         source:
           repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/concourse/oci-build-task
           username: _json_key
-          password: ((gcp-tas-runtime-service-account/config-json))
+          password: ((gcp-wg-arp-service-account/config-json))
   - put: garden-rootfs
     params:
       image: garden-rootfs/image
@@ -72,7 +72,7 @@ jobs:
         source:
           repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/concourse/oci-build-task
           username: _json_key
-          password: ((gcp-tas-runtime-service-account/config-json))
+          password: ((gcp-wg-arp-service-account/config-json))
   - put: garden-fuse
     params:
       image: garden-fuse/image
@@ -88,8 +88,8 @@ resources:
   type: registry-image
   icon: docker
   source:
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
+    username: ((dockerhub-appruntimeplatform-username))
+    password: ((dockerhub-appruntimeplatform-password))
     repository: cloudfoundry/garden-rootfs
     tag: latest
 
@@ -97,8 +97,8 @@ resources:
   type: registry-image
   icon: docker
   source:
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
+    username: ((dockerhub-appruntimeplatform-username))
+    password: ((dockerhub-appruntimeplatform-password))
     repository: cloudfoundry/garden-fuse
     tag: latest
 
@@ -108,7 +108,7 @@ resources:
   source:
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci.git
     branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     paths:
     - garden-runc-release/dockerfiles/garden-rootfs
 
@@ -118,7 +118,7 @@ resources:
   source:
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci.git
     branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     paths:
     - garden-runc-release/dockerfiles/garden-fuse
 
@@ -135,7 +135,7 @@ resources:
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
 
 - name: http-golang-download
   type: command-runner
@@ -151,6 +151,6 @@ resource_types:
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: latest
 
