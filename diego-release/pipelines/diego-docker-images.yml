@@ -78,8 +78,8 @@ jobs:
       dockerfile: diego-docker-app-dockerfile
     params:
       DOCKERFILE_PATH: dockerfile/diego-release/dockerfiles/diego-docker-app
-      DOCKERHUB_USERNAME: ((dockerhub-tasruntime-username))
-      DOCKERHUB_PASSWORD: ((dockerhub-tasruntime-password))
+      DOCKERHUB_USERNAME: ((dockerhub-appruntimeplatform-username))
+      DOCKERHUB_PASSWORD: ((dockerhub-appruntimeplatform-password))
 
   # - task: validate-label-urls
   #   file: ci/shared/tasks/lint-docker-image/linux.yml
@@ -133,7 +133,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci.git
     branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     paths:
     - diego-release/dockerfiles/diego-inigo-ci-rootfs/Dockerfile
 
@@ -142,7 +142,7 @@ resources:
   icon: github
   check_every: '24h'
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     owner: oras-project
     repository: oras
 
@@ -151,7 +151,7 @@ resources:
   icon: github
   check_every: '24h'
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     owner: docker
     repository: buildx
 
@@ -161,7 +161,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci.git
     branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     paths:
     - diego-release/dockerfiles/diego-docker-app/Dockerfile
     - diego-release/dockerfiles/diego-docker-app/dockerapp.go
@@ -172,14 +172,14 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/grace.git
     branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: diego-docker-app
   type: docker-image
   icon: docker
   source:
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
+    username: ((dockerhub-appruntimeplatform-username))
+    password: ((dockerhub-appruntimeplatform-password))
     repository: cloudfoundry/diego-docker-app
 
 - name: aws-ecr-docker-app
@@ -194,16 +194,16 @@ resources:
   type: docker-image
   icon: docker
   source:
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
+    username: ((dockerhub-appruntimeplatform-username))
+    password: ((dockerhub-appruntimeplatform-password))
     repository: cloudfoundry/diego-inigo-ci-rootfs
 
 - name: cloudfoundry-grace-docker
   type: docker-image
   icon: docker
   source:
-    username: ((dockerhub-tasruntime-username))
-    password: ((dockerhub-tasruntime-password))
+    username: ((dockerhub-appruntimeplatform-username))
+    password: ((dockerhub-appruntimeplatform-password))
     repository: cloudfoundry/grace
 
 - name: image
@@ -212,7 +212,7 @@ resources:
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
 
 - name: cloudfoundry-grace-gcs
   type: google-cloud-storage
@@ -220,7 +220,7 @@ resources:
   source:
     bucket: grace-assets
     regexp: grace-*.tgz
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-service-account/config-json))
 
 - name: ci
   type: git
@@ -228,7 +228,7 @@ resources:
   source:
     branch: main
     uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: go-version
   type: git
@@ -236,7 +236,7 @@ resources:
   source:
     branch: main
     uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     paths:
     - go-version.json
 
@@ -254,11 +254,11 @@ resource_types:
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/frodenas/gcs-resource
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
 - name: command-runner
   type: docker-image
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
     tag: latest
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))

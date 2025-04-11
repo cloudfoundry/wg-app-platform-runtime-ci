@@ -78,7 +78,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/routing-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     ignore_paths:
     - .github/
     - .gitignore
@@ -99,7 +99,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/routing-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: release-branch 
   type: git
@@ -107,7 +107,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/routing-release.git
     branch: release
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: develop-branch-mergeback
   type: git
@@ -115,7 +115,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/routing-release.git
     branch: develop
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: cf-cli-release
   type: git
@@ -130,7 +130,7 @@ resources:
   icon: tag-outline
   source:
     uri: git@github.com:cloudfoundry/healthchecker-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     branch: release
     tag_filter: v*
 
@@ -148,7 +148,7 @@ resources:
   source:
     user: cloudfoundry-incubator
     repository: bosh-backup-and-restore
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
 
 - name: ci
   type: git
@@ -193,7 +193,7 @@ resources:
   source:
     branch: main
     uri: #@ "git@github.com:cloudfoundry/{}.git".format(repo.name)
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 #@ end
 
 #! CF Deployment
@@ -267,7 +267,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     repository: routing-release
     owner: cloudfoundry
 
@@ -275,7 +275,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     drafts: true
     repository: routing-release
     owner: cloudfoundry
@@ -287,7 +287,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: routing-release/version
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-service-account/config-json))
 
 - name: routing-api-cli-github-release
   type: github-release
@@ -296,13 +296,13 @@ resources:
   source:
     user: cloudfoundry
     repository: routing-api-cli
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
 
 - name: routing-api-cli-version
   type: semver
   icon: counter
   source:
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-service-account/config-json))
     bucket: ci-release-versions
     key: routing-api-cli/version
     initial_version: 2.24.0
@@ -314,7 +314,7 @@ resources:
   source:
     branch: main
     pool: routing-release-env-lock 
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: image
@@ -323,7 +323,7 @@ resources:
   source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: 'latest'
 
 - name: jq
@@ -395,7 +395,7 @@ jobs:
       package-release: golang-release-latest
     params:
       PACKAGE_NAME: golang-*-linux
-      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
 
   - put: repo
     params:
@@ -418,7 +418,7 @@ jobs:
       package-release: cf-cli-release
     params:
       PACKAGE_NAME: cf-cli-8-linux
-      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
   - put: repo
     params:
       rebase: true
@@ -441,7 +441,7 @@ jobs:
     params:
       PACKAGE_NAME: healthchecker
       PACKAGE_PREFIX: routing
-      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
   - put: repo
     params:
       rebase: true
@@ -473,7 +473,7 @@ jobs:
         blob: jq
       params:
         BOSH_BLOB_PATH: jq/jq-*-linux-amd64.tgz 
-        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
     - put: repo
       params:
        rebase: true
@@ -486,7 +486,7 @@ jobs:
         blob: haproxy
       params:
         BOSH_BLOB_PATH: haproxy/haproxy-*.tar.gz 
-        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
     - put: repo
       params:
        rebase: true
@@ -613,7 +613,7 @@ jobs:
     file: ci/shared/tasks/build-binaries/linux.yml
     vars:
       image_repository: cloudfoundry/tas-runtime-mysql-5.7 #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
-      image_password: ((gcp-tas-runtime-service-account/config-json))
+      image_password: ((gcp-wg-arp-service-account/config-json))
       image_tag: ((.:image_tag_mysql_5_7))
     params:
       DEFAULT_PARAMS: "ci/routing-release/default-params/build-binaries/linux.yml"
@@ -625,7 +625,7 @@ jobs:
       attempts: 3
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -640,7 +640,7 @@ jobs:
       attempts: 3
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: ((.:image_tag))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -904,7 +904,7 @@ jobs:
       DEFAULT_PARAMS: "ci/routing-release/default-params/build-binaries/linux.yml"
     vars:
       image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
-      image_password: ((gcp-tas-runtime-service-account/config-json))
+      image_password: ((gcp-wg-arp-service-account/config-json))
       image_tag: ((.:image_tag))
   - task: update-cf-with-tls-support-on-tcp-router-and-mtls-only
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
@@ -928,7 +928,7 @@ jobs:
       FUNCTIONS: "ci/routing-release/helpers/configure-binaries.bash"
     vars:
       image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
-      image_password: ((gcp-tas-runtime-service-account/config-json))
+      image_password: ((gcp-wg-arp-service-account/config-json))
       image_tag: ((.:image_tag))
   - task: update-cf-with-no-tls-tcp-route-support
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
@@ -952,7 +952,7 @@ jobs:
       FUNCTIONS: "ci/routing-release/helpers/configure-binaries.bash"
     vars:
       image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
-      image_password: ((gcp-tas-runtime-service-account/config-json))
+      image_password: ((gcp-wg-arp-service-account/config-json))
       image_tag: ((.:image_tag))
   - task: reset-to-original-cf-deployment-settings
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
@@ -1127,7 +1127,7 @@ jobs:
       image: image
       file: ci/shared/tasks/bosh-finalize-release/linux.yml
       params:
-        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
         RELEASE_NAME: routing
 
     - put: release-branch

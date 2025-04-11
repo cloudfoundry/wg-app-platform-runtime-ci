@@ -66,7 +66,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/nfs-volume-release
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     ignore_paths:
     - .github/
     - .gitignore
@@ -87,7 +87,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/nfs-volume-release
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: release-branch 
   type: git
@@ -95,7 +95,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/nfs-volume-release.git
     branch: release
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: develop-branch-mergeback
   type: git
@@ -103,7 +103,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/nfs-volume-release.git
     branch: develop
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: ci
   type: git
@@ -204,7 +204,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     repository: nfs-volume-release
     owner: cloudfoundry
 
@@ -212,7 +212,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     drafts: true
     repository: nfs-volume-release
     owner: cloudfoundry
@@ -224,7 +224,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: nfs-volume-release/version
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-service-account/config-json))
 
 - name: env-lock
   type: pool
@@ -232,7 +232,7 @@ resources:
   source:
     branch: main
     pool: nfs-volume-release-env-lock 
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: image
@@ -241,7 +241,7 @@ resources:
   source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: latest
 
 #! bosh blobs
@@ -250,7 +250,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     repository: libdb
     owner: berkeleydb
 
@@ -258,7 +258,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     repository: libevent
     owner: libevent
 
@@ -288,7 +288,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     repository: rpcsvc-proto
     owner: thkukuk
     tag_filter: v*
@@ -322,7 +322,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     repository: openssl
     owner: openssl
 
@@ -651,7 +651,7 @@ jobs:
       privileged: #@ helpers.privileged(repo)
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: ((.:image_tag))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(repo.name)
@@ -879,7 +879,7 @@ jobs:
         attempts: 2
         vars:
           image_repository: cloudfoundry/tas-runtime-build
-          image_password: ((gcp-tas-runtime-service-account/config-json))
+          image_password: ((gcp-wg-arp-service-account/config-json))
           image_tag: ((.:image_tag))
         params:
           ENVS: |
@@ -905,7 +905,7 @@ jobs:
         attempts: 2
         vars:
           image_repository: cloudfoundry/tas-runtime-build
-          image_password: ((gcp-tas-runtime-service-account/config-json))
+          image_password: ((gcp-wg-arp-service-account/config-json))
           image_tag: ((.:image_tag))
         params:
           ENVS: |
