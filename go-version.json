@@ -1,6 +1,3 @@
 {
-    "default": "1.24",
-     "releases": {
-        "garden-runc": "1.23"
-    }
+    "default": "1.24"
 }
