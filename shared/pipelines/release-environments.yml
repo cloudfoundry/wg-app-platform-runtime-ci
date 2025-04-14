@@ -7,8 +7,7 @@ resources:
   type: git
   icon: source-branch
   source:
-    #! FIXME: switch back to main!
-    branch: nats-bbl
+    branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: cf-deployment
