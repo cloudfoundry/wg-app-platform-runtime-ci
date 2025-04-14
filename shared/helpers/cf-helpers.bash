@@ -1,20 +1,26 @@
 function cf_target(){
     bosh_manifest > ./env/cf.yml
-    export CF_SYSTEM_DOMAIN="$(cf_system_domain)"
-    export CF_ADMIN_PASSWORD=$(cf_password)
-    export CF_DEPLOYMENT=$(bosh_cf_deployment_name)
-    export CF_ENVIRONMENT_NAME=$(jq -r .name env/metadata)
-    export CF_TCP_DOMAIN="tcp.${CF_SYSTEM_DOMAIN}"
-    export CF_MANIFEST_VERSION=$(cf_manifest_version)
-    export CF_MANIFEST_FILE="env/cf.yml"
+    CF_SYSTEM_DOMAIN="$(cf_system_domain)"
+    CF_ADMIN_PASSWORD=$(cf_password)
+    CF_DEPLOYMENT=$(bosh_cf_deployment_name)
+    if [[ -n "${BBL_STATE_DIR}" ]]; then
+        CF_ENVIRONMENT_NAME=$(jq -r .envID "$(env_metadata)")
+    else
+        CF_ENVIRONMENT_NAME=$(jq -r .name "$(env_metadata)")
+    fi
+    CF_TCP_DOMAIN="tcp.${CF_SYSTEM_DOMAIN}"
+    CF_MANIFEST_VERSION=$(cf_manifest_version)
+    CF_MANIFEST_FILE="env/cf.yml"
+    export CF_SYSTEM_DOMAIN CF_ADMIN_PASSWORD CF_DEPLOYMENT CF_ENVIRONMENT_NAME CF_TCP_DOMAIN CF_MANIFEST_VERSION CF_MANIFEST_FILE
 }
 
 function cf_system_domain(){
     # For cf-deployment bbl envs
-    local system_domain=$(jq -r .cf.api_url < env/metadata | cut -d "." -f2-)
+    local system_domain
+    system_domain=$(jq -r .cf.api_url < "$(env_metadata)" | cut -d "." -f2-)
     # fall back to checking the manifest with multiple instance group name options
     if [[ "${system_domain:=null}" == "null" ]] ; then
-        local system_domain=$(bosh int <(bosh_manifest) --path /instance_groups/name=singleton-blobstore?/jobs/name=blobstore/properties/system_domain)
+        system_domain=$(bosh int <(bosh_manifest) --path /instance_groups/name=singleton-blobstore?/jobs/name=blobstore/properties/system_domain)
     fi
     if [[ "${system_domain:=null}" == "null" ]] ; then
         system_domain=$(bosh int <(bosh_manifest) --path /instance_groups/name=blobstore?/jobs/name=blobstore/properties/system_domain)
@@ -31,7 +37,8 @@ function cf_create_tcp_domain(){
     if [[ "$(is_env_cf_deployment)" == "yes" ]]; then
         cf_login
 
-        local domain_exists=$(cf curl /v3/domains | jq ".resources[] | select(.name == \"$CF_TCP_DOMAIN\")")
+        local domain_exists
+        domain_exists=$(cf curl /v3/domains | jq ".resources[] | select(.name == \"$CF_TCP_DOMAIN\")")
 
         if [[ "${domain_exists:=empty}" == "empty" ]] ; then
             echo "Create TCP domain"
@@ -44,9 +51,9 @@ function cf_create_tcp_domain(){
 }
 
 function cf_command() {
-    local cmd=$@
-    debug "Running CF Command with Args: $cmd"
-    eval "cf $cmd"
+    local cmd=("$@")
+    debug "Running CF Command with Args: ${cmd[*]}"
+    cf "${cmd[@]}"
 }
 
 function cf_password() {
@@ -59,7 +66,8 @@ function cf_password() {
 
 function cf_manifest_version() {
     if [[ "$(is_env_cf_deployment)" == "yes" ]]; then
-        local version=$(bosh int <(bosh_manifest) --path /manifest_version)
+        local version
+        version=$(bosh int <(bosh_manifest) --path /manifest_version)
         if [[ "${version:=null}" == "null" ]]; then
             echo "no-version"
         fi

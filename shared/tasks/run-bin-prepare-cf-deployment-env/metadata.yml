@@ -6,3 +6,4 @@ oses:
 params:
   FUNCTIONS:  Multiline functions to be used for extra configuration for running prepare-env.bash. e.g. ci/routing-release/helpers/helpers.bash
   VARS: YAML object of variables to append to the generated vars.yml
+  BBL_STATE_DIR: name of bbl state dir (relative to the env resource)
