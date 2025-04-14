@@ -1,0 +1,12 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+- name: env
+
+params:
+  BBL_STATE_DIR:
+
+run:
+  path: ci/shared/tasks/wait-for-bosh-api/task.bash

@@ -1,0 +1,174 @@
+#@ load("@ytt:data", "data")
+---
+resource_types: []
+
+resources:
+- name: ci
+  type: git
+  icon: source-branch
+  source:
+    #! FIXME: switch back to main!
+    branch: nats-bbl
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+
+- name: cf-deployment
+  type: git
+  icon: source-branch
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/cf-deployment.git
+
+- name: cf-deployment-concourse-tasks
+  type: git
+  icon: source-branch
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
+
+- name: bbl-state
+  type: git
+  icon: sheep
+  source:
+    branch: main
+    uri: git@github.com:cloudfoundry/app-runtime-platform-envs
+    private_key: ((github-tas-runtime-bot/private-key))
+
+#! to unlock, see each release pipeline's manual job for unlocking. intentionally no unlock in these pipelines
+#@ for env in data.values.environments:
+- name: #@ env.pipeline_lock
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: #@ env.pipeline_lock
+    private_key: ((github-tas-runtime-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+#@ end
+
+- name: image
+  type: registry-image
+  icon: docker
+  source:
+    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    username: _json_key
+    password: ((gcp-tas-runtime-service-account/config-json))
+    tag: 'latest'
+
+groups:
+- name: bbl-environments
+  jobs:
+#@ for env in data.values.environments:
+  - #@ "recreate-{}".format(env.name)
+#@ end
+
+jobs:
+#@ for env in data.values.environments:
+- name: #@ "recreate-{}".format(env.name)
+  serial: true
+  ensure:
+    put: #@ env.pipeline_lock
+    params:
+      #! path to the lock inside the resource
+      release: #@ env.pipeline_lock
+  plan:
+    - in_parallel:
+        - get: ci
+        - get: image
+        - get: cf-deployment
+        - get: cf-deployment-concourse-tasks
+        - get: bbl-state
+        - put: #@ env.pipeline_lock
+          params:
+           acquire: true
+    - try:
+        do:
+        - task: start-vms
+          image: image
+          file: ci/shared/tasks/start-gcp-instance/linux.yml
+          params:
+            SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+            BBL_STATE_DIR: #@ env.name
+            RESUME: true
+    - try:
+        do:
+        - task: bbl-destroy
+          file: cf-deployment-concourse-tasks/bbl-destroy/task.yml
+          input_mapping:
+            bbl-config: bbl-state
+          params:
+            BBL_STATE_DIR: #@ env.name
+            BBL_GCP_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+          ensure:
+            put: bbl-state
+            params:
+              repository: updated-bbl-state
+              rebase: true
+    - task: bbl-up
+      file: cf-deployment-concourse-tasks/bbl-up/task.yml
+      input_mapping:
+        bbl-config: bbl-state
+      params:
+        BBL_STATE_DIR: #@ env.name
+        BBL_IAAS: "gcp"
+#! if env.bosh_lite:
+        #! We may want at some point to auto-generate this by pulling in and patching
+        #! the bosh-lite-gcp patch-plan from the upstream bbl repo. right now it's a point
+        #! in time fork with no plan to reconcile upstream updates
+        BBL_CONFIG_DIR: gcp-bosh-lite-with-ssd
+#! end 
+        BBL_ENV_NAME: #@ env.name
+        BBL_GCP_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+        BBL_GCP_PROJECT_ID: app-runtime-platform-wg
+        BBL_GCP_ZONE: us-central1-b
+        BBL_GCP_REGION: us-central1
+        IS_BOSH_LITE: #@ env.bosh_lite
+        SKIP_LB_CREATION: #@ env.bosh_lite
+      ensure:
+        put: bbl-state
+        params:
+          repository: updated-bbl-state
+          rebase: true
+    - task: update-cloud-config
+      file: ci/shared/tasks/bosh-update-config/linux.yml
+      image: image
+      params:
+        NAME: default
+        TYPE: cloud
+        RUNTIME_CONFIG: ci-config/iaas-support/bosh-lite/cloud-config.yml
+        SKIP_DEFAULT_VAR_GENERATION: true
+        BBL_STATE_DIR: #@ env.name
+      input_mapping:
+        ci-config: cf-deployment
+        env: updated-bbl-state
+    - task: set-dns-records
+      attempts: 5
+      image: image
+      file: ci/shared/tasks/create-gcp-dns-record/linux.yml
+      input_mapping:
+        bbl-state: updated-bbl-state
+      params:
+        BBL_STATE_DIR: #@ env.name
+        DNS_DOMAIN: #@ "{}.arp.cloudfoundry.org".format(env.name)
+        SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+        PROJECT: app-runtime-platform-wg
+        SHARED_DNS_ZONE_NAME: "arp-cloudfoundry-org"
+        IS_BOSH_LITE: true
+#@ if env.bosh_lite:
+    - task: open-firewall
+      file: ci/shared/tasks/gcp-open-bosh-lite-ports/linux.yml
+      image: image
+      input_mapping:
+        bbl-state: updated-bbl-state
+      params:
+        BBL_STATE_DIR: #@ env.name
+        SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+        PROJECT: app-runtime-platform-wg
+#@ end
+    - task: stop-director-until-ready-for-pipeline
+      file: ci/shared/tasks/stop-gcp-instance/linux.yml
+      image: image
+      params:
+        SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+        BBL_STATE_DIR: #@ env.name
+        SUSPEND: true
+#@ end
