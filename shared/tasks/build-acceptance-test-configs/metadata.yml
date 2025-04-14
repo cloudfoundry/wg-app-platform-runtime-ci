@@ -17,3 +17,4 @@ params:
   WITH_DYNAMIC_ASG: (defaults to false) It will turn on/off dynamic asgs tests
   WITH_COMMA_DELIMITED_ASG_DESTINATIONS: (defaults to false) Turns on/off tests of comma delimited ASG destinations
   WITH_VOLUME_SERVICES: (defaults to false). Enables/Disables the volume services test suites in CATs
+  BBL_STATE_DIR: name of bbl state dir (relative to the env resource)
