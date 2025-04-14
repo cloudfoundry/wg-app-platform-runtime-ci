@@ -30,7 +30,7 @@ resources:
   source:
     branch: main
     uri: git@github.com:cloudfoundry/app-runtime-platform-envs
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 #! to unlock, see each release pipeline's manual job for unlocking. intentionally no unlock in these pipelines
 #@ for env in data.values.environments:
@@ -40,7 +40,7 @@ resources:
   source:
     branch: main
     pool: #@ env.pipeline_lock
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 #@ end
 
@@ -50,7 +50,7 @@ resources:
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: 'latest'
 
 groups:

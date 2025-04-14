@@ -167,7 +167,7 @@ resources:
   source:
     branch: main
     uri: git@github.com:cloudfoundry/app-runtime-platform-envs
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     paths:
       - bbl-nats-env
 
