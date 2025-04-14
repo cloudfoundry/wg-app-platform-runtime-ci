@@ -102,7 +102,7 @@ resources:
   type: git
   icon: source-branch
   source:
-    branch: main 
+    branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: repo-readme
@@ -755,11 +755,14 @@ jobs:
 - name: unclaim-env
   serial: true
   plan:
-  - get: env
-    passed: [ship-what]
-    trigger: true
-  - get: image
-  - get: env-lock
+  - in_parallel:
+      steps:
+        - get: env
+          passed: [ship-what]
+          trigger: true
+        - get: image
+        - get: env-lock
+        - get: ci
   - task: bosh-deld
     image: image
     file: ci/shared/tasks/bosh-deld/linux.yml
@@ -781,10 +784,12 @@ jobs:
 
 - name: release-env-lock
   plan:
-  - get: env-lock
-  - get: env
-  - get: ci
-  - get: image
+  - in_parallel:
+      steps:
+        - get: env-lock
+        - get: env
+        - get: ci
+        - get: image
   - try:
       do:
       - task: bosh-deld
