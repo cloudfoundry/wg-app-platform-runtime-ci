@@ -1,4 +1,5 @@
 function cf_target(){
+    BBL_STATE_DIR=${BBL_STATE_DIR:=""}
     bosh_manifest > ./env/cf.yml
     CF_SYSTEM_DOMAIN="$(cf_system_domain)"
     CF_ADMIN_PASSWORD=$(cf_password)

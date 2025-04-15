@@ -1,4 +1,5 @@
 function bosh_target(){
+    BBL_STATE_DIR=${BBL_STATE_DIR:=""}
     if [[ "$(is_env_cf_deployment)" == "yes" ]]; then
         if [[ -n "${BBL_STATE_DIR}" ]]; then
             export BBL_STATE_DIRECTORY="env/${BBL_STATE_DIR}"
