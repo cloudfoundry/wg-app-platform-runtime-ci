@@ -24,6 +24,13 @@ resources:
     branch: main
     uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
 
+- name: bbl
+  type: git
+  icon: source-branch
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/bosh-bootloader.git
+
 - name: bbl-state
   type: git
   icon: sheep
@@ -75,6 +82,7 @@ jobs:
         - get: image
         - get: cf-deployment
         - get: cf-deployment-concourse-tasks
+        - get: bbl
         - get: bbl-state
         - put: #@ env.pipeline_lock
           params:
@@ -105,7 +113,11 @@ jobs:
     - task: bbl-up
       file: cf-deployment-concourse-tasks/bbl-up/task.yml
       input_mapping:
+#@ if env.bosh_lite:
         bbl-config: bbl-state
+#@ else:
+        bbl-config: bbl
+#@ end
       params:
         BBL_STATE_DIR: #@ env.name
         BBL_IAAS: "gcp"
@@ -118,6 +130,7 @@ jobs:
         LB_DOMAIN: #@ "{}.arp.cloudfoundry.org".format(env.name)
         BBL_LB_CERT: #@ "lb_certs/out/{}.arp.cloudfoundry.org.crt".format(env.name)
         BBL_LB_KEY: #@ "lb_certs/out/{}.arp.cloudfoundry.org.key".format(env.name)
+        BBL_CONFIG_DIR: plan-patches/iso-segs-gcp
 #@ end
         BBL_ENV_NAME: #@ env.name
         BBL_GCP_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
