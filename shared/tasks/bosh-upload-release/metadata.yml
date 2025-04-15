@@ -3,3 +3,5 @@ readme: |
   This task will upload bosh-release tarball.
 oses:
   - linux
+params:
+  BBL_STATE_DIR: name of bbl state dir (relative to the env resource)

@@ -7,6 +7,7 @@ inputs:
   - name: created-release-tarball
 
 params:
+  BBL_STATE_DIR:
 
 run:
   path: ci/shared/tasks/bosh-upload-release/task.bash
