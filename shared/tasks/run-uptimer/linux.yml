@@ -8,3 +8,6 @@ inputs:
 
 run:
   path: ci/shared/tasks/run-uptimer/task.bash
+
+params:
+  BBL_STATE_DIR:
