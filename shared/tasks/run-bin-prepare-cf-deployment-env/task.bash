@@ -19,10 +19,6 @@ function run(){
 
     bosh_target
     cf_target
-    if [[ "$(bosh_is_cf_deployed)" == "yes" ]]; then
-        cf_create_tcp_domain
-        credhub_save_lb_cert
-    fi
 
     pushd "repo" > /dev/null
     if [[ -f ./bin/prepare-cf-deployment-env.bash ]]; then
@@ -31,9 +27,12 @@ function run(){
     fi
     popd > /dev/null
 
-    cp "${CF_MANIFEST_FILE}" ./prepared-env/cf.yml
+    if [[ "$(bosh_is_cf_deployed)" == "yes" ]]; then
+        cf_create_tcp_domain
+        credhub_save_lb_cert
+        cp "${CF_MANIFEST_FILE}" ./prepared-env/cf.yml
 
-    cat <<EOF > prepared-env/vars.yml
+        cat <<EOF > prepared-env/vars.yml
 ---
 CF_ADMIN_PASSWORD: "${CF_ADMIN_PASSWORD}"
 CF_DEPLOYMENT: "${CF_DEPLOYMENT}"
@@ -43,6 +42,7 @@ CF_TCP_DOMAIN: "${CF_TCP_DOMAIN}"
 CF_MANIFEST_VERSION: "${CF_MANIFEST_VERSION}"
 CF_MANIFEST_FILE: "cf.yml"
 EOF
+    fi
 
     if [[ -n "${VARS}" ]]; then
         echo "${VARS}" | yq -P . >> prepared-env/vars.yml
