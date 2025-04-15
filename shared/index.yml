@@ -8,7 +8,7 @@ environments:
   - name: bbl-routing-env
     bosh_lite: true
     pipeline_lock: routing-release-env-lock
-  - name: bbl-healthchecker-env
+  - name: bbl-hlthchk-env
     bosh_lite: true
     pipeline_lock: healthchecker-release-env-lock
 
