@@ -31,7 +31,6 @@ function run(){
 
     if [[ "$(bosh_is_cf_deployed)" == "yes" ]]; then
         cf_create_tcp_domain
-        credhub_save_lb_cert
         cp "${CF_MANIFEST_FILE}" ./prepared-env/cf.yml
 
         cat <<EOF > prepared-env/vars.yml
@@ -45,6 +44,7 @@ CF_MANIFEST_VERSION: "${CF_MANIFEST_VERSION}"
 CF_MANIFEST_FILE: "cf.yml"
 EOF
     fi
+    credhub_save_lb_cert
 
     if [[ -n "${VARS}" ]]; then
         echo "${VARS}" | yq -P . >> prepared-env/vars.yml
