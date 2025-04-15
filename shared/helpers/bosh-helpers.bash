@@ -89,13 +89,13 @@ function bosh_extract_vars_from_env_files(){
     for file in "${files[@]}"
     do
         debug "Adding arugment for file: $file"
-        while IFS= read -r entry < "${file}"
+        while IFS= read -r entry
         do
             local key
             key="$(echo "${entry}" | cut -d "=" -f1 | cut -d " " -f2)"
             eval "$entry"
             arguments="${arguments} --var=${key}=${!key}"
-        done
+        done < "${file}"
     done
     echo "${arguments}"
 }
