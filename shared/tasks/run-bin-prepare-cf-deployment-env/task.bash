@@ -18,7 +18,9 @@ function run(){
     expand_functions
 
     bosh_target
-    cf_target
+    if [[ "$(bosh_is_cf_deployed)" == "yes" ]]; then
+        cf_target
+    fi
 
     pushd "repo" > /dev/null
     if [[ -f ./bin/prepare-cf-deployment-env.bash ]]; then
