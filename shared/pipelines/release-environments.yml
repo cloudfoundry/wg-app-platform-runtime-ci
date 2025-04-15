@@ -109,12 +109,16 @@ jobs:
       params:
         BBL_STATE_DIR: #@ env.name
         BBL_IAAS: "gcp"
-#! if env.bosh_lite:
+#@ if env.bosh_lite:
         #! We may want at some point to auto-generate this by pulling in and patching
         #! the bosh-lite-gcp patch-plan from the upstream bbl repo. right now it's a point
         #! in time fork with no plan to reconcile upstream updates
         BBL_CONFIG_DIR: gcp-bosh-lite-with-ssd
-#! end 
+#@ else:
+        LB_DOMAIN: #@ "{}.arp.cloudfoundry.org".format(env.name)
+        BBL_LB_CERT: #@ "lb_certs/out/{}.arp.cloudfoundry.org.crt".format(env.name)
+        BBL_LB_KEY: #@ "lb_certs/out/{}.arp.cloudfoundry.org.key".format(env.name)
+#@ end
         BBL_ENV_NAME: #@ env.name
         BBL_GCP_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
         BBL_GCP_PROJECT_ID: app-runtime-platform-wg
@@ -127,6 +131,7 @@ jobs:
         params:
           repository: updated-bbl-state
           rebase: true
+#@ if env.bosh_lite:
     - task: update-cloud-config
       file: ci/shared/tasks/bosh-update-config/linux.yml
       image: image
@@ -139,6 +144,7 @@ jobs:
       input_mapping:
         ci-config: cf-deployment
         env: updated-bbl-state
+#@ end
     - task: set-dns-records
       attempts: 5
       image: image
@@ -151,7 +157,7 @@ jobs:
         SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
         PROJECT: app-runtime-platform-wg
         SHARED_DNS_ZONE_NAME: "arp-cloudfoundry-org"
-        IS_BOSH_LITE: true
+        IS_BOSH_LITE: #@ env.bosh_lite
 #@ if env.bosh_lite:
     - task: open-firewall
       file: ci/shared/tasks/gcp-open-bosh-lite-ports/linux.yml
