@@ -10,7 +10,7 @@ function credhub_save_lb_cert() {
 
         echo "${cert}" | openssl x509 > "${cert_file}"
     else
-        cert_file="env/${BBL_STATE_DIR}/lb_certs/${BBL_STATE_DIR}.arp.cloudfoundry.org.crt"
+        cert_file="env/${BBL_STATE_DIR}/lb_certs/out/${BBL_STATE_DIR}.arp.cloudfoundry.org.crt"
     fi
 
 
