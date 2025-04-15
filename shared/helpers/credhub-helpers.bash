@@ -1,4 +1,5 @@
 function credhub_save_lb_cert() {
+    CF_ENVIRONMENT_NAME="${CF_ENVIRONMENT_NAME:=cf}"
     local cert_file
     if [[ -z "${BBL_STATE_DIR}" ]]; then
         set +e
