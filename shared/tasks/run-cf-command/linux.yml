@@ -8,5 +8,6 @@ inputs:
 
 params:
   CMD: 
+  BBL_STATE_DIR:
 run:
   path: ci/shared/tasks/run-cf-command/task.bash
