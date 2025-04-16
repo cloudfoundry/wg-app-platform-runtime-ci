@@ -804,7 +804,7 @@ jobs:
       file: ci/shared/tasks/run-cf-command/linux.yml
       params:
         BBL_STATE_DIR: bbl-nfs-volume-env
-        CMD: "(create-isolation-segment, persistent_isolation_segment)"
+        CMD: create-isolation-segment persistent_isolation_segment
   - task: run-nfsbrokerpush-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
