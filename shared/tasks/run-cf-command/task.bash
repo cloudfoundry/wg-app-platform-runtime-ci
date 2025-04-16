@@ -17,7 +17,7 @@ function run(){
     bosh_target
     cf_target
     cf_login
-    cf_command "${CMD}"
+    cf_command ${CMD} # intentionally not quoted to allow args to be treated individually in the cf command
 }
 
 function cleanup() {
