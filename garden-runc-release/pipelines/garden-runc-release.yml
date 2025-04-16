@@ -15,6 +15,7 @@ groups:
   - run-gats-with-cpu-throttling
   - run-gats-with-runc
   - run-gats-with-containerd
+  - run-gats-with-containerd-cgroupsv2
   - run-standalone-gdn-gats
   - export-release
   - ship-what
@@ -348,7 +349,7 @@ resources:
     tag: latest
 
 - name: garden-runc-release-rootfs
-  type: docker-image
+  type: registry-image
   icon: docker
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/garden-rootfs
@@ -357,7 +358,7 @@ resources:
     tag: latest
 
 - name: garden-runc-release-fuse-rootfs
-  type: docker-image
+  type: registry-image
   icon: docker
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/garden-fuse
@@ -1100,10 +1101,10 @@ jobs:
       resource: golang-release-latest
     - get: garden-runc-release-rootfs
       params:
-        rootfs: true
+        format: rootfs
     - get: garden-runc-release-fuse-rootfs
       params:
-        rootfs: true
+        format: rootfs
   - task: determine-image-tag
     image: image
     file: ci/shared/tasks/determine-image-tag/linux.yml
@@ -1144,8 +1145,8 @@ jobs:
         ENVS: |
           DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
           DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
-          GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs.tar
-          GARDEN_FUSE_TEST_ROOTFS=$PWD/input-02/rootfs.tar
+          GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs
+          GARDEN_FUSE_TEST_ROOTFS=$PWD/input-02/rootfs
         DIR: #@ "src/{}".format(repo.name)
     - task: #@ "{}-cgroupsv2".format(repo.name)
       tags: [ diego-cgroupsv2 ]
@@ -1160,10 +1161,10 @@ jobs:
         input-02: garden-runc-release-fuse-rootfs
       params:
         ENVS: |
-          DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
-          DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
-          GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs.tar
-          GARDEN_FUSE_TEST_ROOTFS=$PWD/input-02/rootfs.tar
+          DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime-username))
+          DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime-password))
+          GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs
+          GARDEN_FUSE_TEST_ROOTFS=$PWD/input-02/rootfs
         DIR: #@ "src/{}".format(repo.name)
 #@ if helpers.on_windows(repo):
     - task: #@ "{}-windows".format(repo.name)
@@ -1392,7 +1393,7 @@ jobs:
       resource: golang-release-latest
     - get: garden-runc-release-rootfs
       params:
-        rootfs: true
+        format: rootfs
   - task: determine-image-tag
     image: image
     file: ci/shared/tasks/determine-image-tag/linux.yml
@@ -1430,7 +1431,7 @@ jobs:
       FUNCTIONS: ci/garden-runc-release/helpers/configure-binaries.bash
       ENVS: |
         GDN_BINARY=$PWD/input-01/gdn-linux-amd64
-        GARDEN_TEST_ROOTFS=$PWD/input-02/rootfs.tar
+        GARDEN_TEST_ROOTFS=$PWD/input-02/rootfs
         GDN_BIND_IP=127.0.0.1
         GDN_BIND_PORT=7777
         GDN_DEBUG_PORT=17013
@@ -1658,6 +1659,56 @@ jobs:
       ERRAND_NAME: gpats
       INSTANCE: gpats
 
+- name: run-gats-with-containerd-cgroupsv2
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: package-release
+      resource: golang-release-latest
+    - get: garden-ci-artifacts-release
+    - get: cf-deployment-concourse-tasks
+  - task: upload-noble-stemcell
+    file: ci/shared/tasks/bosh-upload-stemcell/linux.yml
+    image: image
+    params:
+      STEMCELL_URL: https://bosh.io/d/stemcells/bosh-google-kvm-ubuntu-noble
+  - task: bosh-deploy-gats
+    image: image
+    file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
+    params:
+      MANIFEST: ci/garden-runc-release/manifests/gats.yml
+      DEPLOYMENT_NAME: gats-with-containerd-cgroupsv2
+      ENVS: |
+        WITH_BPM=false
+        WITH_CONTAINERD_MODE=true
+        WITH_CPU_THROTTLING=false
+        CF_STEMCELL_OS=ubuntu-noble
+  - task: run-gats-errand
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      DEPLOYMENT_NAME: gats-with-containerd-cgroupsv2
+      ERRAND_NAME: gats
+      INSTANCE: gats
+  - task: run-gpats-errand
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    input_mapping:
+      toolsmiths-env: env
+    params:
+      DEPLOYMENT_NAME: gats-with-containerd-cgroupsv2
+      ERRAND_NAME: gpats
+      INSTANCE: gpats
+
 - name: export-release
   serial: true
   plan:
@@ -1695,6 +1746,7 @@ jobs:
             - run-gats-with-cpu-throttling
             - run-gats-with-runc
             - run-gats-with-containerd
+            - run-gats-with-containerd-cgroupsv2
           trigger: true
         - get: image
         - get: release-branch
@@ -1711,6 +1763,7 @@ jobs:
             - run-gats-with-cpu-throttling
             - run-gats-with-runc
             - run-gats-with-containerd
+            - run-gats-with-containerd-cgroupsv2
           trigger: true
 
     - task: check-safe-to-release-repo
