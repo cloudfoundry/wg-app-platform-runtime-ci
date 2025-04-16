@@ -279,7 +279,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: routing-release/version
-    json_key: ((gcp-wg-arp-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
 - name: routing-api-cli-github-release
   type: github-release
@@ -294,7 +294,7 @@ resources:
   type: semver
   icon: counter
   source:
-    json_key: ((gcp-wg-arp-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
     bucket: ci-release-versions
     key: routing-api-cli/version
     initial_version: 2.24.0

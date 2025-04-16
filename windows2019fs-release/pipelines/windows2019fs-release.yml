@@ -159,7 +159,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: windows2019fs-release//version
-    json_key: ((gcp-wg-arp-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
     initial_version: 2.63.0
 
 - name: go-version

@@ -201,7 +201,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: <REPLACE_ME>/version
-    json_key: ((gcp-wg-arp-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
 - name: env-lock
   type: pool

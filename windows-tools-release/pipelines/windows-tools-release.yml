@@ -101,7 +101,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: windows-tools-release/version
-    json_key: ((gcp-wg-arp-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
 - name: go-version
   type: git

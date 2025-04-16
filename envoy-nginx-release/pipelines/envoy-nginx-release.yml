@@ -203,7 +203,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: envoy-nginx-release/version
-    json_key: ((gcp-wg-arp-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
     initial_version: 0.21.0
 
 - name: env-lock

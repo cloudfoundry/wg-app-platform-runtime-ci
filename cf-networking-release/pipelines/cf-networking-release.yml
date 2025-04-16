@@ -284,7 +284,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: cf-networking-release/version #! One version number manages both cf-networking and silk
-    json_key: ((gcp-wg-arp-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
 - name: env-lock
   type: pool
