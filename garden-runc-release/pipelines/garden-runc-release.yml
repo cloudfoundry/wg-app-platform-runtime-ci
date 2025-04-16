@@ -1467,6 +1467,14 @@ jobs:
     params:
       BBL_STATE_DIR: bbl-garden-env
       STEMCELL_URL: https://bosh.io/d/stemcells/bosh-google-kvm-windows2019-go_agent
+  - try:
+      do:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-garden-env
+            DEPLOYMENT_NAME: gatsw
   - task: bosh-deploy-gatsw
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -1509,6 +1517,14 @@ jobs:
       resource: golang-release-latest
     - get: garden-ci-artifacts-release
     - get: cf-deployment-concourse-tasks
+  - try:
+      do:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-garden-env
+            DEPLOYMENT_NAME: gats-with-cpu-throttling
   - task: bosh-deploy-gats
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -1546,6 +1562,14 @@ jobs:
       resource: golang-release-latest
     - get: garden-ci-artifacts-release
     - get: cf-deployment-concourse-tasks
+  - try:
+      do:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-garden-env
+            DEPLOYMENT_NAME: gats-with-runc
   - task: bosh-deploy-gats
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -1591,6 +1615,14 @@ jobs:
       resource: golang-release-latest
     - get: garden-ci-artifacts-release
     - get: cf-deployment-concourse-tasks
+  - try:
+      do:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-garden-env
+            DEPLOYMENT_NAME: gats-with-containerd
   - task: bosh-deploy-gats
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -1796,12 +1828,38 @@ jobs:
       - get: image
       - get: env-lock
       - get: ci
-  - task: bosh-deld
-    image: image
-    file: ci/shared/tasks/bosh-deld/linux.yml
-    params:
-      BBL_STATE_DIR: bbl-garden-env
-      DEPLOYMENT_NAME: cf
+  - in_parallel:
+      steps:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: cf
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gatsw
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gats-with-runc
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gats-with-containerd
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gats-with-cpu-throttling
   - put: env-lock
     params:
       release: env-lock #! path to the resource in the above get
@@ -1825,13 +1883,38 @@ jobs:
       - get: ci
       - get: image
   - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-garden-env
-          DEPLOYMENT_NAME: cf
+      in_parallel:
+        steps:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-garden-env
+            DEPLOYMENT_NAME: cf
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-garden-env
+            DEPLOYMENT_NAME: gatsw
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-garden-env
+            DEPLOYMENT_NAME: gats-with-runc
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-garden-env
+            DEPLOYMENT_NAME: gats-with-containerd
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-garden-env
+            DEPLOYMENT_NAME: gats-with-cpu-throttling
   - try:
       do:
       - task: stop-bbl-envs
