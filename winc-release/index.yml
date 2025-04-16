@@ -18,7 +18,6 @@ opsfiles:
 - use-online-windows2019fs.yml
 - use-latest-windows2019-stemcell.yml
 - enable-nginx-routing-integrity-windows2019.yml
-- latest-winc.yml
 - scale-down-windows2019.yml
 - enable-rdp-2019.yml
 - decrease-rep-evacuation-timeout.yml

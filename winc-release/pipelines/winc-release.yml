@@ -691,7 +691,6 @@ jobs:
         {input-01/operations/use-online-windows2019fs.yml,combined-assets}
         {input-01/operations/use-latest-windows2019-stemcell.yml,combined-assets}
         {input-01/operations/experimental/enable-nginx-routing-integrity-windows2019.yml,combined-assets}
-        {ci/winc-release/opsfiles/latest-winc.yml,combined-assets}
         {ci/winc-release/opsfiles/scale-down-windows2019.yml,combined-assets}
         {ci/winc-release/opsfiles/enable-rdp-2019.yml,combined-assets}
         {ci/winc-release/opsfiles/decrease-rep-evacuation-timeout.yml,combined-assets}
@@ -700,10 +699,11 @@ jobs:
         {ci/winc-release/opsfiles/enable-windows-tcp-routes.yml,combined-assets}
         {ci/winc-release/opsfiles/enable-sticky-sessions-for-auth-negotiate.yml,combined-assets}
   - task: deploy-cf-deployment
-    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping:
       ops-files: combined-assets
       vars-files: prepared-env
+      release: repo
       bbl-state: env
     params:
       BBL_STATE_DIR: bbl-winc-env
