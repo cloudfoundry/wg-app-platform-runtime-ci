@@ -12,6 +12,7 @@ inputs:
   optional: true
 
 params:
+  BBL_STATE_DIR:
 
 run:
   path: ci/shared/tasks/bosh-upload-dev-releases/task.bash
