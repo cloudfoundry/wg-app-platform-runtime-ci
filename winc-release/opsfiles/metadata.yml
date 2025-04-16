@@ -7,7 +7,7 @@ opsfiles:
   enable-sticky-sessions-for-auth-negotiate.yml: Sticky session is needed for testing with gorouter
   enable-windows-auth.yml: for IWA tests
   enable-windows-tcp-routes.yml: for IWA tests
-  latest-winc.yml: because we are using pesto, we have to have this opsfile for latest winc
+  latest-winc.yml: because we are using BBL, we have to have this opsfile for latest winc
   scale-down-windows2019.yml: for IWA tests. Can be removed after this story www.pivotaltracker.com/story/show/186684047
   use-2-azs-for-router.yml: <TODO> copied over and don't know why we are doing this
   windows2019-cell-with-static-ip.yml: for IWA test. We need a static IP so that this would be the only cell talking to Domain Controller

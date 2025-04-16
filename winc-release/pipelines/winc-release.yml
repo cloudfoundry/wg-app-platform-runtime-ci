@@ -13,7 +13,7 @@ groups:
   - run-wats
   - run-gatsw
   - export-release
-  - verify-iwa-login
+    #!- verify-iwa-login
   - ship-what
   - ship-it
   - unclaim-env
@@ -51,11 +51,6 @@ resource_types:
     username: _json_key
     password: ((gcp-wg-arp-service-account/config-json))
     tag: latest
-- name: slack-notification
-  type: docker-image
-  source:
-    repository: cfcommunity/slack-notification-resource
-    tag: latest
 
 #! Define-Resources
 resources:
@@ -76,11 +71,11 @@ resources:
     ignore_paths:
     - .github/
     - .gitignore
-    - .final_builds/
+    - .final_build
     - CODEOWNERS
     - LICENSE
     - NOTICE
-    - README.md
+    - README*
     - docs/
     - releases/
 
@@ -104,7 +99,7 @@ resources:
   type: git
   icon: source-branch
   source:
-    branch: main
+    branch: winc-shepherd-ad
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: shared-templates
@@ -213,20 +208,15 @@ resources:
     branch: master
     uri: https://github.com/cloudfoundry/windows-utilities-release.git
 
-- name: slack-ci-channel
-  type: slack-notification
-  source:
-    url: ((slack-ci-channel/webhook))
-
-#! Environments
 - name: env
   type: git
-  icon: source-branch
-  #! icon: sheep # add this when it transitions to shepherd envs
+  icon: sheep
   source:
     branch: main
-    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/app-runtime-platform-envs
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    paths:
+      - bbl-winc-env
 
 #! TIMERS
 - name: weekly
@@ -272,8 +262,8 @@ resources:
   type: pool
   icon: cloud-lock
   source:
-    branch: main
-    pool: winc-release-env-lock
+    branch: winc-shepherd
+    pool: winc-shepherd-env-lock
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
@@ -294,18 +284,6 @@ resources:
     username: _json_key
     password: ((gcp-wg-arp-service-account/config-json))
     tag: 'latest'
-
-- name: pesto-cf-deployment
-  type: bosh-deployment
-  icon: server-network
-  source:
-    deployment: cf
-    client: ((gcp-garden-windows-env-pesto/bosh-client-id))
-    client_secret: ((gcp-garden-windows-env-pesto/bosh-client-secret))
-    ca_cert: ((gcp-garden-windows-env-pesto/bosh-ca-cert))
-    target: ((gcp-garden-windows-env-pesto/bosh-env))
-    jumpbox_url: ((gcp-garden-windows-env-pesto/jumpbox-ip)):22
-    jumpbox_ssh_key: ((gcp-garden-windows-env-pesto/jumpbox-ssh-key))
 
 - name: linux-stemcell
   type: bosh-io-stemcell
@@ -346,10 +324,6 @@ resources:
 jobs:
 - name: bump-dependencies-go-mod
   serial: true
-  on_failure: &ci-notification
-    put: slack-ci-channel
-    params:
-      text: ":concourse-failed: $BUILD_PIPELINE_NAME failed on <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_JOB_NAME>."
   plan:
   - in_parallel:
       steps:
@@ -362,7 +336,7 @@ jobs:
       - get: updated-go-mod-groot-windows
       - get: updated-go-mod-winc
       - get: weekly
-        trigger: true
+        trigger: false
   - do:
     - task: cert-injector-bump-dependencies-go-mod
       file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
@@ -441,16 +415,15 @@ jobs:
         repository: bumped-repo
 
 - name: bump-package-golang
-  on_failure: *ci-notification
   plan:
   - in_parallel:
     - get: ci
     - get: repo
     - get: image
     - get: go-version
-      trigger: true
+      trigger: false
     - get: golang-release-latest
-      trigger: true
+      trigger: false
 
   - task: bump-golang-package-name
     image: image
@@ -477,7 +450,6 @@ jobs:
 
 - name: bump-bosh-blobs
   serial: true
-  on_failure: *ci-notification
   plan:
   - in_parallel:
       steps:
@@ -488,12 +460,12 @@ jobs:
         params:
           globs:
           - x86_64-*-release-posix-seh-ucrt-*.7z
-        trigger: true
+        trigger: false
       - get: seven-zip
         params:
           globs:
           - 7z*.msi
-        trigger: true
+        trigger: false
   - do:
     - task: bump-bosh-blob-mingw
       image: image
@@ -537,7 +509,7 @@ jobs:
       - get: #@ "{}-repo".format(repo.name)
 #@ end
       - get: shared-templates
-        trigger: true
+        trigger: false
   - do:
     - task: sync-dot-github-dir-winc-release
       file: ci/shared/tasks/sync-dot-github-dir/linux.yml
@@ -569,7 +541,7 @@ jobs:
   - in_parallel:
     - get: ci
     - get: repo
-      trigger: true
+      trigger: false
     - get: image
   - task: template-tests
     image: image
@@ -582,7 +554,7 @@ jobs:
   - in_parallel:
     - get: ci
     - get: repo
-      trigger: true
+      trigger: false
     - get: image
     - get: package-release
       resource: golang-release-latest
@@ -634,7 +606,7 @@ jobs:
   - in_parallel:
     - get: ci
     - get: repo
-      trigger: true
+      trigger: false
     - get: image
   - task: lint-repo
     file: ci/shared/tasks/lint-repo/linux.yml
@@ -642,6 +614,10 @@ jobs:
 
 - name: claim-env
   serial: true
+  on_failure:
+    put: env-lock
+    params:
+      release: env-lock #! path to the resource in the above get
   plan:
   - in_parallel:
     - get: ci
@@ -651,12 +627,25 @@ jobs:
         - template-tests
         - unit-and-integration-tests
         - lint-repo
-    - get: env
     - get: image
-
+    - get: env
     - put: env-lock
       params:
        acquire: true
+  - task: start-bbl-envs
+    image: image
+    file: ci/shared/tasks/start-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-winc-env
+      RESUME: true
+  - task: wait-for-bosh-api
+    image: image
+    file: ci/shared/tasks/wait-for-bosh-api/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-winc-env
 
 - name: prepare-env
   serial: true
@@ -669,33 +658,17 @@ jobs:
     - get: image
     - get: cf-deployment
     - get: cf-deployment-concourse-tasks
-    - get: env
+    - get: env-ad-shepherd
       trigger: true
       passed: [claim-env]
     - get: linux-stemcell
     - get: windows-stemcell
     - get: winc-release
-  - task: create-toolsmiths-env
-    file: ci/shared/tasks/combine-assets/linux.yml
-    image: image
-    input_mapping:
-      input-01: env
-    output_mapping:
-      combined-assets: pesto-env
-    params:
-      COPY_ACTIONS: |
-        {input-01/winc-release/pesto/metadata,combined-assets}
-  - task: deploy-base-cf-deployment
-    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
-    input_mapping:
-      toolsmiths-env: pesto-env
-    params:
-      SYSTEM_DOMAIN: pesto.funtime.lol
   - task: prepare-cf-deployment-env
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
-    input_mapping:
-      env: pesto-env
+    params:
+      BBL_STATE_DIR: bbl-winc-env
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
@@ -707,7 +680,6 @@ jobs:
         {input-01/operations/experimental/use-compiled-releases-windows.yml,combined-assets}
         {input-01/operations/windows2019-cell.yml,combined-assets}
         {input-01/operations/scale-to-one-az.yml,combined-assets}
-        {input-01/operations/windows2019-cell.yml,combined-assets}
         {input-01/operations/use-online-windows2019fs.yml,combined-assets}
         {input-01/operations/use-latest-windows2019-stemcell.yml,combined-assets}
         {input-01/operations/experimental/enable-nginx-routing-integrity-windows2019.yml,combined-assets}
@@ -718,67 +690,58 @@ jobs:
         {ci/winc-release/opsfiles/use-2-azs-for-router.yml,combined-assets}
         {ci/winc-release/opsfiles/enable-windows-auth.yml,combined-assets}
         {ci/winc-release/opsfiles/enable-windows-tcp-routes.yml,combined-assets}
-        {ci/winc-release/opsfiles/windows2019-cell-with-static-ip.yml,combined-assets}
         {ci/winc-release/opsfiles/enable-sticky-sessions-for-auth-negotiate.yml,combined-assets}
-  - put: pesto-cf-deployment
-    attempts: 3
-    params:
-      manifest: cf-deployment/cf-deployment.yml
-      stemcells:
-      - linux-stemcell/*.tgz
-      - windows-stemcell/*.tgz
-      releases:
-      - winc-release/*.tgz
-      vars_files:
-      - env/pesto/cf/vars.yml
-      vars:
-        cf_admin_password: ((gcp-garden-windows-env-pesto/cf-admin-password))
-      cleanup: true
-      ops_files: #@ ["combined-assets/{0}".format(i) for i in data.values.opsfiles]
-    get_params:
-      skip_export: true
-  - task: create-tcp-domain
-    image: image
-    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+  - task: deploy-cf-deployment
+    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
     input_mapping:
-      env: pesto-env
-    output_mapping:
-      prepared-env: throw-away-just-using-for-tcp-domain-creation
-  - put: pesto-cf-deployment
-    attempts: 3
+      ops-files: combined-assets
+      vars-files: prepared-env
+      bbl-state: env
     params:
-      manifest: cf-deployment/cf-deployment.yml
-      stemcells:
-      - linux-stemcell/*.tgz
-      - windows-stemcell/*.tgz
-      releases:
-      - prepared-env/winc-release*.tgz
-      ops_files: #@ ["combined-assets/{0}".format(i) for i in data.values.opsfiles]
-      vars:
-        cf_admin_password: ((gcp-garden-windows-env-pesto/cf-admin-password))
-      vars_files:
-      - env/pesto/cf/vars.yml
-    get_params:
-      skip_export: true
+      BBL_STATE_DIR: bbl-winc-env
+      SYSTEM_DOMAIN: bbl-winc-env.arp.cloudfoundry.org
+      DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
+      FAIL_ON_DOWNTIME: "false"
+      VARS_FILES: vars.yml
+      OPS_FILES: #@ "\n".join(data.values.opsfiles)
+  - task: deploy-cf-deployment
+    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    input_mapping:
+      ops-files: combined-assets
+      vars-files: prepared-env
+      bbl-state: env
+    params:
+      BBL_STATE_DIR: bbl-winc-env
+      SYSTEM_DOMAIN: bbl-winc-env.arp.cloudfoundry.org
+      DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
+      FAIL_ON_DOWNTIME: "false"
+      VARS_FILES: vars.yml
+      OPS_FILES: #@ "\n".join(data.values.opsfiles)
   - task: open-asg-for-credhub
     file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
     input_mapping:
-      toolsmiths-env: pesto-env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-winc-env
+      SYSTEM_DOMAIN: bbl-winc-env.arp.cloudfoundry.org
       INSTANCE_GROUP_NAME: credhub
       SECURITY_GROUP_NAME: credhub
   - task: open-asg-for-uaa
     file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
     input_mapping:
-      toolsmiths-env: pesto-env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-winc-env
+      SYSTEM_DOMAIN: bbl-winc-env.arp.cloudfoundry.org
       INSTANCE_GROUP_NAME: uaa
       SECURITY_GROUP_NAME: uaa
   - task: enable-feature-flags-for-wats
     file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
     input_mapping:
-      toolsmiths-env: pesto-env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-winc-env
+      SYSTEM_DOMAIN: bbl-winc-env.arp.cloudfoundry.org
       ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
   - task: start-sql-server-vm
     image: image
@@ -799,13 +762,12 @@ jobs:
   - task: deploy-and-setup-iwa-test-app
     file: ci/winc-release/tasks/setup-iwa-test-app/linux.yml
     image: image
-    input_mapping:
-      env: pesto-env
     params:
+      BBL_STATE_DIR: bbl-winc-env
       APP_NAME: iwa-test-app
       APP_HOSTNAME: windows-auth
       APP_TCP_PORT: 1030
-      APP_DOMAIN: pesto.funtime.lol
+      APP_DOMAIN: pesto.cf-app.com
       APP_ORG: iwa-org
       APP_SPACE: iwa-space
       AD_SUBNET: 10.1.0.0/24
@@ -826,22 +788,11 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests
     - get: cf-deployment
-  - task: create-toolsmiths-env
-    file: ci/shared/tasks/combine-assets/linux.yml
-    image: image
-    input_mapping:
-      input-01: env
-    output_mapping:
-      combined-assets: pesto-env
-    params:
-      COPY_ACTIONS: |
-        {input-01/pesto/metadata,combined-assets}
   - task: create-wats-config
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
-    input_mapping:
-      env: pesto-env
     params:
+      BBL_STATE_DIR: bbl-winc-env
       CONFIGS: wats
       WITH_ISOSEG: true
       WITH_DYNAMIC_ASG: false
@@ -864,7 +815,7 @@ jobs:
       passed: [prepare-env]
       trigger: true
     - get: image
-    - get: env
+    - get: env-ad-shepherd
       passed: [prepare-env]
       trigger: true
     - get: package-release
@@ -873,16 +824,14 @@ jobs:
     - get: garden-runc-release
     - get: windows-utilities-release
     - get: cf-deployment-concourse-tasks
-  - task: create-toolsmiths-env
-    file: ci/shared/tasks/combine-assets/linux.yml
-    image: image
-    input_mapping:
-      input-01: env
-    output_mapping:
-      combined-assets: pesto-env
-    params:
-      COPY_ACTIONS: |
-        {input-01/winc-release/pesto/metadata,combined-assets}
+  - try:
+      do:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-winc-env
+            DEPLOYMENT_NAME: gatsw
   - task: bosh-deploy-gatsw
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -890,8 +839,8 @@ jobs:
       release-01: garden-ci-artifacts-release
       release-02: garden-runc-release
       release-03: windows-utilities-release
-      env: pesto-env
     params:
+      BBL_STATE_DIR: bbl-winc-env
       MANIFEST: ci/shared/manifests/gatsw.yml
       DEPLOYMENT_NAME: gatsw
       ENVS: |
@@ -902,17 +851,12 @@ jobs:
   - task: run-gatsw-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
-      toolsmiths-env: pesto-env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-winc-env
       DEPLOYMENT_NAME: gatsw
       ERRAND_NAME: gats
-  - task: bosh-deld
-    image: image
-    file: ci/shared/tasks/bosh-deld/linux.yml
-    input_mapping:
-      env: pesto-env
-    params:
-      DEPLOYMENT_NAME: gatsw
+
 - name: export-release
   serial: true
   serial_groups: [acceptance]
@@ -923,27 +867,18 @@ jobs:
       passed: [prepare-env]
       trigger: true
     - get: image
-    - get: env
+    - get: env-ad-shepherd
       passed: [prepare-env]
       trigger: true
     - get: cf-deployment-concourse-tasks
-  - task: create-toolsmiths-env
-    file: ci/shared/tasks/combine-assets/linux.yml
-    image: image
-    input_mapping:
-      input-01: env
-    output_mapping:
-      combined-assets: pesto-env
-    params:
-      COPY_ACTIONS: |
-        {input-01/winc-release/pesto/metadata,combined-assets}
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
     input_mapping:
-      env: pesto-env
+      env: env-ad-shepherd
     params:
       OS: windows
+      BBL_STATE_DIR: bbl-winc-env
 
 - name: verify-iwa-login
   serial: true
@@ -955,7 +890,7 @@ jobs:
       passed: [prepare-env]
       trigger: true
     - get: image
-    - get: env
+    - get: env-ad-shepherd
       passed: [prepare-env]
       trigger: true
   - put: windows-worker-lock
@@ -972,7 +907,7 @@ jobs:
     attempts: 5
     file: ci/winc-release/tasks/verify-iwa-login/windows.yml
     params:
-      IWA_TEST_APP_ROUTE: windows-auth.pesto.funtime.lol/auth
+      IWA_TEST_APP_ROUTE: windows-auth.bbl-winc-env.arp.cloudfoundry.org/auth
       IWA_DOMAIN: ((gcp-garden-windows-env-pesto/iwa-domain))
       IWA_USERNAME: ((gcp-garden-windows-env-pesto/iwa-username))
       IWA_PASSWORD: ((gcp-garden-windows-env-pesto/iwa-password))
@@ -991,10 +926,6 @@ jobs:
         release: windows-worker-lock
 
 - name: ship-what
-  on_success:
-    put: slack-ci-channel
-    params:
-      text: ":concourse-succeeded: $BUILD_PIPELINE_NAME ship-what just ran. Maybe you should cut a release? $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME"
   plan:
     - in_parallel:
         steps:
@@ -1004,7 +935,7 @@ jobs:
             - run-wats
             - run-gatsw
             - export-release
-            - verify-iwa-login
+              #!- verify-iwa-login
           trigger: true
         - get: image
         - get: release-branch
@@ -1012,12 +943,12 @@ jobs:
             submodules: none
         - get: github-release
         - get: version
-        - get: env
+        - get: env-ad-shepherd
           passed:
             - run-wats
             - run-gatsw
             - export-release
-            - verify-iwa-login
+              #!- verify-iwa-login
           trigger: true
 
     - task: check-safe-to-release-repo
@@ -1112,65 +1043,75 @@ jobs:
   serial: true
   plan:
   - in_parallel:
-    - get: env
-      passed: [ship-what]
-      trigger: true
-    #! NOTE: we pass repo + trigger here because the `env` resource is rarely a new
-    #!       version, as it is not a shepherd env. Once we switch to those, this can
-    #!       go away, but until then, we need a more reliable trigger to fire env
-    #!       cleanup.
-    - get: repo
-      passed: [ship-what]
-      trigger: true
-    - get: env-lock
-    - get: image
-    - get: ci
-
-  - task: create-toolsmiths-env
-    file: ci/shared/tasks/combine-assets/linux.yml
-    image: image
-    input_mapping:
-      input-01: env
-    output_mapping:
-      combined-assets: pesto-env
-    params:
-      COPY_ACTIONS: |
-        {input-01/winc-release/pesto/metadata,combined-assets}
+      steps:
+      - get: env
+        passed: [ship-what]
+        trigger: true
+      - get: image
+      - get: env-lock
+      - get: ci
   - in_parallel:
-    - task: bosh-deld
-      image: image
-      file: ci/shared/tasks/bosh-deld/linux.yml
-      input_mapping:
-        env: pesto-env
-      params:
-        DEPLOYMENT_NAME: cf
-    - task: stop-sql-server-vm
-      image: image
-      file: ci/shared/tasks/stop-gcp-instance/linux.yml
-      params:
-        INSTANCE_NAME: sql-server-pesto
-        ZONE: us-east1-b
-        PROJECT: cf-garden-windows-dev
-        SERVICE_ACCOUNT_KEY: ((gcp-cf-garden-windows-dev-service-account-json))
-    - task: stop-sql-server-vm
-      image: image
-      file: ci/shared/tasks/stop-gcp-instance/linux.yml
-      params:
-        INSTANCE_NAME: manager
-        ZONE: us-central1-a
-        PROJECT: cf-diego-pivotal
-        SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
-  - params:
+      steps:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-winc-env
+          DEPLOYMENT_NAME: cf
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-winc-env
+          DEPLOYMENT_NAME: gatsw
+  - put: env-lock
+    params:
       release: env-lock #! path to the resource in the above get
-    put: env-lock
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-winc-env
+      SUSPEND: true
+
 
 - name: release-env-lock
   plan:
-  - get: env-lock
+  - in_parallel:
+      steps:
+      - get: env-lock
+      - get: env
+      - get: ci
+      - get: image
+  - try:
+      in_parallel:
+        steps:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-winc-env
+            DEPLOYMENT_NAME: cf
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-winc-env
+            DEPLOYMENT_NAME: gatsw
   - try:
       do:
-      - get: env
-        passed: [claim-env]
+      - task: stop-bbl-envs
+        image: image
+        file: ci/shared/tasks/stop-gcp-instance/linux.yml
+        input_mapping:
+          bbl-state: env
+        params:
+          SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+          BBL_STATE_DIR: bbl-winc-env
+          SUSPEND: true
   ensure:
     put: env-lock
     params:
