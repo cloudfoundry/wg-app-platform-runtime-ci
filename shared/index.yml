@@ -5,13 +5,13 @@ environments:
   - name: bbl-nats-env
     bosh_lite: true
     pipeline_lock: nats-release-env-lock
-  - name: bbl-routing-env
-    bosh_lite: true
-    pipeline_lock: routing-release-env-lock
   - name: bbl-hlthchk-env
     bosh_lite: true
     pipeline_lock: healthchecker-release-env-lock
 
+  - name: bbl-routing-env
+    bosh_lite: false
+    pipeline_lock: routing-release-env-lock
   - name: bbl-diego-env
     bosh_lite: false
     pipeline_lock: diego-release-env-lock
