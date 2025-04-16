@@ -792,6 +792,13 @@ jobs:
       FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
       OPS_FILES: #@ "\n".join(data.values.opsfiles)
+  - task: prepare-cf-deployment-env-with-cf-vars
+    image: image
+    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+    input_mapping:
+      repo: cf-networking-repo
+    params:
+      BBL_STATE_DIR: bbl-cfnetworking-env
   - task: uptimer-measure-with-cf-networking-and-silk-update
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
     input_mapping:

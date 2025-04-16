@@ -481,6 +481,11 @@ jobs:
         params:
           BBL_STATE_DIR: bbl-nats-env
           DEPLOYMENT_NAME: cf
+  - task: prepare-cf-deployment-env
+    image: image
+    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-nats-env
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
@@ -505,7 +510,7 @@ jobs:
       SYSTEM_DOMAIN: bbl-nats-env.arp.cloudfoundry.org
       FAIL_ON_DOWNTIME: "false"
       OPS_FILES: #@ "\n".join(data.values.opsfiles)
-  - task: prepare-cf-deployment-env
+  - task: prepare-cf-deployment-env-with-cf-vars
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
     params:

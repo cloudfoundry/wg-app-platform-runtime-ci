@@ -480,6 +480,11 @@ jobs:
           params:
             BBL_STATE_DIR: bbl-envoy-nginx-env
             DEPLOYMENT_NAME: cf
+  - task: prepare-cf-deployment-env
+    image: image
+    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-envoy-nginx-env
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
@@ -507,7 +512,7 @@ jobs:
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
       FAIL_ON_DOWNTIME: "false"
       OPS_FILES: #@ "\n".join(data.values.opsfiles)
-  - task: prepare-cf-deployment-env
+  - task: prepare-cf-deployment-env-with-cf-vars
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
     params:
