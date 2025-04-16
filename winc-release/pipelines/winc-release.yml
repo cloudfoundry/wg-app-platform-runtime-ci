@@ -13,7 +13,7 @@ groups:
   - run-wats
   - run-gatsw
   - export-release
-    #!- verify-iwa-login
+  - verify-iwa-login
   - ship-what
   - ship-it
   - unclaim-env
@@ -99,7 +99,7 @@ resources:
   type: git
   icon: source-branch
   source:
-    branch: winc-shepherd-ad
+    branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: shared-templates
@@ -262,8 +262,8 @@ resources:
   type: pool
   icon: cloud-lock
   source:
-    branch: winc-shepherd
-    pool: winc-shepherd-env-lock
+    branch: main
+    pool: winc-env-lock
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
@@ -658,7 +658,7 @@ jobs:
     - get: image
     - get: cf-deployment
     - get: cf-deployment-concourse-tasks
-    - get: env-ad-shepherd
+    - get: env
       trigger: true
       passed: [claim-env]
     - get: linux-stemcell
@@ -802,7 +802,7 @@ jobs:
       passed: [prepare-env]
       trigger: true
     - get: image
-    - get: env-ad-shepherd
+    - get: env
       passed: [prepare-env]
       trigger: true
     - get: package-release
@@ -854,7 +854,7 @@ jobs:
       passed: [prepare-env]
       trigger: true
     - get: image
-    - get: env-ad-shepherd
+    - get: env
       passed: [prepare-env]
       trigger: true
     - get: cf-deployment-concourse-tasks
@@ -862,7 +862,7 @@ jobs:
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
     input_mapping:
-      env: env-ad-shepherd
+      env: env
     params:
       OS: windows
       BBL_STATE_DIR: bbl-winc-env
@@ -877,7 +877,7 @@ jobs:
       passed: [prepare-env]
       trigger: true
     - get: image
-    - get: env-ad-shepherd
+    - get: env
       passed: [prepare-env]
       trigger: true
   - put: windows-worker-lock
@@ -922,7 +922,7 @@ jobs:
             - run-wats
             - run-gatsw
             - export-release
-              #!- verify-iwa-login
+            - verify-iwa-login
           trigger: true
         - get: image
         - get: release-branch
@@ -930,12 +930,12 @@ jobs:
             submodules: none
         - get: github-release
         - get: version
-        - get: env-ad-shepherd
+        - get: env
           passed:
             - run-wats
             - run-gatsw
             - export-release
-              #!- verify-iwa-login
+            - verify-iwa-login
           trigger: true
 
     - task: check-safe-to-release-repo
