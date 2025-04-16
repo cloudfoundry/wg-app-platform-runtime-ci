@@ -19,7 +19,7 @@ function run(){
     bosh_target
 
     local default_envs_file="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-env.bash')"
-    if [[ "$(is_cf_deployed)" == "yes" ]]; then
+    if [[ "$(bosh_is_cf_deployed)" == "yes" ]]; then
         bosh_manifest > "${cf_manifest}"
         bosh_cloud_config > "${cloud_config}"
         bosh_extract_manifest_defaults_from_cf "${cf_manifest}" "${cloud_config}" > "${default_envs_file}"
