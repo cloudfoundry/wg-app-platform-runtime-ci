@@ -53,11 +53,6 @@ resource_types:
     tag: latest
     username: _json_key
     password: ((gcp-wg-arp-service-account/config-json))
-- name: shepherd
-  type: registry-image
-  source:
-    repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
-    tag: v1  #! This may be bumped in the future
 - name: slack-notification
   type: docker-image
   source:
@@ -248,17 +243,14 @@ resources:
     url: ((slack-ci-channel/webhook))
 
 - name: env
-  type: shepherd
+  type: git
   icon: sheep
   source:
-    url: https://v2.shepherd.run
-    service-account-key: ((shepherd-service-account-key))
-    lease:
-      namespace: tas-runtime
-      pool:
-        namespace: official
-        name: cfd
-    compatibility-mode: environments-app
+    branch: main
+    uri: git@github.com:cloudfoundry/app-runtime-platform-envs
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    paths:
+      - bbl-diego-env
 
 - name: github-release
   type: github-release
@@ -1021,6 +1013,10 @@ jobs:
 
 - name: claim-env
   serial: true
+  on_failure:
+    put: env-lock
+    params:
+      release: env-lock #! path to the resource in the above get
   plan:
   - in_parallel:
     - get: ci
@@ -1034,21 +1030,24 @@ jobs:
         - inigo-postgres-linux
         - inigo-mysql-windows
     - get: image
-
+    - get: env
     - put: env-lock
       params:
        acquire: true
-  - put: env
-    params:
-      action: create
-      duration: 48h
-      resource: env
-      description: "(ClaimedBy: ci) diego pipeline"
-  - task: wait-for-cf-api
-    file: ci/shared/tasks/wait-for-cf-api/linux.yml
-    input_mapping:
-      toolsmiths-env: env
+  - task: start-bbl-envs
     image: image
+    file: ci/shared/tasks/start-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-diego-env
+      RESUME: true
+  - task: wait-for-bosh-api
+    image: image
+    file: ci/shared/tasks/wait-for-bosh-api/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-diego-env
 
 - name: prepare-env
   serial: true
@@ -1068,11 +1067,21 @@ jobs:
       trigger: true
     - get: package-release
       resource: golang-release-latest
+  - try:
+      do:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-diego-env
+            DEPLOYMENT_NAME: cf
   - in_parallel:
-    - task: prepare-cf-deployment-env
-      image: image
-      file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
-    - do:
+      steps:
+      - task: prepare-cf-deployment-env
+        image: image
+        file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-diego-env
       - task: copy-grace-opsfile
         image: grace-image
         file: ci/diego-release/tasks/copy-grace-opsfile/linux.yml
@@ -1105,8 +1114,10 @@ jobs:
     input_mapping:
       ops-files: combined-opsfiles
       vars-files: prepared-env
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-diego-env
+      SYSTEM_DOMAIN: bbl-diego-env.arp.cloudfoundry.org
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
       FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
@@ -1117,8 +1128,11 @@ jobs:
       ops-files: combined-opsfiles
       release: repo
       vars-files: prepared-env
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-diego-env
+      SYSTEM_DOMAIN: bbl-diego-env.arp.cloudfoundry.org
+      TCP_DOMAIN: tcp.bbl-diego-env.arp.cloudfoundry.org
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "true"
       APP_PUSHABILITY_THRESHOLD: "20"
       APP_STATS_THRESHOLD: "20"
@@ -1138,22 +1152,28 @@ jobs:
   - task: open-asg-for-credhub
     file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-diego-env
+      SYSTEM_DOMAIN: bbl-diego-env.arp.cloudfoundry.org
       INSTANCE_GROUP_NAME: credhub
       SECURITY_GROUP_NAME: credhub
   - task: open-asg-for-uaa
     file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-diego-env
+      SYSTEM_DOMAIN: bbl-diego-env.arp.cloudfoundry.org
       INSTANCE_GROUP_NAME: uaa
       SECURITY_GROUP_NAME: uaa
   - task: enable-feature-flags-for-cats
     file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-diego-env
+      SYSTEM_DOMAIN: bbl-diego-env.arp.cloudfoundry.org
       ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
 
 - name: run-cats
@@ -1179,12 +1199,14 @@ jobs:
       CONFIGS: cats
       WITH_ISOSEG: true
       WITH_DYNAMIC_ASG: false
+      BBL_STATE_DIR: bbl-diego-env
   - task: cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     attempts: 2
     input_mapping:
       integration-config: built-acceptance-test-configs
     params:
+      BBL_STATE_DIR: bbl-diego-env
       CONFIG_FILE_PATH: cats.json
 
 - name: run-wats
@@ -1210,14 +1232,17 @@ jobs:
       CONFIGS: wats
       WITH_ISOSEG: true
       WITH_DYNAMIC_ASG: false
+      BBL_STATE_DIR: bbl-diego-env
   - task: wats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     attempts: 2
     input_mapping:
       integration-config: built-acceptance-test-configs
     params:
+      BBL_STATE_DIR: bbl-diego-env
       CONFIG_FILE_PATH: wats.json
       NODES: "4"
+      TIMEOUT: 3h
       SKIP_REGEXP: Syslog drain
 
 - name: export-release
@@ -1237,6 +1262,8 @@ jobs:
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
+    params:
+      BBL_STATE_DIR: bbl-diego-env
 
 - name: run-vizzini
   serial: true
@@ -1254,8 +1281,9 @@ jobs:
   - task: vizzini
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-diego-env
       DEPLOYMENT_NAME: cf
       ERRAND_NAME: vizzini
 - name: run-bosh-restart
@@ -1277,6 +1305,7 @@ jobs:
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
     params:
+      BBL_STATE_DIR: bbl-diego-env
       CONFIGS: uptimer-bosh-restart
       ENVS: |
         BOSH_RESTART_ARGS=diego-cell
@@ -1285,6 +1314,8 @@ jobs:
     file: ci/shared/tasks/run-uptimer/linux.yml
     input_mapping:
       config: built-acceptance-test-configs
+    params:
+      BBL_STATE_DIR: bbl-diego-env
 
 - name: ship-what
   on_success:
@@ -1408,29 +1439,61 @@ jobs:
 - name: unclaim-env
   serial: true
   plan:
-  - get: env
-    passed: [ship-what]
-    trigger: true
-  - get: env-lock
-  - put: env
+  - in_parallel:
+      steps:
+      - get: env
+        passed: [ship-what]
+        trigger: true
+      - get: image
+      - get: env-lock
+      - get: ci
+  - task: bosh-deld
+    image: image
+    file: ci/shared/tasks/bosh-deld/linux.yml
     params:
-      action: release
-      resource: env
-  - params:
+      BBL_STATE_DIR: bbl-diego-env
+      DEPLOYMENT_NAME: cf
+  - put: env-lock
+    params:
       release: env-lock #! path to the resource in the above get
-    put: env-lock
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-diego-env
+      SUSPEND: true
+
 
 - name: release-env-lock
   plan:
-  - get: env-lock
+  - in_parallel:
+      steps:
+      - get: env-lock
+      - get: env
+      - get: ci
+      - get: image
   - try:
       do:
-      - get: env
-        passed: [claim-env]
-      - put: env
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
         params:
-          action: release
-          resource: env
+          BBL_STATE_DIR: bbl-diego-env
+          DEPLOYMENT_NAME: cf
+  - try:
+      do:
+      - task: stop-bbl-envs
+        image: image
+        file: ci/shared/tasks/stop-gcp-instance/linux.yml
+        input_mapping:
+          bbl-state: env
+        params:
+          SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+          BBL_STATE_DIR: bbl-diego-env
+          SUSPEND: true
   ensure:
     put: env-lock
     params:
