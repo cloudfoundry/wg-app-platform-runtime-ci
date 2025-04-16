@@ -29,6 +29,8 @@ function run(){
     fi
     popd > /dev/null
 
+    touch prepared-env/vars.yml
+
     if [[ "$(bosh_is_cf_deployed)" == "yes" ]]; then
         cf_create_tcp_domain
         cp "${CF_MANIFEST_FILE}" ./prepared-env/cf.yml
