@@ -391,6 +391,14 @@ jobs:
       passed: [claim-env]
       trigger: true
     - get: bpm
+  - try:
+      do:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-hlthchk-env
+            DEPLOYMENT_NAME: example-app
   - task: upload-warden-stemcell
     file: ci/shared/tasks/bosh-upload-stemcell/linux.yml
     image: image
@@ -564,7 +572,7 @@ jobs:
     file: ci/shared/tasks/bosh-deld/linux.yml
     params:
       BBL_STATE_DIR: bbl-hlthchk-env
-      DEPLOYMENT_NAME: cf
+      DEPLOYMENT_NAME: example-app
   - put: env-lock
     params:
       release: env-lock #! path to the resource in the above get
@@ -593,7 +601,7 @@ jobs:
         file: ci/shared/tasks/bosh-deld/linux.yml
         params:
           BBL_STATE_DIR: bbl-hlthchk-env
-          DEPLOYMENT_NAME: cf
+          DEPLOYMENT_NAME: example-app
   - try:
       do:
       - task: stop-bbl-envs
