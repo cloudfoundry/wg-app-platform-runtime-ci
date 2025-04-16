@@ -670,7 +670,7 @@ jobs:
           image: image
           file: ci/shared/tasks/bosh-deld/linux.yml
           params:
-            BBL_STATE_DIR: bbl-smb-volume-env
+            BBL_STATE_DIR: bbl-winc-env
             DEPLOYMENT_NAME: cf
   - task: prepare-cf-deployment-env
     image: image
