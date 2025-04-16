@@ -704,19 +704,6 @@ jobs:
       FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
       OPS_FILES: #@ "\n".join(data.values.opsfiles)
-  - task: deploy-cf-deployment
-    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
-    input_mapping:
-      ops-files: combined-assets
-      vars-files: prepared-env
-      bbl-state: env
-    params:
-      BBL_STATE_DIR: bbl-winc-env
-      SYSTEM_DOMAIN: bbl-winc-env.arp.cloudfoundry.org
-      DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
-      FAIL_ON_DOWNTIME: "false"
-      VARS_FILES: vars.yml
-      OPS_FILES: #@ "\n".join(data.values.opsfiles)
   - task: open-asg-for-credhub
     file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
     input_mapping:
