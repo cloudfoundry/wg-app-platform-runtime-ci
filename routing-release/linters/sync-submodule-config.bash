@@ -16,14 +16,9 @@ function run() {
 
   rm -rf /tmp/packages
   cat > /tmp/packages <<EOF
-code.cloudfoundry.org/cf-routing-test-helpers
-code.cloudfoundry.org/cf-tcp-router
 code.cloudfoundry.org/gorouter
-code.cloudfoundry.org/multierror
 code.cloudfoundry.org/route-registrar
-code.cloudfoundry.org/routing-acceptance-tests
 code.cloudfoundry.org/routing-api
-code.cloudfoundry.org/routing-api-cli
 code.cloudfoundry.org/routing-info
 EOF
 
