@@ -4,8 +4,8 @@ readme: |
 oses:
   - linux
 params:
-  SERVICE_ACCOUNT_KEY: GCP service account key json
   BBL_STATE_DIR: name of the bbl state directory to try to find the instance name from. If specified, will stop both jumpbox + bosh director
+  SERVICE_ACCOUNT_KEY: GCP service account key json
   DNS_DOMAIN: domain to set the wildcard dns record in
   SHARED_DNS_ZONE_NAME: name of the gcloud dns zone
   IS_BOSH_LITE: is this a bosh lite bbl env?

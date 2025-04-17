@@ -7,7 +7,7 @@ inputs:
 - name: env
 
 params:
-  CMD: 
   BBL_STATE_DIR:
+  CMD: 
 run:
   path: ci/shared/tasks/run-cf-command/task.bash

@@ -3,6 +3,8 @@ readme: |
   This task will start an arbitrary GCP instance.
 oses:
   - linux
+extra_inputs:
+  bbl-state: (optional) bbl-state directory for determining instances to start/stop
 params:
   INSTANCE_NAME: name of the GCP instance to start
   ZONE: name of the GCP availability zone the instance lives in

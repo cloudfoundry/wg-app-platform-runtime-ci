@@ -6,7 +6,7 @@ inputs:
   - name: bbl-state
 
 run:
-  path: ci/shared/tasks/gcp-open-bosh-lite-ports/task.sh
+  path: ci/shared/tasks/gcp-open-bosh-lite-ports/task.bash
 
 params:
   BBL_STATE_DIR:

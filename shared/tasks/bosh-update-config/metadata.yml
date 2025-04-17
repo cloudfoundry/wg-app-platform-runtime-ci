@@ -1,9 +1,10 @@
 ---
 readme: |
-  This task will update a given config for bosh. A set of default vars will be provided for the manifest. See bosh-helpers.bash file for `bosh_extract_manifest_defaults_from_cf` function. 
+  This task will update a given config for bosh. A set of default vars will be provided for the manifest. See bosh-helpers.bash file for `bosh_extract_manifest_defaults_from_cf` function.
 extra_inputs:
   release-*: (Optional) Generic release (git resource) to be created in manifest. Manifest can have `version:create` with variable path. The content in this release can then be mapped via ENV variable.
   ci-config: (Optional) if ci config files needs to be provided from a repo other than this. This would be used when using a private-repo to hold ci configurations
+  repo: (optional) specifies the boshrelease repo to use (required when SKIP_DEFAULT_VAR_GENERATION is false)
 oses:
   - linux
 params:
