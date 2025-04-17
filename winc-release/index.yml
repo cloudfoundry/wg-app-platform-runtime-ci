@@ -22,6 +22,5 @@ opsfiles:
 - enable-rdp-2019.yml
 - decrease-rep-evacuation-timeout.yml
 - use-2-azs-for-router.yml
-- enable-windows-auth.yml
 - enable-windows-tcp-routes.yml
 - enable-sticky-sessions-for-auth-negotiate.yml
