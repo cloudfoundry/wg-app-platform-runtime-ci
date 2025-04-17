@@ -1161,8 +1161,8 @@ jobs:
         input-02: garden-runc-release-fuse-rootfs
       params:
         ENVS: |
-          DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime-username))
-          DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime-password))
+          DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
+          DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
           GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs
           GARDEN_FUSE_TEST_ROOTFS=$PWD/input-02/rootfs
         DIR: #@ "src/{}".format(repo.name)
