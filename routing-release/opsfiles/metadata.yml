@@ -3,7 +3,6 @@ readme:
   This directory contains the opsfiles needed for routing-release.
 opsfiles:
   disable-bbr-non-routing.yml: Disables backups for components that aren't routing. We use this when running drats to only test our components, and cut down on time.
-  temp-tls-health-check-compensation.yml: TODO remove this when CF-d PR has been merged
   disable-route-emitter-tls-tcp-routes.yml: Disables route-emitter from advertising TCP routes with TLS support
   enable-route-emitter-tls-tcp-routes.yml: Enables route-emitter to advertise TCP routes with TLS support
   disable-rep-unproxied-ports.yml: Disables unproxied port mappings for containers (forces traffic through envoy)
