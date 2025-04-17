@@ -12,10 +12,16 @@ db_flavors:
 internal_repos:
 - name: gorouter
   configure_db: true
+- name: cf-tcp-router
+  configure_db: true
+- name: multierror
 - name: route-registrar
 - name: routing-api
   configure_db: true
+- name: routing-api-cli
 - name: routing-info
+- name: routing-acceptance-tests
+  acceptance: true
 opsfiles:
 - add-lb-ca-cert.yml
 - scale-for-cats.yml
