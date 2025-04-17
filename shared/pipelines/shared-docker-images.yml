@@ -1,6 +1,6 @@
 resource_types:
 - name: command-runner
-  type: docker-image
+  type: registry-image
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
     username: _json_key
@@ -153,7 +153,7 @@ resources:
     json_key: ((gcp-wg-arp-service-account/config-json))
     initial_version: 0.0.1
 - name: official-mysql-5.7-image
-  type: docker-image
+  type: registry-image
   icon: docker
   source:
     username: ((dockerhub-appruntimeplatform-username))
