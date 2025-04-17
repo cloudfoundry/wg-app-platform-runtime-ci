@@ -371,7 +371,7 @@ resources:
   icon: bitbucket
   source:
     bucket: gdn-linux-release
-    json_key: ((gcp-wg-arp-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
     versioned_file: gdn-linux-amd64
 
 - name: artifacts-bucket-gdn-arm64
@@ -380,7 +380,7 @@ resources:
   source:
     versioned_file: gdn-linux-arm64
     bucket: gdn-linux-release
-    json_key: ((gcp-wg-arp-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
 - name: autoconf
   type: git

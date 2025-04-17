@@ -393,7 +393,7 @@ jobs:
           vendored-repo: cf-networking-vendored-repo
         params:
           PACKAGE_NAME: golang-*-linux
-          GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
+          GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
       - put: cf-networking-repo
         params:
           rebase: true
@@ -418,7 +418,7 @@ jobs:
           vendored-repo: silk-vendored-repo
         params:
           PACKAGE_NAME: golang-*-linux
-          GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
+          GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
       - put: silk-repo
         params:
           rebase: true
@@ -442,7 +442,7 @@ jobs:
     params:
       PACKAGE_NAME: healthchecker
       PACKAGE_PREFIX: cf-networking
-      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
+      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
   - put: cf-networking-repo
     params:
       rebase: true
@@ -466,7 +466,7 @@ jobs:
     params:
       PACKAGE_NAME: healthchecker
       PACKAGE_PREFIX: silk
-      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
+      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
   - put: silk-repo
     params:
       rebase: true
@@ -1198,7 +1198,7 @@ jobs:
               finalized-release-repo: finalized-cf-networking-release-repo
               finalized-release-tarball: finalized-cf-networking-release-tarball
             params:
-              GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
+              GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
           - put: cf-networking-release-branch
             params:
               repository: finalized-cf-networking-release-repo
@@ -1237,7 +1237,7 @@ jobs:
               finalized-release-repo: finalized-silk-release-repo
               finalized-release-tarball: finalized-silk-release-tarball
             params:
-              GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
+              GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
           - put: silk-release-branch
             params:
               repository: finalized-silk-release-repo

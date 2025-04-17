@@ -46,7 +46,7 @@ resources:
     driver: gcs
     bucket: ci-image-versions
     key: tas-runtime-build/version
-    json_key: ((gcp-wg-arp-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
     initial_version: 0.0.147
 - name: ruby-installer-git
   type: git
@@ -86,7 +86,7 @@ resources:
     driver: gcs
     bucket: ci-image-versions
     key: tas-runtime-postgres/version
-    json_key: ((gcp-wg-arp-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
     initial_version: 0.0.1
 - name: postgres-docker-repo
   type: git
@@ -118,7 +118,7 @@ resources:
     driver: gcs
     bucket: ci-image-versions
     key: tas-runtime-mysql-8.0/version
-    json_key: ((gcp-wg-arp-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
     initial_version: 0.0.1
 - name: mysql-docker-repo
   type: git
@@ -150,7 +150,7 @@ resources:
     driver: gcs
     bucket: ci-image-versions
     key: tas-runtime-mysql-5.7/version
-    json_key: ((gcp-wg-arp-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
     initial_version: 0.0.1
 - name: official-mysql-5.7-image
   type: registry-image

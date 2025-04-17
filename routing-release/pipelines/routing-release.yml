@@ -387,7 +387,7 @@ jobs:
       package-release: golang-release-latest
     params:
       PACKAGE_NAME: golang-*-linux
-      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
+      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
 
   - put: repo
     params:
@@ -410,7 +410,7 @@ jobs:
       package-release: cf-cli-release
     params:
       PACKAGE_NAME: cf-cli-8-linux
-      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
+      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
   - put: repo
     params:
       rebase: true
@@ -433,7 +433,7 @@ jobs:
     params:
       PACKAGE_NAME: healthchecker
       PACKAGE_PREFIX: routing
-      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
+      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
   - put: repo
     params:
       rebase: true
@@ -465,7 +465,7 @@ jobs:
         blob: jq
       params:
         BOSH_BLOB_PATH: jq/jq-*-linux-amd64.tgz 
-        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
+        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
     - put: repo
       params:
        rebase: true
@@ -478,7 +478,7 @@ jobs:
         blob: haproxy
       params:
         BOSH_BLOB_PATH: haproxy/haproxy-*.tar.gz 
-        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
+        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
     - put: repo
       params:
        rebase: true
@@ -1177,7 +1177,7 @@ jobs:
       image: image
       file: ci/shared/tasks/bosh-finalize-release/linux.yml
       params:
-        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
+        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
         RELEASE_NAME: routing
 
     - put: release-branch

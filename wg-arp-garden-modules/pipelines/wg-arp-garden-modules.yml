@@ -43,7 +43,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: #@ "garden-modules/{}/version".format(package.name)
-    json_key: ((gcp-wg-arp-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
     initial_version: #@ package.initial_version
 #@ end
 

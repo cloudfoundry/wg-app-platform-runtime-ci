@@ -257,7 +257,7 @@ jobs:
       package-release: golang-release-latest
     params:
       PACKAGE_NAME: golang-*-linux
-      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
+      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
 
   - put: repo
     params:
@@ -516,7 +516,7 @@ jobs:
       image: image
       file: ci/shared/tasks/bosh-finalize-release/linux.yml
       params:
-        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
+        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
 
     - put: release-branch
       params:

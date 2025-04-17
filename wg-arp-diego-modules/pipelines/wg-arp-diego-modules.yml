@@ -44,7 +44,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: #@ "diego-modules/{}/version".format(package.name)
-    json_key: ((gcp-wg-arp-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
 #@ end
 
 - name: ci
