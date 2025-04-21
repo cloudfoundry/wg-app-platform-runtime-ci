@@ -37,7 +37,7 @@ params:
     --nodes=7
     --race
     --timeout 30m
-    --flake-attempt 2
+    --flake-attempts 2
   FUNCTIONS:
   RUN_AS: root
   VERIFICATIONS: |
