@@ -449,7 +449,7 @@ resources:
   type: git
   icon: tag-outline
   source:
-    branch: debian/master
+    branch: debian/latest
     uri: https://salsa.debian.org/mckinstry/libtool.git
     tag_filter: debian/*
 
