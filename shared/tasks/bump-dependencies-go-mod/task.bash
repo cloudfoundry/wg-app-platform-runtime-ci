@@ -64,6 +64,9 @@ function run() {
   local repo_name=$(git_get_remote_name)
 
   git_fetch_latest_submodules
+  if [[ -f "../ci/${repo_name}/helpers/checkout-submodules.bash" ]]; then
+    "../ci/${repo_name}/helpers/checkout-submodules.bash" ${PWD}
+  fi
   if [[ $(git status --porcelain) ]]; then
     git add -A .
     git_commit_with_submodule_log
