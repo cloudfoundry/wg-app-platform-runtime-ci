@@ -11,6 +11,7 @@ source "$THIS_FILE_DIR/../../../shared/helpers/bosh-helpers.bash"
 unset THIS_FILE_DIR
 
 function run(){
+    eval "${BOSH_CREDS}"
     bosh_target
     bosh upload-stemcell --fix  ${STEMCELL_URL}
 }

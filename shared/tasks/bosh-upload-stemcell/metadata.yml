@@ -6,3 +6,4 @@ oses:
 params:
   BBL_STATE_DIR: name of bbl state dir (relative to the env resource)
   STEMCELL_URL: URL for stemcell
+  BOSH_CREDS: All bosh environment variables needed to connect to the director (bbl print-env output)
