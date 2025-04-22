@@ -1681,6 +1681,7 @@ jobs:
     image: image
     params:
       STEMCELL_URL: https://bosh.io/d/stemcells/bosh-google-kvm-ubuntu-noble
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
   - task: bosh-deploy-gats
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml

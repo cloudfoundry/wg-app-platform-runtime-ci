@@ -5,6 +5,9 @@ function bosh_target(){
             export BBL_STATE_DIRECTORY="env/${BBL_STATE_DIR}"
             eval "$(bbl print-env)"
             ENVIRONMENT_NAME="$(jq -r .envID "$(env_metadata)")"
+        elif [[ "${BOSH_CREDS:=empty}" != "empty" ]]; then
+            eval "${BOSH_CREDS}"
+            ENVIRONMENT_NAME="UNDEFINED"
         else
             eval "$(bbl print-env --metadata-file "$(env_metadata)")"
             ENVIRONMENT_NAME="$(jq -r .name "$(env_metadata)")"
