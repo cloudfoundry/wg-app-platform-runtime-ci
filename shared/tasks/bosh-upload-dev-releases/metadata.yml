@@ -11,3 +11,4 @@ inputs:
 extra_inputs:
   release-*: BOSH releases that will be created locally and uploaded to the director
 params:
+  BBL_STATE_DIR: name of bbl state dir (relative to the env resource)

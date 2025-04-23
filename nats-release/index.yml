@@ -7,3 +7,5 @@ opsfiles:
 - add-lb-ca-cert.yml
 - scale-for-cats.yml
 - use-compiled-releases.yml
+- bosh-lite.yml
+- scale-down-for-bosh-lite.yml

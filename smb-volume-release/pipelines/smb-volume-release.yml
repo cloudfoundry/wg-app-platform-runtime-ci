@@ -39,11 +39,6 @@ groups:
 
 #! Define-ResourceGroups
 resource_types:
-- name: shepherd
-  type: registry-image
-  source:
-    repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
-    tag: v1  #! This may be bumped in the future
 - name: slack-notification
   type: docker-image
   source:
@@ -65,7 +60,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/smb-volume-release
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     ignore_paths:
     - .github/
     - .gitignore
@@ -86,7 +81,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/smb-volume-release
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: release-branch 
   type: git
@@ -94,7 +89,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/smb-volume-release.git
     branch: release
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: develop-branch-mergeback
   type: git
@@ -102,7 +97,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/smb-volume-release.git
     branch: develop
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: ci
   type: git
@@ -185,25 +180,21 @@ resources:
   source:
     url: ((slack-ci-channel/webhook))
 
-#! Shepherd pool
 - name: env
-  type: shepherd
+  type: git
   icon: sheep
   source:
-    url: https://v2.shepherd.run
-    service-account-key: ((shepherd-service-account-key))
-    lease:
-      namespace: tas-runtime
-      pool:
-        namespace: official
-        name: cfd
-    compatibility-mode: environments-app
+    branch: main
+    uri: git@github.com:cloudfoundry/app-runtime-platform-envs
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    paths:
+      - bbl-smb-volume-env
 
 - name: github-release
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     repository: smb-volume-release
     owner: cloudfoundry
 
@@ -211,7 +202,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     drafts: true
     repository: smb-volume-release
     owner: cloudfoundry
@@ -223,7 +214,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: smb-volume-release/version
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
 - name: env-lock
   type: pool
@@ -231,7 +222,7 @@ resources:
   source:
     branch: main
     pool: smb-volume-release-env-lock 
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: image
@@ -240,7 +231,7 @@ resources:
   source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: 'latest'
 
 #! bosh blobs
@@ -579,7 +570,7 @@ jobs:
       file: ci/shared/tasks/run-bin-test/linux.yml
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: ((.:image_tag))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(repo.name)
@@ -599,6 +590,10 @@ jobs:
 
 - name: claim-env
   serial: true
+  on_failure:
+    put: env-lock
+    params:
+      release: env-lock #! path to the resource in the above get
   plan:
   - in_parallel:
     - get: ci
@@ -609,17 +604,24 @@ jobs:
         - unit-and-integration-tests
         - lint-repo
     - get: image
-
+    - get: env
     - put: env-lock
       params:
        acquire: true
-  - put: env
-    timeout: 6h
+  - task: start-bbl-envs
+    image: image
+    file: ci/shared/tasks/start-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
     params:
-      action: create
-      duration: 48h
-      resource: env
-      description: '(ClaimedBy: ci) smb-volume-release pipeline'
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-smb-volume-env
+      RESUME: true
+  - task: wait-for-bosh-api
+    file: ci/shared/tasks/wait-for-bosh-api/linux.yml
+    image: image
+    params:
+      BBL_STATE_DIR: bbl-smb-volume-env
 
 - name: prepare-env
   serial: true
@@ -636,6 +638,14 @@ jobs:
     - get: env
       passed: [claim-env]
       trigger: true
+  - try:
+      do:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-smb-volume-env
+            DEPLOYMENT_NAME: cf
   - task: prepare-cf-deployment-env
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
@@ -643,6 +653,7 @@ jobs:
       VARS:
         smb-username: ((smb-volume-release-smbtestserver-credentials/username))
         smb-password: ((smb-volume-release-smbtestserver-credentials/password))
+      BBL_STATE_DIR: bbl-smb-volume-env
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
@@ -663,8 +674,10 @@ jobs:
       ops-files: combined-assets
       release: repo
       vars-files: prepared-env
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-smb-volume-env
+      SYSTEM_DOMAIN: bbl-smb-volume-env.arp.cloudfoundry.org
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
       FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
@@ -673,35 +686,44 @@ jobs:
     - task: open-asg-for-credhub
       file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
       input_mapping:
-        toolsmiths-env: env
+        bbl-state: env
       params:
+        BBL_STATE_DIR: bbl-smb-volume-env
+        SYSTEM_DOMAIN: bbl-smb-volume-env.arp.cloudfoundry.org
         INSTANCE_GROUP_NAME: credhub
         SECURITY_GROUP_NAME: credhub
     - task: open-asg-for-uaa
       file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
       input_mapping:
-        toolsmiths-env: env
+        bbl-state: env
       params:
+        BBL_STATE_DIR: bbl-smb-volume-env
+        SYSTEM_DOMAIN: bbl-smb-volume-env.arp.cloudfoundry.org
         INSTANCE_GROUP_NAME: uaa
         SECURITY_GROUP_NAME: uaa
     - task: open-asg-for-smbtestserver
       file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
       input_mapping:
-        toolsmiths-env: env
+        bbl-state: env
       params:
+        BBL_STATE_DIR: bbl-smb-volume-env
+        SYSTEM_DOMAIN: bbl-smb-volume-env.arp.cloudfoundry.org
         INSTANCE_GROUP_NAME: smbtestserver
         SECURITY_GROUP_NAME: smbtestserver
     - task: enable-feature-flags-for-cats
       file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
       input_mapping:
-        toolsmiths-env: env
+        bbl-state: env
       params:
+        BBL_STATE_DIR: bbl-smb-volume-env
+        SYSTEM_DOMAIN: bbl-smb-volume-env.arp.cloudfoundry.org
         ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
     - task: run-smbbrokerpush-errand
       file: cf-deployment-concourse-tasks/run-errand/task.yml
       input_mapping:
-        toolsmiths-env: env
+        bbl-state: env
       params:
+        BBL_STATE_DIR: bbl-smb-volume-env
         ERRAND_NAME: smbbrokerpush
         INSTANCE: smb-broker-push
 
@@ -735,6 +757,7 @@ jobs:
       WITH_VOLUME_SERVICES: true
       WITH_ISOSEG: false
       WITH_DYNAMIC_ASG: false
+      BBL_STATE_DIR: bbl-smb-volume-env
   - task: cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     attempts: 2
@@ -777,6 +800,7 @@ jobs:
         VOLUME_SERVICE_PLAN_NAME=Existing
         VOLUME_SERVICE_USERNAME=((smb-volume-release-smbtestserver-credentials/username))
         VOLUME_SERVICE_PASSWORD=((smb-volume-release-smbtestserver-credentials/password))
+      BBL_STATE_DIR: bbl-smb-volume-env
   - task: run-bin-test-cf-volume-services-acceptance-tests
     file: ci/shared/tasks/run-bin-test/linux.yml
     input_mapping:
@@ -785,7 +809,7 @@ jobs:
     attempts: 2
     vars:
       image_repository: cloudfoundry/tas-runtime-build
-      image_password: ((gcp-tas-runtime-service-account/config-json))
+      image_password: ((gcp-wg-arp-service-account/config-json))
       image_tag: ((.:image_tag))
     params:
       ENVS: |
@@ -810,8 +834,9 @@ jobs:
   - task: run-dockerdriver-integration-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-smb-volume-env
       DEPLOYMENT_NAME: cf
       ERRAND_NAME: dockerdriver-integration
 
@@ -832,6 +857,8 @@ jobs:
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
+    params:
+      BBL_STATE_DIR: bbl-smb-volume-env
 
 - name: ship-what
   on_success:
@@ -953,29 +980,60 @@ jobs:
 - name: unclaim-env
   serial: true
   plan:
-  - get: env
-    passed: [ship-what]
-    trigger: true
-  - get: env-lock
-  - put: env
+  - in_parallel:
+      steps:
+      - get: env
+        passed: [ship-what]
+        trigger: true
+      - get: env-lock
+      - get: image
+      - get: ci
+  - task: bosh-deld
+    image: image
+    file: ci/shared/tasks/bosh-deld/linux.yml
     params:
-      action: release
-      resource: env
-  - params:
+      BBL_STATE_DIR: bbl-smb-volume-env
+      DEPLOYMENT_NAME: cf
+  - put: env-lock
+    params:
       release: env-lock #! path to the resource in the above get
-    put: env-lock
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-smb-volume-env
+      SUSPEND: true
 
 - name: release-env-lock
   plan:
-  - get: env-lock
+  - in_parallel:
+      steps:
+      - get: env-lock
+      - get: env
+      - get: ci
+      - get: image
   - try:
       do:
-      - get: env
-        passed: [claim-env]
-      - put: env
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
         params:
-          action: release
-          resource: env
+          BBL_STATE_DIR: bbl-smb-volume-env
+          DEPLOYMENT_NAME: cf
+  - try:
+      do:
+      - task: stop-bbl-envs
+        image: image
+        file: ci/shared/tasks/stop-gcp-instance/linux.yml
+        input_mapping:
+          bbl-state: env
+        params:
+          SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+          BBL_STATE_DIR: bbl-smb-volume-env
+          SUSPEND: true
   ensure:
     put: env-lock
     params:

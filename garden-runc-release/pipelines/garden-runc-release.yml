@@ -15,6 +15,7 @@ groups:
   - run-gats-with-cpu-throttling
   - run-gats-with-runc
   - run-gats-with-containerd
+  - run-gats-with-containerd-cgroupsv2
   - run-standalone-gdn-gats
   - export-release
   - ship-what
@@ -41,25 +42,19 @@ groups:
 
 
 #! Define-ResourceGroups
-#! toolsmiths
 resource_types:
 - name: gcs
   type: registry-image
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/frodenas/gcs-resource
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
-- name: shepherd
-  type: registry-image
-  source:
-    repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
-    tag: v1  #! This may be bumped in the future
+    password: ((gcp-wg-arp-service-account/config-json))
 - name: command-runner
   type: docker-image
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: latest
 - name: slack-notification
   type: docker-image
@@ -82,7 +77,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/garden-runc-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     ignore_paths:
     - .github/
     - .gitignore
@@ -103,7 +98,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/garden-runc-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: release-branch
   type: git
@@ -111,7 +106,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/garden-runc-release.git
     branch: release
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: develop-branch-mergeback
   type: git
@@ -119,7 +114,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/garden-runc-release.git
     branch: develop
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: ci
   type: git
@@ -176,7 +171,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/garden.git
     branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 
 - name: updated-go-mod-guardian
@@ -185,7 +180,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/guardian.git
     branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: updated-go-mod-idmapper
   type: git
@@ -193,7 +188,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/idmapper.git
     branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: updated-go-mod-grootfs
   type: git
@@ -201,7 +196,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/grootfs.git
     branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: updated-go-mod-groot
   type: git
@@ -209,7 +204,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/groot.git
     branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: updated-go-mod-dontpanic
   type: git
@@ -217,7 +212,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/dontpanic.git
     branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: updated-go-mod-garden-integration-tests
   type: git
@@ -225,7 +220,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/garden-integration-tests.git
     branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: updated-go-mod-garden-performance-acceptance-tests
   type: git
@@ -233,7 +228,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/garden-performance-acceptance-tests.git
     branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: go-version
   type: git
@@ -259,25 +254,21 @@ resources:
   source:
     url: ((slack-ci-channel/webhook))
 
-#! Toolsmith pool
 - name: env
-  type: shepherd
+  type: git
   icon: sheep
   source:
-    url: https://v2.shepherd.run
-    service-account-key: ((shepherd-service-account-key))
-    lease:
-      namespace: tas-runtime
-      pool:
-        namespace: official
-        name: cfd
-    compatibility-mode: environments-app
+    branch: main
+    uri: git@github.com:cloudfoundry/app-runtime-platform-envs
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    paths:
+      - bbl-garden-env
 
 - name: github-release
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     repository: garden-runc-release
     owner: cloudfoundry
 
@@ -285,7 +276,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     drafts: true
     repository: garden-runc-release
     owner: cloudfoundry
@@ -318,7 +309,7 @@ resources:
   source:
     branch: main
     uri: #@ "git@github.com:cloudfoundry/{}.git".format(repo.name)
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 #@ end
 
 - name: version
@@ -328,7 +319,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: garden-runc-release/version
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
 - name: env-lock
   type: pool
@@ -336,7 +327,7 @@ resources:
   source:
     branch: main
     pool: garden-env-lock
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: windows-worker-lock
@@ -345,7 +336,7 @@ resources:
   source:
     branch: main
     pool: windows-worker-lock
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: image
@@ -354,25 +345,25 @@ resources:
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: latest
 
 - name: garden-runc-release-rootfs
-  type: docker-image
+  type: registry-image
   icon: docker
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/garden-rootfs
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: latest
 
 - name: garden-runc-release-fuse-rootfs
-  type: docker-image
+  type: registry-image
   icon: docker
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/garden-fuse
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: latest
 
 - name: artifacts-bucket-gdn
@@ -380,7 +371,7 @@ resources:
   icon: bitbucket
   source:
     bucket: gdn-linux-release
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
     versioned_file: gdn-linux-amd64
 
 - name: artifacts-bucket-gdn-arm64
@@ -389,7 +380,7 @@ resources:
   source:
     versioned_file: gdn-linux-arm64
     bucket: gdn-linux-release
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
 - name: autoconf
   type: git
@@ -450,7 +441,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     owner: seccomp
     repository: libseccomp
 
@@ -458,7 +449,7 @@ resources:
   type: git
   icon: tag-outline
   source:
-    branch: debian/master
+    branch: debian/latest
     uri: https://salsa.debian.org/mckinstry/libtool.git
     tag_filter: debian/*
 
@@ -490,7 +481,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     owner: krallin
     repository: tini
 
@@ -506,7 +497,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     owner: madler
     repository: zlib
 
@@ -1110,10 +1101,10 @@ jobs:
       resource: golang-release-latest
     - get: garden-runc-release-rootfs
       params:
-        rootfs: true
+        format: rootfs
     - get: garden-runc-release-fuse-rootfs
       params:
-        rootfs: true
+        format: rootfs
   - task: determine-image-tag
     image: image
     file: ci/shared/tasks/determine-image-tag/linux.yml
@@ -1126,7 +1117,7 @@ jobs:
         DEFAULT_PARAMS: "ci/garden-runc-release/default-params/build-binaries/linux.yml"
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: ((.:image_tag))
   - put: windows-worker-lock
     params:
@@ -1145,17 +1136,17 @@ jobs:
       file: ci/shared/tasks/run-bin-test/linux.yml
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: ((.:image_tag))
       input_mapping:
         input-01: garden-runc-release-rootfs
         input-02: garden-runc-release-fuse-rootfs
       params:
         ENVS: |
-          DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime-username))
-          DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime-password))
-          GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs.tar
-          GARDEN_FUSE_TEST_ROOTFS=$PWD/input-02/rootfs.tar
+          DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
+          DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
+          GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs
+          GARDEN_FUSE_TEST_ROOTFS=$PWD/input-02/rootfs
         DIR: #@ "src/{}".format(repo.name)
     - task: #@ "{}-cgroupsv2".format(repo.name)
       tags: [ diego-cgroupsv2 ]
@@ -1163,17 +1154,17 @@ jobs:
       file: ci/shared/tasks/run-bin-test/linux.yml
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: ((.:image_tag))
       input_mapping:
         input-01: garden-runc-release-rootfs
         input-02: garden-runc-release-fuse-rootfs
       params:
         ENVS: |
-          DOCKER_REGISTRY_USERNAME=((dockerhub-tasruntime-username))
-          DOCKER_REGISTRY_PASSWORD=((dockerhub-tasruntime-password))
-          GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs.tar
-          GARDEN_FUSE_TEST_ROOTFS=$PWD/input-02/rootfs.tar
+          DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
+          DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
+          GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs
+          GARDEN_FUSE_TEST_ROOTFS=$PWD/input-02/rootfs
         DIR: #@ "src/{}".format(repo.name)
 #@ if helpers.on_windows(repo):
     - task: #@ "{}-windows".format(repo.name)
@@ -1211,6 +1202,10 @@ jobs:
 
 - name: claim-env
   serial: true
+  on_failure:
+    put: env-lock
+    params:
+      release: env-lock #! path to the resource in the above get
   plan:
   - in_parallel:
     - get: ci
@@ -1221,21 +1216,24 @@ jobs:
         - unit-and-integration-tests
         - lint-repo
     - get: image
-
+    - get: env
     - put: env-lock
       params:
        acquire: true
-  - put: env
-    params:
-      action: create
-      duration: 48h
-      resource: env
-      description: "(ClaimedBy: ci) garden-runc-release pipeline"
-  - task: wait-for-cf-api
-    file: ci/shared/tasks/wait-for-cf-api/linux.yml
-    input_mapping:
-      toolsmiths-env: env
+  - task: start-bbl-envs
     image: image
+    file: ci/shared/tasks/start-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-garden-env
+      RESUME: true
+  - task: wait-for-bosh-api
+    image: image
+    file: ci/shared/tasks/wait-for-bosh-api/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-garden-env
 
 - name: prepare-env
   serial: true
@@ -1251,9 +1249,19 @@ jobs:
     - get: env
       passed: [claim-env]
       trigger: true
+  - try:
+      do:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-garden-env
+            DEPLOYMENT_NAME: cf
   - task: prepare-cf-deployment-env
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-garden-env
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
@@ -1271,20 +1279,30 @@ jobs:
     input_mapping:
       ops-files: combined-assets
       vars-files: prepared-env
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-garden-env
+      SYSTEM_DOMAIN: bbl-garden-env.arp.cloudfoundry.org
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
       FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
       OPS_FILES: #@ "\n".join(data.values.opsfiles)
+  - task: prepare-cf-deployment-env-with-cf-vars
+    image: image
+    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-garden-env
   - task: uptimer-measure-with-garden-runc-release-update
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping:
       ops-files: combined-assets
       release: repo
       vars-files: prepared-env
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-garden-env
+      SYSTEM_DOMAIN: bbl-garden-env.arp.cloudfoundry.org
+      TCP_DOMAIN: tcp.bbl-garden-env.arp.cloudfoundry.org
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "true"
       APP_PUSHABILITY_THRESHOLD: "20"
       APP_STATS_THRESHOLD: "20"
@@ -1304,22 +1322,28 @@ jobs:
   - task: open-asg-for-credhub
     file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-garden-env
+      SYSTEM_DOMAIN: bbl-garden-env.arp.cloudfoundry.org
       INSTANCE_GROUP_NAME: credhub
       SECURITY_GROUP_NAME: credhub
   - task: open-asg-for-uaa
     file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-garden-env
+      SYSTEM_DOMAIN: bbl-garden-env.arp.cloudfoundry.org
       INSTANCE_GROUP_NAME: uaa
       SECURITY_GROUP_NAME: uaa
   - task: enable-feature-flags-for-cats
     file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-garden-env
+      SYSTEM_DOMAIN: bbl-garden-env.arp.cloudfoundry.org
       ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
 
 - name: run-cats
@@ -1344,6 +1368,7 @@ jobs:
       CONFIGS: cats
       WITH_ISOSEG: true
       WITH_DYNAMIC_ASG: true
+      BBL_STATE_DIR: bbl-garden-env
   - task: cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     attempts: 2
@@ -1368,7 +1393,7 @@ jobs:
       resource: golang-release-latest
     - get: garden-runc-release-rootfs
       params:
-        rootfs: true
+        format: rootfs
   - task: determine-image-tag
     image: image
     file: ci/shared/tasks/determine-image-tag/linux.yml
@@ -1383,7 +1408,7 @@ jobs:
       ENVS: WITH_MUSL=true
     vars:
       image_repository: cloudfoundry/tas-runtime-build
-      image_password: ((gcp-tas-runtime-service-account/config-json))
+      image_password: ((gcp-wg-arp-service-account/config-json))
       image_tag: ((.:image_tag))
   - task: release-standalone-gdn
     file: ci/shared/tasks/run-bin-release-binaries/linux.yml
@@ -1406,7 +1431,7 @@ jobs:
       FUNCTIONS: ci/garden-runc-release/helpers/configure-binaries.bash
       ENVS: |
         GDN_BINARY=$PWD/input-01/gdn-linux-amd64
-        GARDEN_TEST_ROOTFS=$PWD/input-02/rootfs.tar
+        GARDEN_TEST_ROOTFS=$PWD/input-02/rootfs
         GDN_BIND_IP=127.0.0.1
         GDN_BIND_PORT=7777
         GDN_DEBUG_PORT=17013
@@ -1414,7 +1439,7 @@ jobs:
         LIMITS_TEST_URI="docker://busybox"
     vars:
       image_repository: cloudfoundry/tas-runtime-build
-      image_password: ((gcp-tas-runtime-service-account/config-json))
+      image_password: ((gcp-wg-arp-service-account/config-json))
       image_tag: ((.:image_tag))
   - put: artifacts-bucket-gdn
     params:
@@ -1446,7 +1471,16 @@ jobs:
     file: ci/shared/tasks/bosh-upload-stemcell/linux.yml
     image: image
     params:
+      BBL_STATE_DIR: bbl-garden-env
       STEMCELL_URL: https://bosh.io/d/stemcells/bosh-google-kvm-windows2019-go_agent
+  - try:
+      do:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-garden-env
+            DEPLOYMENT_NAME: gatsw
   - task: bosh-deploy-gatsw
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -1455,6 +1489,7 @@ jobs:
       release-02: winc-release
       release-03: windows-utilities-release
     params:
+      BBL_STATE_DIR: bbl-garden-env
       MANIFEST: ci/shared/manifests/gatsw.yml
       DEPLOYMENT_NAME: gatsw
       ENVS: |
@@ -1465,8 +1500,9 @@ jobs:
   - task: run-gatsw-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-garden-env
       DEPLOYMENT_NAME: gatsw
       ERRAND_NAME: gats
 
@@ -1487,6 +1523,14 @@ jobs:
       resource: golang-release-latest
     - get: garden-ci-artifacts-release
     - get: cf-deployment-concourse-tasks
+  - try:
+      do:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-garden-env
+            DEPLOYMENT_NAME: gats-with-cpu-throttling
   - task: bosh-deploy-gats
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -1497,11 +1541,13 @@ jobs:
         WITH_BPM=false
         WITH_CONTAINERD_MODE=false
         WITH_CPU_THROTTLING=true
+      BBL_STATE_DIR: bbl-garden-env
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-garden-env
       DEPLOYMENT_NAME: gats-with-cpu-throttling
       ERRAND_NAME: gats
 
@@ -1522,6 +1568,14 @@ jobs:
       resource: golang-release-latest
     - get: garden-ci-artifacts-release
     - get: cf-deployment-concourse-tasks
+  - try:
+      do:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-garden-env
+            DEPLOYMENT_NAME: gats-with-runc
   - task: bosh-deploy-gats
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -1532,18 +1586,21 @@ jobs:
         WITH_BPM=false
         WITH_CONTAINERD_MODE=false
         WITH_CPU_THROTTLING=false
+      BBL_STATE_DIR: bbl-garden-env
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-garden-env
       DEPLOYMENT_NAME: gats-with-runc
       ERRAND_NAME: gats
   - task: run-gpats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-garden-env
       DEPLOYMENT_NAME: gats-with-runc
       ERRAND_NAME: gpats
 
@@ -1564,6 +1621,14 @@ jobs:
       resource: golang-release-latest
     - get: garden-ci-artifacts-release
     - get: cf-deployment-concourse-tasks
+  - try:
+      do:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-garden-env
+            DEPLOYMENT_NAME: gats-with-containerd
   - task: bosh-deploy-gats
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -1574,12 +1639,66 @@ jobs:
         WITH_BPM=false
         WITH_CONTAINERD_MODE=true
         WITH_CPU_THROTTLING=false
+      BBL_STATE_DIR: bbl-garden-env
+  - task: run-gats-errand
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      BBL_STATE_DIR: bbl-garden-env
+      DEPLOYMENT_NAME: gats-with-containerd
+      ERRAND_NAME: gats
+      INSTANCE: gats
+  - task: run-gpats-errand
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      BBL_STATE_DIR: bbl-garden-env
+      DEPLOYMENT_NAME: gats-with-containerd
+      ERRAND_NAME: gpats
+      INSTANCE: gpats
+
+- name: run-gats-with-containerd-cgroupsv2
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: package-release
+      resource: golang-release-latest
+    - get: garden-ci-artifacts-release
+    - get: cf-deployment-concourse-tasks
+  - task: upload-noble-stemcell
+    file: ci/shared/tasks/bosh-upload-stemcell/linux.yml
+    image: image
+    params:
+      STEMCELL_URL: https://bosh.io/d/stemcells/bosh-google-kvm-ubuntu-noble
+      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+  - task: bosh-deploy-gats
+    image: image
+    file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
+    params:
+      MANIFEST: ci/garden-runc-release/manifests/gats.yml
+      DEPLOYMENT_NAME: gats-with-containerd-cgroupsv2
+      ENVS: |
+        WITH_BPM=false
+        WITH_CONTAINERD_MODE=true
+        WITH_CPU_THROTTLING=false
+        CF_STEMCELL_OS=ubuntu-noble
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
       toolsmiths-env: env
     params:
-      DEPLOYMENT_NAME: gats-with-containerd
+      DEPLOYMENT_NAME: gats-with-containerd-cgroupsv2
       ERRAND_NAME: gats
       INSTANCE: gats
   - task: run-gpats-errand
@@ -1587,7 +1706,7 @@ jobs:
     input_mapping:
       toolsmiths-env: env
     params:
-      DEPLOYMENT_NAME: gats-with-containerd
+      DEPLOYMENT_NAME: gats-with-containerd-cgroupsv2
       ERRAND_NAME: gpats
       INSTANCE: gpats
 
@@ -1607,6 +1726,8 @@ jobs:
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
+    params:
+      BBL_STATE_DIR: bbl-garden-env
 
 - name: ship-what
   on_success:
@@ -1626,6 +1747,7 @@ jobs:
             - run-gats-with-cpu-throttling
             - run-gats-with-runc
             - run-gats-with-containerd
+            - run-gats-with-containerd-cgroupsv2
           trigger: true
         - get: image
         - get: release-branch
@@ -1642,6 +1764,7 @@ jobs:
             - run-gats-with-cpu-throttling
             - run-gats-with-runc
             - run-gats-with-containerd
+            - run-gats-with-containerd-cgroupsv2
           trigger: true
 
     - task: check-safe-to-release-repo
@@ -1756,29 +1879,112 @@ jobs:
 - name: unclaim-env
   serial: true
   plan:
-  - get: env
-    passed: [ship-what]
-    trigger: true
-  - get: env-lock
-  - put: env
+  - in_parallel:
+      steps:
+      - get: env
+        passed: [ship-what]
+        trigger: true
+      - get: image
+      - get: env-lock
+      - get: ci
+  - in_parallel:
+      steps:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: cf
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gatsw
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gats-with-runc
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gats-with-containerd
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gats-with-cpu-throttling
+  - put: env-lock
     params:
-      action: release
-      resource: env
-  - params:
       release: env-lock #! path to the resource in the above get
-    put: env-lock
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-garden-env
+      SUSPEND: true
+
 
 - name: release-env-lock
   plan:
-  - get: env-lock
+  - in_parallel:
+      steps:
+      - get: env-lock
+      - get: env
+      - get: ci
+      - get: image
+  - try:
+      in_parallel:
+        steps:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-garden-env
+            DEPLOYMENT_NAME: cf
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-garden-env
+            DEPLOYMENT_NAME: gatsw
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-garden-env
+            DEPLOYMENT_NAME: gats-with-runc
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-garden-env
+            DEPLOYMENT_NAME: gats-with-containerd
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-garden-env
+            DEPLOYMENT_NAME: gats-with-cpu-throttling
   - try:
       do:
-      - get: env
-        passed: [claim-env]
-      - put: env
+      - task: stop-bbl-envs
+        image: image
+        file: ci/shared/tasks/stop-gcp-instance/linux.yml
+        input_mapping:
+          bbl-state: env
         params:
-          action: release
-          resource: env
+          SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+          BBL_STATE_DIR: bbl-garden-env
+          SUSPEND: true
   ensure:
     put: env-lock
     params:

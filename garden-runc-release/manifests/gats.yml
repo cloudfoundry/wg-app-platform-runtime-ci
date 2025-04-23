@@ -4,6 +4,7 @@ releases:
 - name: garden-runc
   version: latest
 - name: bpm
+  url: https://bosh.io/d/github.com/cloudfoundry/bpm-release
   version: latest
 
 stemcells:
@@ -30,6 +31,7 @@ instance_groups:
         listen_address: 0.0.0.0:7777
         debug_listen_address: 0.0.0.0:17013
         log_level: debug
+        dns_servers: [169.254.0.2, 169.254.0.53]
         experimental_cpu_throttling: ((WITH_CPU_THROTTLING))
         bpm:
           enabled: ((WITH_BPM))
@@ -56,6 +58,7 @@ instance_groups:
       garden:
         listen_network: tcp
         listen_address: 0.0.0.0:7777
+        dns_servers: [169.254.0.2, 169.254.0.53]
         debug_listen_address: 0.0.0.0:17013
         log_level: debug
   - name: gpats

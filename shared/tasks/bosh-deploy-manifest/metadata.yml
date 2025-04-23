@@ -8,6 +8,7 @@ extra_inputs:
 oses:
   - linux
 params:
+  BBL_STATE_DIR: name of bbl state dir (relative to the env resource)
   DEPLOYMENT_NAME: Name of deployment
   ENVS: Multiline envs that can be defined dynamically and loaded into the bosh deploy vars without having to create more params. Values set here would then be available as a VARS to bosh deploy command. It's also possible to run a single line command for extracting VARS that would only be available when targeting env. e.g. DEPLOYMENT_GOROUTER_IP=$(bosh -d cf vms --json | jq -r ".Tables[].Rows[] | select(.instance | startswith(\"router\")) | .ips" | head -n1)
   MANIFEST: Path to manifest 

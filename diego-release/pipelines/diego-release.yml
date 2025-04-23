@@ -52,12 +52,7 @@ resource_types:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/tasruntime/github-pr-instances-resource
     tag: latest
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
-- name: shepherd
-  type: registry-image
-  source:
-    repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
-    tag: v1  #! This may be bumped in the future
+    password: ((gcp-wg-arp-service-account/config-json))
 - name: slack-notification
   type: docker-image
   source:
@@ -79,7 +74,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/diego-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     ignore_paths:
     - .github/
     - .gitignore
@@ -100,7 +95,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/diego-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: release-branch 
   type: git
@@ -108,7 +103,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/diego-release.git
     branch: release
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: develop-branch-mergeback
   type: git
@@ -116,14 +111,14 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/diego-release.git
     branch: develop
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: diego-release-envoy-bump
   type: git
   icon: source-branch
   source:
     branch: bump-envoy
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/diego-release.git
 
 - name: ci
@@ -169,7 +164,7 @@ resources:
   source:
     branch: main
     uri: #@ "git@github.com:cloudfoundry/{}.git".format(repo.name)
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 #@ end
 
 - name: cf-deployment
@@ -219,7 +214,7 @@ resources:
   icon: github
   check_every: '5m'
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     owner: envoyproxy
     repository: envoy
     tag_filter: "v1.*"
@@ -248,23 +243,20 @@ resources:
     url: ((slack-ci-channel/webhook))
 
 - name: env
-  type: shepherd
+  type: git
   icon: sheep
   source:
-    url: https://v2.shepherd.run
-    service-account-key: ((shepherd-service-account-key))
-    lease:
-      namespace: tas-runtime
-      pool:
-        namespace: official
-        name: cfd
-    compatibility-mode: environments-app
+    branch: main
+    uri: git@github.com:cloudfoundry/app-runtime-platform-envs
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    paths:
+      - bbl-diego-env
 
 - name: github-release
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     repository: diego-release
     owner: cloudfoundry
 
@@ -272,7 +264,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     drafts: true
     repository: diego-release
     owner: cloudfoundry
@@ -284,7 +276,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: diego-release/version
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
 - name: env-lock
   type: pool
@@ -292,7 +284,7 @@ resources:
   source:
     branch: main
     pool: diego-release-env-lock 
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: image
@@ -301,7 +293,7 @@ resources:
   source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: latest
 
 - name: grace-image
@@ -310,7 +302,7 @@ resources:
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/grace
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: latest
 
 - name: diego-inigo-ci-rootfs
@@ -320,7 +312,7 @@ resources:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/diego-inigo-ci-rootfs
     tag: latest
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
 
 - name: jq
   type: github-release
@@ -538,7 +530,7 @@ jobs:
     input_mapping:
       repo: diego-release-envoy-bump
     params:
-      GITHUB_TOKEN: ((github-tas-runtime-bot/access-token))
+      GITHUB_TOKEN: ((github-appruntimeplatform-bot/access-token))
       BRANCH: bump-envoy
 
 - name: sync-dot-github-dir
@@ -677,7 +669,7 @@ jobs:
         DEFAULT_PARAMS: "ci/diego-release/default-params/build-binaries/linux.yml"
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: ((.:image_tag))
     - task: build-binaries-for-windows
       tags: [ diego-windows ]
@@ -697,7 +689,7 @@ jobs:
         built-binaries: linux-built-binaries
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -728,7 +720,7 @@ jobs:
         built-binaries: linux-built-binaries
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: ((.:image_tag))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -795,7 +787,7 @@ jobs:
         DEFAULT_PARAMS: "ci/diego-release/default-params/build-binaries/linux.yml"
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: ((.:image_tag))
     - task: build-binaries-for-garden-runc-release-linux
       file: ci/shared/tasks/build-binaries/linux.yml
@@ -807,7 +799,7 @@ jobs:
         DEFAULT_PARAMS: "ci/garden-runc-release/default-params/build-binaries/linux.yml"
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: ((.:image_tag))
   - task: combine-built-binaries
     file: ci/shared/tasks/combine-assets/linux.yml
@@ -841,7 +833,7 @@ jobs:
         input-03: diego-inigo-ci-rootfs
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DIR: src/code.cloudfoundry.org/inigo
@@ -1021,6 +1013,10 @@ jobs:
 
 - name: claim-env
   serial: true
+  on_failure:
+    put: env-lock
+    params:
+      release: env-lock #! path to the resource in the above get
   plan:
   - in_parallel:
     - get: ci
@@ -1034,21 +1030,24 @@ jobs:
         - inigo-postgres-linux
         - inigo-mysql-windows
     - get: image
-
+    - get: env
     - put: env-lock
       params:
        acquire: true
-  - put: env
-    params:
-      action: create
-      duration: 48h
-      resource: env
-      description: "(ClaimedBy: ci) diego pipeline"
-  - task: wait-for-cf-api
-    file: ci/shared/tasks/wait-for-cf-api/linux.yml
-    input_mapping:
-      toolsmiths-env: env
+  - task: start-bbl-envs
     image: image
+    file: ci/shared/tasks/start-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-diego-env
+      RESUME: true
+  - task: wait-for-bosh-api
+    image: image
+    file: ci/shared/tasks/wait-for-bosh-api/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-diego-env
 
 - name: prepare-env
   serial: true
@@ -1068,11 +1067,21 @@ jobs:
       trigger: true
     - get: package-release
       resource: golang-release-latest
+  - try:
+      do:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-diego-env
+            DEPLOYMENT_NAME: cf
   - in_parallel:
-    - task: prepare-cf-deployment-env
-      image: image
-      file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
-    - do:
+      steps:
+      - task: prepare-cf-deployment-env
+        image: image
+        file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-diego-env
       - task: copy-grace-opsfile
         image: grace-image
         file: ci/diego-release/tasks/copy-grace-opsfile/linux.yml
@@ -1105,20 +1114,30 @@ jobs:
     input_mapping:
       ops-files: combined-opsfiles
       vars-files: prepared-env
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-diego-env
+      SYSTEM_DOMAIN: bbl-diego-env.arp.cloudfoundry.org
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
       FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
       OPS_FILES: #@ "\n".join(data.values.opsfiles)
+  - task: prepare-cf-deployment-env-with-cf-vars
+    image: image
+    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-diego-env
   - task: uptimer-measure-with-diego-release-update
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping:
       ops-files: combined-opsfiles
       release: repo
       vars-files: prepared-env
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-diego-env
+      SYSTEM_DOMAIN: bbl-diego-env.arp.cloudfoundry.org
+      TCP_DOMAIN: tcp.bbl-diego-env.arp.cloudfoundry.org
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "true"
       APP_PUSHABILITY_THRESHOLD: "20"
       APP_STATS_THRESHOLD: "20"
@@ -1138,22 +1157,28 @@ jobs:
   - task: open-asg-for-credhub
     file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-diego-env
+      SYSTEM_DOMAIN: bbl-diego-env.arp.cloudfoundry.org
       INSTANCE_GROUP_NAME: credhub
       SECURITY_GROUP_NAME: credhub
   - task: open-asg-for-uaa
     file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-diego-env
+      SYSTEM_DOMAIN: bbl-diego-env.arp.cloudfoundry.org
       INSTANCE_GROUP_NAME: uaa
       SECURITY_GROUP_NAME: uaa
   - task: enable-feature-flags-for-cats
     file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-diego-env
+      SYSTEM_DOMAIN: bbl-diego-env.arp.cloudfoundry.org
       ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
 
 - name: run-cats
@@ -1179,12 +1204,14 @@ jobs:
       CONFIGS: cats
       WITH_ISOSEG: true
       WITH_DYNAMIC_ASG: false
+      BBL_STATE_DIR: bbl-diego-env
   - task: cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     attempts: 2
     input_mapping:
       integration-config: built-acceptance-test-configs
     params:
+      BBL_STATE_DIR: bbl-diego-env
       CONFIG_FILE_PATH: cats.json
 
 - name: run-wats
@@ -1210,14 +1237,17 @@ jobs:
       CONFIGS: wats
       WITH_ISOSEG: true
       WITH_DYNAMIC_ASG: false
+      BBL_STATE_DIR: bbl-diego-env
   - task: wats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     attempts: 2
     input_mapping:
       integration-config: built-acceptance-test-configs
     params:
+      BBL_STATE_DIR: bbl-diego-env
       CONFIG_FILE_PATH: wats.json
       NODES: "4"
+      TIMEOUT: 3h
       SKIP_REGEXP: Syslog drain
 
 - name: export-release
@@ -1237,6 +1267,8 @@ jobs:
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
+    params:
+      BBL_STATE_DIR: bbl-diego-env
 
 - name: run-vizzini
   serial: true
@@ -1254,8 +1286,9 @@ jobs:
   - task: vizzini
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-diego-env
       DEPLOYMENT_NAME: cf
       ERRAND_NAME: vizzini
 - name: run-bosh-restart
@@ -1277,6 +1310,7 @@ jobs:
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
     params:
+      BBL_STATE_DIR: bbl-diego-env
       CONFIGS: uptimer-bosh-restart
       ENVS: |
         BOSH_RESTART_ARGS=diego-cell
@@ -1285,6 +1319,8 @@ jobs:
     file: ci/shared/tasks/run-uptimer/linux.yml
     input_mapping:
       config: built-acceptance-test-configs
+    params:
+      BBL_STATE_DIR: bbl-diego-env
 
 - name: ship-what
   on_success:
@@ -1408,29 +1444,61 @@ jobs:
 - name: unclaim-env
   serial: true
   plan:
-  - get: env
-    passed: [ship-what]
-    trigger: true
-  - get: env-lock
-  - put: env
+  - in_parallel:
+      steps:
+      - get: env
+        passed: [ship-what]
+        trigger: true
+      - get: image
+      - get: env-lock
+      - get: ci
+  - task: bosh-deld
+    image: image
+    file: ci/shared/tasks/bosh-deld/linux.yml
     params:
-      action: release
-      resource: env
-  - params:
+      BBL_STATE_DIR: bbl-diego-env
+      DEPLOYMENT_NAME: cf
+  - put: env-lock
+    params:
       release: env-lock #! path to the resource in the above get
-    put: env-lock
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-diego-env
+      SUSPEND: true
+
 
 - name: release-env-lock
   plan:
-  - get: env-lock
+  - in_parallel:
+      steps:
+      - get: env-lock
+      - get: env
+      - get: ci
+      - get: image
   - try:
       do:
-      - get: env
-        passed: [claim-env]
-      - put: env
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
         params:
-          action: release
-          resource: env
+          BBL_STATE_DIR: bbl-diego-env
+          DEPLOYMENT_NAME: cf
+  - try:
+      do:
+      - task: stop-bbl-envs
+        image: image
+        file: ci/shared/tasks/stop-gcp-instance/linux.yml
+        input_mapping:
+          bbl-state: env
+        params:
+          SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+          BBL_STATE_DIR: bbl-diego-env
+          SUSPEND: true
   ensure:
     put: env-lock
     params:

@@ -1,0 +1,41 @@
+#@data/values
+---
+#@overlay/match missing_ok=True
+environments:
+  - name: bbl-nats-env
+    bosh_lite: true
+    pipeline_lock: nats-release-env-lock
+  - name: bbl-hlthchk-env
+    bosh_lite: true
+    pipeline_lock: healthchecker-release-env-lock
+
+  - name: bbl-routing-env
+    bosh_lite: false
+    pipeline_lock: routing-release-env-lock
+  - name: bbl-diego-env
+    bosh_lite: false
+    pipeline_lock: diego-release-env-lock
+  - name: bbl-cfnetworking-env
+    bosh_lite: false
+    pipeline_lock: cf-networking-release-env-lock
+  - name: bbl-garden-env
+    bosh_lite: false
+    pipeline_lock: garden-env-lock
+  - name: bbl-nfs-volume-env
+    bosh_lite: false
+    pipeline_lock: nfs-volume-release-env-lock
+  - name: bbl-smb-volume-env
+    bosh_lite: false
+    pipeline_lock: smb-volume-release-env-lock
+  - name: bbl-winc-env
+    bosh_lite: false
+    pipeline_lock: winc-release-env-lock
+  - name: bbl-envoy-nginx-env
+    bosh_lite: false
+    pipeline_lock: envoy-nginx-release-env-lock
+  - name: bbl-windows2019fs-env
+    bosh_lite: false
+    pipeline_lock: windows2019fs-release-env-lock
+  - name: bbl-windowsfs-online-env
+    bosh_lite: false
+    pipeline_lock: windowsfs-online-release-env-lock

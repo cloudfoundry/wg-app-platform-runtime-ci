@@ -263,8 +263,16 @@ function retry_command() {
 }
 export -f retry_command
 
+function env_metadata() {
+    if [[ -n "${BBL_STATE_DIR}" ]]; then
+        echo "env/${BBL_STATE_DIR}/bbl-state.json"
+    else
+        echo "env/metadata"
+    fi
+}
+
 function is_env_cf_deployment() {
-    local has_opsman=$(jq 'any(.;.ops_manager)' env/metadata)
+    local has_opsman=$(jq 'any(.;.ops_manager)' "$(env_metadata)")
     if [[ "$has_opsman" == "true" ]]; then
         echo  "no"
     else 

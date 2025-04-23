@@ -1,0 +1,18 @@
+---
+platform: linux
+
+inputs:
+  - name: ci
+  - name: bbl-state
+
+run:
+  path: ci/shared/tasks/create-gcp-dns-record/task.bash
+
+params:
+  BBL_STATE_DIR:
+  SERVICE_ACCOUNT_KEY:
+  DNS_DOMAIN:
+  SHARED_DNS_ZONE_NAME:
+  IS_BOSH_LITE:
+  CLOUDSDK_CORE_DISABLE_PROMPTS: 1
+  PROJECT:

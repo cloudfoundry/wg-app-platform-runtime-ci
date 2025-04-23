@@ -3,9 +3,12 @@ readme: |
   This task will stop an arbitrary GCP instance.
 oses:
   - linux
+extra_inputs:
+  bbl-state: (optional) bbl-state directory for determining instances to start/stop
 params:
   INSTANCE_NAME: name of the GCP instance to stop
   ZONE: name of the GCP availability zone the instance lives in
   PROJECT: GCP project name where the instance exists
   SERVICE_ACCOUNT_KEY: GCP service account key json
-
+  BBL_STATE_DIR: name of the bbl state directory to try to find the instance name from. If specified, will stop both jumpbox + bosh director
+  SUSPEND: suspend the vm instead of stopping it (set to "true")

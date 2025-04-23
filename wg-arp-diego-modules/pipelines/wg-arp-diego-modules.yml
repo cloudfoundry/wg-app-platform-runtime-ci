@@ -17,7 +17,7 @@ resources:
   source:
     branch: main
     pool: windows-worker-lock
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 #@ for package in data.values.internal_repos:
@@ -27,13 +27,13 @@ resources:
   source:
     branch: main 
     uri: #@ "git@github.com:{}".format(package.repo)
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: #@ "{}-github-release".format(package.name)
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     repository: #@ package.name
     owner: cloudfoundry
 
@@ -44,7 +44,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: #@ "diego-modules/{}/version".format(package.name)
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
 #@ end
 
 - name: ci
@@ -80,7 +80,7 @@ resources:
   source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: 'latest'
 
 - name: golang-release-latest
@@ -185,7 +185,7 @@ jobs:
       privileged: #@ helpers.privileged(package)
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: ((.:image_tag))
 #@ if helpers.on_windows(package):
     - do:
@@ -257,7 +257,7 @@ jobs:
       privileged: #@ helpers.privileged(package)
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DB: #@ db.value

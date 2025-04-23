@@ -9,6 +9,7 @@ outputs:
 - name: built-acceptance-test-configs
 
 params:
+  BBL_STATE_DIR:
   CONFIGS:
   ENVS:
   WITH_ISOSEG: false

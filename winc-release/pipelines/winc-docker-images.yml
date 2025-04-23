@@ -5,7 +5,7 @@ resource_types:
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: latest
 
 resources:
@@ -15,7 +15,7 @@ resources:
   source:
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci.git
     branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     paths:
     - winc-release/dockerfiles/link/Dockerfile
 
@@ -25,7 +25,7 @@ resources:
   source:
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci.git
     branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     paths:
     - winc-release/dockerfiles/regularfile/Dockerfile
 
@@ -35,7 +35,7 @@ resources:
   source:
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci.git
     branch: main
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     paths:
     - winc-release/dockerfiles/servercore/Dockerfile
 
@@ -45,7 +45,7 @@ resources:
   source:
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci.git
     branch: groot-windows-docker-images
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     paths:
     - winc-release/dockerfiles/whiteout/Dockerfile
 
@@ -62,7 +62,7 @@ resources:
   source:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
 
 - name: http-golang-download
   type: command-runner
@@ -78,7 +78,7 @@ resources:
   source:
     branch: main
     pool: windows-worker-lock
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 jobs:
@@ -109,8 +109,8 @@ jobs:
         IMAGE_NAME=cloudfoundry/groot-windows-test
         IMAGE_TAG=link
         DOCKERFILE=$PWD/ci/winc-release/dockerfiles/link/Dockerfile
-        DOCKER_USERNAME=((dockerhub-tasruntime-username))
-        DOCKER_PASSWORD=((dockerhub-tasruntime-password))
+        DOCKER_USERNAME=((dockerhub-appruntimeplatform-username))
+        DOCKER_PASSWORD=((dockerhub-appruntimeplatform-password))
   ensure:
     task: stop-windows-worker
     image: image
@@ -152,8 +152,8 @@ jobs:
         IMAGE_NAME=cloudfoundry/groot-windows-test
         IMAGE_TAG=regularfile
         DOCKERFILE=$PWD/ci/winc-release/dockerfiles/regularfile/Dockerfile
-        DOCKER_USERNAME=((dockerhub-tasruntime-username))
-        DOCKER_PASSWORD=((dockerhub-tasruntime-password))
+        DOCKER_USERNAME=((dockerhub-appruntimeplatform-username))
+        DOCKER_PASSWORD=((dockerhub-appruntimeplatform-password))
   ensure:
     task: stop-windows-worker
     image: image
@@ -195,8 +195,8 @@ jobs:
         IMAGE_NAME=cloudfoundry/groot-windows-test
         IMAGE_TAG=servercore
         DOCKERFILE=$PWD/ci/winc-release/dockerfiles/servercore/Dockerfile
-        DOCKER_USERNAME=((dockerhub-tasruntime-username))
-        DOCKER_PASSWORD=((dockerhub-tasruntime-password))
+        DOCKER_USERNAME=((dockerhub-appruntimeplatform-username))
+        DOCKER_PASSWORD=((dockerhub-appruntimeplatform-password))
   ensure:
     task: stop-windows-worker
     image: image
@@ -238,8 +238,8 @@ jobs:
         IMAGE_NAME=cloudfoundry/groot-windows-test
         IMAGE_TAG=whiteout
         DOCKERFILE=$PWD/ci/winc-release/dockerfiles/whiteout/Dockerfile
-        DOCKER_USERNAME=((dockerhub-tasruntime-username))
-        DOCKER_PASSWORD=((dockerhub-tasruntime-password))
+        DOCKER_USERNAME=((dockerhub-appruntimeplatform-username))
+        DOCKER_PASSWORD=((dockerhub-appruntimeplatform-password))
   ensure:
     task: stop-windows-worker
     image: image

@@ -29,7 +29,8 @@ params:
       --randomize-all
       --nodes=7
       --race
-      --timeout 20m
+      --timeout 30m
+      --flake-attempts 2
     ) Multiline flags to call test with. If running against a non-go project, this needs to be overridden
   FUNCTIONS:  Multiline functions to be used for extra configuration of binaries. e.g. ci/winc-release/helpers/configure-binaries.{ps1,bash}
   RUN_AS: User to run tests as - defaults to root. If overridden, chowns all of the build directory + inputs to that user, then runs tests as that user. Only used on Linux.

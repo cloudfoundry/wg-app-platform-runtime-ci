@@ -5,6 +5,7 @@ readme: |
 oses:
   - linux
 params:
+  BBL_STATE_DIR: name of bbl state dir (relative to the env resource)
   CONFIGS: Multiline config file to be created. e.g. |
     cats
     rats

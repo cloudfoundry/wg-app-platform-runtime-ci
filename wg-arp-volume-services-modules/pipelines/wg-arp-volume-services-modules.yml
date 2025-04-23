@@ -17,7 +17,7 @@ resources:
   source:
     branch: main
     uri: #@ "git@github.com:{}".format(package.repo)
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 #@ end
 
 - name: windows-worker-lock
@@ -26,7 +26,7 @@ resources:
   source:
     branch: main
     pool: windows-worker-lock
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 #@ for package in helpers.packages_without_configure_db(data.values.internal_repos):
@@ -35,7 +35,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     repository: #@ package.name
     owner: cloudfoundry
 
@@ -46,7 +46,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: #@ "volume-services-modules/{}/version".format(package.name)
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
 #@ end
 
 - name: ci
@@ -82,7 +82,7 @@ resources:
   source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: 'latest'
 
 - name: golang-release-latest
@@ -184,7 +184,7 @@ jobs:
       privileged: #@ helpers.privileged(package)
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: ((.:image_tag))
 #@ if helpers.on_windows(package):
     - do:

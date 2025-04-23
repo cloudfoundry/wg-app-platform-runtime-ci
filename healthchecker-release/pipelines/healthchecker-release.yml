@@ -34,11 +34,6 @@ groups:
 
 #! Define-ResourceGroups
 resource_types:
-- name: shepherd
-  type: registry-image
-  source:
-    repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
-    tag: v1  #! This may be bumped in the future
 - name: slack-notification
   type: docker-image
   source:
@@ -60,7 +55,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/healthchecker-release
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     ignore_paths:
     - .github/
     - .gitignore
@@ -81,7 +76,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/healthchecker-release
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: release-branch 
   type: git
@@ -89,7 +84,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/healthchecker-release.git
     branch: release
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: develop-branch-mergeback
   type: git
@@ -97,7 +92,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/healthchecker-release.git
     branch: develop
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: ci
   type: git
@@ -142,23 +137,20 @@ resources:
     url: ((slack-ci-channel/webhook))
 
 - name: env
-  type: shepherd
+  type: git
   icon: sheep
   source:
-    url: https://v2.shepherd.run
-    service-account-key: ((shepherd-service-account-key))
-    lease:
-      namespace: tas-runtime
-      pool:
-        namespace: official
-        name: cfd
-    compatibility-mode: environments-app
+    branch: main
+    uri: git@github.com:cloudfoundry/app-runtime-platform-envs
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    paths:
+      - bbl-hlthchk-env
 
 - name: github-release
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     repository: healthchecker-release
     owner: cloudfoundry
 
@@ -166,7 +158,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     drafts: true
     repository: healthchecker-release
     owner: cloudfoundry
@@ -187,7 +179,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: healthchecker-release/version
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
 - name: env-lock
   type: pool
@@ -195,7 +187,7 @@ resources:
   source:
     branch: main
     pool: healthchecker-release-env-lock 
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: image
@@ -204,8 +196,13 @@ resources:
   source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: 'latest'
+
+- name: bpm
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry/bpm-release
 
 #! Define-Jobs
 jobs:
@@ -260,7 +257,7 @@ jobs:
       package-release: golang-release-latest
     params:
       PACKAGE_NAME: golang-*-linux
-      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
 
   - put: repo
     params:
@@ -328,7 +325,7 @@ jobs:
       file: ci/shared/tasks/run-bin-test/linux.yml
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: ((.:image_tag))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -348,6 +345,10 @@ jobs:
 
 - name: claim-env
   serial: true
+  on_failure:
+    put: env-lock
+    params:
+      release: env-lock #! path to the resource in the above get
   plan:
   - in_parallel:
     - get: ci
@@ -357,22 +358,24 @@ jobs:
         - unit-and-integration-tests
         - lint-repo
     - get: image
-
+    - get: env
     - put: env-lock
       params:
         acquire: true
-  - put: env
-    params:
-      action: create
-      duration: 48h
-      resource: env
-      description: "(ClaimedBy: ci) healthchecker-release pipeline"
-    timeout: 6h
-  - task: wait-for-cf-api
-    file: ci/shared/tasks/wait-for-cf-api/linux.yml
-    input_mapping:
-      toolsmiths-env: env
+  - task: start-bbl-envs
     image: image
+    file: ci/shared/tasks/start-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-hlthchk-env
+      RESUME: true
+  - task: wait-for-bosh-api
+    file: ci/shared/tasks/wait-for-bosh-api/linux.yml
+    image: image
+    params:
+      BBL_STATE_DIR: bbl-hlthchk-env
 
 - name: example-app-deployment
   serial: true
@@ -387,14 +390,41 @@ jobs:
     - get: env
       passed: [claim-env]
       trigger: true
+    - get: bpm
+  - try:
+      do:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-hlthchk-env
+            DEPLOYMENT_NAME: example-app
+  - task: upload-warden-stemcell
+    file: ci/shared/tasks/bosh-upload-stemcell/linux.yml
+    image: image
+    params:
+      BBL_STATE_DIR: bbl-hlthchk-env
+      STEMCELL_URL: https://bosh.io/d/stemcells/bosh-warden-boshlite-ubuntu-jammy-go_agent
+  - task: upload-bpm
+    file: ci/shared/tasks/bosh-upload-release/linux.yml
+    image: image
+    params:
+      BBL_STATE_DIR: bbl-hlthchk-env
+    input_mapping:
+      created-release-tarball: bpm
   - task: bosh-deploy-example-app
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
     params:
+      BBL_STATE_DIR: bbl-hlthchk-env
       MANIFEST: ci/healthchecker-release/manifests/example-app.yml
       DEPLOYMENT_NAME: example-app
       ENVS: |
         DEPLOYMENT_RELEASE_DIR=$PWD/repo
+        CF_STEMCELL_OS=ubuntu-jammy
+        CF_AZ=z1
+        CF_VM_TYPE=medium
+        CF_NETWORK=default
 
 - name: export-release
   serial: true
@@ -414,6 +444,7 @@ jobs:
     image: image
     params:
       DEPLOYMENT_NAME: example-app
+      BBL_STATE_DIR: bbl-hlthchk-env
 
 - name: ship-what
   on_success:
@@ -485,7 +516,7 @@ jobs:
       image: image
       file: ci/shared/tasks/bosh-finalize-release/linux.yml
       params:
-        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
 
     - put: release-branch
       params:
@@ -528,29 +559,60 @@ jobs:
 - name: unclaim-env
   serial: true
   plan:
-  - get: env
-    passed: [ship-what]
-    trigger: true
-  - get: env-lock
-  - put: env
+  - in_parallel:
+      steps:
+      - get: env
+        passed: [ship-what]
+        trigger: true
+      - get: env-lock
+      - get: image
+      - get: ci
+  - task: bosh-deld
+    image: image
+    file: ci/shared/tasks/bosh-deld/linux.yml
     params:
-      action: release
-      resource: env
-  - params:
+      BBL_STATE_DIR: bbl-hlthchk-env
+      DEPLOYMENT_NAME: example-app
+  - put: env-lock
+    params:
       release: env-lock #! path to the resource in the above get
-    put: env-lock
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-hlthchk-env
+      SUSPEND: true
 
 - name: release-env-lock
   plan:
-  - get: env-lock
+  - in_parallel:
+      steps:
+      - get: env-lock
+      - get: env
+      - get: ci
+      - get: image
   - try:
       do:
-      - get: env
-        passed: [claim-env]
-      - put: env
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
         params:
-          action: release
-          resource: env
+          BBL_STATE_DIR: bbl-hlthchk-env
+          DEPLOYMENT_NAME: example-app
+  - try:
+      do:
+      - task: stop-bbl-envs
+        image: image
+        file: ci/shared/tasks/stop-gcp-instance/linux.yml
+        input_mapping:
+          bbl-state: env
+        params:
+          SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+          BBL_STATE_DIR: bbl-hlthchk-env
+          SUSPEND: true
   ensure:
     put: env-lock
     params:

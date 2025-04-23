@@ -45,11 +45,6 @@ groups:
   - release-routing-api-cli
 
 resource_types:
-- name: shepherd
-  type: registry-image
-  source:
-    repository: us-west2-docker.pkg.dev/shepherd-268822/shepherd2/concourse-resource
-    tag: v1  #! This may be bumped in the future
 - name: slack-notification
   type: docker-image
   source:
@@ -78,7 +73,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/routing-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     ignore_paths:
     - .github/
     - .gitignore
@@ -99,7 +94,7 @@ resources:
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/routing-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: release-branch 
   type: git
@@ -107,7 +102,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/routing-release.git
     branch: release
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: develop-branch-mergeback
   type: git
@@ -115,7 +110,7 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/routing-release.git
     branch: develop
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: cf-cli-release
   type: git
@@ -130,7 +125,7 @@ resources:
   icon: tag-outline
   source:
     uri: git@github.com:cloudfoundry/healthchecker-release.git
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     branch: release
     tag_filter: v*
 
@@ -148,7 +143,7 @@ resources:
   source:
     user: cloudfoundry-incubator
     repository: bosh-backup-and-restore
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
 
 - name: ci
   type: git
@@ -193,7 +188,7 @@ resources:
   source:
     branch: main
     uri: #@ "git@github.com:cloudfoundry/{}.git".format(repo.name)
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
 #@ end
 
 #! CF Deployment
@@ -251,23 +246,20 @@ resources:
 
 #! Deployment Environment pool
 - name: env
-  type: shepherd
+  type: git
   icon: sheep
   source:
-    url: https://v2.shepherd.run
-    service-account-key: ((shepherd-service-account-key))
-    lease:
-      namespace: tas-runtime
-      pool:
-        namespace: official
-        name: cfd
-    compatibility-mode: environments-app
+    branch: main
+    uri: git@github.com:cloudfoundry/app-runtime-platform-envs
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    paths:
+      - bbl-routing-env
 
 - name: github-release
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     repository: routing-release
     owner: cloudfoundry
 
@@ -275,7 +267,7 @@ resources:
   type: github-release
   icon: github
   source:
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
     drafts: true
     repository: routing-release
     owner: cloudfoundry
@@ -287,7 +279,7 @@ resources:
     driver: gcs
     bucket: ci-release-versions
     key: routing-release/version
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
 - name: routing-api-cli-github-release
   type: github-release
@@ -296,13 +288,13 @@ resources:
   source:
     user: cloudfoundry
     repository: routing-api-cli
-    access_token: ((github-tas-runtime-bot/access-token))
+    access_token: ((github-appruntimeplatform-bot/access-token))
 
 - name: routing-api-cli-version
   type: semver
   icon: counter
   source:
-    json_key: ((gcp-tas-runtime-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
     bucket: ci-release-versions
     key: routing-api-cli/version
     initial_version: 2.24.0
@@ -314,7 +306,7 @@ resources:
   source:
     branch: main
     pool: routing-release-env-lock 
-    private_key: ((github-tas-runtime-bot/private-key))
+    private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: image
@@ -323,7 +315,7 @@ resources:
   source:                                        
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-tas-runtime-service-account/config-json))
+    password: ((gcp-wg-arp-service-account/config-json))
     tag: 'latest'
 
 - name: jq
@@ -395,7 +387,7 @@ jobs:
       package-release: golang-release-latest
     params:
       PACKAGE_NAME: golang-*-linux
-      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
 
   - put: repo
     params:
@@ -418,7 +410,7 @@ jobs:
       package-release: cf-cli-release
     params:
       PACKAGE_NAME: cf-cli-8-linux
-      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
   - put: repo
     params:
       rebase: true
@@ -441,7 +433,7 @@ jobs:
     params:
       PACKAGE_NAME: healthchecker
       PACKAGE_PREFIX: routing
-      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
   - put: repo
     params:
       rebase: true
@@ -473,7 +465,7 @@ jobs:
         blob: jq
       params:
         BOSH_BLOB_PATH: jq/jq-*-linux-amd64.tgz 
-        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
     - put: repo
       params:
        rebase: true
@@ -486,7 +478,7 @@ jobs:
         blob: haproxy
       params:
         BOSH_BLOB_PATH: haproxy/haproxy-*.tar.gz 
-        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
     - put: repo
       params:
        rebase: true
@@ -613,7 +605,7 @@ jobs:
     file: ci/shared/tasks/build-binaries/linux.yml
     vars:
       image_repository: cloudfoundry/tas-runtime-mysql-5.7 #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
-      image_password: ((gcp-tas-runtime-service-account/config-json))
+      image_password: ((gcp-wg-arp-service-account/config-json))
       image_tag: ((.:image_tag_mysql_5_7))
     params:
       DEFAULT_PARAMS: "ci/routing-release/default-params/build-binaries/linux.yml"
@@ -625,7 +617,7 @@ jobs:
       attempts: 3
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -640,7 +632,7 @@ jobs:
       attempts: 3
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-tas-runtime-service-account/config-json))
+        image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: ((.:image_tag))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -661,6 +653,10 @@ jobs:
 
 - name: claim-env
   serial: true
+  on_failure:
+    put: env-lock
+    params:
+      release: env-lock #! path to the resource in the above get
   plan:
   - in_parallel:
     - get: ci
@@ -671,21 +667,24 @@ jobs:
         - unit-and-integration-tests
         - lint-repo
     - get: image
+    - get: env
     - put: env-lock
       params:
        acquire: true
-  - put: env
-    params:
-      action: create
-      duration: 48h
-      resource: env
-      description: "(ClaimedBy: ci) routing-release pipeline"
-    timeout: 6h
-  - task: wait-for-cf-api
-    file: ci/shared/tasks/wait-for-cf-api/linux.yml
-    input_mapping:
-      toolsmiths-env: env
+  - task: start-bbl-envs
     image: image
+    file: ci/shared/tasks/start-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-routing-env
+      RESUME: true
+  - task: wait-for-bosh-api
+    image: image
+    file: ci/shared/tasks/wait-for-bosh-api/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-routing-env
 
 - name: prepare-env
   serial: true
@@ -701,9 +700,19 @@ jobs:
     - get: env
       passed: [claim-env]
       trigger: true
+  - try:
+      do:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-routing-env
+            DEPLOYMENT_NAME: cf
   - task: prepare-cf-deployment-env
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-routing-env
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
@@ -712,7 +721,6 @@ jobs:
     params:
       COPY_ACTIONS: |
         {ci/routing-release/opsfiles/disable-bbr-non-routing.yml,combined-assets}
-        {ci/routing-release/opsfiles/temp-tls-health-check-compensation.yml,combined-assets}
         {ci/routing-release/opsfiles/add-tcp-router-backend-tls-certs.yml,combined-assets}
         {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
         {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
@@ -727,20 +735,30 @@ jobs:
     input_mapping:
       ops-files: combined-assets
       vars-files: prepared-env
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-routing-env
+      SYSTEM_DOMAIN: bbl-routing-env.arp.cloudfoundry.org
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
       FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
       OPS_FILES: #@ "\n".join(data.values.opsfiles)
+  - task: prepare-cf-deployment-env-with-cf-vars
+    image: image
+    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-routing-env
   - task: uptimer-measure-with-routing-release-update
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping:
       ops-files: combined-assets
       release: repo
       vars-files: prepared-env
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-routing-env
+      SYSTEM_DOMAIN: bbl-routing-env.arp.cloudfoundry.org
+      TCP_DOMAIN: tcp.bbl-routing-env.arp.cloudfoundry.org
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "true"
       APP_PUSHABILITY_THRESHOLD: "20"
       APP_STATS_THRESHOLD: "20"
@@ -760,22 +778,28 @@ jobs:
   - task: open-asg-for-credhub
     file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-routing-env
+      SYSTEM_DOMAIN: bbl-routing-env.arp.cloudfoundry.org
       INSTANCE_GROUP_NAME: credhub
       SECURITY_GROUP_NAME: credhub
   - task: open-asg-for-uaa
     file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-routing-env
+      SYSTEM_DOMAIN: bbl-routing-env.arp.cloudfoundry.org
       INSTANCE_GROUP_NAME: uaa
       SECURITY_GROUP_NAME: uaa
   - task: enable-feature-flags-for-cats
     file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-routing-env
+      SYSTEM_DOMAIN: bbl-routing-env.arp.cloudfoundry.org
       ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
 
 - name: run-cats
@@ -801,6 +825,7 @@ jobs:
       CONFIGS: cats
       WITH_ISOSEG: true
       WITH_DYNAMIC_ASG: true
+      BBL_STATE_DIR: bbl-routing-env
   - task: cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     attempts: 2
@@ -830,6 +855,7 @@ jobs:
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
     params:
       CONFIGS: drats
+      BBL_STATE_DIR: bbl-routing-env
   - task: drats
     file: disaster-recovery-acceptance-tests/ci/tasks/drats-with-integration-config/task.yml
     privileged: true
@@ -864,6 +890,8 @@ jobs:
   - task: prepare-cf-deployment-env
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-routing-env
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
@@ -872,7 +900,6 @@ jobs:
     params:
       COPY_ACTIONS: |
         {ci/routing-release/opsfiles/disable-bbr-non-routing.yml,combined-assets}
-        {ci/routing-release/opsfiles/temp-tls-health-check-compensation.yml,combined-assets}
         {ci/routing-release/opsfiles/add-tcp-router-backend-tls-certs.yml,combined-assets}
         {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
         {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
@@ -897,6 +924,7 @@ jobs:
       CONFIGS: rats
       WITH_ISOSEG: true
       WITH_DYNAMIC_ASG: true
+      BBL_STATE_DIR: bbl-routing-env
   - task: build-binaries
     file: ci/shared/tasks/build-binaries/linux.yml
     image: image
@@ -904,15 +932,17 @@ jobs:
       DEFAULT_PARAMS: "ci/routing-release/default-params/build-binaries/linux.yml"
     vars:
       image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
-      image_password: ((gcp-tas-runtime-service-account/config-json))
+      image_password: ((gcp-wg-arp-service-account/config-json))
       image_tag: ((.:image_tag))
   - task: update-cf-with-tls-support-on-tcp-router-and-mtls-only
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
     input_mapping:
       ops-files: combined-assets
       vars-files: prepared-env
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-routing-env
+      SYSTEM_DOMAIN: bbl-routing-env.arp.cloudfoundry.org
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
       FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
@@ -928,15 +958,17 @@ jobs:
       FUNCTIONS: "ci/routing-release/helpers/configure-binaries.bash"
     vars:
       image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
-      image_password: ((gcp-tas-runtime-service-account/config-json))
+      image_password: ((gcp-wg-arp-service-account/config-json))
       image_tag: ((.:image_tag))
   - task: update-cf-with-no-tls-tcp-route-support
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
     input_mapping:
       ops-files: combined-assets
       vars-files: prepared-env
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-routing-env
+      SYSTEM_DOMAIN: bbl-routing-env.arp.cloudfoundry.org
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
       FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
@@ -952,15 +984,17 @@ jobs:
       FUNCTIONS: "ci/routing-release/helpers/configure-binaries.bash"
     vars:
       image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
-      image_password: ((gcp-tas-runtime-service-account/config-json))
+      image_password: ((gcp-wg-arp-service-account/config-json))
       image_tag: ((.:image_tag))
   - task: reset-to-original-cf-deployment-settings
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
     input_mapping:
       ops-files: combined-assets
       vars-files: prepared-env
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-routing-env
+      SYSTEM_DOMAIN: bbl-routing-env.arp.cloudfoundry.org
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
       FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
@@ -987,11 +1021,13 @@ jobs:
     params:
       CONFIGS: cfsmoke
       WITH_ISOSEG: true
+      BBL_STATE_DIR: bbl-routing-env
   - task: cfsmoke
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-routing-env
       DEPLOYMENT_NAME: cf
       ERRAND_NAME: smoke-tests
 
@@ -1012,6 +1048,8 @@ jobs:
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
+    params:
+      BBL_STATE_DIR: bbl-routing-env
 
 - name: run-cipher-suite
   plan:
@@ -1028,12 +1066,21 @@ jobs:
     - get: cipher-test-release
       trigger: true
     - get: gcp-stemcell-bionic
+  - try:
+      do:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-routing-env
+            DEPLOYMENT_NAME: cipher
   - task: bosh-deploy-cipher
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
     input_mapping:
       release-01: cipher-test-release
     params:
+      BBL_STATE_DIR: bbl-routing-env
       MANIFEST: ci/routing-release/manifests/cipher.yml
       DEPLOYMENT_NAME: cipher
       ENVS: |
@@ -1042,8 +1089,9 @@ jobs:
   - task: run-cipher-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-routing-env
       DEPLOYMENT_NAME: cipher
       ERRAND_NAME: run-cipher-test
 
@@ -1127,7 +1175,7 @@ jobs:
       image: image
       file: ci/shared/tasks/bosh-finalize-release/linux.yml
       params:
-        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-tas-runtime-service-account/config-json))
+        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
         RELEASE_NAME: routing
 
     - put: release-branch
@@ -1171,29 +1219,76 @@ jobs:
 - name: unclaim-env
   serial: true
   plan:
-  - get: env
-    passed: [ship-what]
-    trigger: true
-  - get: env-lock
-  - put: env
-    params:
-      action: release
-      resource: env
+  - in_parallel:
+      steps:
+      - get: env
+        passed: [ship-what]
+        trigger: true
+      - get: image
+      - get: env-lock
+      - get: ci
+  - in_parallel:
+      steps:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-routing-env
+          DEPLOYMENT_NAME: cf
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-routing-env
+          DEPLOYMENT_NAME: cipher
   - put: env-lock
     params:
       release: env-lock #! path to the resource in the above get
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-routing-env
+      SUSPEND: true
+
 
 - name: release-env-lock
   plan:
-  - get: env-lock
+  - in_parallel:
+      steps:
+      - get: env-lock
+      - get: env
+      - get: ci
+      - get: image
+  - try:
+      in_parallel:
+        steps:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-routing-env
+            DEPLOYMENT_NAME: cf
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-routing-env
+            DEPLOYMENT_NAME: cipher
   - try:
       do:
-      - get: env
-        passed: [claim-env]
-      - put: env
+      - task: stop-bbl-envs
+        image: image
+        file: ci/shared/tasks/stop-gcp-instance/linux.yml
+        input_mapping:
+          bbl-state: env
         params:
-          action: release
-          resource: env
+          SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+          BBL_STATE_DIR: bbl-routing-env
+          SUSPEND: true
   ensure:
     put: env-lock
     params:
