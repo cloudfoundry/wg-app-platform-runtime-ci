@@ -15,35 +15,35 @@ function run() {
 
   pushd "${repo_path}" > /dev/null
 
-  sync_package auctioneer              -app  code.cloudfoundry.org/auctioneer/cmd/auctioneer &
-  sync_package bbs                     -app  code.cloudfoundry.org/bbs/cmd/bbs &
-  sync_package cfdot                   -app  code.cloudfoundry.org/cfdot &
-  sync_package diego-sshd              -app  code.cloudfoundry.org/diego-ssh/cmd/sshd &
-  sync_package file_server             -app  code.cloudfoundry.org/fileserver/cmd/file-server &
-  sync_package locket                  -app  code.cloudfoundry.org/locket/cmd/locket &
-  sync_package rep                     -app  code.cloudfoundry.org/rep/cmd/rep -app  code.cloudfoundry.org/rep/cmd/gocurl &
-  sync_package rep_windows             -app  code.cloudfoundry.org/rep/cmd/rep -app  code.cloudfoundry.org/rep/cmd/gocurl &
-  sync_package route_emitter           -app  code.cloudfoundry.org/route-emitter/cmd/route-emitter &
-  sync_package route_emitter_windows   -app  code.cloudfoundry.org/route-emitter/cmd/route-emitter &
-  sync_package ssh_proxy               -app  code.cloudfoundry.org/diego-ssh/cmd/ssh-proxy &
-  sync_package certsplitter            -app  code.cloudfoundry.org/certsplitter/cmd/certsplitter &
+  sync_package auctioneer code.cloudfoundry.org             -app  code.cloudfoundry.org/auctioneer/cmd/auctioneer
+  sync_package bbs code.cloudfoundry.org                    -app  code.cloudfoundry.org/bbs/cmd/bbs &
+  sync_package cfdot code.cloudfoundry.org                  -app  code.cloudfoundry.org/cfdot &
+  sync_package diego-sshd code.cloudfoundry.org             -app  code.cloudfoundry.org/diego-ssh/cmd/sshd &
+  sync_package file_server code.cloudfoundry.org            -app  code.cloudfoundry.org/fileserver/cmd/file-server &
+  sync_package locket code.cloudfoundry.org                 -app  code.cloudfoundry.org/locket/cmd/locket &
+  sync_package rep code.cloudfoundry.org                    -app  code.cloudfoundry.org/rep/cmd/rep -app  code.cloudfoundry.org/rep/cmd/gocurl &
+  sync_package rep_windows code.cloudfoundry.org            -app  code.cloudfoundry.org/rep/cmd/rep -app  code.cloudfoundry.org/rep/cmd/gocurl &
+  sync_package route_emitter code.cloudfoundry.org          -app  code.cloudfoundry.org/route-emitter/cmd/route-emitter &
+  sync_package route_emitter_windows code.cloudfoundry.org  -app  code.cloudfoundry.org/route-emitter/cmd/route-emitter &
+  sync_package ssh_proxy code.cloudfoundry.org              -app  code.cloudfoundry.org/diego-ssh/cmd/ssh-proxy &
+  sync_package certsplitter code.cloudfoundry.org           -app  code.cloudfoundry.org/certsplitter/cmd/certsplitter &
 
-  sync_package docker_app_lifecycle    -app  code.cloudfoundry.org/dockerapplifecycle/builder \
+  sync_package docker_app_lifecycle code.cloudfoundry.org   -app  code.cloudfoundry.org/dockerapplifecycle/builder \
     -app code.cloudfoundry.org/dockerapplifecycle/launcher &
 
-  sync_package cnb_app_lifecycle       -app  code.cloudfoundry.org/cnbapplifecycle/cmd/builder \
+  sync_package cnb_app_lifecycle cnbapplifecycle            -app  code.cloudfoundry.org/cnbapplifecycle/cmd/builder \
     -app code.cloudfoundry.org/cnbapplifecycle/cmd/launcher &
 
-  sync_package buildpack_app_lifecycle -app  code.cloudfoundry.org/buildpackapplifecycle/builder \
+  sync_package buildpack_app_lifecycle code.cloudfoundry.org -app  code.cloudfoundry.org/buildpackapplifecycle/builder \
     -app code.cloudfoundry.org/buildpackapplifecycle/launcher \
     -app code.cloudfoundry.org/buildpackapplifecycle/getenv \
     -app code.cloudfoundry.org/buildpackapplifecycle/shell/shell &
 
-  sync_package windows_app_lifecycle -app  code.cloudfoundry.org/buildpackapplifecycle/builder \
+  sync_package windows_app_lifecycle code.cloudfoundry.org -app  code.cloudfoundry.org/buildpackapplifecycle/builder \
     -app code.cloudfoundry.org/buildpackapplifecycle/launcher \
     -app code.cloudfoundry.org/buildpackapplifecycle/getenv &
 
-  sync_package vizzini \
+  sync_package vizzini code.cloudfoundry.org \
     -app  github.com/onsi/ginkgo/v2/ginkgo \
     -test code.cloudfoundry.org/vizzini/... &
 
@@ -60,13 +60,15 @@ function run() {
 
 function sync_package() {
   bosh_pkg=${1}
+  src_dir=${2}
 
+  shift
   shift
 
   (
   set -e
 
-  cd src/code.cloudfoundry.org
+  cd "src/${src_dir}"
 
   spec=../../packages/${bosh_pkg}/spec
 
@@ -74,9 +76,14 @@ function sync_package() {
     cat $spec | grep -v '# gosub'
 
     for package in $(gosub list "$@"); do
-      repo=$(echo ${2} | cut -f1-3 -d/)
-      if [ -d "../../src/code.cloudfoundry.org/vendor/${package}" ]; then
-        package="code.cloudfoundry.org/vendor/${package}"
+      base_pkg="$(echo $package | cut -f2- -d /)"
+
+      if [ -d "../../src/${src_dir}/vendor/${package}" ]; then
+        package="${src_dir}/vendor/${package}"
+      elif [ -d "../../src/${package}" ]; then
+        package="${package}"
+      else
+        package="${base_pkg}"
       fi
       echo ${package} | sed -e 's/\(.*\)/  - \1\/*.go # gosub/g'
       if ls ../../src/${package}/*.s >/dev/null 2>&1; then
