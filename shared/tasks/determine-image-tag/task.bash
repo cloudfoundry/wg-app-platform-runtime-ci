@@ -33,7 +33,11 @@ function run() {
         go_minor_version="${pkg_version%.*}"
     fi
 
-    token=$(curl -s -H "Content-type: application/json" -X POST --data "{\"username\":\"${DOCKER_REGISTRY_USERNAME}\",\"password\":\"${DOCKER_REGISTRY_PASSWORD}\"}" https://hub.docker.com/v2/users/login | jq -r .token)
+    echo "${DOCKER_REGISTRY_USERNAME}"
+    echo "${DOCKER_REGISTRY_USERNAME}" | jq .value
+    docker_user=$(echo "${DOCKER_REGISTRY_USERNAME}" | jq .value)
+    docker_pass=$(echo "${DOCKER_REGISTRY_PASSWORD}" | jq .value)
+    token=$(curl -s -H "Content-type: application/json" -X POST --data "{\"username\":\"${docker_user}\",\"password\":\"${docker_pass}\"}" https://hub.docker.com/v2/users/login | jq -r .token)
 
     echo "Getting latest tag that starts with go-${go_minor_version} for image ${IMAGE}"
 
