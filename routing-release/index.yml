@@ -19,7 +19,6 @@ internal_repos:
 - name: routing-api
   configure_db: true
 - name: routing-api-cli
-- name: routing-info
 - name: routing-acceptance-tests
   acceptance: true
 opsfiles:
