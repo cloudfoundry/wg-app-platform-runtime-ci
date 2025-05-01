@@ -39,6 +39,7 @@ internal_repos:
 - name: "route-emitter"
   configure_db: true
   on_windows: true
+- name: routing-info
 - name: "volman"
 - name: "workpool"
   on_windows: true
