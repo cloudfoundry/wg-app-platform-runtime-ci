@@ -45,7 +45,7 @@ function run() {
     do
         curl -s -H "Accept: application/json"  -H "Authorization: Bearer ${token}" https://hub.docker.com/v2/repositories/${IMAGE}/tags
         set +e
-        image_info=$(curl -s -H "Accept: application/json"  -H "Authorization: Bearer ${token}" https://hub.docker.com/v2/repositories/${IMAGE}/tags | jq "[.results[] | select(.name | startswith(\"go-${go_minor_version}\")) ] | sort_by(.name) | reverse[0]" 2>/dev/null)
+        image_info=$(curl -s -H "Accept: application/json"  -H "Authorization: Bearer ${token}" https://hub.docker.com/v2/repositories/${IMAGE}/tags?page_size=100 | jq "[.results[] | select(.name | startswith(\"go-${go_minor_version}\")) ] | sort_by(.name) | reverse[0]" 2>/dev/null)
         set -e
 
         if [[ -n "$image_info" && "${image_info}" != "null" ]]; then
