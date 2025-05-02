@@ -32,6 +32,9 @@ function run(){
 
   local stemcell=$(bosh stemcells --json | jq -r --arg os "${OS}" '.Tables[].Rows[] | select(.os | contains($os)) | select(.version | contains("*")) | .os + "/" + .version' | tr -d "*" | sort -V | tail -1)
 
+  echo "Cleaning up previous deployment"
+  bosh -d "${deployment_name}" delete-deployment -n
+
   echo "Deploying $release with stemcell $stemcell"
   local deployment_manifest="${task_tmp_dir}/${deployment_name}.yml"
   cat << EOF > "${deployment_manifest}"
