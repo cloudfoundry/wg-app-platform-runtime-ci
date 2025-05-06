@@ -22,7 +22,8 @@ function run() {
 install_protoc() {
   local tmpDir="${1:?Provide a dir path}"
   pushd "$tmpDir"
-  local protobuf_version=$(curl -s https://api.github.com/repos/protocolbuffers/protobuf/releases | jq -r '.[].tag_name as $tags | $tags | select(. | contains("-rc") | not) | [.]' | jq -sr 'add | .[0]')
+  local protobuf_version=$(curl -s https://api.github.com/repos/protocolbuffers/protobuf/releases | jq -r '.[].tag_name as $tags | $tags | select(. | contains("-rc") | not) | [.]' | jq -sr 'sort | reverse | add | .[0]')
+  echo "protoc version: ${protobuf_version}"
   local url=$(curl -s https://api.github.com/repos/protocolbuffers/protobuf/releases | jq --arg pbv "${protobuf_version}" -r '.[] | select(.tag_name == $pbv) | .assets[] | select(.name | contains("linux-x86_64")).browser_download_url')
   curl -L "${url}" -o protoc-zip
   unzip -o protoc-zip -d protoc/
