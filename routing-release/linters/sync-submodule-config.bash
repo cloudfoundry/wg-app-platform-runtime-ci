@@ -16,10 +16,7 @@ function run() {
 
   rm -rf /tmp/packages
   cat > /tmp/packages <<EOF
-code.cloudfoundry.org/gorouter
-code.cloudfoundry.org/route-registrar
 code.cloudfoundry.org/routing-api
-code.cloudfoundry.org/routing-info
 EOF
 
 cat /tmp/packages | xargs -s 1048576 gosub sync --force-https=true

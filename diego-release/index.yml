@@ -56,6 +56,8 @@ internal_repos:
   configure_db: true
   on_windows: true
   branch: protobuf-with-plugin
+- name: routing-info
+  branch: protobuf-with-plugin
 - name: "volman"
   branch: main
 - name: "workpool"

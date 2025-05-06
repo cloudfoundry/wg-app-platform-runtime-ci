@@ -541,7 +541,7 @@ jobs:
   - in_parallel:
     - get: ci
     - get: repo
-      trigger: false
+      trigger: true
     - get: image
   - task: template-tests
     image: image
@@ -554,7 +554,7 @@ jobs:
   - in_parallel:
     - get: ci
     - get: repo
-      trigger: false
+      trigger: true
     - get: image
     - get: package-release
       resource: golang-release-latest
@@ -606,7 +606,7 @@ jobs:
   - in_parallel:
     - get: ci
     - get: repo
-      trigger: false
+      trigger: true
     - get: image
   - task: lint-repo
     file: ci/shared/tasks/lint-repo/linux.yml

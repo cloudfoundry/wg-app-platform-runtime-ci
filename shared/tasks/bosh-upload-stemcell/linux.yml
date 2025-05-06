@@ -9,7 +9,6 @@ inputs:
 params:
   BBL_STATE_DIR:
   STEMCELL_URL:
-  BOSH_CREDS:
 
 run:
   path: ci/shared/tasks/bosh-upload-stemcell/task.bash

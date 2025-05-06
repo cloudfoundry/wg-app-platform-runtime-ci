@@ -45,6 +45,7 @@ garden
 grootfs
 guardian
 idmapper
+cnbapplifecycle
 EOF
 
 cat /tmp/packages | xargs -s 1048576 gosub sync --force-https=true
