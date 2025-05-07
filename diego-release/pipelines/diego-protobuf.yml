@@ -661,7 +661,7 @@ jobs:
     - task: #@ "{}-{}-linux".format(package.name,db.image)
       file: ci/shared/tasks/run-bin-test/linux.yml
       privileged: #@ helpers.privileged(package)
-      attempts: 3
+      attempts: 1
       input_mapping:
         built-binaries: linux-built-binaries
       vars:
@@ -678,7 +678,7 @@ jobs:
       file: ci/shared/tasks/run-bin-test/windows.yml
       tags: [ diego-windows ]
       privileged: true #! all windows test with DB required elavated
-      attempts: 3
+      attempts: 1
       input_mapping:
         built-binaries: windows-built-binaries
       params:
@@ -692,7 +692,7 @@ jobs:
     - task: #@ "{}-linux".format(package.name)
       file: ci/shared/tasks/run-bin-test/linux.yml
       privileged: #@ helpers.privileged(package)
-      attempts: 3
+      attempts: 1
       input_mapping:
         built-binaries: linux-built-binaries
       vars:
@@ -706,7 +706,7 @@ jobs:
       file: ci/shared/tasks/run-bin-test/windows.yml
       tags: [ diego-windows ]
       privileged: true #! for windows test 
-      attempts: 3
+      attempts: 1
       input_mapping:
         built-binaries: windows-built-binaries
       params:
@@ -800,7 +800,7 @@ jobs:
         BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
     - task: #@ "inigo-{}-linux".format(db.value)
       file: ci/shared/tasks/run-bin-test/linux.yml
-      attempts: 3
+      attempts: 1
       tags: #@ [ "diego-{}".format(db.value) ]
       privileged: true
       input_mapping:
@@ -823,7 +823,7 @@ jobs:
           --randomize-all
           --nodes=4
           --race
-          --flake-attempts=3
+          --flake-attempts=1
         ENVS: |
           INIGO_ECR_AWS_ACCESS_KEY_ID=((aws-ecr-diego-docker-app/access-key-id))
           INIGO_ECR_AWS_SECRET_ACCESS_KEY=((aws-ecr-diego-docker-app/secret-access-key))
@@ -962,7 +962,7 @@ jobs:
           -r
           --randomize-all
           --nodes=1
-          --flake-attempts=3
+          --flake-attempts=1
           --skip-package volman,executor,certauthority
         FUNCTIONS: |
           ci/winc-release/helpers/configure-binaries.ps1
@@ -1184,7 +1184,7 @@ jobs:
       BBL_STATE_DIR: bbl-diego-env
   - task: cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
-    attempts: 2
+    attempts: 1
     input_mapping:
       integration-config: built-acceptance-test-configs
     params:
@@ -1217,7 +1217,7 @@ jobs:
       BBL_STATE_DIR: bbl-diego-env
   - task: wats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
-    attempts: 2
+    attempts: 1
     input_mapping:
       integration-config: built-acceptance-test-configs
     params:
