@@ -601,7 +601,7 @@ jobs:
 
 - name: unit-and-integration-tests
   serial: true
-  serial_groups: [ diego-windows-worker ]
+  serial_groups: [ diego-protobuf-windows-worker ]
   plan:
   - in_parallel:
     - get: ci
@@ -629,11 +629,11 @@ jobs:
       - load_var: #@ "image_tag_{}".format(db.image.replace("-", "_").replace(".", "_"))
         file: #@ "determined-image-tag-{}/tag".format(db.image)
 #@ end
-  - task: start-diego-windows-workers
+  - task: start-diego-protobuf-windows-workers
     image: image
     file: ci/shared/tasks/bosh-start/linux.yml
     params:
-      DEPLOYMENT: diego-worker-windows
+      DEPLOYMENT: diego-protobuf-worker-windows
       INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
   - in_parallel:
@@ -649,7 +649,7 @@ jobs:
         image_password: ((gcp-wg-arp-service-account/config-json))
         image_tag: ((.:image_tag))
     - task: build-binaries-for-windows
-      tags: [ diego-windows ]
+      tags: [ diego-protobuf-windows ]
       file: ci/shared/tasks/build-binaries/windows.yml
       output_mapping:
         built-binaries: windows-built-binaries
@@ -676,7 +676,7 @@ jobs:
 #@ if helpers.on_windows(package):
     - task: #@ "{}-mysql-windows".format(package.name)
       file: ci/shared/tasks/run-bin-test/windows.yml
-      tags: [ diego-windows ]
+      tags: [ diego-protobuf-windows ]
       privileged: true #! all windows test with DB required elavated
       attempts: 1
       input_mapping:
@@ -704,7 +704,7 @@ jobs:
 #@ if helpers.on_windows(package):
     - task: #@ "{}-windows".format(package.name)
       file: ci/shared/tasks/run-bin-test/windows.yml
-      tags: [ diego-windows ]
+      tags: [ diego-protobuf-windows ]
       privileged: true #! for windows test 
       attempts: 1
       input_mapping:
@@ -714,11 +714,11 @@ jobs:
 #@ end
 #@ end
   ensure:
-    task: stop-diego-windows-workers
+    task: stop-diego-protobuf-windows-workers
     image: image
     file: ci/shared/tasks/bosh-stop/linux.yml
     params:
-      DEPLOYMENT: diego-worker-windows 
+      DEPLOYMENT: diego-protobuf-worker-windows
       INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
 
@@ -791,17 +791,17 @@ jobs:
         {input-01/*,combined-assets}
         {input-02/*,combined-assets}
   - do:
-    - task: #@ "start-diego-{}-workers".format(db.value)
+    - task: #@ "start-diego-protobuf-{}-workers".format(db.value)
       image: image
       file: ci/shared/tasks/bosh-start/linux.yml
       params:
-        DEPLOYMENT: #@ "diego-worker-{}".format(db.value)
+        DEPLOYMENT: #@ "diego-protobuf-worker-{}".format(db.value)
         INSTANCE_GROUP: worker
         BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
     - task: #@ "inigo-{}-linux".format(db.value)
       file: ci/shared/tasks/run-bin-test/linux.yml
       attempts: 1
-      tags: #@ [ "diego-{}".format(db.value) ]
+      tags: #@ [ "diego-protobuf-{}".format(db.value) ]
       privileged: true
       input_mapping:
         built-binaries: built-binaries
@@ -837,17 +837,17 @@ jobs:
           DB_USER=root
           DB_PASSWORD=password
     ensure:
-      task: #@ "stop-diego-{}-workers".format(db.value)
+      task: #@ "stop-diego-protobuf-{}-workers".format(db.value)
       image: image
       file: ci/shared/tasks/bosh-stop/linux.yml
       params:
-        DEPLOYMENT: #@ "diego-worker-{}".format(db.value)
+        DEPLOYMENT: #@ "diego-protobuf-worker-{}".format(db.value)
         INSTANCE_GROUP: worker
         BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
 #@ end
 - name: inigo-mysql-windows
   serial: true
-  serial_groups: [ diego-windows-worker ]
+  serial_groups: [ diego-protobuf-windows-worker ]
   plan:
   - in_parallel:
     - get: ci
@@ -857,24 +857,24 @@ jobs:
     - get: garden-runc-release
     - get: winc-release
     - get: envoy-nginx-release
-  - task: start-diego-windows-workers
+  - task: start-diego-protobuf-windows-workers
     image: image
     file: ci/shared/tasks/bosh-start/linux.yml
     params:
-      DEPLOYMENT: diego-worker-windows
+      DEPLOYMENT: diego-protobuf-worker-windows
       INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
   - in_parallel:
     - task: build-binaries-for-diego-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
-      tags: [ diego-windows ]
+      tags: [ diego-protobuf-windows ]
       output_mapping:
         built-binaries: diego-release-windows-built-binaries
       params:
         DEFAULT_PARAMS: "ci/diego-release/default-params/build-binaries/windows.yml"
     - task: build-binaries-for-winc-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
-      tags: [ diego-windows ]
+      tags: [ diego-protobuf-windows ]
       input_mapping:
         repo: winc-release
       output_mapping:
@@ -888,7 +888,7 @@ jobs:
           Build-Nstar=src/code.cloudfoundry.org/nstar
     - task: build-binaries-for-garden-runc-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
-      tags: [ diego-windows ]
+      tags: [ diego-protobuf-windows ]
       input_mapping:
         repo: garden-runc-release
       output_mapping:
@@ -900,7 +900,7 @@ jobs:
           Build-Gdn=src/guardian/cmd/gdn
     - task: build-binaries-for-envoy-nginx-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
-      tags: [ diego-windows ]
+      tags: [ diego-protobuf-windows ]
       input_mapping:
         repo: envoy-nginx-release
       output_mapping:
@@ -928,7 +928,7 @@ jobs:
   - in_parallel:
     - task: inigo-mysql-windows
       file: ci/shared/tasks/run-bin-test/windows.yml
-      tags: [ diego-windows ]
+      tags: [ diego-protobuf-windows ]
       privileged: true
       input_mapping:
         built-binaries: built-binaries
@@ -967,11 +967,11 @@ jobs:
         FUNCTIONS: |
           ci/winc-release/helpers/configure-binaries.ps1
   ensure:
-    task: stop-diego-windows-workers
+    task: stop-diego-protobuf-windows-workers
     image: image
     file: ci/shared/tasks/bosh-stop/linux.yml
     params:
-      DEPLOYMENT: diego-worker-windows
+      DEPLOYMENT: diego-protobuf-worker-windows
       INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
 - name: lint-repo
