@@ -234,7 +234,7 @@ resources:
     uri: git@github.com:cloudfoundry/app-runtime-platform-envs
     private_key: ((github-appruntimeplatform-bot/private-key))
     paths:
-      - bbl-diego-env
+      - bbl-diego-protobuf-env
 
 - name: github-release
   type: github-release
@@ -266,7 +266,7 @@ resources:
   type: pool
   icon: cloud-lock
   source:
-    branch: protobuf-with-plugin
+    branch: main
     pool: diego-protobuf-env-lock 
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
@@ -1018,13 +1018,13 @@ jobs:
       bbl-state: env
     params:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
-      BBL_STATE_DIR: bbl-diego-env
+      BBL_STATE_DIR: bbl-diego-protobuf-env
       RESUME: true
   - task: wait-for-bosh-api
     image: image
     file: ci/shared/tasks/wait-for-bosh-api/linux.yml
     params:
-      BBL_STATE_DIR: bbl-diego-env
+      BBL_STATE_DIR: bbl-diego-protobuf-env
 
 - name: prepare-env
   serial: true
@@ -1050,7 +1050,7 @@ jobs:
           image: image
           file: ci/shared/tasks/bosh-deld/linux.yml
           params:
-            BBL_STATE_DIR: bbl-diego-env
+            BBL_STATE_DIR: bbl-diego-protobuf-env
             DEPLOYMENT_NAME: cf
   - in_parallel:
       steps:
@@ -1058,7 +1058,7 @@ jobs:
         image: image
         file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
         params:
-          BBL_STATE_DIR: bbl-diego-env
+          BBL_STATE_DIR: bbl-diego-protobuf-env
       - task: copy-grace-opsfile
         image: grace-image
         file: ci/diego-release/tasks/copy-grace-opsfile/linux.yml
@@ -1093,8 +1093,8 @@ jobs:
       vars-files: prepared-env
       bbl-state: env
     params:
-      BBL_STATE_DIR: bbl-diego-env
-      SYSTEM_DOMAIN: bbl-diego-env.arp.cloudfoundry.org
+      BBL_STATE_DIR: bbl-diego-protobuf-env
+      SYSTEM_DOMAIN: bbl-diego-protobuf-env.arp.cloudfoundry.org
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
       FAIL_ON_DOWNTIME: "false"
       VARS_FILES: vars.yml
@@ -1103,7 +1103,7 @@ jobs:
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
     params:
-      BBL_STATE_DIR: bbl-diego-env
+      BBL_STATE_DIR: bbl-diego-protobuf-env
   - task: uptimer-measure-with-diego-release-update
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping:
@@ -1112,9 +1112,9 @@ jobs:
       vars-files: prepared-env
       bbl-state: env
     params:
-      BBL_STATE_DIR: bbl-diego-env
-      SYSTEM_DOMAIN: bbl-diego-env.arp.cloudfoundry.org
-      TCP_DOMAIN: tcp.bbl-diego-env.arp.cloudfoundry.org
+      BBL_STATE_DIR: bbl-diego-protobuf-env
+      SYSTEM_DOMAIN: bbl-diego-protobuf-env.arp.cloudfoundry.org
+      TCP_DOMAIN: tcp.bbl-diego-protobuf-env.arp.cloudfoundry.org
       DEPLOY_WITH_UPTIME_MEASUREMENTS: "true"
       APP_PUSHABILITY_THRESHOLD: "20"
       APP_STATS_THRESHOLD: "20"
@@ -1136,8 +1136,8 @@ jobs:
     input_mapping:
       bbl-state: env
     params:
-      BBL_STATE_DIR: bbl-diego-env
-      SYSTEM_DOMAIN: bbl-diego-env.arp.cloudfoundry.org
+      BBL_STATE_DIR: bbl-diego-protobuf-env
+      SYSTEM_DOMAIN: bbl-diego-protobuf-env.arp.cloudfoundry.org
       INSTANCE_GROUP_NAME: credhub
       SECURITY_GROUP_NAME: credhub
   - task: open-asg-for-uaa
@@ -1145,8 +1145,8 @@ jobs:
     input_mapping:
       bbl-state: env
     params:
-      BBL_STATE_DIR: bbl-diego-env
-      SYSTEM_DOMAIN: bbl-diego-env.arp.cloudfoundry.org
+      BBL_STATE_DIR: bbl-diego-protobuf-env
+      SYSTEM_DOMAIN: bbl-diego-protobuf-env.arp.cloudfoundry.org
       INSTANCE_GROUP_NAME: uaa
       SECURITY_GROUP_NAME: uaa
   - task: enable-feature-flags-for-cats
@@ -1154,8 +1154,8 @@ jobs:
     input_mapping:
       bbl-state: env
     params:
-      BBL_STATE_DIR: bbl-diego-env
-      SYSTEM_DOMAIN: bbl-diego-env.arp.cloudfoundry.org
+      BBL_STATE_DIR: bbl-diego-protobuf-env
+      SYSTEM_DOMAIN: bbl-diego-protobuf-env.arp.cloudfoundry.org
       ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
 
 - name: run-cats
@@ -1181,14 +1181,14 @@ jobs:
       CONFIGS: cats
       WITH_ISOSEG: true
       WITH_DYNAMIC_ASG: false
-      BBL_STATE_DIR: bbl-diego-env
+      BBL_STATE_DIR: bbl-diego-protobuf-env
   - task: cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     attempts: 1
     input_mapping:
       integration-config: built-acceptance-test-configs
     params:
-      BBL_STATE_DIR: bbl-diego-env
+      BBL_STATE_DIR: bbl-diego-protobuf-env
       CONFIG_FILE_PATH: cats.json
 
 - name: run-wats
@@ -1214,14 +1214,14 @@ jobs:
       CONFIGS: wats
       WITH_ISOSEG: true
       WITH_DYNAMIC_ASG: false
-      BBL_STATE_DIR: bbl-diego-env
+      BBL_STATE_DIR: bbl-diego-protobuf-env
   - task: wats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     attempts: 1
     input_mapping:
       integration-config: built-acceptance-test-configs
     params:
-      BBL_STATE_DIR: bbl-diego-env
+      BBL_STATE_DIR: bbl-diego-protobuf-env
       CONFIG_FILE_PATH: wats.json
       NODES: "4"
       TIMEOUT: 3h
@@ -1245,7 +1245,7 @@ jobs:
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
     params:
-      BBL_STATE_DIR: bbl-diego-env
+      BBL_STATE_DIR: bbl-diego-protobuf-env
 
 - name: run-vizzini
   serial: true
@@ -1265,7 +1265,7 @@ jobs:
     input_mapping:
       bbl-state: env
     params:
-      BBL_STATE_DIR: bbl-diego-env
+      BBL_STATE_DIR: bbl-diego-protobuf-env
       DEPLOYMENT_NAME: cf
       ERRAND_NAME: vizzini
 - name: run-bosh-restart
@@ -1287,7 +1287,7 @@ jobs:
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
     params:
-      BBL_STATE_DIR: bbl-diego-env
+      BBL_STATE_DIR: bbl-diego-protobuf-env
       CONFIGS: uptimer-bosh-restart
       ENVS: |
         BOSH_RESTART_ARGS=diego-cell
@@ -1297,7 +1297,7 @@ jobs:
     input_mapping:
       config: built-acceptance-test-configs
     params:
-      BBL_STATE_DIR: bbl-diego-env
+      BBL_STATE_DIR: bbl-diego-protobuf-env
 
 - name: ship-what
   plan:
@@ -1429,7 +1429,7 @@ jobs:
     image: image
     file: ci/shared/tasks/bosh-deld/linux.yml
     params:
-      BBL_STATE_DIR: bbl-diego-env
+      BBL_STATE_DIR: bbl-diego-protobuf-env
       DEPLOYMENT_NAME: cf
   - put: env-lock
     params:
@@ -1441,7 +1441,7 @@ jobs:
       bbl-state: env
     params:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
-      BBL_STATE_DIR: bbl-diego-env
+      BBL_STATE_DIR: bbl-diego-protobuf-env
       SUSPEND: true
 
 
@@ -1459,7 +1459,7 @@ jobs:
         image: image
         file: ci/shared/tasks/bosh-deld/linux.yml
         params:
-          BBL_STATE_DIR: bbl-diego-env
+          BBL_STATE_DIR: bbl-diego-protobuf-env
           DEPLOYMENT_NAME: cf
   - try:
       do:
@@ -1470,7 +1470,7 @@ jobs:
           bbl-state: env
         params:
           SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
-          BBL_STATE_DIR: bbl-diego-env
+          BBL_STATE_DIR: bbl-diego-protobuf-env
           SUSPEND: true
   ensure:
     put: env-lock
