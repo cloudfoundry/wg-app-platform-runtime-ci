@@ -15,6 +15,9 @@ environments:
   - name: bbl-diego-env
     bosh_lite: false
     pipeline_lock: diego-release-env-lock
+  - name: bbl-diego-protobuf-env
+    bosh_lite: false
+    pipeline_lock: diego-protobuf-env-lock
   - name: bbl-cfnetworking-env
     bosh_lite: false
     pipeline_lock: cf-networking-release-env-lock
