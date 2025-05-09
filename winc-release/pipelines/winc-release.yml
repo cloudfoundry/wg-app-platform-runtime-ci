@@ -737,22 +737,22 @@ jobs:
       BBL_STATE_DIR: bbl-winc-env
       SYSTEM_DOMAIN: bbl-winc-env.arp.cloudfoundry.org
       ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
-  - task: start-sql-server-vm
-    image: image
-    file: ci/shared/tasks/start-gcp-instance/linux.yml
-    params:
-      INSTANCE_NAME: sql-server-pesto
-      ZONE: us-east1-b
-      PROJECT: cf-garden-windows-dev
-      SERVICE_ACCOUNT_KEY: ((gcp-cf-garden-windows-dev-service-account-json))
-  - task: start-sql-server-vm
-    image: image
-    file: ci/shared/tasks/start-gcp-instance/linux.yml
-    params:
-      INSTANCE_NAME: manager
-      ZONE: us-central1-a
-      PROJECT: cf-diego-pivotal
-      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
+#!  - task: start-sql-server-vm
+#!    image: image
+#!    file: ci/shared/tasks/start-gcp-instance/linux.yml
+#!    params:
+#!      INSTANCE_NAME: sql-server-pesto
+#!      ZONE: us-east1-b
+#!      PROJECT: cf-garden-windows-dev
+#!      SERVICE_ACCOUNT_KEY: ((gcp-cf-garden-windows-dev-service-account-json))
+#!  - task: start-sql-server-vm
+#!    image: image
+#!    file: ci/shared/tasks/start-gcp-instance/linux.yml
+#!    params:
+#!      INSTANCE_NAME: manager
+#!      ZONE: us-central1-a
+#!      PROJECT: cf-diego-pivotal
+#!      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
 #!  - task: deploy-and-setup-iwa-test-app
 #!    file: ci/winc-release/tasks/setup-iwa-test-app/linux.yml
 #!    image: image
