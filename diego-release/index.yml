@@ -53,6 +53,7 @@ opsfiles:
 - add-lb-ca-cert.yml
 - add-persistent-isolation-segment-diego-cell.yml
 - add-persistent-isolation-segment-router.yml
+- disable-isoseg-dynamic-asgs.yml
 - scale-to-HA.yml
 - scale-for-cats.yml
 - add-vizzini-errand.yml
