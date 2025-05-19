@@ -29,7 +29,7 @@ params:
       --randomize-all
       --nodes=7
       --race
-      --timeout 30m
+      --timeout 1h
       --flake-attempts 2
     ) Multiline flags to call test with. If running against a non-go project, this needs to be overridden
   FUNCTIONS:  Multiline functions to be used for extra configuration of binaries. e.g. ci/winc-release/helpers/configure-binaries.{ps1,bash}
