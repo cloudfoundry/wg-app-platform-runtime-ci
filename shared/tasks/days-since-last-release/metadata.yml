@@ -1,5 +1,0 @@
----
-readme: |
-  This task uses the github API to determine how many days it has been since we have cut releases for many bosh releases.
-oses:
-  - linux
