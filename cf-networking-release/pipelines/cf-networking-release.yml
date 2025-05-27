@@ -319,12 +319,22 @@ resources:
     key: cf-networking-release/version #! One version number manages both cf-networking and silk
     json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
-- name: cf-networking-release-locks
+- name: cf-networking-release-env-lock
   type: pool
   icon: cloud-lock
   source:
     branch: work-locks
-    pool: cf-networking-release-locks 
+    pool: env
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: cf-networking-release/env
+
+- name: cf-networking-release-work-locks
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: work-locks
+    pool: cf-networking-release-work-locks
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
@@ -736,25 +746,25 @@ jobs:
   serial: true
   on_abort: &release-all-locks
     do:
-      - put: cf-networking-release-locks
+      - put: cf-networking-release-env-lock
         params:
           release: claim-env-lock #! path to the resource in the above get
-      - put: cf-networking-release-locks
+      - put: cf-networking-release-work-locks
         params:
           release: claim-work-lock-prepare-env #! path to the resource in the above get
-      - put: cf-networking-release-locks
+      - put: cf-networking-release-work-locks
         params:
           release: claim-work-lock-cats #! path to the resource in the above get
-      - put: cf-networking-release-locks
+      - put: cf-networking-release-work-locks
         params:
           release: claim-work-lock-cf-networking-acceptance #! path to the resource in the above get
-      - put: cf-networking-release-locks
+      - put: cf-networking-release-work-locks
         params:
           release: claim-work-lock-export-release #! path to the resource in the above get
-      - put: cf-networking-release-locks
+      - put: cf-networking-release-work-locks
         params:
           release: claim-work-lock-service-discovery-acceptance #! path to the resource in the above get
-      - put: cf-networking-release-locks
+      - put: cf-networking-release-work-locks
         params:
           release: claim-work-lock-service-discovery-performance #! path to the resource in the above get
   on_failure: *release-all-locks
@@ -782,33 +792,34 @@ jobs:
           #!      passed: [ release-time-gate ]
     - get: image
     - get: env
-    - get: cf-networking-release-locks
+    - get: cf-networking-release-env-lock
+    - get: cf-networking-release-work-locks
   - put: claim-env-lock
-    resource: cf-networking-release-locks
+    resource: cf-networking-release-env-lock
     params:
      claim: env-lock
   - put: claim-work-lock-prepare-env
-    resource: cf-networking-release-locks
+    resource: cf-networking-release-work-locks
     params:
       claim: work-lock-prepare-env
   - put: claim-work-lock-cats
-    resource: cf-networking-release-locks
+    resource: cf-networking-release-work-locks
     params:
       claim: work-lock-cats
   - put: claim-work-lock-cf-networking-acceptance
-    resource: cf-networking-release-locks
+    resource: cf-networking-release-work-locks
     params:
       claim: work-lock-cf-networking-acceptance
   - put: claim-work-lock-export-release
-    resource: cf-networking-release-locks
+    resource: cf-networking-release-work-locks
     params:
       claim: work-lock-export-release
   - put: claim-work-lock-service-discovery-acceptance
-    resource: cf-networking-release-locks
+    resource: cf-networking-release-work-locks
     params:
       claim: work-lock-service-discovery-acceptance
   - put: claim-work-lock-service-discovery-performance
-    resource: cf-networking-release-locks
+    resource: cf-networking-release-work-locks
     params:
       claim: work-lock-service-discovery-performance
   - task: start-bbl-envs
@@ -845,7 +856,7 @@ jobs:
     - get: env
       passed: [claim-env]
       trigger: true
-    - get: cf-networking-release-locks
+    - get: cf-networking-release-work-locks
   - try:
       do:
         - task: bosh-deld
@@ -970,7 +981,7 @@ jobs:
   serial: true
   serial_groups: [acceptance]
   ensure:
-    put: cf-networking-release-locks
+    put: cf-networking-release-work-locks
     params:
       release: work-lock-cats #! path to the resource in the above get
   plan:
@@ -1010,7 +1021,7 @@ jobs:
   serial: true
   serial_groups: [acceptance]
   ensure:
-    put: cf-networking-release-locks
+    put: cf-networking-release-work-locks
     params:
       release: work-lock-service-discovery-acceptance #! path to the resource in the above get
   plan:
@@ -1068,7 +1079,7 @@ jobs:
   serial: true
   serial_groups: [acceptance]
   ensure:
-    put: cf-networking-release-locks
+    put: cf-networking-release-work-locks
     params:
       release: work-lock-cf-networking-acceptance #! path to the resource in the above get
   plan:
@@ -1124,7 +1135,7 @@ jobs:
 - name: run-service-discovery-performance-tests
   serial: true
   ensure:
-    put: cf-networking-release-locks
+    put: cf-networking-release-work-locks
     params:
       release: work-lock-service-discovery-performance #! path to the resource in the above get
   plan:
@@ -1176,7 +1187,7 @@ jobs:
 - name: export-release
   serial: true
   ensure:
-    put: cf-networking-release-locks
+    put: cf-networking-release-work-locks
     params:
       release: work-lock-export-release #! path to the resource in the above get
   plan:
@@ -1423,17 +1434,30 @@ jobs:
         passed: [ manual-cleanup-trigger ]
       - get: env
       - get: image
-      - get: cf-networking-release-locks
+      - get: cf-networking-release-env-lock
         trigger: true
+      - get: cf-networking-release-work-locks
       - get: ci
   - put: check-lock
-    resource: cf-networking-release-locks
+    resource: cf-networking-release-work-locks
     params:
-      check: cf-networking-release-locks
+      check: cf-networking-release-work-locks
   - put: check-lock
-    resource: cf-networking-release-locks
+    resource: cf-networking-release-work-locks
     params:
-      check: cf-networking-release-locks
+      check: cf-networking-release-work-locks
+  - put: check-lock
+    resource: cf-networking-release-work-locks
+    params:
+      check: cf-networking-release-work-locks
+  - put: check-lock
+    resource: cf-networking-release-work-locks
+    params:
+      check: cf-networking-release-work-locks
+  - put: check-lock
+    resource: cf-networking-release-work-locks
+    params:
+      check: cf-networking-release-work-locks
   - in_parallel:
       steps:
       - task: bosh-deld
@@ -1448,9 +1472,9 @@ jobs:
         params:
           BBL_STATE_DIR: bbl-cfnetworking-env
           DEPLOYMENT_NAME: service-discovery-performance-tests
-  - put: cf-networking-release-locks
+  - put: cf-networking-release-env-lock
     params:
-      release: env-lock #! path to the resource in the above get
+      release: env-lock
   - task: stop-bbl-envs
     image: image
     file: ci/shared/tasks/stop-gcp-instance/linux.yml
