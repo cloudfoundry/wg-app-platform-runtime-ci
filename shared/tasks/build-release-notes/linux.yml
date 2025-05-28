@@ -16,7 +16,7 @@ outputs:
 
 params:
   BOSH_IO_ORG: cloudfoundry
-  GITHUB_ORG:  cloudfoundry
+  GITHUB_ORG_URL: https://github.com/cloudfoundry
 
 run:
   path: ci/shared/tasks/build-release-notes/task.bash
