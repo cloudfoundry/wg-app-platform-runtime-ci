@@ -244,17 +244,17 @@ resources:
 
 - name: manual-release-trigger
   type: time
-  source: 
+  source:
     interval: 1m
 
 - name: manual-lock-release-trigger
   type: time
-  source: 
+  source:
     interval: 1m
 
 - name: manual-cleanup-trigger
   type: time
-  source: 
+  source:
     interval: 1m
 
 - name: slack-ci-channel
@@ -789,12 +789,12 @@ jobs:
 - name: release-time-gate
   plan:
   - get: cf-networking-repo
-    passed: 
+    passed:
       - template-tests
       - unit-and-integration-tests
       - lint-repo
   - get: silk-repo
-    passed: 
+    passed:
       - template-tests
       - unit-and-integration-tests
       - lint-repo
@@ -807,7 +807,7 @@ jobs:
     do:
       - put: cf-networking-release-lock-prepare-env
         params:
-          release: cf-networking-release-lock-prepare-env 
+          release: cf-networking-release-lock-prepare-env
       - put: cf-networking-release-lock-cats
         params:
           release: cf-networking-release-lock-cats
@@ -816,13 +816,13 @@ jobs:
           release: cf-networking-release-lock-cf-networking-acceptance
       - put: cf-networking-release-lock-export-release
         params:
-          release: cf-networking-release-lock-export-release 
+          release: cf-networking-release-lock-export-release
       - put: cf-networking-release-lock-service-discovery-acceptance
         params:
-          release: cf-networking-release-lock-service-discovery-acceptance 
+          release: cf-networking-release-lock-service-discovery-acceptance
       - put: cf-networking-release-lock-service-discovery-performance
         params:
-          release: cf-networking-release-lock-service-discovery-performance 
+          release: cf-networking-release-lock-service-discovery-performance
   on_failure: *release-work-locks
   plan:
   - in_parallel:
@@ -830,16 +830,6 @@ jobs:
       trigger: true
       passed: [ manual-release-trigger ]
     - get: ci
-    - get: cf-networking-repo
-      passed: 
-        - template-tests
-        - unit-and-integration-tests
-        - lint-repo
-    - get: silk-repo
-      passed: 
-        - template-tests
-        - unit-and-integration-tests
-        - lint-repo
     - get: cf-networking-repo
       trigger: true
       passed: [ release-time-gate ]
@@ -1054,7 +1044,7 @@ jobs:
   ensure:
     put: cf-networking-release-lock-cats
     params:
-      release: cf-networking-release-lock-cats 
+      release: cf-networking-release-lock-cats
   plan:
   - in_parallel:
     - get: ci
@@ -1096,7 +1086,7 @@ jobs:
   ensure:
     put: cf-networking-release-lock-service-discovery-acceptance
     params:
-      release: cf-networking-release-lock-service-discovery-acceptance 
+      release: cf-networking-release-lock-service-discovery-acceptance
   plan:
   - in_parallel:
     - get: ci
@@ -1156,7 +1146,7 @@ jobs:
   ensure:
     put: cf-networking-release-lock-cf-networking-acceptance
     params:
-      release: cf-networking-release-lock-cf-networking-acceptance 
+      release: cf-networking-release-lock-cf-networking-acceptance
   plan:
   - in_parallel:
     - get: ci
@@ -1214,7 +1204,7 @@ jobs:
   ensure:
     put: cf-networking-release-lock-service-discovery-performance
     params:
-      release: cf-networking-release-lock-service-discovery-performance 
+      release: cf-networking-release-lock-service-discovery-performance
   plan:
   - in_parallel:
     - get: cf-networking-repo
@@ -1268,7 +1258,7 @@ jobs:
   ensure:
     put: cf-networking-release-lock-export-release
     params:
-      release: cf-networking-release-lock-export-release 
+      release: cf-networking-release-lock-export-release
   plan:
   - in_parallel:
     - get: ci
@@ -1607,7 +1597,7 @@ jobs:
         release: cf-networking-release-env-lock
 
 - name: release-work-locks
-  plan: 
+  plan:
   - get: cf-networking-release-lock-cats
   - get: cf-networking-release-lock-cf-networking-acceptance
   - get: cf-networking-release-lock-export-release
@@ -1620,7 +1610,7 @@ jobs:
   - try: *release-work-locks
 
 - name: release-env-lock
-  plan: 
+  plan:
   - get: cf-networking-release-env-lock
   - get: manual-lock-release-trigger
     trigger: true
