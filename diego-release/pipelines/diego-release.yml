@@ -5,6 +5,8 @@
 groups:
 - name: release
   jobs:
+  - release-time-gate
+  - manual-release-trigger
   - template-tests
   - unit-and-integration-tests
   - inigo-mysql-linux
@@ -20,7 +22,6 @@ groups:
   - run-vizzini
   - ship-what
   - ship-it
-  - unclaim-env
 
 - name: periodics
   jobs:
@@ -32,8 +33,14 @@ groups:
   - sync-dot-github-dir
   - sync-readme
 
-- name: manual
+- name: cleanup
   jobs:
+  - cleanup-time-gate
+  - manual-lock-release-trigger
+  - manual-cleanup-trigger
+  - check-work-locks
+  - cleanup-env
+  - release-work-locks
   - release-env-lock
 
 - name: version
@@ -237,6 +244,37 @@ resources:
     days:
       - Tuesday
 
+- name: env-weekly
+  type: time
+  icon: clock
+  source:
+    interval: '168h'
+    start: 01:00
+    stop: 01:59
+    days:
+      - Wednesday
+
+- name: lock-check-timer
+  type: time
+  icon: clock
+  source:
+    interval: '1h'
+
+- name: manual-release-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: manual-lock-release-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: manual-cleanup-trigger
+  type: time
+  source:
+    interval: '1m'
+
 - name: slack-ci-channel
   type: slack-notification
   source:
@@ -278,7 +316,7 @@ resources:
     key: diego-release/version
     json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
-- name: env-lock
+- name: diego-release-env-lock
   type: pool
   icon: cloud-lock
   source:
@@ -286,6 +324,67 @@ resources:
     pool: diego-release-env-lock 
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: diego-release-env-lock
+
+- name: diego-release-lock-prepare-env
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: diego-release-lock-prepare-env 
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: diego-release-lock-prepare-env
+
+- name: diego-release-lock-cats
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: diego-release-lock-cats 
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: diego-release-lock-cats
+
+- name: diego-release-lock-wats
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: diego-release-lock-wats 
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: diego-release-lock-wats
+
+- name: diego-release-lock-vizzini
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: diego-release-lock-vizzini 
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: diego-release-lock-vizzini
+
+- name: diego-release-lock-bosh-restart
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: diego-release-lock-bosh-restart 
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: diego-release-lock-bosh-restart
+
+- name: diego-release-lock-export-release
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: diego-release-lock-export-release 
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: diego-release-lock-export-release
 
 - name: image
   type: registry-image
@@ -338,6 +437,18 @@ resources:
 
 #! Define-Jobs
 jobs:
+- name: manual-release-trigger
+  plan:
+  - put: manual-release-trigger
+
+- name: manual-lock-release-trigger
+  plan:
+  - put: manual-lock-release-trigger
+
+- name: manual-cleanup-trigger
+  plan:
+  - put: manual-cleanup-trigger
+
 - name: bump-dependencies-go-mod
   serial: true
   on_failure: &ci-notification
@@ -1011,29 +1122,78 @@ jobs:
       DEFAULT_PARAMS: ci/diego-release/default-params/lint-repo/linux.yml
     image: image
 
+- name: release-time-gate
+  plan:
+  - get: repo
+    passed:
+      - template-tests
+      - unit-and-integration-tests
+      - lint-repo
+      - inigo-mysql-linux
+      - inigo-postgres-linux
+      - inigo-mysql-windows
+  - get: env-weekly
+    trigger: true
+
 - name: claim-env
   serial: true
-  on_failure:
-    put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
+  on_abort: &release-work-locks
+    do:
+      - put: diego-release-lock-prepare-env
+        params:
+          release: diego-release-lock-prepare-env
+      - put: diego-release-lock-bosh-restart
+        params:
+          release: diego-release-lock-bosh-restart
+      - put: diego-release-lock-cats
+        params:
+          release: diego-release-lock-cats
+      - put: diego-release-lock-export-release
+        params:
+          release: diego-release-lock-export-release
+      - put: diego-release-lock-vizzini
+        params:
+          release: diego-release-lock-vizzini
+      - put: diego-release-lock-wats
+        params:
+          release: diego-release-lock-wats
+  on_failure: *release-work-locks
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ manual-release-trigger ]
     - get: ci
     - get: repo
       trigger: true
-      passed:
-        - template-tests
-        - unit-and-integration-tests
-        - lint-repo
-        - inigo-mysql-linux
-        - inigo-postgres-linux
-        - inigo-mysql-windows
+      passed: [ release-time-gate ]
     - get: image
     - get: env
-    - put: env-lock
-      params:
-       acquire: true
+  - get: diego-release-env-lock
+  - get: diego-release-lock-prepare-env
+  - get: diego-release-lock-bosh-restart
+  - get: diego-release-lock-cats
+  - get: diego-release-lock-export-release
+  - get: diego-release-lock-vizzini
+  - get: diego-release-lock-wats
+  - put: diego-release-lock-prepare-env
+    params:
+      claim: diego-release-lock-prepare-env
+  - put: diego-release-lock-bosh-restart
+    params:
+      claim: diego-release-lock-bosh-restart
+  - put: diego-release-lock-cats
+    params:
+      claim: diego-release-lock-cats
+  - put: diego-release-lock-export-release
+    params:
+      claim: diego-release-lock-export-release
+  - put: diego-release-lock-vizzini
+    params:
+      claim: diego-release-lock-vizzini
+  - put: diego-release-lock-wats
+    params:
+      claim: diego-release-lock-wats
   - task: start-bbl-envs
     image: image
     file: ci/shared/tasks/start-gcp-instance/linux.yml
@@ -1042,7 +1202,7 @@ jobs:
     params:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
       BBL_STATE_DIR: bbl-diego-env
-      RESUME: true
+      RESUME: false
   - task: wait-for-bosh-api
     image: image
     file: ci/shared/tasks/wait-for-bosh-api/linux.yml
@@ -1052,6 +1212,12 @@ jobs:
 - name: prepare-env
   serial: true
   serial_groups: [acceptance]
+  ensure:
+    put: diego-release-lock-prepare-env
+    params:
+      release: diego-release-lock-prepare-env 
+  on_abort: *release-work-locks
+  on_failure: *release-work-locks
   plan:
   - in_parallel:
     - get: ci
@@ -1067,6 +1233,20 @@ jobs:
       trigger: true
     - get: package-release
       resource: golang-release-latest
+    - get: diego-release-env-lock
+      passed: [ claim-env ]
+    - get: diego-release-lock-prepare-env
+      passed: [ claim-env ]
+    - get: diego-release-lock-bosh-restart
+      passed: [ claim-env ]
+    - get: diego-release-lock-cats
+      passed: [ claim-env ]
+    - get: diego-release-lock-export-release
+      passed: [ claim-env ]
+    - get: diego-release-lock-vizzini
+      passed: [ claim-env ]
+    - get: diego-release-lock-wats
+      passed: [ claim-env ]
   - try:
       do:
         - task: bosh-deld
@@ -1184,6 +1364,10 @@ jobs:
 - name: run-cats
   serial: true
   serial_groups: [acceptance]
+  ensure:
+    put: diego-release-lock-cats
+    params:
+      release: diego-release-lock-cats
   plan:
   - in_parallel:
     - get: ci
@@ -1197,6 +1381,8 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests
     - get: cf-deployment
+    - get: diego-release-lock-cats
+      passed: [ prepare-env]
   - task: create-cats-config
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
@@ -1217,6 +1403,10 @@ jobs:
 - name: run-wats
   serial: true
   serial_groups: [acceptance]
+  ensure:
+    put: diego-release-lock-wats
+    params:
+      release: diego-release-lock-wats
   plan:
   - in_parallel:
     - get: ci
@@ -1230,6 +1420,8 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests
     - get: cf-deployment
+    - get: diego-release-lock-wats
+      passed: [ prepare-env]
   - task: create-wats-config
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
@@ -1253,6 +1445,10 @@ jobs:
 - name: export-release
   serial: true
   serial_groups: [acceptance]
+  ensure:
+    put: diego-release-lock-export-release
+    params:
+      release: diego-release-lock-export-release
   plan:
   - in_parallel:
     - get: ci
@@ -1264,6 +1460,8 @@ jobs:
       passed: [prepare-env]
       trigger: true
     - get: cf-deployment-concourse-tasks
+    - get: diego-release-lock-export-release
+      passed: [ prepare-env]
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
@@ -1273,6 +1471,10 @@ jobs:
 - name: run-vizzini
   serial: true
   serial_groups: [acceptance]
+  ensure:
+    put: diego-release-lock-vizzini
+    params:
+      release: diego-release-lock-vizzini
   plan:
   - in_parallel:
     - get: ci
@@ -1283,6 +1485,8 @@ jobs:
       passed: [prepare-env]
       trigger: true
     - get: cf-deployment-concourse-tasks
+    - get: diego-release-lock-vizzini
+      passed: [ prepare-env]
   - task: vizzini
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
@@ -1291,9 +1495,14 @@ jobs:
       BBL_STATE_DIR: bbl-diego-env
       DEPLOYMENT_NAME: cf
       ERRAND_NAME: vizzini
+
 - name: run-bosh-restart
   serial: true
   serial_groups: [acceptance]
+  ensure:
+    put: diego-release-lock-bosh-restart
+    params:
+      release: diego-release-lock-bosh-restart
   plan:
   - in_parallel:
     - get: ci
@@ -1306,6 +1515,8 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: cf-deployment
     - get: image
+    - get: diego-release-lock-bosh-restart
+      passed: [ prepare-env]
   - task: create-uptimer-config
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
@@ -1441,45 +1652,84 @@ jobs:
       resource: version
       params: {file: next-version/number}
 
-- name: unclaim-env
+- name: cleanup-time-gate
+  plan:
+  - get: lock-check-timer
+    trigger: true
+
+- name: check-work-locks
+  serial: true
+  plan:
+  - get: lock-check-timer
+    trigger: true
+    passed: [ cleanup-time-gate ]
+  - get: diego-release-env-lock
+  - get: diego-release-lock-prepare-env
+  - get: diego-release-lock-bosh-restart
+  - get: diego-release-lock-cats
+  - get: diego-release-lock-export-release
+  - get: diego-release-lock-vizzini
+  - get: diego-release-lock-wats
+  - put: check-lock-prepare-env
+    resource: diego-release-lock-prepare-env
+    params:
+      check: diego-release-lock-prepare-env
+      retry-delay: 10m
+  - put: check-lock-bosh-restart
+    resource: diego-release-lock-bosh-restart
+    params:
+      check: diego-release-lock-bosh-restart
+      retry-delay: 10m
+  - put: check-lock-cats
+    resource: diego-release-lock-cats
+    params:
+      check: diego-release-lock-cats
+      retry-delay: 10m
+  - put: check-lock-export-release
+    resource: diego-release-lock-export-release
+    params:
+      check: diego-release-lock-export-release
+      retry-delay: 10m
+  - put: check-lock-vizzini
+    resource: diego-release-lock-vizzini
+    params:
+      check: diego-release-lock-vizzini
+      retry-delay: 10m
+  - put: check-lock-wats
+    resource: diego-release-lock-wats
+    params:
+      check: diego-release-lock-wats
+      retry-delay: 10m
+
+
+- name: cleanup-env
   serial: true
   plan:
   - in_parallel:
       steps:
-      - get: env
-        passed: [ship-what]
-        trigger: true
-      - get: image
-      - get: env-lock
       - get: ci
-  - task: bosh-deld
-    image: image
-    file: ci/shared/tasks/bosh-deld/linux.yml
-    params:
-      BBL_STATE_DIR: bbl-diego-env
-      DEPLOYMENT_NAME: cf
-  - put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
-  - task: stop-bbl-envs
-    image: image
-    file: ci/shared/tasks/stop-gcp-instance/linux.yml
-    input_mapping:
-      bbl-state: env
-    params:
-      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
-      BBL_STATE_DIR: bbl-diego-env
-      SUSPEND: true
-
-
-- name: release-env-lock
-  plan:
-  - in_parallel:
-      steps:
-      - get: env-lock
       - get: env
-      - get: ci
       - get: image
+  - get: manual-cleanup-trigger
+    trigger: true
+    passed: [ manual-cleanup-trigger ]
+  - get: lock-check-timer
+    trigger: true
+    passed: [ check-work-locks ]
+  - get: diego-release-env-lock
+    passed: [ check-work-locks ]
+  - get: diego-release-lock-prepare-env
+    passed: [ check-work-locks ]
+  - get: diego-release-lock-bosh-restart
+    passed: [ check-work-locks ]
+  - get: diego-release-lock-cats
+    passed: [ check-work-locks ]
+  - get: diego-release-lock-export-release
+    passed: [ check-work-locks ]
+  - get: diego-release-lock-vizzini
+    passed: [ check-work-locks ]
+  - get: diego-release-lock-wats
+    passed: [ check-work-locks ]
   - try:
       do:
       - task: bosh-deld
@@ -1498,11 +1748,39 @@ jobs:
         params:
           SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
           BBL_STATE_DIR: bbl-diego-env
-          SUSPEND: true
-  ensure:
-    put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
+          SUSPEND: false
+  - try:
+      do:
+      - put: diego-release-env-lock
+        params:
+          release: diego-release-env-lock
+
+- name: release-work-locks
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: diego-release-lock-prepare-env
+  - get: diego-release-lock-bosh-restart
+  - get: diego-release-lock-cats
+  - get: diego-release-lock-export-release
+  - get: diego-release-lock-vizzini
+  - get: diego-release-lock-wats
+  - try: 
+      do:
+      - *release-work-locks
+
+- name: release-env-lock
+  plan:
+  - get: diego-release-env-lock
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - try:
+      put: diego-release-env-lock
+      params:
+        release: diego-release-env-lock
+
 
 #! versioning
 - name: patch-bump
