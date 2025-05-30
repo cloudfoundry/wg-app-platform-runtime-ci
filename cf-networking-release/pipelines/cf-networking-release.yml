@@ -328,7 +328,7 @@ resources:
   type: pool
   icon: cloud-lock
   source:
-    branch: work-locks
+    branch: main
     pool: cf-networking-release-env-lock
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
@@ -337,7 +337,7 @@ resources:
   type: pool
   icon: cloud-lock
   source:
-    branch: work-locks
+    branch: main
     pool: cf-networking-release-lock-cats
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
@@ -347,7 +347,7 @@ resources:
   type: pool
   icon: cloud-lock
   source:
-    branch: work-locks
+    branch: main
     pool: cf-networking-release-lock-cf-networking-acceptance
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
@@ -357,7 +357,7 @@ resources:
   type: pool
   icon: cloud-lock
   source:
-    branch: work-locks
+    branch: main
     pool: cf-networking-release-lock-export-release
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
@@ -367,7 +367,7 @@ resources:
   type: pool
   icon: cloud-lock
   source:
-    branch: work-locks
+    branch: main
     pool: cf-networking-release-lock-prepare-env
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
@@ -377,7 +377,7 @@ resources:
   type: pool
   icon: cloud-lock
   source:
-    branch: work-locks
+    branch: main
     pool: cf-networking-release-lock-service-discovery-acceptance
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
@@ -387,7 +387,7 @@ resources:
   type: pool
   icon: cloud-lock
   source:
-    branch: work-locks
+    branch: main
     pool: cf-networking-release-lock-service-discovery-performance
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
