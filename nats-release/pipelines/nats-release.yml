@@ -977,12 +977,10 @@ jobs:
 
 - name: release-env-lock
   plan:
-  - in_parallel:
-      steps:
-        - get: nats-release-env-lock
-        - get: env
-        - get: ci
-        - get: image
+  - get: nats-release-env-lock
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
   - try:
       put: nats-release-env-lock
       params:
