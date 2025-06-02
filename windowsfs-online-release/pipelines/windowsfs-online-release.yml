@@ -398,8 +398,7 @@ jobs:
     - get: image
     - get: env
     - get: windows2016fs
-      passed:
-        - bump-windowsfs-online-release
+      passed: [ release-time-gate ]
   - get: windowsfs-online-release-env-lock
   - get: windowsfs-online-release-lock-prepare-env
   - get: windowsfs-online-release-lock-export-release
