@@ -5,6 +5,8 @@
 groups:
 - name: release
   jobs:
+  - release-time-gate
+  - manual-release-trigger
   - template-tests
   - unit-and-integration-tests
   - lint-repo
@@ -16,7 +18,6 @@ groups:
 #!  - verify-iwa-login
   - ship-what
   - ship-it
-  - unclaim-env
 
 - name: periodics
   jobs:
@@ -25,8 +26,14 @@ groups:
   - bump-bosh-blobs
   - sync-dot-github-dir
 
-- name: manual
+- name: cleanup
   jobs:
+  - cleanup-time-gate
+  - manual-lock-release-trigger
+  - manual-cleanup-trigger
+  - check-work-locks
+  - cleanup-env
+  - release-work-locks
   - release-env-lock
 
 - name: version
@@ -229,6 +236,37 @@ resources:
     days:
       - Wednesday
 
+- name: env-weekly
+  type: time
+  icon: clock
+  source:
+    interval: '168h'
+    start: 01:00
+    stop: 01:59
+    days:
+      - Thursday
+
+- name: lock-check-timer
+  type: time
+  icon: clock
+  source:
+    interval: '1h'
+
+- name: manual-release-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: manual-lock-release-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: manual-cleanup-trigger
+  type: time
+  source:
+    interval: '1m'
+
 - name: github-release
   type: github-release
   icon: github
@@ -258,7 +296,7 @@ resources:
     key: version
     region_name: us-east-1
 
-- name: env-lock
+- name: winc-release-env-lock
   type: pool
   icon: cloud-lock
   source:
@@ -266,6 +304,47 @@ resources:
     pool: winc-release-env-lock
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: winc-release-env-lock
+
+- name: winc-release-lock-prepare-env
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: winc-release-lock-prepare-env
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: winc-release-lock-prepare-env
+
+- name: winc-release-lock-export-release
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: winc-release-lock-export-release
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: winc-release-lock-export-release
+
+- name: winc-release-lock-wats
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: winc-release-lock-wats
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: winc-release-lock-wats
+
+- name: winc-release-lock-gatsw
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: winc-release-lock-gatsw
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: winc-release-lock-gatsw
 
 - name: windows-worker-lock
   type: pool
@@ -322,6 +401,28 @@ resources:
 
 #! Define-Jobs
 jobs:
+- name: manual-release-trigger
+  plan:
+  - put: manual-release-trigger
+
+- name: manual-lock-release-trigger
+  plan:
+  - put: manual-lock-release-trigger
+
+- name: manual-cleanup-trigger
+  plan:
+  - put: manual-cleanup-trigger
+
+- name: release-time-gate
+  plan:
+  - get: repo
+    passed:
+      - unit-and-integration-tests
+      - template-tests
+      - lint-repo
+  - get: env-weekly
+    trigger: true
+
 - name: bump-dependencies-go-mod
   serial: true
   plan:
@@ -614,24 +715,52 @@ jobs:
 
 - name: claim-env
   serial: true
-  on_failure:
-    put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
+  on_abort: &release-work-locks
+    do:
+      - put: winc-release-lock-prepare-env
+        params:
+          release: winc-release-lock-prepare-env
+      - put: winc-release-lock-export-release
+        params:
+          release: winc-release-lock-export-release
+      - put: winc-release-lock-wats
+        params:
+          release: winc-release-lock-wats
+      - put: winc-release-lock-gatsw
+        params:
+          release: winc-release-lock-gatsw
+  on_failure: *release-work-locks
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ manual-release-trigger ]
     - get: ci
     - get: repo
       trigger: true
-      passed:
-        - template-tests
-        - unit-and-integration-tests
-        - lint-repo
+      passed: [ release-time-gate ]
     - get: image
     - get: env
-    - put: env-lock
+    - get: winc-release-env-lock
+    - get: winc-release-lock-prepare-env
+    - get: winc-release-lock-export-release
+    - get: winc-release-lock-wats
+    - get: winc-release-lock-gatsw
+    - put: winc-release-env-lock
       params:
-       acquire: true
+        claim: winc-release-env-lock
+    - put: winc-release-lock-prepare-env
+      params:
+        claim: winc-release-lock-prepare-env
+    - put: winc-release-lock-export-release
+      params:
+        claim: winc-release-lock-export-release
+    - put: winc-release-lock-wats
+      params:
+        claim: winc-release-lock-wats
+    - put: winc-release-lock-gatsw
+      params:
+        claim: winc-release-lock-gatsw
   - task: start-bbl-envs
     image: image
     file: ci/shared/tasks/start-gcp-instance/linux.yml
@@ -640,7 +769,7 @@ jobs:
     params:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
       BBL_STATE_DIR: bbl-winc-env
-      RESUME: true
+      RESUME: false
   - task: wait-for-bosh-api
     image: image
     file: ci/shared/tasks/wait-for-bosh-api/linux.yml
@@ -649,6 +778,12 @@ jobs:
 
 - name: prepare-env
   serial: true
+  ensure:
+    put: winc-release-lock-prepare-env
+    params:
+      release: winc-release-lock-prepare-env
+  on_abort: *release-work-locks
+  on_failure: *release-work-locks
   plan:
   - in_parallel:
     - get: ci
@@ -664,6 +799,16 @@ jobs:
     - get: linux-stemcell
     - get: windows-stemcell
     - get: winc-release
+    - get: winc-release-env-lock
+      passed: [claim-env]
+    - get: winc-release-lock-prepare-env
+      passed: [claim-env]
+    - get: winc-release-lock-export-release
+      passed: [claim-env]
+    - get: winc-release-lock-wats
+      passed: [claim-env]
+    - get: winc-release-lock-gatsw
+      passed: [claim-env]
   - try:
       do:
         - task: bosh-deld
@@ -769,6 +914,10 @@ jobs:
 - name: run-wats
   serial: true
   serial_groups: [acceptance]
+  ensure:
+    put: winc-release-lock-wats
+    params:
+      release: winc-release-lock-wats
   plan:
   - in_parallel:
     - get: ci
@@ -782,6 +931,8 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests
     - get: cf-deployment
+    - get: winc-release-lock-wats
+      passed: [prepare-env]
   - task: create-wats-config
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
@@ -802,6 +953,10 @@ jobs:
 
 - name: run-gatsw
   serial: true
+  ensure:
+    put: winc-release-lock-gatsw
+    params:
+      release: winc-release-lock-gatsw
   plan:
   - in_parallel:
     - get: ci
@@ -818,6 +973,8 @@ jobs:
     - get: garden-runc-release
     - get: windows-utilities-release
     - get: cf-deployment-concourse-tasks
+    - get: winc-release-lock-gatsw
+      passed: [prepare-env]
   - try:
       do:
         - task: bosh-deld
@@ -854,6 +1011,10 @@ jobs:
 - name: export-release
   serial: true
   serial_groups: [acceptance]
+  ensure:
+    put: winc-release-lock-export-release
+    params:
+      release: winc-release-lock-export-release
   plan:
   - in_parallel:
     - get: ci
@@ -865,6 +1026,8 @@ jobs:
       passed: [prepare-env]
       trigger: true
     - get: cf-deployment-concourse-tasks
+    - get: winc-release-lock-export-release
+      passed: [prepare-env]
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
@@ -1033,68 +1196,83 @@ jobs:
       resource: version
       params: {file: next-version/number}
 
-- name: unclaim-env
+- name: cleanup-time-gate
+  plan:
+  - get: lock-check-timer
+    trigger: true
+
+- name: check-work-locks
+  serial: true
+  plan:
+    - get: lock-check-timer
+      trigger: true
+      passed: [ cleanup-time-gate ]
+    - get: winc-release-env-lock
+    - get: winc-release-lock-prepare-env
+    - get: winc-release-lock-export-release
+    - get: winc-release-lock-wats
+    - get: winc-release-lock-gatsw
+    - put: check-lock-prepare-env
+      resource: winc-release-lock-prepare-env
+      params:
+        check: winc-release-lock-prepare-env
+        retry-delay: 10m
+    - put: check-lock-export-release
+      resource: winc-release-lock-export-release
+      params:
+        check: winc-release-lock-export-release
+        retry-delay: 10m
+    - put: check-lock-wats
+      resource: winc-release-lock-wats
+      params:
+        check: winc-release-lock-wats
+        retry-delay: 10m
+    - put: check-lock-gatsw
+      resource: winc-release-lock-gatsw
+      params:
+        check: winc-release-lock-gatsw
+        retry-delay: 10m
+
+- name: cleanup-env
   serial: true
   plan:
   - in_parallel:
       steps:
-      - get: env
-        passed: [ship-what]
-        trigger: true
-      - get: image
-      - get: env-lock
       - get: ci
-  - in_parallel:
-      steps:
+      - get: env
+      - get: image
+      - get: manual-cleanup-trigger
+        trigger: true
+        passed: [ manual-cleanup-trigger ]
+      - get: lock-check-timer
+        trigger: true
+        passed: [ check-work-locks ]
+      - get: winc-release-env-lock
+        passed: [ check-work-locks ]
+      - get: winc-release-lock-prepare-env
+        passed: [ check-work-locks ]
+      - get: winc-release-lock-export-release
+        passed: [ check-work-locks ]
+      - get: winc-release-lock-wats
+        passed: [ check-work-locks ]
+      - get: winc-release-lock-gatsw
+        passed: [ check-work-locks ]
+  - try:
+      do:
       - task: bosh-deld
         image: image
         file: ci/shared/tasks/bosh-deld/linux.yml
         params:
           BBL_STATE_DIR: bbl-winc-env
           DEPLOYMENT_NAME: cf
+  - try:
+      do:
       - task: bosh-deld
         image: image
         file: ci/shared/tasks/bosh-deld/linux.yml
         params:
           BBL_STATE_DIR: bbl-winc-env
           DEPLOYMENT_NAME: gatsw
-  - put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
-  - task: stop-bbl-envs
-    image: image
-    file: ci/shared/tasks/stop-gcp-instance/linux.yml
-    input_mapping:
-      bbl-state: env
-    params:
-      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
-      BBL_STATE_DIR: bbl-winc-env
-      SUSPEND: true
-
-
-- name: release-env-lock
-  plan:
-  - in_parallel:
-      steps:
-      - get: env-lock
-      - get: env
-      - get: ci
-      - get: image
-  - try:
-      in_parallel:
-        steps:
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-winc-env
-            DEPLOYMENT_NAME: cf
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-winc-env
-            DEPLOYMENT_NAME: gatsw
   - try:
       do:
       - task: stop-bbl-envs
@@ -1105,11 +1283,36 @@ jobs:
         params:
           SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
           BBL_STATE_DIR: bbl-winc-env
-          SUSPEND: true
-  ensure:
-    put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
+          SUSPEND: false
+  - try:
+      do:
+      - put: winc-release-env-lock
+        params:
+          release: winc-release-env-lock
+
+- name: release-work-locks
+  plan:
+  - get: winc-release-env-lock
+  - get: winc-release-lock-prepare-env
+  - get: winc-release-lock-export-release
+  - get: winc-release-lock-wats
+  - get: winc-release-lock-gatsw
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - try: *release-work-locks
+
+- name: release-env-lock
+  plan:
+  - get: winc-release-env-lock
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - try:
+      do:
+      - put: winc-release-env-lock
+        params:
+          release: winc-release-env-lock
 
 #! versioning
 - name: patch-bump
