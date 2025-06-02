@@ -777,6 +777,7 @@ jobs:
   - get: repo
     passed:
       - unit-and-integration-tests
+      - template-tests
       - lint-repo
   - get: env-weekly
     trigger: true
