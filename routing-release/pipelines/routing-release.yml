@@ -254,7 +254,7 @@ resources:
     start: 01:00
     stop: 01:59
     days:
-      - Wednesday
+      - Monday
 
 - name: lock-check-timer
   type: time
