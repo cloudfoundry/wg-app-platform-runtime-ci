@@ -153,9 +153,8 @@ RUN \
 
 #    staticcheck
 RUN \
-  url="$(curl -s https://api.github.com/repos/dominikh/go-tools/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains($target_arch)) and (.name | contains("sha256") |not )).browser_download_url')" && \
-  curl -L "${url}" | tar -xz -C /tmp/ && \
-  install /tmp/staticcheck/staticcheck /usr/local/bin/staticcheck
+  staticcheck_version="$(curl -s https://api.github.com/repos/dominikh/go-tools/releases | jq -r '.[0].tag_name')" && \
+  go install "honnef.co/go/tools/cmd/staticcheck@$credhub_version" && \
 
 #    yq
 RUN \
