@@ -531,6 +531,7 @@ jobs:
   plan:
   - in_parallel:
     - get: manual-release-trigger
+      trigger: true
       passed: [ manual-release-trigger ]
     - get: ci
     - get: repo
