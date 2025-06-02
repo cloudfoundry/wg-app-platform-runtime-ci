@@ -5,6 +5,8 @@
 groups:
 - name: release
   jobs:
+  - release-time-gate
+  - manual-release-trigger
   - template-tests
   - unit-and-integration-tests
   - lint-repo
@@ -18,7 +20,6 @@ groups:
   - run-cipher-suite
   - ship-what
   - ship-it
-  - unclaim-env
 
 - name: periodics
   jobs:
@@ -30,8 +31,14 @@ groups:
   - sync-dot-github-dir
   - sync-readme
 
-- name: manual
+- name: cleanup
   jobs:
+  - cleanup-time-gate
+  - manual-lock-release-trigger
+  - manual-cleanup-trigger
+  - check-work-locks
+  - cleanup-env
+  - release-work-locks
   - release-env-lock
 
 - name: version
@@ -239,6 +246,37 @@ resources:
     days:
       - Sunday
 
+- name: env-weekly
+  type: time
+  icon: clock
+  source:
+    interval: '168h'
+    start: 01:00
+    stop: 01:59
+    days:
+      - Monday
+
+- name: lock-check-timer
+  type: time
+  icon: clock
+  source:
+    interval: '1h'
+
+- name: manual-release-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: manual-lock-release-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: manual-cleanup-trigger
+  type: time
+  source:
+    interval: '1m'
+
 - name: slack-ci-channel
   type: slack-notification
   source:
@@ -300,7 +338,7 @@ resources:
     initial_version: 2.24.0
     driver: gcs
 
-- name: env-lock
+- name: routing-release-env-lock
   type: pool
   icon: cloud-lock
   source:
@@ -308,6 +346,77 @@ resources:
     pool: routing-release-env-lock 
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: routing-release-env-lock 
+
+- name: routing-release-lock-cats
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: routing-release-lock-cats
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: routing-release-lock-cats
+
+- name: routing-release-lock-rats
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: routing-release-lock-rats
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: routing-release-lock-rats
+
+- name: routing-release-lock-drats
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: routing-release-lock-drats
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: routing-release-lock-drats
+
+- name: routing-release-lock-cfsmoke
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: routing-release-lock-cfsmoke
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: routing-release-lock-cfsmoke
+
+- name: routing-release-lock-cipher-suite
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: routing-release-lock-cipher-suite
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: routing-release-lock-cipher-suite
+
+- name: routing-release-lock-prepare-env
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: routing-release-lock-prepare-env
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: routing-release-lock-prepare-env
+
+- name: routing-release-lock-export-release
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: routing-release-lock-export-release
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: routing-release-lock-export-release
 
 - name: image
   type: registry-image
@@ -334,6 +443,18 @@ resources:
     
 
 jobs:
+- name: manual-release-trigger
+  plan:
+  - put: manual-release-trigger
+
+- name: manual-lock-release-trigger
+  plan:
+  - put: manual-lock-release-trigger
+
+- name: manual-cleanup-trigger
+  plan:
+  - put: manual-cleanup-trigger
+
 - name: bump-dependencies-go-mod
   serial: true
   on_failure: &ci-notification
@@ -651,26 +772,85 @@ jobs:
     file: ci/shared/tasks/lint-repo/linux.yml
     image: image
 
+- name: release-time-gate
+  plan:
+  - get: repo
+    passed:
+      - unit-and-integration-tests
+      - template-tests
+      - lint-repo
+  - get: env-weekly
+    trigger: true
+
 - name: claim-env
   serial: true
-  on_failure:
-    put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
+  on_abort: &release-work-locks
+    do:
+      - put: routing-release-lock-prepare-env
+        params:
+          release: routing-release-lock-prepare-env
+      - put: routing-release-lock-cats
+        params:
+          release: routing-release-lock-cats
+      - put: routing-release-lock-rats
+        params:
+          release: routing-release-lock-rats
+      - put: routing-release-lock-drats
+        params:
+          release: routing-release-lock-drats
+      - put: routing-release-lock-cfsmoke
+        params:
+          release: routing-release-lock-cfsmoke
+      - put: routing-release-lock-cipher-suite
+        params:
+          release: routing-release-lock-cipher-suite
+      - put: routing-release-lock-export-release
+        params:
+          release: routing-release-lock-export-release
+  on_failure: *release-work-locks
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ manual-release-trigger ]
     - get: ci
     - get: repo
       trigger: true
-      passed:
-        - template-tests
-        - unit-and-integration-tests
-        - lint-repo
+      passed: [ release-time-gate ]
     - get: image
     - get: env
-    - put: env-lock
-      params:
-       acquire: true
+  - get: routing-release-env-lock
+  - get: routing-release-lock-prepare-env
+  - get: routing-release-lock-cats
+  - get: routing-release-lock-rats
+  - get: routing-release-lock-drats
+  - get: routing-release-lock-cfsmoke
+  - get: routing-release-lock-cipher-suite
+  - get: routing-release-lock-export-release
+  - put: routing-release-env-lock
+    params:
+      claim: routing-release-env-lock
+  - put: routing-release-lock-prepare-env
+    params:
+      claim: routing-release-lock-prepare-env
+  - put: routing-release-lock-cats
+    params:
+      claim: routing-release-lock-cats
+  - put: routing-release-lock-rats
+    params:
+      claim: routing-release-lock-rats
+  - put: routing-release-lock-drats
+    params:
+      claim: routing-release-lock-drats
+  - put: routing-release-lock-cfsmoke
+    params:
+      claim: routing-release-lock-cfsmoke
+  - put: routing-release-lock-cipher-suite
+    params:
+      claim: routing-release-lock-cipher-suite
+  - put: routing-release-lock-export-release
+    params:
+      claim: routing-release-lock-export-release
   - task: start-bbl-envs
     image: image
     file: ci/shared/tasks/start-gcp-instance/linux.yml
@@ -679,7 +859,7 @@ jobs:
     params:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
       BBL_STATE_DIR: bbl-routing-env
-      RESUME: true
+      RESUME: false
   - task: wait-for-bosh-api
     image: image
     file: ci/shared/tasks/wait-for-bosh-api/linux.yml
@@ -688,6 +868,12 @@ jobs:
 
 - name: prepare-env
   serial: true
+  ensure:
+    put: routing-release-lock-prepare-env
+    params:
+      release: routing-release-lock-prepare-env
+  on_abort: *release-work-locks
+  on_failure: *release-work-locks
   plan:
   - in_parallel:
     - get: ci
@@ -700,6 +886,22 @@ jobs:
     - get: env
       passed: [claim-env]
       trigger: true
+    - get: routing-release-env-lock
+      passed: [claim-env]
+    - get: routing-release-lock-prepare-env
+      passed: [claim-env]
+    - get: routing-release-lock-cats
+      passed: [claim-env]
+    - get: routing-release-lock-rats
+      passed: [claim-env]
+    - get: routing-release-lock-drats
+      passed: [claim-env]
+    - get: routing-release-lock-cfsmoke
+      passed: [claim-env]
+    - get: routing-release-lock-cipher-suite
+      passed: [claim-env]
+    - get: routing-release-lock-export-release
+      passed: [claim-env]
   - try:
       do:
         - task: bosh-deld
@@ -803,6 +1005,10 @@ jobs:
       ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
 
 - name: run-cats
+  ensure:
+    put: routing-release-lock-cats
+    params:
+      release: routing-release-lock-cats
   serial: true
   serial_groups: [acceptance]
   plan:
@@ -818,6 +1024,8 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests
     - get: cf-deployment
+    - get: routing-release-lock-cats
+      passed: [prepare-env]
   - task: create-cats-config
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
@@ -837,6 +1045,10 @@ jobs:
 - name: run-drats
   serial: true
   serial_groups: [acceptance]
+  ensure:
+    put: routing-release-lock-drats
+    params:
+      release: routing-release-lock-drats
   plan:
   - in_parallel:
     - get: ci
@@ -850,6 +1062,8 @@ jobs:
     - get: bbr-binary-release
     - get: disaster-recovery-acceptance-tests
     - get: cf-deployment
+    - get: routing-release-lock-drats
+      passed: [prepare-env]
   - task: create-drats-config
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
@@ -868,6 +1082,10 @@ jobs:
 - name: run-rats
   serial: true
   serial_groups: [acceptance]
+  ensure:
+    put: routing-release-lock-rats
+    params:
+      release: routing-release-lock-rats
   plan:
   - in_parallel:
     - get: ci
@@ -882,6 +1100,8 @@ jobs:
       resource: golang-release-latest
     - get: cf-deployment
     - get: cf-deployment-concourse-tasks
+    - get: routing-release-lock-rats
+      passed: [prepare-env]
   - task: determine-image-tag
     image: image
     file: ci/shared/tasks/determine-image-tag/linux.yml
@@ -1003,6 +1223,10 @@ jobs:
 - name: run-cfsmoke
   serial: true
   serial_groups: [acceptance]
+  ensure:
+    put: routing-release-lock-cfsmoke
+    params:
+      release: routing-release-lock-cfsmoke
   plan:
   - in_parallel:
     - get: ci
@@ -1015,6 +1239,8 @@ jobs:
       trigger: true
     - get: cf-deployment-concourse-tasks
     - get: cf-smoke-tests-release
+    - get: routing-release-lock-cfsmoke
+      passed: [prepare-env]
   - task: create-cfsmoke-config
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
     image: image
@@ -1034,6 +1260,10 @@ jobs:
 - name: export-release
   serial: true
   serial_groups: [acceptance]
+  ensure:
+    put: routing-release-lock-export-release
+    params:
+      release: routing-release-lock-export-release
   plan:
   - in_parallel:
     - get: ci
@@ -1045,6 +1275,8 @@ jobs:
       passed: [prepare-env]
       trigger: true
     - get: cf-deployment-concourse-tasks
+    - get: routing-release-lock-export-release
+      passed: [prepare-env]
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
@@ -1052,6 +1284,10 @@ jobs:
       BBL_STATE_DIR: bbl-routing-env
 
 - name: run-cipher-suite
+  ensure:
+    put: routing-release-lock-cipher-suite
+    params:
+      release: routing-release-lock-cipher-suite
   plan:
   - in_parallel:
     - get: ci
@@ -1066,6 +1302,8 @@ jobs:
     - get: cipher-test-release
       trigger: true
     - get: gcp-stemcell-bionic
+    - get: routing-release-lock-cipher-suite
+      passed: [prepare-env]
   - try:
       do:
         - task: bosh-deld
@@ -1216,68 +1454,107 @@ jobs:
       resource: version
       params: {file: next-version/number}
 
-- name: unclaim-env
+- name: cleanup-time-gate
+  plan:
+  - get: lock-check-timer
+    trigger: true
+
+- name: check-work-locks
+  serial: true
+  plan:
+  - get: lock-check-timer
+    trigger: true
+    passed: [ cleanup-time-gate ]
+  - get: routing-release-env-lock
+  - get: routing-release-lock-prepare-env
+  - get: routing-release-lock-cats
+  - get: routing-release-lock-rats
+  - get: routing-release-lock-drats
+  - get: routing-release-lock-cfsmoke
+  - get: routing-release-lock-cipher-suite
+  - get: routing-release-lock-export-release
+  - put: check-lock-prepare-env
+    resource: routing-release-lock-prepare-env
+    params:
+      check: routing-release-lock-prepare-env
+      retry-delay: 10m
+  - put: check-lock-cats
+    resource: routing-release-lock-cats
+    params:
+      check: routing-release-lock-cats
+      retry-delay: 10m
+  - put: check-lock-rats
+    resource: routing-release-lock-rats
+    params:
+      check: routing-release-lock-rats
+      retry-delay: 10m
+  - put: check-lock-drats
+    resource: routing-release-lock-drats
+    params:
+      check: routing-release-lock-drats
+      retry-delay: 10m
+  - put: check-lock-cfsmoke
+    resource: routing-release-lock-cfsmoke
+    params:
+      check: routing-release-lock-cfsmoke
+      retry-delay: 10m
+  - put: check-lock-cipher-suite
+    resource: routing-release-lock-cipher-suite
+    params:
+      check: routing-release-lock-cipher-suite
+      retry-delay: 10m
+  - put: check-lock-export-release
+    resource: routing-release-lock-export-release
+    params:
+      check: routing-release-lock-export-release
+      retry-delay: 10m
+
+- name: cleanup-env
   serial: true
   plan:
   - in_parallel:
       steps:
-      - get: env
-        passed: [ship-what]
-        trigger: true
-      - get: image
-      - get: env-lock
       - get: ci
-  - in_parallel:
-      steps:
+      - get: env
+      - get: image
+      - get: manual-cleanup-trigger
+        trigger: true
+        passed: [ manual-cleanup-trigger ]
+      - get: lock-check-timer
+        trigger: true
+        passed: [ check-work-locks ]
+      - get: routing-release-env-lock
+        passed: [ check-work-locks ]
+      - get: routing-release-lock-prepare-env
+        passed: [ check-work-locks ]
+      - get: routing-release-lock-cats
+        passed: [ check-work-locks ]
+      - get: routing-release-lock-rats
+        passed: [ check-work-locks ]
+      - get: routing-release-lock-drats
+        passed: [ check-work-locks ]
+      - get: routing-release-lock-cfsmoke
+        passed: [ check-work-locks ]
+      - get: routing-release-lock-cipher-suite
+        passed: [ check-work-locks ]
+      - get: routing-release-lock-export-release
+        passed: [ check-work-locks ]
+  - try:
+      do:
       - task: bosh-deld
         image: image
         file: ci/shared/tasks/bosh-deld/linux.yml
         params:
           BBL_STATE_DIR: bbl-routing-env
           DEPLOYMENT_NAME: cf
+  - try:
+      do:
       - task: bosh-deld
         image: image
         file: ci/shared/tasks/bosh-deld/linux.yml
         params:
           BBL_STATE_DIR: bbl-routing-env
           DEPLOYMENT_NAME: cipher
-  - put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
-  - task: stop-bbl-envs
-    image: image
-    file: ci/shared/tasks/stop-gcp-instance/linux.yml
-    input_mapping:
-      bbl-state: env
-    params:
-      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
-      BBL_STATE_DIR: bbl-routing-env
-      SUSPEND: true
-
-
-- name: release-env-lock
-  plan:
-  - in_parallel:
-      steps:
-      - get: env-lock
-      - get: env
-      - get: ci
-      - get: image
-  - try:
-      in_parallel:
-        steps:
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-routing-env
-            DEPLOYMENT_NAME: cf
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-routing-env
-            DEPLOYMENT_NAME: cipher
   - try:
       do:
       - task: stop-bbl-envs
@@ -1288,11 +1565,38 @@ jobs:
         params:
           SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
           BBL_STATE_DIR: bbl-routing-env
-          SUSPEND: true
-  ensure:
-    put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
+          SUSPEND: false
+  - try:
+      do:
+      - put: routing-release-env-lock
+        params:
+          release: routing-release-env-lock 
+
+- name: release-work-locks
+  plan:
+  - get: routing-release-lock-prepare-env
+  - get: routing-release-lock-cats
+  - get: routing-release-lock-rats
+  - get: routing-release-lock-drats
+  - get: routing-release-lock-cfsmoke
+  - get: routing-release-lock-cipher-suite
+  - get: routing-release-lock-export-release
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - try: *release-work-locks
+
+- name: release-env-lock
+  plan:
+  - get: routing-release-env-lock
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - try:
+      do:
+      - put: routing-release-env-lock
+        params:
+          release: routing-release-env-lock
 
 #! versioning
 - name: patch-bump

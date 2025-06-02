@@ -5,6 +5,8 @@
 groups:
 - name: release
   jobs:
+  - release-time-gate
+  - manual-release-trigger
   - unit-and-integration-tests
   - lint-repo
   - claim-env
@@ -13,7 +15,6 @@ groups:
   - export-release
   - ship-what
   - ship-it
-  - unclaim-env
 
 - name: periodics
   jobs:
@@ -23,8 +24,14 @@ groups:
   - sync-dot-github-dir
   - sync-readme
 
-- name: manual
+- name: cleanup
   jobs:
+  - cleanup-time-gate
+  - manual-lock-release-trigger
+  - manual-cleanup-trigger
+  - check-work-locks
+  - cleanup-env
+  - release-work-locks
   - release-env-lock
 
 - name: version
@@ -164,6 +171,37 @@ resources:
     days:
       - Wednesday
 
+- name: env-weekly
+  type: time
+  icon: clock
+  source:
+    interval: '168h'
+    start: 01:00
+    stop: 01:59
+    days:
+      - Thursday
+
+- name: lock-check-timer
+  type: time
+  icon: clock
+  source:
+    interval: '1h'
+
+- name: manual-release-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: manual-lock-release-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: manual-cleanup-trigger
+  type: time
+  source:
+    interval: '1m'
+
 - name: slack-ci-channel
   type: slack-notification
   source:
@@ -206,15 +244,6 @@ resources:
     json_key: ((gcp-wg-arp-oss-service-account/config-json))
     initial_version: 0.21.0
 
-- name: env-lock
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: envoy-nginx-release-env-lock
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-
 - name: windows-worker-lock
   type: pool
   icon: cloud-lock
@@ -223,6 +252,46 @@ resources:
     pool: windows-worker-lock
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+
+- name: envoy-nginx-release-env-lock
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: envoy-nginx-release-env-lock
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: envoy-nginx-release-env-lock
+
+- name: envoy-nginx-release-lock-export-release
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: envoy-nginx-release-lock-export-release 
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: envoy-nginx-release-lock-export-release
+
+- name: envoy-nginx-release-lock-prepare-env
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: envoy-nginx-release-lock-prepare-env 
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: envoy-nginx-release-lock-prepare-env
+
+- name: envoy-nginx-release-lock-wats
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: envoy-nginx-release-lock-wats 
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: envoy-nginx-release-lock-wats
 
 - name: image
   type: registry-image
@@ -242,6 +311,18 @@ resources:
 
 #! Define-Jobs
 jobs:
+- name: manual-release-trigger
+  plan:
+  - put: manual-release-trigger
+
+- name: manual-lock-release-trigger
+  plan:
+  - put: manual-lock-release-trigger
+
+- name: manual-cleanup-trigger
+  plan:
+  - put: manual-cleanup-trigger
+
 - name: bump-dependencies-go-mod
   serial: true
   on_failure: &ci-notification
@@ -424,25 +505,55 @@ jobs:
     file: ci/shared/tasks/lint-repo/linux.yml
     image: image
 
+- name: release-time-gate
+  plan:
+  - get: repo
+    passed:
+      - unit-and-integration-tests
+      - lint-repo
+  - get: env-weekly
+    trigger: true
+
 - name: claim-env
   serial: true
-  on_failure:
-    put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
+  on_abort: &release-work-locks
+    do:
+      - put: envoy-nginx-release-lock-prepare-env
+        params:
+          release: envoy-nginx-release-lock-prepare-env
+      - put: envoy-nginx-release-lock-export-release
+        params:
+          release: envoy-nginx-release-lock-export-release
+      - put: envoy-nginx-release-lock-wats
+        params:
+          release: envoy-nginx-release-lock-wats
+  on_failure: *release-work-locks
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ manual-release-trigger ]
     - get: ci
     - get: repo
       trigger: true
-      passed:
-        - unit-and-integration-tests
-        - lint-repo
+      passed: [ release-time-gate ]
     - get: image
     - get: env
-    - put: env-lock
-      params:
-       acquire: true
+  - get: envoy-nginx-release-lock-prepare-env
+  - get: envoy-nginx-release-lock-export-release
+  - get: envoy-nginx-release-lock-wats
+  - put: envoy-nginx-release-env-lock
+    params:
+      claim: envoy-nginx-release-env-lock
+  - put: envoy-nginx-release-lock-prepare-env
+    params:
+      claim: envoy-nginx-release-lock-prepare-env
+  - put: envoy-nginx-release-lock-export-release
+    params:
+      claim: envoy-nginx-release-lock-export-release
+  - put: envoy-nginx-release-lock-wats
+    params:
+      claim: envoy-nginx-release-lock-wats
   - task: start-bbl-envs
     image: image
     file: ci/shared/tasks/start-gcp-instance/linux.yml
@@ -451,7 +562,7 @@ jobs:
     params:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
       BBL_STATE_DIR: bbl-envoy-nginx-env
-      RESUME: true
+      RESUME: false
   - task: wait-for-bosh-api
     file: ci/shared/tasks/wait-for-bosh-api/linux.yml
     image: image
@@ -460,6 +571,12 @@ jobs:
 
 - name: prepare-env
   serial: true
+  ensure:
+    put: envoy-nginx-release-lock-prepare-env
+    params:
+      release: envoy-nginx-release-lock-prepare-env
+  on_abort: *release-work-locks
+  on_failure: *release-work-locks
   plan:
   - in_parallel:
     - get: ci
@@ -472,6 +589,14 @@ jobs:
     - get: env
       passed: [claim-env]
       trigger: true
+    - get: envoy-nginx-release-env-lock
+      passed: [claim-env]
+    - get: envoy-nginx-release-lock-prepare-env
+      passed: [claim-env]
+    - get: envoy-nginx-release-lock-export-release
+      passed: [claim-env]
+    - get: envoy-nginx-release-lock-wats
+      passed: [claim-env]
   - try:
       do:
         - task: bosh-deld
@@ -573,6 +698,10 @@ jobs:
 
 - name: run-wats
   serial: true
+  ensure:
+    put: envoy-nginx-release-lock-wats
+    params:
+      release: envoy-nginx-release-lock-wats
   plan:
   - in_parallel:
     - get: ci
@@ -586,6 +715,8 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests
     - get: cf-deployment
+    - get: envoy-nginx-release-lock-wats
+      passed: [prepare-env]
   - task: create-cats-config
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
@@ -606,6 +737,10 @@ jobs:
 
 - name: export-release
   serial: true
+  ensure:
+    put: envoy-nginx-release-lock-export-release
+    params:
+      release: envoy-nginx-release-lock-export-release
   plan:
   - in_parallel:
     - get: ci
@@ -617,6 +752,8 @@ jobs:
       passed: [prepare-env]
       trigger: true
     - get: cf-deployment-concourse-tasks
+    - get: envoy-nginx-release-lock-export-release
+      passed: [prepare-env]
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
@@ -742,44 +879,59 @@ jobs:
       resource: version
       params: {file: next-version/number}
 
-- name: unclaim-env
+- name: cleanup-time-gate
+  plan:
+  - get: lock-check-timer
+    trigger: true
+
+- name: check-work-locks
+  serial: true
+  plan:
+  - get: lock-check-timer
+    trigger: true
+    passed: [ cleanup-time-gate ]
+  - get: envoy-nginx-release-env-lock
+  - get: envoy-nginx-release-lock-prepare-env
+  - get: envoy-nginx-release-lock-export-release
+  - get: envoy-nginx-release-lock-wats
+  - put: check-lock-prepare-env
+    resource: envoy-nginx-release-lock-prepare-env
+    params:
+      check: envoy-nginx-release-lock-prepare-env
+      retry-delay: 10m
+  - put: check-lock-export-release
+    resource: envoy-nginx-release-lock-export-release
+    params:
+      check: envoy-nginx-release-lock-export-release
+      retry-delay: 10m
+  - put: check-lock-wats
+    resource: envoy-nginx-release-lock-wats
+    params:
+      check: envoy-nginx-release-lock-wats
+      retry-delay: 10m
+
+- name: cleanup-env
   serial: true
   plan:
   - in_parallel:
       steps:
+      - get: ci
       - get: env
-        passed: [ship-what]
+      - get: image
+      - get: manual-cleanup-trigger
         trigger: true
-      - get: env-lock
-      - get: image
-      - get: ci
-  - task: bosh-deld
-    image: image
-    file: ci/shared/tasks/bosh-deld/linux.yml
-    params:
-      BBL_STATE_DIR: bbl-envoy-nginx-env
-      DEPLOYMENT_NAME: cf
-  - put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
-  - task: stop-bbl-envs
-    image: image
-    file: ci/shared/tasks/stop-gcp-instance/linux.yml
-    input_mapping:
-      bbl-state: env
-    params:
-      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
-      BBL_STATE_DIR: bbl-envoy-nginx-env
-      SUSPEND: true
-
-- name: release-env-lock
-  plan:
-  - in_parallel:
-      steps:
-      - get: env-lock
-      - get: env
-      - get: ci
-      - get: image
+        passed: [ manual-cleanup-trigger ]
+      - get: lock-check-timer
+        trigger: true
+        passed: [ check-work-locks ]
+      - get: envoy-nginx-release-env-lock
+        passed: [ check-work-locks ]
+      - get: envoy-nginx-release-lock-prepare-env
+        passed: [ check-work-locks ]
+      - get: envoy-nginx-release-lock-export-release
+        passed: [ check-work-locks ]
+      - get: envoy-nginx-release-lock-wats
+        passed: [ check-work-locks ]
   - try:
       do:
       - task: bosh-deld
@@ -798,11 +950,33 @@ jobs:
         params:
           SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
           BBL_STATE_DIR: bbl-envoy-nginx-env
-          SUSPEND: true
-  ensure:
-    put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
+          SUSPEND: false
+  - try:
+      do:
+      - put: envoy-nginx-release-env-lock
+        params:
+          release: envoy-nginx-release-env-lock 
+
+- name: release-work-locks
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: envoy-nginx-release-lock-prepare-env
+  - get: envoy-nginx-release-lock-export-release
+  - get: envoy-nginx-release-lock-wats
+  - try: *release-work-locks
+
+- name: release-env-lock
+  plan:
+  - get: envoy-nginx-release-env-lock
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - try:
+      put: envoy-nginx-release-env-lock
+      params:
+        release: envoy-nginx-release-env-lock
 
 #! versioning
 - name: patch-bump

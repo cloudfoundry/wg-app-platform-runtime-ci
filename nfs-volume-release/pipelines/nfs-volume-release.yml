@@ -5,6 +5,8 @@
 groups:
 - name: release
   jobs:
+  - release-time-gate
+  - manual-release-trigger
   - template-tests
   - unit-and-integration-tests
   - lint-repo
@@ -17,7 +19,6 @@ groups:
   - export-release
   - ship-what
   - ship-it
-  - unclaim-env
 
 - name: periodics
   jobs:
@@ -27,8 +28,14 @@ groups:
   - sync-dot-github-dir
   - sync-readme
 
-- name: manual
+- name: cleanup
   jobs:
+  - cleanup-time-gate
+  - manual-lock-release-trigger
+  - manual-cleanup-trigger
+  - check-work-locks
+  - cleanup-env
+  - release-work-locks
   - release-env-lock
 
 - name: version
@@ -176,6 +183,37 @@ resources:
     days:
       - Monday
 
+- name: env-weekly
+  type: time
+  icon: clock
+  source:
+    interval: '168h'
+    start: 01:00
+    stop: 01:59
+    days:
+      - Tuesday
+
+- name: lock-check-timer
+  type: time
+  icon: clock
+  source:
+    interval: '1h'
+
+- name: manual-release-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: manual-lock-release-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: manual-cleanup-trigger
+  type: time
+  source:
+    interval: '1m'
+
 - name: slack-ci-channel
   type: slack-notification
   source:
@@ -217,7 +255,7 @@ resources:
     key: nfs-volume-release/version
     json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
-- name: env-lock
+- name: nfs-volume-release-env-lock
   type: pool
   icon: cloud-lock
   source:
@@ -225,6 +263,67 @@ resources:
     pool: nfs-volume-release-env-lock 
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: nfs-volume-release-env-lock 
+
+- name: nfs-volume-release-lock-prepare-env
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: nfs-volume-release-lock-prepare-env
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: nfs-volume-release-lock-prepare-env
+
+- name: nfs-volume-release-lock-export-release
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: nfs-volume-release-lock-export-release
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: nfs-volume-release-lock-export-release
+
+- name: nfs-volume-release-lock-cats
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: nfs-volume-release-lock-cats
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: nfs-volume-release-lock-cats
+
+- name: nfs-volume-release-lock-dockerdriver-integration
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: nfs-volume-release-lock-dockerdriver-integration
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: nfs-volume-release-lock-dockerdriver-integration
+
+- name: nfs-volume-release-lock-volume-service-acceptance
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: nfs-volume-release-lock-volume-service-acceptance
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: nfs-volume-release-lock-volume-service-acceptance
+
+- name: nfs-volume-release-lock-map-fs-performance-acceptance
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: nfs-volume-release-lock-map-fs-performance-acceptance
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: nfs-volume-release-lock-map-fs-performance-acceptance
 
 - name: image
   type: registry-image
@@ -319,6 +418,18 @@ resources:
 
 #! Define-Jobs
 jobs:
+- name: manual-release-trigger
+  plan:
+  - put: manual-release-trigger
+
+- name: manual-lock-release-trigger
+  plan:
+  - put: manual-lock-release-trigger
+
+- name: manual-cleanup-trigger
+  plan:
+  - put: manual-cleanup-trigger
+
 - name: bump-dependencies-go-mod
   serial: true
   on_failure: &ci-notification
@@ -660,26 +771,78 @@ jobs:
     file: ci/shared/tasks/lint-repo/linux.yml
     image: image
 
+- name: release-time-gate
+  plan:
+  - get: repo
+    passed:
+      - template-tests
+      - unit-and-integration-tests
+      - lint-repo
+  - get: env-weekly
+    trigger: true
+
 - name: claim-env
   serial: true
-  on_failure:
-    put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
+  on_abort: &release-work-locks
+    do:
+      - put: nfs-volume-release-lock-prepare-env
+        params:
+          release: nfs-volume-release-lock-prepare-env
+      - put: nfs-volume-release-lock-export-release
+        params:
+          release: nfs-volume-release-lock-export-release
+      - put: nfs-volume-release-lock-cats
+        params:
+          release: nfs-volume-release-lock-cats
+      - put: nfs-volume-release-lock-dockerdriver-integration
+        params:
+          release: nfs-volume-release-lock-dockerdriver-integration
+      - put: nfs-volume-release-lock-volume-service-acceptance
+        params:
+          release: nfs-volume-release-lock-volume-service-acceptance
+      - put: nfs-volume-release-lock-map-fs-performance-acceptance
+        params:
+          release: nfs-volume-release-lock-map-fs-performance-acceptance
+  on_failure: *release-work-locks
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ manual-release-trigger ]
     - get: ci
     - get: repo
       trigger: true
-      passed:
-        - template-tests
-        - unit-and-integration-tests
-        - lint-repo
+      passed: [ release-time-gate ]
     - get: image
     - get: env
-    - put: env-lock
-      params:
-       acquire: true
+  - get: nfs-volume-release-env-lock
+  - get: nfs-volume-release-lock-prepare-env
+  - get: nfs-volume-release-lock-export-release
+  - get: nfs-volume-release-lock-cats
+  - get: nfs-volume-release-lock-dockerdriver-integration
+  - get: nfs-volume-release-lock-volume-service-acceptance
+  - get: nfs-volume-release-lock-map-fs-performance-acceptance
+  - put: nfs-volume-release-env-lock
+    params:
+      claim: nfs-volume-release-env-lock
+  - put: nfs-volume-release-lock-prepare-env
+    params:
+      claim: nfs-volume-release-lock-prepare-env
+  - put: nfs-volume-release-lock-export-release
+    params:
+      claim: nfs-volume-release-lock-export-release
+  - put: nfs-volume-release-lock-cats
+    params:
+      claim: nfs-volume-release-lock-cats
+  - put: nfs-volume-release-lock-dockerdriver-integration
+    params:
+      claim: nfs-volume-release-lock-dockerdriver-integration
+  - put: nfs-volume-release-lock-volume-service-acceptance
+    params:
+      claim: nfs-volume-release-lock-volume-service-acceptance
+  - put: nfs-volume-release-lock-map-fs-performance-acceptance
+    params:
+      claim: nfs-volume-release-lock-map-fs-performance-acceptance
   - task: start-bbl-envs
     image: image
     file: ci/shared/tasks/start-gcp-instance/linux.yml
@@ -688,7 +851,7 @@ jobs:
     params:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
       BBL_STATE_DIR: bbl-nfs-volume-env
-      RESUME: true
+      RESUME: false
   - task: wait-for-bosh-api
     file: ci/shared/tasks/wait-for-bosh-api/linux.yml
     image: image
@@ -698,6 +861,12 @@ jobs:
 - name: prepare-env
   serial: true
   serial_groups: [acceptance]
+  ensure:
+    put: nfs-volume-release-lock-prepare-env
+    params:
+      release: nfs-volume-release-lock-prepare-env
+  on_abort: *release-work-locks
+  on_failure: *release-work-locks
   plan:
   - in_parallel:
     - get: ci
@@ -710,6 +879,20 @@ jobs:
     - get: env
       passed: [claim-env]
       trigger: true
+    - get: nfs-volume-release-env-lock
+      passed: [claim-env]
+    - get: nfs-volume-release-lock-prepare-env
+      passed: [claim-env]
+    - get: nfs-volume-release-lock-export-release
+      passed: [claim-env]
+    - get: nfs-volume-release-lock-cats
+      passed: [claim-env]
+    - get: nfs-volume-release-lock-dockerdriver-integration
+      passed: [claim-env]
+    - get: nfs-volume-release-lock-volume-service-acceptance
+      passed: [claim-env]
+    - get: nfs-volume-release-lock-map-fs-performance-acceptance
+      passed: [claim-env]
   - try:
       do:
         - task: bosh-deld
@@ -824,6 +1007,10 @@ jobs:
 - name: run-cats
   serial: true
   serial_groups: [acceptance]
+  ensure:
+    put: nfs-volume-release-lock-cats
+    params:
+      release: nfs-volume-release-lock-cats
   plan:
   - in_parallel:
     - get: ci
@@ -837,6 +1024,8 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests
     - get: cf-deployment
+    - get: nfs-volume-release-lock-cats
+      passed: [prepare-env]
   - task: create-cats-config
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
@@ -863,6 +1052,10 @@ jobs:
 - name: volume-services-acceptance-tests
   serial: true
   serial_groups: [acceptance]
+  ensure:
+    put: nfs-volume-release-lock-volume-service-acceptance
+    params:
+      release: nfs-volume-release-lock-volume-service-acceptance
   plan:
   - in_parallel:
       fail_fast: true
@@ -878,6 +1071,8 @@ jobs:
         trigger: true
       - get: package-release
         resource: golang-release-latest
+      - get: nfs-volume-release-lock-volume-service-acceptance
+        passed: [ prepare-env ]
   - task: determine-image-tag
     image: image
     file: ci/shared/tasks/determine-image-tag/linux.yml
@@ -941,6 +1136,10 @@ jobs:
 - name: dockerdriver-integration
   serial: true
   serial_groups: [acceptance]
+  ensure:
+    put: nfs-volume-release-lock-dockerdriver-integration
+    params:
+      release: nfs-volume-release-lock-dockerdriver-integration
   plan:
   - in_parallel:
       fail_fast: true
@@ -954,6 +1153,8 @@ jobs:
         passed: [ prepare-env ]
         trigger: true
       - get: cf-deployment-concourse-tasks
+      - get: nfs-volume-release-lock-dockerdriver-integration
+        passed: [ prepare-env ]
   - task: run-dockerdriver-integration-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
@@ -966,6 +1167,10 @@ jobs:
 - name: map-fs-performance-acceptance-tests
   serial: true
   serial_groups: [acceptance]
+  ensure:
+    put: nfs-volume-release-lock-map-fs-performance-acceptance
+    params:
+      release: nfs-volume-release-lock-map-fs-performance-acceptance
   plan:
   - in_parallel:
       fail_fast: true
@@ -979,6 +1184,8 @@ jobs:
         passed: [ prepare-env ]
         trigger: true
       - get: cf-deployment-concourse-tasks
+      - get: nfs-volume-release-lock-map-fs-performance-acceptance
+        passed: [ prepare-env ]
   - task: run-map-fs-performace-acceptance-tests-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
@@ -991,6 +1198,10 @@ jobs:
 - name: export-release
   serial: true
   serial_groups: [acceptance]
+  ensure:
+    put: nfs-volume-release-lock-export-release
+    params:
+      release: nfs-volume-release-lock-export-release
   plan:
   - in_parallel:
     - get: ci
@@ -1002,6 +1213,8 @@ jobs:
       passed: [prepare-env]
       trigger: true
     - get: cf-deployment-concourse-tasks
+    - get: nfs-volume-release-lock-export-release
+      passed: [prepare-env]
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
@@ -1125,44 +1338,77 @@ jobs:
       resource: version
       params: {file: next-version/number}
 
-- name: unclaim-env
+- name: cleanup-time-gate
+  plan:
+  - get: lock-check-timer
+    trigger: true
+
+- name: check-work-locks
+  serial: true
+  plan:
+  - get: lock-check-timer
+    trigger: true
+    passed: [ cleanup-time-gate ]
+  - get: nfs-volume-release-env-lock
+  - get: nfs-volume-release-lock-prepare-env
+  - get: nfs-volume-release-lock-export-release
+  - get: nfs-volume-release-lock-cats
+  - get: nfs-volume-release-lock-dockerdriver-integration
+  - get: nfs-volume-release-lock-volume-service-acceptance
+  - get: nfs-volume-release-lock-map-fs-performance-acceptance
+  - put: nfs-volume-release-lock-prepare-env
+    params:
+      check: nfs-volume-release-lock-prepare-env
+      retry-delay: 10m
+  - put: nfs-volume-release-lock-export-release
+    params:
+      check: nfs-volume-release-lock-export-release
+      retry-delay: 10m
+  - put: nfs-volume-release-lock-cats
+    params:
+      check: nfs-volume-release-lock-cats
+      retry-delay: 10m
+  - put: nfs-volume-release-lock-dockerdriver-integration
+    params:
+      check: nfs-volume-release-lock-dockerdriver-integration
+      retry-delay: 10m
+  - put: nfs-volume-release-lock-volume-service-acceptance
+    params:
+      check: nfs-volume-release-lock-volume-service-acceptance
+      retry-delay: 10m
+  - put: nfs-volume-release-lock-map-fs-performance-acceptance
+    params:
+      check: nfs-volume-release-lock-map-fs-performance-acceptance
+      retry-delay: 10m
+
+- name: cleanup-env
   serial: true
   plan:
   - in_parallel:
       steps:
       - get: env
-        passed: [ship-what]
+      - get: image
+      - get: ci
+      - get: manual-cleanup-trigger
         trigger: true
-      - get: env-lock
-      - get: image
-      - get: ci
-  - task: bosh-deld
-    image: image
-    file: ci/shared/tasks/bosh-deld/linux.yml
-    params:
-      BBL_STATE_DIR: bbl-nfs-volume-env
-      DEPLOYMENT_NAME: cf
-  - put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
-  - task: stop-bbl-envs
-    image: image
-    file: ci/shared/tasks/stop-gcp-instance/linux.yml
-    input_mapping:
-      bbl-state: env
-    params:
-      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
-      BBL_STATE_DIR: bbl-nfs-volume-env
-      SUSPEND: true
-
-- name: release-env-lock
-  plan:
-  - in_parallel:
-      steps:
-      - get: env-lock
-      - get: env
-      - get: ci
-      - get: image
+        passed: [ manual-cleanup-trigger ]
+      - get: lock-check-timer
+        trigger: true
+        passed: [ check-work-locks ]
+      - get: nfs-volume-release-env-lock
+        passed: [ check-work-locks ]
+      - get: nfs-volume-release-lock-prepare-env
+        passed: [ check-work-locks ]
+      - get: nfs-volume-release-lock-export-release
+        passed: [ check-work-locks ]
+      - get: nfs-volume-release-lock-cats
+        passed: [ check-work-locks ]
+      - get: nfs-volume-release-lock-dockerdriver-integration
+        passed: [ check-work-locks ]
+      - get: nfs-volume-release-lock-volume-service-acceptance
+        passed: [ check-work-locks ]
+      - get: nfs-volume-release-lock-map-fs-performance-acceptance
+        passed: [ check-work-locks ]
   - try:
       do:
       - task: bosh-deld
@@ -1181,11 +1427,37 @@ jobs:
         params:
           SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
           BBL_STATE_DIR: bbl-nfs-volume-env
-          SUSPEND: true
-  ensure:
-    put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
+          SUSPEND: false
+  - try:
+      do:
+      - put: nfs-volume-release-env-lock
+        params:
+          release: nfs-volume-release-env-lock
+
+- name: release-work-locks
+  plan:
+  - get: nfs-volume-release-lock-prepare-env
+  - get: nfs-volume-release-lock-export-release
+  - get: nfs-volume-release-lock-cats
+  - get: nfs-volume-release-lock-dockerdriver-integration
+  - get: nfs-volume-release-lock-volume-service-acceptance
+  - get: nfs-volume-release-lock-map-fs-performance-acceptance
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - try: *release-work-locks
+
+- name: release-env-lock
+  plan:
+  - get: nfs-volume-release-env-lock
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - try:
+      do:
+      - put: nfs-volume-release-env-lock
+        params:
+          release: nfs-volume-release-env-lock
 
 #! versioning
 - name: patch-bump

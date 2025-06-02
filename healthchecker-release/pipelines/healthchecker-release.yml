@@ -5,14 +5,15 @@
 groups:
 - name: release
   jobs:
+  - release-time-gate
+  - manual-release-trigger
   - unit-and-integration-tests
   - lint-repo
   - claim-env
-  - example-app-deployment
+  - prepare-env
   - export-release
   - ship-what
   - ship-it
-  - unclaim-env
 
 - name: periodics
   jobs:
@@ -21,8 +22,14 @@ groups:
   - sync-dot-github-dir
   - sync-readme
 
-- name: manual
+- name: cleanup
   jobs:
+  - cleanup-time-gate
+  - manual-lock-release-trigger
+  - manual-cleanup-trigger
+  - check-work-locks
+  - cleanup-env
+  - release-work-locks
   - release-env-lock
 
 - name: version
@@ -131,6 +138,37 @@ resources:
     days:
       - Thursday 
 
+- name: env-weekly
+  type: time
+  icon: clock
+  source:
+    interval: '168h'
+    start: 01:00
+    stop: 01:59
+    days:
+      - Friday
+
+- name: lock-check-timer
+  type: time
+  icon: clock
+  source:
+    interval: '1h'
+
+- name: manual-release-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: manual-lock-release-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: manual-cleanup-trigger
+  type: time
+  source:
+    interval: '1m'
+
 - name: slack-ci-channel
   type: slack-notification
   source:
@@ -181,7 +219,7 @@ resources:
     key: healthchecker-release/version
     json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
-- name: env-lock
+- name: healthchecker-release-env-lock
   type: pool
   icon: cloud-lock
   source:
@@ -189,6 +227,27 @@ resources:
     pool: healthchecker-release-env-lock 
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: healthchecker-release-env-lock 
+
+- name: healthchecker-release-lock-prepare-env
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: healthchecker-release-lock-prepare-env
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: healthchecker-release-lock-prepare-env
+
+- name: healthchecker-release-lock-export-release
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: healthchecker-release-lock-export-release
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: healthchecker-release-lock-export-release
 
 - name: image
   type: registry-image
@@ -206,6 +265,18 @@ resources:
 
 #! Define-Jobs
 jobs:
+- name: manual-release-trigger
+  plan:
+  - put: manual-release-trigger
+
+- name: manual-lock-release-trigger
+  plan:
+  - put: manual-lock-release-trigger
+
+- name: manual-cleanup-trigger
+  plan:
+  - put: manual-cleanup-trigger
+
 - name: bump-dependencies-go-mod
   serial: true
   on_failure: &ci-notification
@@ -343,25 +414,49 @@ jobs:
     file: ci/shared/tasks/lint-repo/linux.yml
     image: image
 
+- name: release-time-gate
+  plan:
+  - get: repo
+    passed:
+      - unit-and-integration-tests
+      - lint-repo
+  - get: env-weekly
+    trigger: true
+
 - name: claim-env
   serial: true
-  on_failure:
-    put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
+  on_abort: &release-work-locks
+    do:
+      - put: healthchecker-release-lock-prepare-env
+        params:
+          release: healthchecker-release-lock-prepare-env
+      - put: healthchecker-release-lock-export-release
+        params:
+          release: healthchecker-release-lock-export-release
+  on_failure: *release-work-locks
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ manual-release-trigger ]
     - get: ci
     - get: repo
       trigger: true
-      passed:
-        - unit-and-integration-tests
-        - lint-repo
+      passed: [ release-time-gate ]
     - get: image
     - get: env
-    - put: env-lock
-      params:
-        acquire: true
+  - get: healthchecker-release-env-lock
+  - get: healthchecker-release-lock-prepare-env
+  - get: healthchecker-release-lock-export-release
+  - put: healthchecker-release-env-lock
+    params:
+      claim: healthchecker-release-env-lock
+  - put: healthchecker-release-lock-prepare-env
+    params:
+      claim: healthchecker-release-lock-prepare-env
+  - put: healthchecker-release-lock-export-release
+    params:
+      claim: healthchecker-release-lock-export-release
   - task: start-bbl-envs
     image: image
     file: ci/shared/tasks/start-gcp-instance/linux.yml
@@ -370,16 +465,22 @@ jobs:
     params:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
       BBL_STATE_DIR: bbl-hlthchk-env
-      RESUME: true
+      RESUME: false
   - task: wait-for-bosh-api
     file: ci/shared/tasks/wait-for-bosh-api/linux.yml
     image: image
     params:
       BBL_STATE_DIR: bbl-hlthchk-env
 
-- name: example-app-deployment
+- name: prepare-env
   serial: true
   serial_groups: [acceptance]
+  ensure:
+    put: healthchecker-release-lock-prepare-env
+    params:
+      release: healthchecker-release-lock-prepare-env
+  on_abort: *release-work-locks
+  on_failure: *release-work-locks
   plan:
   - in_parallel:
     - get: ci
@@ -429,16 +530,22 @@ jobs:
 - name: export-release
   serial: true
   serial_groups: [acceptance]
+  ensure:
+    put: healthchecker-release-lock-export-release
+    params:
+      release: healthchecker-release-lock-export-release
   plan:
   - in_parallel:
     - get: ci
     - get: repo
-      passed: [example-app-deployment]
+      passed: [prepare-env]
       trigger: true
     - get: image
     - get: env
-      passed: [example-app-deployment]
+      passed: [prepare-env]
       trigger: true
+    - get: healthchecker-release-lock-export-release
+      passed: [prepare-env]
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
@@ -556,44 +663,51 @@ jobs:
       resource: version
       params: {file: next-version/number}
 
-- name: unclaim-env
+- name: cleanup-time-gate
+  plan:
+  - get: lock-check-timer
+    trigger: true
+
+- name: check-work-locks
+  serial: true
+  plan:
+  - get: lock-check-timer
+    trigger: true
+    passed: [ cleanup-time-gate ]
+  - get: healthchecker-release-env-lock
+  - get: healthchecker-release-lock-prepare-env
+  - get: healthchecker-release-lock-export-release
+  - put: check-lock-prepare-env
+    resource: healthchecker-release-lock-prepare-env
+    params:
+      check: healthchecker-release-lock-prepare-env
+      retry-delay: 10m
+  - put: check-lock-export-release
+    resource: healthchecker-release-lock-export-release
+    params:
+      check: healthchecker-release-lock-export-release
+      retry-delay: 10m
+
+- name: cleanup-env
   serial: true
   plan:
   - in_parallel:
       steps:
+      - get: ci
       - get: env
-        passed: [ship-what]
+      - get: image
+      - get: manual-cleanup-trigger
         trigger: true
-      - get: env-lock
-      - get: image
-      - get: ci
-  - task: bosh-deld
-    image: image
-    file: ci/shared/tasks/bosh-deld/linux.yml
-    params:
-      BBL_STATE_DIR: bbl-hlthchk-env
-      DEPLOYMENT_NAME: example-app
-  - put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
-  - task: stop-bbl-envs
-    image: image
-    file: ci/shared/tasks/stop-gcp-instance/linux.yml
-    input_mapping:
-      bbl-state: env
-    params:
-      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
-      BBL_STATE_DIR: bbl-hlthchk-env
-      SUSPEND: true
-
-- name: release-env-lock
-  plan:
-  - in_parallel:
-      steps:
-      - get: env-lock
-      - get: env
-      - get: ci
-      - get: image
+        passed: [ manual-cleanup-trigger ]
+      - get: lock-check-timer
+        trigger: true
+        passed: [ check-work-locks ]
+      - get: healthchecker-release-env-lock
+        passed: [ check-work-locks ]
+      - get: healthchecker-release-lock-prepare-env
+        passed: [ check-work-locks ]
+      - get: healthchecker-release-lock-export-release
+        passed: [ check-work-locks ]
   - try:
       do:
       - task: bosh-deld
@@ -612,11 +726,33 @@ jobs:
         params:
           SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
           BBL_STATE_DIR: bbl-hlthchk-env
-          SUSPEND: true
-  ensure:
-    put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
+          SUSPEND: false
+  - try:
+      do:
+      - put: healthchecker-release-env-lock
+        params:
+          release: healthchecker-release-env-lock
+
+- name: release-work-locks
+  plan:
+  - get: healthchecker-release-lock-prepare-env
+  - get: healthchecker-release-lock-export-release
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - try: *release-work-locks
+
+- name: release-env-lock
+  plan:
+  - get: healthchecker-release-env-lock
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - try:
+      do:
+      - put: healthchecker-release-env-lock
+        params:
+          release: healthchecker-release-env-lock
 
 #! versioning
 - name: patch-bump
