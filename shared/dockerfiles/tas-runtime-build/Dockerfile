@@ -194,7 +194,7 @@ RUN go install github.com/cloudfoundry/uptimer@latest
 #    staticcheck
 RUN \
   staticcheck_version="$(curl -s https://api.github.com/repos/dominikh/go-tools/releases | jq -r '.[0].tag_name')" && \
-  go install "honnef.co/go/tools/cmd/staticcheck@$credhub_version"
+  go install "honnef.co/go/tools/cmd/staticcheck@$staticcheck_version"
 
 #    credhub cli
 RUN \
