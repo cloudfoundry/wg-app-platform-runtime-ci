@@ -13,6 +13,24 @@ function bosh_target(){
             ENVIRONMENT_NAME="$(jq -r .name "$(env_metadata)")"
         fi
         export ENVIRONMENT_NAME
+    elif [[ "$(is_shepherd_v1_deployment)" == "yes" ]]; then
+        env_name="shepherd_v1"
+        https_proxy=$(yq '"http://\(.http_proxy_username):\(.http_proxy_password)@\(.http_proxy)"' "$(env_metadata)")
+        # log the change to the https_proxy environment variable, but hide the password credential
+        echo >&2 "export https_proxy=$(yq '"http://\(.http_proxy_username):########@\(.http_proxy)"' "$(env_metadata)")"
+        export https_proxy
+        OM_SKIP_SSL_VALIDATION=1
+        OM_TARGET=$(yq '.["ops manager"]["url"]' "$(env_metadata)")
+        OM_USERNAME=$(yq '.["ops manager"]["username"]' "$(env_metadata)")
+        OM_PASSWORD=$(yq '.["ops manager"]["password"]' "$(env_metadata)")
+        export OM_SKIP_SSL_VALIDATION OM_TARGET OM_USERNAME OM_PASSWORD
+        eval "$(om bosh-env)"
+
+        jumpbox_user=$(yq '.http_proxy_username' "$(env_metadata)")
+        jumpbox_host=$(yq '.http_proxy|sub(":80$","")' "$(env_metadata)")
+        jumpbox_private_key=$(mktemp -t "${env_name}_XXXXXXXXXX.key")
+        trap 'rm -f "$jumpbox_private_key"' EXIT
+        yq '.["ops manager"]["private key"]' "$(env_metadata)" >"${jumpbox_private_key}"
     else
         OM_USERNAME="$(jq -r .ops_manager.username "$(env_metadata)")"
         OM_PASSWORD="$(jq -r .ops_manager.password "$(env_metadata)")"

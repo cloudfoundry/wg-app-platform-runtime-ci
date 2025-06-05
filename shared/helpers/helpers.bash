@@ -280,3 +280,13 @@ function is_env_cf_deployment() {
     fi
 }
 export -f is_env_cf_deployment
+
+function is_shepherd_v1_deployment() {
+    local has_nsx=$(yq '.nsx_use_policy_api' "$(env_metadata)")
+    if [[ "$has_opsman" == "null" ]]; then
+        echo  "no"
+    else
+        echo "yes"
+    fi
+}
+export -f is_shepherd_v1_deployment
