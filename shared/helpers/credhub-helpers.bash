@@ -1,7 +1,7 @@
 function credhub_save_lb_cert() {
     local cert_file
     local credhub_path
-    if [[ -z "${BBL_STATE_DIR}" ]]; then
+    if [[ ! -d "${BBL_STATE_DIR}/lb_certs" ]]; then
         set +e
         cert="$(openssl s_client -showcerts -connect "any.${CF_SYSTEM_DOMAIN}:443" </dev/null 2>/dev/null)"
         set -e
