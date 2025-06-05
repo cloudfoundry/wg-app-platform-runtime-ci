@@ -1,19 +1,6 @@
 function bosh_target(){
     BBL_STATE_DIR=${BBL_STATE_DIR:=""}
-    if [[ "$(is_env_cf_deployment)" == "yes" ]]; then
-        if [[ -n "${BBL_STATE_DIR}" ]]; then
-            export BBL_STATE_DIRECTORY="env/${BBL_STATE_DIR}"
-            eval "$(bbl print-env)"
-            ENVIRONMENT_NAME="$(jq -r .envID "$(env_metadata)")"
-        elif [[ "${BOSH_CREDS:=empty}" != "empty" ]]; then
-            eval "${BOSH_CREDS}"
-            ENVIRONMENT_NAME="UNDEFINED"
-        else
-            eval "$(bbl print-env --metadata-file "$(env_metadata)")"
-            ENVIRONMENT_NAME="$(jq -r .name "$(env_metadata)")"
-        fi
-        export ENVIRONMENT_NAME
-    elif [[ "$(is_shepherd_v1_deployment)" == "yes" ]]; then
+    if [[ "$(is_shepherd_v1_deployment)" == "yes" ]]; then
         env_name="shepherd_v1"
         https_proxy=$(yq '"http://\(.http_proxy_username):\(.http_proxy_password)@\(.http_proxy)"' "$(env_metadata)")
         # log the change to the https_proxy environment variable, but hide the password credential
@@ -31,6 +18,19 @@ function bosh_target(){
         jumpbox_private_key=$(mktemp -t "${env_name}_XXXXXXXXXX.key")
         trap 'rm -f "$jumpbox_private_key"' EXIT
         yq '.["ops manager"]["private key"]' "$(env_metadata)" >"${jumpbox_private_key}"
+    elif [[ "$(is_env_cf_deployment)" == "yes" ]]; then
+        if [[ -n "${BBL_STATE_DIR}" ]]; then
+            export BBL_STATE_DIRECTORY="env/${BBL_STATE_DIR}"
+            eval "$(bbl print-env)"
+            ENVIRONMENT_NAME="$(jq -r .envID "$(env_metadata)")"
+        elif [[ "${BOSH_CREDS:=empty}" != "empty" ]]; then
+            eval "${BOSH_CREDS}"
+            ENVIRONMENT_NAME="UNDEFINED"
+        else
+            eval "$(bbl print-env --metadata-file "$(env_metadata)")"
+            ENVIRONMENT_NAME="$(jq -r .name "$(env_metadata)")"
+        fi
+        export ENVIRONMENT_NAME
     else
         OM_USERNAME="$(jq -r .ops_manager.username "$(env_metadata)")"
         OM_PASSWORD="$(jq -r .ops_manager.password "$(env_metadata)")"
