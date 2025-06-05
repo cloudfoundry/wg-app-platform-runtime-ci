@@ -1,11 +1,13 @@
 function cf_target(){
     BBL_STATE_DIR=${BBL_STATE_DIR:=""}
-    bosh_manifest > ./env/cf.yml
+    BOSH_DEPLOYMENT="$(bosh_cf_deployment_name)" bosh_manifest > ./env/cf.yml
     CF_SYSTEM_DOMAIN="$(cf_system_domain)"
     CF_ADMIN_PASSWORD=$(cf_password)
     CF_DEPLOYMENT=$(bosh_cf_deployment_name)
     if [[ -n "${BBL_STATE_DIR}" ]]; then
         CF_ENVIRONMENT_NAME=$(jq -r .envID "$(env_metadata)")
+    elif [[ "$(is_shepherd_v1_deployment)" == "yes" ]]; then
+        CF_ENVIRONMENT_NAME=$(yq .vcenter.hostname "$(env_metadata)")
     else
         CF_ENVIRONMENT_NAME=$(jq -r .name "$(env_metadata)")
     fi
@@ -18,6 +20,12 @@ function cf_target(){
 function cf_system_domain(){
     # For cf-deployment bbl envs
     local system_domain
+    if [[ "$(is_shepherd_v1_deployment)" == "yes" ]]; then
+        system_domain=$(bosh int <(bosh_manifest) --path /instance_groups/name=blobstore?/jobs/name=blobstore/properties/system_domain)
+        echo "$system_domain"
+        return
+    fi
+
     system_domain=$(jq -r .cf.api_url < "$(env_metadata)" | cut -d "." -f2-)
     # fall back to checking the manifest with multiple instance group name options
     if [[ "${system_domain:=null}" == "null" ]] ; then

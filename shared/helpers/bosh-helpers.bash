@@ -1,6 +1,24 @@
 function bosh_target(){
     BBL_STATE_DIR=${BBL_STATE_DIR:=""}
-    if [[ "$(is_env_cf_deployment)" == "yes" ]]; then
+    if [[ "$(is_shepherd_v1_deployment)" == "yes" ]]; then
+        env_name="shepherd_v1"
+        https_proxy=$(yq '"http://\(.http_proxy_username):\(.http_proxy_password)@\(.http_proxy)"' "$(env_metadata)")
+        # log the change to the https_proxy environment variable, but hide the password credential
+        echo >&2 "export https_proxy=$(yq '"http://\(.http_proxy_username):########@\(.http_proxy)"' "$(env_metadata)")"
+        export https_proxy
+        OM_SKIP_SSL_VALIDATION=1
+        OM_TARGET=$(yq '.["ops manager"]["url"]' "$(env_metadata)")
+        OM_USERNAME=$(yq '.["ops manager"]["username"]' "$(env_metadata)")
+        OM_PASSWORD=$(yq '.["ops manager"]["password"]' "$(env_metadata)")
+        export OM_SKIP_SSL_VALIDATION OM_TARGET OM_USERNAME OM_PASSWORD
+        eval "$(om bosh-env)"
+
+        jumpbox_user=$(yq '.http_proxy_username' "$(env_metadata)")
+        jumpbox_host=$(yq '.http_proxy|sub(":80$","")' "$(env_metadata)")
+        jumpbox_private_key=$(mktemp -t "${env_name}_XXXXXXXXXX.key")
+        trap 'rm -f "$jumpbox_private_key"' EXIT
+        yq '.["ops manager"]["private key"]' "$(env_metadata)" >"${jumpbox_private_key}"
+    elif [[ "$(is_env_cf_deployment)" == "yes" ]]; then
         if [[ -n "${BBL_STATE_DIR}" ]]; then
             export BBL_STATE_DIRECTORY="env/${BBL_STATE_DIR}"
             eval "$(bbl print-env)"
@@ -14,13 +32,14 @@ function bosh_target(){
         fi
         export ENVIRONMENT_NAME
     else
+        OM_SKIP_SSL_VALIDATION=true
         OM_USERNAME="$(jq -r .ops_manager.username "$(env_metadata)")"
         OM_PASSWORD="$(jq -r .ops_manager.password "$(env_metadata)")"
         OM_TARGET="$(jq -r .ops_manager.url "$(env_metadata)")"
         OM_PRIVATE_KEY="$(jq -r .ops_manager_private_key "$(env_metadata)")"
         OM_PUBLIC_IP="$(jq -r .ops_manager_public_ip "$(env_metadata)")"
         ENVIRONMENT_NAME="$(jq -r .name "$(env_metadata)")"
-        export OM_USERNAME OM_PASSWORD OM_TARGET OM_PRIVATE_KEY OM_PUBLIC_IP ENVIRONMENT_NAME 
+        export OM_USERNAME OM_PASSWORD OM_TARGET OM_PRIVATE_KEY OM_PUBLIC_IP ENVIRONMENT_NAME OM_SKIP_SSL_VALIDATION
         echo "${OM_PRIVATE_KEY}" > "/tmp/${ENVIRONMENT_NAME}.key"
         chmod 600 "/tmp/${ENVIRONMENT_NAME}.key"
         BOSH_ALL_PROXY="ssh+socks5://ubuntu@${OM_PUBLIC_IP}:22?private-key=/tmp/${ENVIRONMENT_NAME}.key"
@@ -72,15 +91,19 @@ function bosh_extract_manifest_defaults_from_cf(){
 export CF_AZ=$(bosh int "${manifest}" --path /instance_groups/0/azs/0)
 export CF_NETWORK=$(bosh int "${manifest}" --path /instance_groups/0/networks/0/name)
 export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)"
+    elif [[ "$(is_shepherd_v1_deployment)" == "yes" ]]; then
+        echo  "export CF_STEMCELL_OS=$(bosh int "${manifest}" --path /stemcells/0/os)
+export CF_AZ=$(bosh int "${manifest}" --path /instance_groups/0/azs/0)
+export CF_NETWORK=$(bosh int "${cloud_config}" --path /networks/0/name)
+export CF_NETWORK_CIDR=$(bosh int "${cloud_config}" --path /networks/0/subnets/0/range)
+export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)"
     else
         echo  "export CF_STEMCELL_OS=$(bosh int "${manifest}" --path /stemcells/0/os)
 export CF_AZ=$(bosh int "${manifest}" --path /instance_groups/0/azs/0)
-export CF_NETWORK=$(bosh int "${cloud_config}" --path /networks/1/name)
-export CF_NETWORK_CIDR=$(bosh int "${cloud_config}" --path /networks/1/subnets/0/range)
-export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)
 export CF_LARGE_VM_TYPE=e2-standard-8
-export CF_NETWORK_SERVICES=$(bosh int "${cloud_config}" --path /networks/2/name)
-export CF_NETWORK_SERVICES_CIDR=$(bosh int "${cloud_config}" --path /networks/2/subnets/0/range)"
+export CF_NETWORK=$(bosh int "${cloud_config}" --path /networks/0/name)
+export CF_NETWORK_CIDR=$(bosh int "${cloud_config}" --path /networks/0/subnets/0/range)
+export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)"
     fi
 }
 
