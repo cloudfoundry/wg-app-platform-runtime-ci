@@ -6,6 +6,8 @@ function cf_target(){
     CF_DEPLOYMENT=$(bosh_cf_deployment_name)
     if [[ -n "${BBL_STATE_DIR}" ]]; then
         CF_ENVIRONMENT_NAME=$(jq -r .envID "$(env_metadata)")
+    elif [[ "$(is_shepherd_v1_deployment)" == "yes" ]]; then
+        CF_ENVIRONMENT_NAME=$(yq .vcenter.hostname "$(env_metadata)")
     else
         CF_ENVIRONMENT_NAME=$(jq -r .name "$(env_metadata)")
     fi
