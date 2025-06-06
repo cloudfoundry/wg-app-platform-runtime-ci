@@ -273,7 +273,7 @@ function env_metadata() {
 
 function is_env_cf_deployment() {
     local has_nsx=$(yq '.nsx_use_policy_api' "$(env_metadata)")
-    if [[ "$has_nsx" == "null" ]]; then
+    if [[ "$has_nsx" != "null" ]]; then
         echo  "no"
         return
     fi
