@@ -16,6 +16,8 @@ main() {
 
   fly_pipeline "release-environments" -f "${pipeline_dir}/release-environments.yml" \
     -f "${REPO}/index.yml"
+
+  fly_pipeline "pool-resource-check-unclaimed" -f "${pipeline_dir}/pool-resource-check-unclaimed.yml"
 }
 
 main

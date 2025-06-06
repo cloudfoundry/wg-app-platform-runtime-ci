@@ -1,0 +1,82 @@
+groups:
+- name: check-unclaimed
+  jobs:
+  - manual-check-trigger
+  - time-check-trigger
+  - check-lock-1
+
+- name: lock-manipulation
+  jobs:
+  - manual-lock-trigger
+  - manually-lock-1
+
+resource_types:
+- name: fork-pool
+  type: registry-image
+  source:
+    repository: ebroberson/pool-resource
+
+resources:
+- name: manual-check-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: manual-lock-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: time-check-trigger
+  type: time
+  source:
+    interval: '1h'
+
+- name: test-pool
+  type: fork-pool
+  icon: cloud-lock
+  source:
+    branch: pool-resource-check-unclaimed
+    pool: test-pool
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+
+jobs:
+- name: manual-check-trigger
+  plan:
+  - put: manual-check-trigger
+
+- name: manual-lock-trigger
+  plan:
+  - put: manual-lock-trigger
+
+- name: manually-lock-1
+  plan:
+  - in_parallel:
+    - get: manual-lock-trigger
+      trigger: true
+      passed: [ manual-lock-trigger ]
+    - get: test-pool
+  - put: test-pool
+    params:
+      claim: lock-1
+  
+- name: time-check-trigger
+  plan:
+  - put: time-check-trigger
+
+- name: check-lock-1
+  plan:
+  - in_parallel:
+    - get: manual-check-trigger
+      trigger: true
+      passed: [ manual-check-trigger ]
+    - get: time-check-trigger
+      trigger: true
+      passed: [ time-check-trigger ]
+    - get: test-pool
+  - put: check-lock-1
+    resource: test-pool
+    params:
+      check_unclaimed: lock-1
+      retry-delay: 1m
