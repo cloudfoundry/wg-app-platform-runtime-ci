@@ -18,8 +18,7 @@ function run() {
     sync_package policy-server \
       -app code.cloudfoundry.org/policy-server/cmd/policy-server \
       -app code.cloudfoundry.org/policy-server/cmd/policy-server-internal \
-      -app code.cloudfoundry.org/policy-server/cmd/policy-server-asg-syncer \
-      -app code.cloudfoundry.org/policy-server/cmd/migrate-db &
+      -app code.cloudfoundry.org/policy-server/cmd/policy-server-asg-syncer &
 
     sync_package bosh-dns-adapter \
       -app code.cloudfoundry.org/bosh-dns-adapter &

@@ -39,7 +39,12 @@ groups:
   - manual-cleanup-trigger
   - check-work-locks
   - cleanup-env
-  - release-work-locks
+  - release-work-lock-cats
+  - release-work-lock-prepare-env
+  - release-work-lock-export-release
+  - release-work-lock-cf-networking-acceptance
+  - release-work-lock-service-discovery-acceptance
+  - release-work-lock-service-discovery-performance
   - release-env-lock
 
 - name: version
@@ -1596,18 +1601,65 @@ jobs:
       params:
         release: cf-networking-release-env-lock
 
-- name: release-work-locks
+- name: release-work-lock-cats
   plan:
-  - get: cf-networking-release-lock-cats
-  - get: cf-networking-release-lock-cf-networking-acceptance
-  - get: cf-networking-release-lock-export-release
-  - get: cf-networking-release-lock-prepare-env
-  - get: cf-networking-release-lock-service-discovery-acceptance
-  - get: cf-networking-release-lock-service-discovery-performance
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
-  - try: *release-work-locks
+  - get: cf-networking-release-lock-cats
+  - put: cf-networking-release-lock-cats
+    params:
+      release: cf-networking-release-lock-cats
+
+- name: release-work-lock-cf-networking-acceptance
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: cf-networking-release-lock-cf-networking-acceptance
+  - put: cf-networking-release-lock-cf-networking-acceptance
+    params:
+      release: cf-networking-release-lock-cf-networking-acceptance
+
+- name: release-work-lock-export-release
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: cf-networking-release-lock-export-release
+  - put: cf-networking-release-lock-export-release
+    params:
+      release: cf-networking-release-lock-export-release
+
+- name: release-work-lock-prepare-env
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: cf-networking-release-lock-prepare-env
+  - put: cf-networking-release-lock-prepare-env
+    params:
+      release: cf-networking-release-lock-prepare-env
+
+- name: release-work-lock-service-discovery-acceptance
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: cf-networking-release-lock-service-discovery-acceptance
+  - put: cf-networking-release-lock-service-discovery-acceptance
+    params:
+      release: cf-networking-release-lock-service-discovery-acceptance
+
+- name: release-work-lock-service-discovery-performance
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: cf-networking-release-lock-service-discovery-performance
+  - put: cf-networking-release-lock-service-discovery-performance
+    params:
+      release: cf-networking-release-lock-service-discovery-performance
 
 - name: release-env-lock
   plan:
@@ -1615,10 +1667,9 @@ jobs:
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
-  - try:
-      put: cf-networking-release-env-lock
-      params:
-        release: cf-networking-release-env-lock
+  - put: cf-networking-release-env-lock
+    params:
+      release: cf-networking-release-env-lock
 
 
 #! versioning
