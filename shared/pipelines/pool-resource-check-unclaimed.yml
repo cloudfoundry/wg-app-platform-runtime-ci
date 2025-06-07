@@ -1,14 +1,15 @@
 groups:
-- name: check-unclaimed
+- name: test-pool-resource
   jobs:
-  - manual-check-trigger
-  - time-check-trigger
+  - manually-lock-1
+  - manually-unlock-1
   - check-lock-1
 
-- name: lock-manipulation
+- name: original-pool-resource
   jobs:
-  - manual-lock-trigger
-  - manually-lock-1
+  - manually-lock-2
+  - manually-unlock-2
+  - check-lock-2
 
 resource_types:
 - name: fork-pool
@@ -17,20 +18,14 @@ resource_types:
     repository: ebroberson/pool-resource
 
 resources:
-- name: manual-check-trigger
-  type: time
+- name: original-pool
+  type: pool
+  icon: cloud-lock
   source:
-    interval: '1m'
-
-- name: manual-lock-trigger
-  type: time
-  source:
-    interval: '1m'
-
-- name: time-check-trigger
-  type: time
-  source:
-    interval: '1h'
+    branch: pool-resource-check-unclaimed
+    pool: test-pool
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: test-pool
   type: fork-pool
@@ -42,41 +37,56 @@ resources:
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 jobs:
-- name: manual-check-trigger
-  plan:
-  - put: manual-check-trigger
-
-- name: manual-lock-trigger
-  plan:
-  - put: manual-lock-trigger
-
 - name: manually-lock-1
   plan:
   - in_parallel:
-    - get: manual-lock-trigger
-      trigger: true
-      passed: [ manual-lock-trigger ]
     - get: test-pool
-  - put: test-pool
+  - put: lock-1
+    resource: test-pool
     params:
       claim: lock-1
-  
-- name: time-check-trigger
+
+- name: manually-unlock-1
   plan:
-  - put: time-check-trigger
+  - in_parallel:
+    - get: test-pool
+  - put: lock-1
+    resource: test-pool
+    params:
+      release: lock-1
 
 - name: check-lock-1
   plan:
   - in_parallel:
-    - get: manual-check-trigger
-      trigger: true
-      passed: [ manual-check-trigger ]
-    - get: time-check-trigger
-      trigger: true
-      passed: [ time-check-trigger ]
     - get: test-pool
   - put: check-lock-1
     resource: test-pool
     params:
       check_unclaimed: lock-1
+      retry-delay: 1m
+
+
+- name: manually-lock-2
+  plan:
+  - in_parallel:
+    - get: original-pool
+  - put: original-pool
+    params:
+      claim: lock-2
+  
+- name: manually-unlock-2
+  plan:
+  - in_parallel:
+    - get: original-pool
+  - put: original-pool
+    params:
+      release: lock-2
+  
+- name: check-lock-2
+  plan:
+  - get: original-pool
+  - put: check-lock-2
+    resource: original-pool
+    params:
+      check: test-pool/lock-2
       retry-delay: 1m
