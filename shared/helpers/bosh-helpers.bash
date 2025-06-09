@@ -95,7 +95,7 @@ export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)"
 export CF_AZ=$(bosh int "${manifest}" --path /instance_groups/0/azs/0)
 export CF_NETWORK=$(bosh int "${cloud_config}" --path /networks/0/name)
 export CF_NETWORK_CIDR=$(bosh int "${cloud_config}" --path /networks/0/subnets/0/range)
-export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)
+export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)"
     else
         echo  "export CF_STEMCELL_OS=$(bosh int "${manifest}" --path /stemcells/0/os)
 export CF_AZ=$(bosh int "${manifest}" --path /instance_groups/0/azs/0)
