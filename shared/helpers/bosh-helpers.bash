@@ -90,6 +90,13 @@ function bosh_extract_manifest_defaults_from_cf(){
 export CF_AZ=$(bosh int "${manifest}" --path /instance_groups/0/azs/0)
 export CF_NETWORK=$(bosh int "${manifest}" --path /instance_groups/0/networks/0/name)
 export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)"
+    elif [[ "$(is_shepherd_v1_deployment)" == "yes" ]]; then
+        echo  "export CF_STEMCELL_OS=$(bosh int "${manifest}" --path /stemcells/0/os)
+export CF_AZ=$(bosh int "${manifest}" --path /instance_groups/0/azs/0)
+export CF_NETWORK=$(bosh int "${cloud_config}" --path /networks/0/name)
+export CF_NETWORK_CIDR=$(bosh int "${cloud_config}" --path /networks/0/subnets/0/range)
+export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)
+export CF_LARGE_VM_TYPE=e2-standard-8"
     else
         echo  "export CF_STEMCELL_OS=$(bosh int "${manifest}" --path /stemcells/0/os)
 export CF_AZ=$(bosh int "${manifest}" --path /instance_groups/0/azs/0)
