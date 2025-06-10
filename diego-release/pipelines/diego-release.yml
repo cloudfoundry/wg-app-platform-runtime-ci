@@ -1138,7 +1138,8 @@ jobs:
 - name: claim-env
   serial: true
   on_abort: &release-work-locks
-    do:
+    in_parallel:
+      steps:
       - put: diego-release-lock-prepare-env
         params:
           release: diego-release-lock-prepare-env
