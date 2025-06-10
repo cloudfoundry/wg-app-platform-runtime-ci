@@ -1487,14 +1487,6 @@ jobs:
       passed: [ claim-env ]
     - get: garden-runc-release-lock-export-release
       passed: [ claim-env ]
-  - try:
-      do:
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-garden-env
-            DEPLOYMENT_NAME: cf
   - task: prepare-cf-deployment-env
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
@@ -1722,21 +1714,12 @@ jobs:
     - get: windows-utilities-release
     - get: cf-deployment-concourse-tasks
     - get: garden-runc-release-lock-gatsw
-      passed: [ prepare-env ]
   - task: upload-windows-stemcell
     file: ci/shared/tasks/bosh-upload-stemcell/linux.yml
     image: image
     params:
       BBL_STATE_DIR: bbl-garden-env
       STEMCELL_URL: https://bosh.io/d/stemcells/bosh-google-kvm-windows2019-go_agent
-  - try:
-      do:
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-garden-env
-            DEPLOYMENT_NAME: gatsw
   - task: bosh-deploy-gatsw
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -1785,14 +1768,6 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: garden-runc-release-lock-gats-with-cpu-throttling
       passed: [ prepare-env ]
-  - try:
-      do:
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-garden-env
-            DEPLOYMENT_NAME: gats-with-cpu-throttling
   - task: bosh-deploy-gats
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -1836,14 +1811,6 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: garden-runc-release-lock-gats-with-runc
       passed: [ prepare-env ]
-  - try:
-      do:
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-garden-env
-            DEPLOYMENT_NAME: gats-with-runc
   - task: bosh-deploy-gats
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -1895,14 +1862,6 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: garden-runc-release-lock-gats-with-containerd
       passed: [ prepare-env ]
-  - try:
-      do:
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-garden-env
-            DEPLOYMENT_NAME: gats-with-containerd
   - task: bosh-deploy-gats
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -1955,7 +1914,6 @@ jobs:
     - get: garden-ci-artifacts-release
     - get: cf-deployment-concourse-tasks
     - get: garden-runc-release-lock-gats-with-containerd-cgroupsv2
-      passed: [ prepare-env ]
   - task: upload-noble-stemcell
     file: ci/shared/tasks/bosh-upload-stemcell/linux.yml
     image: image
@@ -2009,7 +1967,6 @@ jobs:
       trigger: true
     - get: cf-deployment-concourse-tasks
     - get: garden-runc-release-lock-export-release
-      passed: [ prepare-env ]
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
