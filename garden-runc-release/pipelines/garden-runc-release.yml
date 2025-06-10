@@ -1354,7 +1354,8 @@ jobs:
 - name: claim-env
   serial: true
   on_abort: &release-work-locks
-    do:
+    in_parallel:
+      steps:
       - put: garden-runc-release-lock-prepare-env
         params:
           release: garden-runc-release-lock-prepare-env
@@ -1972,6 +1973,7 @@ jobs:
         WITH_CONTAINERD_MODE=true
         WITH_CPU_THROTTLING=false
         CF_STEMCELL_OS=ubuntu-noble
+      BBL_STATE_DIR: bbl-garden-env
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
