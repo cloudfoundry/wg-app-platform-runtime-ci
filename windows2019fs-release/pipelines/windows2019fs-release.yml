@@ -638,7 +638,6 @@ jobs:
       passed: [prepare-env]
     - get: cf-deployment-concourse-tasks
     - get: windows2019fs-release-lock-export-release
-      passed: [prepare-env]
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
