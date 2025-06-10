@@ -250,6 +250,7 @@ resources:
   type: time
   icon: clock
   source:
+    initial_version: true
     interval: '168h'
     start: 01:00
     stop: 01:59
