@@ -1202,7 +1202,7 @@ jobs:
         CONFIG=$PWD/input-01/cf-networking-acceptance-tests.json
         APPS_DIR=$PWD/repo/src/example-apps
       DIR: src/code.cloudfoundry.org/test/acceptance
-      FLAGS: "--procs=1" #!TODO: acceptance tests can't run in parallel, overwrite default ginkgo flag to run in serial
+      FLAGS: "--trace --keep-going --race --randomize-all --timeout 1h  -r --fail-on-pending --nodes=1 --flake-attempts=5" #!TODO: acceptance tests can't run in parallel, overwrite default ginkgo flag to run in serial
 
 - name: run-service-discovery-performance-tests
   serial: true
