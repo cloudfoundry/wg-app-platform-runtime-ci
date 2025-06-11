@@ -1935,16 +1935,18 @@ jobs:
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-garden-env
       DEPLOYMENT_NAME: gats-with-containerd-cgroupsv2
       ERRAND_NAME: gats
       INSTANCE: gats
   - task: run-gpats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-garden-env
       DEPLOYMENT_NAME: gats-with-containerd-cgroupsv2
       ERRAND_NAME: gpats
       INSTANCE: gpats

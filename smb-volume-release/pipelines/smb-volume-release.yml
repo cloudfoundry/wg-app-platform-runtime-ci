@@ -1185,27 +1185,27 @@ jobs:
   - put: check-lock-prepare-env
     resource: smb-volume-release-lock-prepare-env
     params:
-      claim: smb-volume-release-lock-prepare-env
+      check: smb-volume-release-lock-prepare-env
       retry-delay: 10m
   - put: check-lock-export-release
     resource: smb-volume-release-lock-export-release
     params:
-      claim: smb-volume-release-lock-export-release
+      check: smb-volume-release-lock-export-release
       retry-delay: 10m
   - put: check-lock-cats
     resource: smb-volume-release-lock-cats
     params:
-      claim: smb-volume-release-lock-cats
+      check: smb-volume-release-lock-cats
       retry-delay: 10m
   - put: check-lock-dockerdriver-integration
     resource: smb-volume-release-lock-dockerdriver-integration
     params:
-      claim: smb-volume-release-lock-dockerdriver-integration
+      check: smb-volume-release-lock-dockerdriver-integration
       retry-delay: 10m
   - put: check-lock-volume-service-acceptance
     resource: smb-volume-release-lock-volume-service-acceptance
     params:
-      claim: smb-volume-release-lock-volume-service-acceptance
+      check: smb-volume-release-lock-volume-service-acceptance
       retry-delay: 10m
 
 - name: cleanup-env
