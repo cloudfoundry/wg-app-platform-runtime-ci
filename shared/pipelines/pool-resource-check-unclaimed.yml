@@ -3,7 +3,12 @@ groups:
   jobs:
   - manually-lock-1
   - manually-unlock-1
-  - check-lock-1
+  - check-unclaimed-lock-1
+  - check-claimed-lock-1
+  - manually-lock-3
+  - manually-unlock-3
+  - check-unclaimed-lock-3
+  - check-claimed-lock-3
 
 - name: original-pool-resource
   jobs:
@@ -27,7 +32,16 @@ resources:
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
-- name: test-pool
+- name: test-pool-1
+  type: fork-pool
+  icon: cloud-lock
+  source:
+    branch: pool-resource-check-unclaimed
+    pool: test-pool
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+
+- name: test-pool-3
   type: fork-pool
   icon: cloud-lock
   source:
@@ -40,53 +54,117 @@ jobs:
 - name: manually-lock-1
   plan:
   - in_parallel:
-    - get: test-pool
-  - put: lock-1
-    resource: test-pool
+    - get: lock-1-lock
+      resource: test-pool-1
+  - put: lock-1-lock
+    resource: test-pool-1
     params:
       claim: lock-1
 
 - name: manually-unlock-1
   plan:
   - in_parallel:
-    - get: test-pool
-  - put: lock-1
-    resource: test-pool
+    - get: lock-1-lock
+      resource: test-pool-1
+  - put: lock-1-lock
+    resource: test-pool-1
     params:
-      release: lock-1
+      release: lock-1-lock
 
-- name: check-lock-1
+- name: check-unclaimed-lock-1
   plan:
   - in_parallel:
-    - get: test-pool
-  - put: check-lock-1
-    resource: test-pool
+    - get: lock-1-lock
+      resource: test-pool-1
+  - put: check-unclaimed-lock-1
+    resource: test-pool-1
     params:
-      check_unclaimed: lock-1
+      check_unclaimed: lock-1-lock
       retry-delay: 1m
 
+- name: check-claimed-lock-1
+  plan:
+  - in_parallel:
+    - get: lock-1-lock
+      resource: test-pool-1
+  - put: check-claimed-lock-1
+    resource: test-pool-1
+    params:
+      check: lock-1-lock
+      retry-delay: 1m
+
+# for pool-resource ALWAYS use get/put AND resource definitions
+# when checking/releasing locks ALWAYS use the name of the PUT step that claimed it
 
 - name: manually-lock-2
   plan:
   - in_parallel:
-    - get: original-pool
-  - put: original-pool
+    - get: lock-2-lock
+      resource: original-pool
+  - put: lock-2-lock
+    resource: original-pool
     params:
       claim: lock-2
   
 - name: manually-unlock-2
   plan:
   - in_parallel:
-    - get: original-pool
-  - put: original-pool
+    - get: lock-2-lock
+      resource: original-pool
+  - put: lock-2-lock
+    resource: original-pool
     params:
-      release: lock-2
+      release: lock-2-lock
   
 - name: check-lock-2
   plan:
-  - get: original-pool
+  - get: lock-2-lock
+    resource: original-pool
   - put: check-lock-2
     resource: original-pool
     params:
-      check: test-pool/lock-2
+      check: lock-2-lock
       retry-delay: 1m
+
+- name: manually-lock-3
+  plan:
+  - in_parallel:
+    - get: lock-3-lock
+      resource: test-pool-3
+  - put: lock-3-lock
+    resource: test-pool-3
+    params:
+      claim: lock-3
+
+- name: manually-unlock-3
+  plan:
+  - in_parallel:
+    - get: lock-3-lock
+      resource: test-pool-3
+  - put: lock-3-lock
+    resource: test-pool-3
+    params:
+      release: lock-3-lock
+
+- name: check-unclaimed-lock-3
+  plan:
+  - in_parallel:
+    - get: lock-3-lock
+      resource: test-pool-3
+  - put: check-unclaimed-lock-3
+    resource: test-pool-3
+    params:
+      check_unclaimed: lock-3-lock
+      retry-delay: 1m
+
+- name: check-claimed-lock-3
+  plan:
+  - in_parallel:
+    - get: lock-3-lock
+      resource: test-pool-3
+  - put: check-claimed-lock-3
+    resource: test-pool-3
+    params:
+      check: lock-3-lock
+      retry-delay: 1m
+
