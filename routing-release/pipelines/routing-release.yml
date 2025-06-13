@@ -38,7 +38,13 @@ groups:
   - manual-cleanup-trigger
   - check-work-locks
   - cleanup-env
-  - release-work-locks
+  - release-work-lock-cats
+  - release-work-lock-cfsmoke
+  - release-work-lock-cipher-suite
+  - release-work-lock-drats
+  - release-work-lock-export-release
+  - release-work-lock-prepare-env
+  - release-work-lock-rats
   - release-env-lock
 
 - name: version
@@ -1573,31 +1579,85 @@ jobs:
         params:
           release: routing-release-env-lock 
 
-- name: release-work-locks
+- name: release-work-lock-prepare-env
   plan:
-  - get: routing-release-lock-prepare-env
-  - get: routing-release-lock-cats
-  - get: routing-release-lock-rats
-  - get: routing-release-lock-drats
-  - get: routing-release-lock-cfsmoke
-  - get: routing-release-lock-cipher-suite
-  - get: routing-release-lock-export-release
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
-  - try: *release-work-locks
+  - get: routing-release-lock-prepare-env
+  - put: routing-release-lock-prepare-env
+    params:
+      release: routing-release-lock-prepare-env
+
+- name: release-work-lock-cats
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: routing-release-lock-cats
+  - put: routing-release-lock-cats
+    params:
+      release: routing-release-lock-cats
+
+- name: release-work-lock-rats
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: routing-release-lock-rats
+  - put: routing-release-lock-rats
+    params:
+      release: routing-release-lock-rats
+
+- name: release-work-lock-drats
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: routing-release-lock-drats
+  - put: routing-release-lock-drats
+    params:
+      release: routing-release-lock-drats
+
+- name: release-work-lock-cfsmoke
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: routing-release-lock-cfsmoke
+  - put: routing-release-lock-cfsmoke
+    params:
+      release: routing-release-lock-cfsmoke
+
+- name: release-work-lock-cipher-suite
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: routing-release-lock-cipher-suite
+  - put: routing-release-lock-cipher-suite
+    params:
+      release: routing-release-lock-cipher-suite
+
+- name: release-work-lock-export-release
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: routing-release-lock-export-release
+  - put: routing-release-lock-export-release
+    params:
+      release: routing-release-lock-export-release
 
 - name: release-env-lock
   plan:
-  - get: routing-release-env-lock
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
-  - try:
-      do:
-      - put: routing-release-env-lock
-        params:
-          release: routing-release-env-lock
+  - get: routing-release-env-lock
+  - put: routing-release-env-lock
+    params:
+      release: routing-release-env-lock
 
 #! versioning
 - name: patch-bump

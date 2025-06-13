@@ -27,7 +27,9 @@ groups:
   - manual-cleanup-trigger
   - check-work-locks
   - cleanup-env
-  - release-work-locks
+  - release-work-lock-export-release
+  - release-work-lock-prepare-env
+  - release-work-lock-wats
   - release-env-lock
 
 resource_types:
@@ -862,26 +864,42 @@ jobs:
         params:
           release: windows2019fs-release-env-lock
 
-- name: release-work-locks
+- name: release-work-lock-prepare-env
   plan:
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
   - get: windows2019fs-release-lock-prepare-env
+  - put: windows2019fs-release-lock-prepare-env
+    params:
+      release: windows2019fs-release-lock-prepare-env
+
+- name: release-work-lock-export-release
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
   - get: windows2019fs-release-lock-export-release
+  - put: windows2019fs-release-lock-export-release
+    params:
+      release: windows2019fs-release-lock-export-release
+
+- name: release-work-lock-wats
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
   - get: windows2019fs-release-lock-wats
-  - try: *release-work-locks
+  - put: windows2019fs-release-lock-wats
+    params:
+      release: windows2019fs-release-lock-wats
 
 - name: release-env-lock
   plan:
-  - in_parallel:
-      steps:
-      - get: windows2019fs-release-env-lock
-      - get: manual-lock-release-trigger
-        trigger: true
-        passed: [ manual-lock-release-trigger ]
-  - try:
-      do:
-      - put: windows2019fs-release-env-lock
-        params:
-          release: windows2019fs-release-env-lock
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: windows2019fs-release-env-lock
+  - put: windows2019fs-release-env-lock
+    params:
+      release: windows2019fs-release-env-lock

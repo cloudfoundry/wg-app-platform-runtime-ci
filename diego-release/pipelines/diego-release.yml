@@ -40,7 +40,12 @@ groups:
   - manual-cleanup-trigger
   - check-work-locks
   - cleanup-env
-  - release-work-locks
+  - release-work-lock-bosh-restart
+  - release-work-lock-cats
+  - release-work-lock-export-release
+  - release-work-lock-prepare-env
+  - release-work-lock-vizzini
+  - release-work-lock-wats
   - release-env-lock
 
 - name: version
@@ -1756,20 +1761,65 @@ jobs:
         params:
           release: diego-release-env-lock
 
-- name: release-work-locks
+- name: release-work-lock-prepare-env
   plan:
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
   - get: diego-release-lock-prepare-env
+  - put: diego-release-lock-prepare-env
+    params:
+      release: diego-release-lock-prepare-env
+
+- name: release-work-lock-bosh-restart
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
   - get: diego-release-lock-bosh-restart
+  - put: diego-release-lock-bosh-restart
+    params:
+      release: diego-release-lock-bosh-restart
+
+- name: release-work-lock-cats
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
   - get: diego-release-lock-cats
+  - put: diego-release-lock-cats
+    params:
+      release: diego-release-lock-cats
+
+- name: release-work-lock-export-release
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
   - get: diego-release-lock-export-release
+  - put: diego-release-lock-export-release
+    params:
+      release: diego-release-lock-export-release
+
+- name: release-work-lock-vizzini
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
   - get: diego-release-lock-vizzini
+  - put: diego-release-lock-vizzini
+    params:
+      release: diego-release-lock-vizzini
+
+- name: release-work-lock-wats
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
   - get: diego-release-lock-wats
-  - try: 
-      do:
-      - *release-work-locks
+  - put: diego-release-lock-wats
+    params:
+      release: diego-release-lock-wats
 
 - name: release-env-lock
   plan:
@@ -1777,10 +1827,9 @@ jobs:
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
-  - try:
-      put: diego-release-env-lock
-      params:
-        release: diego-release-env-lock
+  - put: diego-release-env-lock
+    params:
+      release: diego-release-env-lock
 
 
 #! versioning

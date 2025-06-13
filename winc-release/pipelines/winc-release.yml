@@ -33,7 +33,10 @@ groups:
   - manual-cleanup-trigger
   - check-work-locks
   - cleanup-env
-  - release-work-locks
+  - release-work-lock-export-release
+  - release-work-lock-gatsw
+  - release-work-lock-prepare-env
+  - release-work-lock-wats
   - release-env-lock
 
 - name: version
@@ -1290,29 +1293,55 @@ jobs:
         params:
           release: winc-release-env-lock
 
-- name: release-work-locks
+- name: release-work-lock-prepare-env
   plan:
-  - get: winc-release-env-lock
-  - get: winc-release-lock-prepare-env
-  - get: winc-release-lock-export-release
-  - get: winc-release-lock-wats
-  - get: winc-release-lock-gatsw
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
-  - try: *release-work-locks
+  - get: winc-release-lock-prepare-env
+  - put: winc-release-lock-prepare-env
+    params:
+      release: winc-release-lock-prepare-env
+
+- name: release-work-lock-export-release
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: winc-release-lock-export-release
+  - put: winc-release-lock-export-release
+    params:
+      release: winc-release-lock-export-release
+
+- name: release-work-lock-wats
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: winc-release-lock-wats
+  - put: winc-release-lock-wats
+    params:
+      release: winc-release-lock-wats
+
+- name: release-work-lock-gatsw
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: winc-release-lock-gatsw
+  - put: winc-release-lock-gatsw
+    params:
+      release: winc-release-lock-gatsw
 
 - name: release-env-lock
   plan:
-  - get: winc-release-env-lock
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
-  - try:
-      do:
-      - put: winc-release-env-lock
-        params:
-          release: winc-release-env-lock
+  - get: winc-release-env-lock
+  - put: winc-release-env-lock
+    params:
+      release: winc-release-env-lock
 
 #! versioning
 - name: patch-bump

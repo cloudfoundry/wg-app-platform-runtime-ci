@@ -38,7 +38,15 @@ groups:
   - manual-cleanup-trigger
   - check-work-locks
   - cleanup-env
-  - release-work-locks
+  - release-work-lock-cats
+  - release-work-lock-export-release
+  - release-work-lock-gats-with-containerd
+  - release-work-lock-gats-with-containerd-cgroupsv2
+  - release-work-lock-gats-with-cpu-throttling
+  - release-work-lock-gats-with-runc
+  - release-work-lock-gatsw
+  - release-work-lock-prepare-env
+  - release-work-lock-standalone-gdn-gats
   - release-env-lock
 
 - name: version
@@ -2262,14 +2270,6 @@ jobs:
         file: ci/shared/tasks/bosh-deld/linux.yml
         params:
           BBL_STATE_DIR: bbl-garden-env
-          DEPLOYMENT_NAME: gats-with-containerd-cgroupsv2
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-garden-env
           DEPLOYMENT_NAME: gats-with-cpu-throttling
   - try:
       do:
@@ -2288,35 +2288,105 @@ jobs:
         params:
           release: garden-runc-release-env-lock 
 
-- name: release-work-locks
+- name: release-work-lock-prepare-env
   plan:
-  - get: garden-runc-release-lock-prepare-env
-  - get: garden-runc-release-lock-cats
-  - get: garden-runc-release-lock-gats-with-containerd
-  - get: garden-runc-release-lock-gats-with-containerd-cgroupsv2
-  - get: garden-runc-release-lock-gats-with-cpu-throttling
-  - get: garden-runc-release-lock-gats-with-runc
-  - get: garden-runc-release-lock-gatsw
-  - get: garden-runc-release-lock-standalone-gdn-gats
-  - get: garden-runc-release-lock-export-release
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
-  - try: *release-work-locks
+  - get: garden-runc-release-lock-prepare-env
+  - put: garden-runc-release-lock-prepare-env
+    params:
+      release: garden-runc-release-lock-prepare-env
+
+- name: release-work-lock-cats
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: garden-runc-release-lock-cats
+  - put: garden-runc-release-lock-cats
+    params:
+      release: garden-runc-release-lock-cats
+
+- name: release-work-lock-gats-with-containerd
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: garden-runc-release-lock-gats-with-containerd
+  - put: garden-runc-release-lock-gats-with-containerd
+    params:
+      release: garden-runc-release-lock-gats-with-containerd
+
+- name: release-work-lock-gats-with-containerd-cgroupsv2
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: garden-runc-release-lock-gats-with-containerd-cgroupsv2
+  - put: garden-runc-release-lock-gats-with-containerd-cgroupsv2
+    params:
+      release: garden-runc-release-lock-gats-with-containerd-cgroupsv2
+
+- name: release-work-lock-gats-with-cpu-throttling
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: garden-runc-release-lock-gats-with-cpu-throttling
+  - put: garden-runc-release-lock-gats-with-cpu-throttling
+    params:
+      release: garden-runc-release-lock-gats-with-cpu-throttling
+
+- name: release-work-lock-gats-with-runc
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: garden-runc-release-lock-gats-with-runc
+  - put: garden-runc-release-lock-gats-with-runc
+    params:
+      release: garden-runc-release-lock-gats-with-runc
+
+- name: release-work-lock-gatsw
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: garden-runc-release-lock-gatsw
+  - put: garden-runc-release-lock-gatsw
+    params:
+      release: garden-runc-release-lock-gatsw
+
+- name: release-work-lock-standalone-gdn-gats
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: garden-runc-release-lock-standalone-gdn-gats
+  - put: garden-runc-release-lock-standalone-gdn-gats
+    params:
+      release: garden-runc-release-lock-standalone-gdn-gats
+
+- name: release-work-lock-export-release
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: garden-runc-release-lock-export-release
+  - put: garden-runc-release-lock-export-release
+    params:
+      release: garden-runc-release-lock-export-release
 
 - name: release-env-lock
   plan:
-  - in_parallel:
-      steps:
-      - get: garden-runc-release-env-lock
-      - get: manual-lock-release-trigger
-        trigger: true
-        passed: [ manual-lock-release-trigger ]
-  - try:
-      do:
-      - put: garden-runc-release-env-lock
-        params:
-          release: garden-runc-release-env-lock 
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: garden-runc-release-env-lock
+  - put: garden-runc-release-env-lock
+    params:
+      release: garden-runc-release-env-lock 
 
 #! versioning
 - name: patch-bump

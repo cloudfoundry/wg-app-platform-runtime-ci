@@ -34,7 +34,11 @@ groups:
   - manual-cleanup-trigger
   - check-work-locks
   - cleanup-env
-  - release-work-locks
+  - release-work-lock-cats
+  - release-work-lock-dockerdriver-integration
+  - release-work-lock-export-release
+  - release-work-lock-prepare-env
+  - release-work-lock-volume-service-acceptance
   - release-env-lock
 
 - name: version
@@ -1259,31 +1263,65 @@ jobs:
         params:
           release: smb-volume-release-env-lock
 
-- name: release-work-locks
+- name: release-work-lock-prepare-env
   plan:
-  - get: smb-volume-release-lock-prepare-env
-  - get: smb-volume-release-lock-export-release
-  - get: smb-volume-release-lock-cats
-  - get: smb-volume-release-lock-dockerdriver-integration
-  - get: smb-volume-release-lock-volume-service-acceptance
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
-  - try: *release-work-locks
+  - get: smb-volume-release-lock-prepare-env
+  - put: smb-volume-release-lock-prepare-env
+    params:
+      release: smb-volume-release-lock-prepare-env
+
+- name: release-work-lock-export-release
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: smb-volume-release-lock-export-release
+  - put: smb-volume-release-lock-export-release
+    params:
+      release: smb-volume-release-lock-export-release
+
+- name: release-work-lock-cats
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: smb-volume-release-lock-cats
+  - put: smb-volume-release-lock-cats
+    params:
+      release: smb-volume-release-lock-cats
+
+- name: release-work-lock-dockerdriver-integration
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: smb-volume-release-lock-dockerdriver-integration
+  - put: smb-volume-release-lock-dockerdriver-integration
+    params:
+      release: smb-volume-release-lock-dockerdriver-integration
+
+- name: release-work-lock-volume-service-acceptance
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: smb-volume-release-lock-volume-service-acceptance
+  - put: smb-volume-release-lock-volume-service-acceptance
+    params:
+      release: smb-volume-release-lock-volume-service-acceptance
 
 - name: release-env-lock
   plan:
-  - in_parallel:
-      steps:
-      - get: smb-volume-release-env-lock
-      - get: manual-lock-release-trigger
-        trigger: true
-        passed: [ manual-lock-release-trigger ]
-  - try:
-      do:
-      - put: smb-volume-release-env-lock
-        params:
-          release: smb-volume-release-env-lock
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: smb-volume-release-env-lock
+  - put: smb-volume-release-env-lock
+    params:
+      release: smb-volume-release-env-lock
 
 #! versioning
 - name: patch-bump

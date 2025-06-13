@@ -35,7 +35,12 @@ groups:
   - manual-cleanup-trigger
   - check-work-locks
   - cleanup-env
-  - release-work-locks
+  - release-work-lock-cats
+  - release-work-lock-dockerdriver-integration
+  - release-work-lock-export-release
+  - release-work-lock-map-fs-performance-acceptance
+  - release-work-lock-prepare-env
+  - release-work-lock-volume-service-acceptance
   - release-env-lock
 
 - name: version
@@ -1434,30 +1439,75 @@ jobs:
         params:
           release: nfs-volume-release-env-lock
 
-- name: release-work-locks
+- name: release-work-lock-prepare-env
   plan:
-  - get: nfs-volume-release-lock-prepare-env
-  - get: nfs-volume-release-lock-export-release
-  - get: nfs-volume-release-lock-cats
-  - get: nfs-volume-release-lock-dockerdriver-integration
-  - get: nfs-volume-release-lock-volume-service-acceptance
-  - get: nfs-volume-release-lock-map-fs-performance-acceptance
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
-  - try: *release-work-locks
+  - get: nfs-volume-release-lock-prepare-env
+  - put: nfs-volume-release-lock-prepare-env
+    params:
+      release: nfs-volume-release-lock-prepare-env
+
+- name: release-work-lock-export-release
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: nfs-volume-release-lock-export-release
+  - put: nfs-volume-release-lock-export-release
+    params:
+      release: nfs-volume-release-lock-export-release
+
+- name: release-work-lock-cats
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: nfs-volume-release-lock-cats
+  - put: nfs-volume-release-lock-cats
+    params:
+      release: nfs-volume-release-lock-cats
+
+- name: release-work-lock-dockerdriver-integration
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: nfs-volume-release-lock-dockerdriver-integration
+  - put: nfs-volume-release-lock-dockerdriver-integration
+    params:
+      release: nfs-volume-release-lock-dockerdriver-integration
+
+- name: release-work-lock-volume-service-acceptance
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: nfs-volume-release-lock-volume-service-acceptance
+  - put: nfs-volume-release-lock-volume-service-acceptance
+    params:
+      release: nfs-volume-release-lock-volume-service-acceptance
+
+- name: release-work-lock-map-fs-performance-acceptance
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: nfs-volume-release-lock-map-fs-performance-acceptance
+  - put: nfs-volume-release-lock-map-fs-performance-acceptance
+    params:
+      release: nfs-volume-release-lock-map-fs-performance-acceptance
 
 - name: release-env-lock
   plan:
-  - get: nfs-volume-release-env-lock
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
-  - try:
-      do:
-      - put: nfs-volume-release-env-lock
-        params:
-          release: nfs-volume-release-env-lock
+  - get: nfs-volume-release-env-lock
+  - put: nfs-volume-release-env-lock
+    params:
+      release: nfs-volume-release-env-lock
 
 #! versioning
 - name: patch-bump

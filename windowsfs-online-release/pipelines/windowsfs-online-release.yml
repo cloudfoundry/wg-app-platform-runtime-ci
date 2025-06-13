@@ -27,7 +27,9 @@ groups:
   - manual-cleanup-trigger
   - check-work-locks
   - cleanup-env
-  - release-work-locks
+  - release-work-lock-export-release
+  - release-work-lock-prepare-env
+  - release-work-lock-wats
   - release-env-lock
 
 resource_types:
@@ -809,24 +811,42 @@ jobs:
         params:
           release: windowsfs-online-release-env-lock
 
-- name: release-work-locks
+- name: release-work-lock-prepare-env
   plan:
-  - get: windowsfs-online-release-lock-prepare-env
-  - get: windowsfs-online-release-lock-export-release
-  - get: windowsfs-online-release-lock-wats
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
-  - try: *release-work-locks
+  - get: windowsfs-online-release-lock-prepare-env
+  - put: windowsfs-online-release-lock-prepare-env
+    params:
+      release: windowsfs-online-release-lock-prepare-env
+
+- name: release-work-lock-export-release
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: windowsfs-online-release-lock-export-release
+  - put: windowsfs-online-release-lock-export-release
+    params:
+      release: windowsfs-online-release-lock-export-release
+
+- name: release-work-lock-wats
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: windowsfs-online-release-lock-wats
+  - put: windowsfs-online-release-lock-wats
+    params:
+      release: windowsfs-online-release-lock-wats
 
 - name: release-env-lock
   plan:
-  - get: windowsfs-online-release-env-lock
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
-  - try:
-      do:
-      - put: windowsfs-online-release-env-lock
-        params:
-          release: windowsfs-online-release-env-lock
+  - get: windowsfs-online-release-env-lock
+  - put: windowsfs-online-release-env-lock
+    params:
+      release: windowsfs-online-release-env-lock

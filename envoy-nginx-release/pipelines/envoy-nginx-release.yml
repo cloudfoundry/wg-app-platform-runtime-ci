@@ -31,7 +31,9 @@ groups:
   - manual-cleanup-trigger
   - check-work-locks
   - cleanup-env
-  - release-work-locks
+  - release-work-lock-export-release
+  - release-work-lock-prepare-env
+  - release-work-lock-wats
   - release-env-lock
 
 - name: version
@@ -957,15 +959,35 @@ jobs:
         params:
           release: envoy-nginx-release-env-lock 
 
-- name: release-work-locks
+- name: release-work-lock-prepare-env
   plan:
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
   - get: envoy-nginx-release-lock-prepare-env
+  - put: envoy-nginx-release-lock-prepare-env
+    params:
+      release: envoy-nginx-release-lock-prepare-env
+
+- name: release-work-lock-export-release
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
   - get: envoy-nginx-release-lock-export-release
+  - put: envoy-nginx-release-lock-export-release
+    params:
+      release: envoy-nginx-release-lock-export-release
+
+- name: release-work-lock-wats
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
   - get: envoy-nginx-release-lock-wats
-  - try: *release-work-locks
+  - put: envoy-nginx-release-lock-wats
+    params:
+      release: envoy-nginx-release-lock-wats
 
 - name: release-env-lock
   plan:
@@ -973,10 +995,9 @@ jobs:
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
-  - try:
-      put: envoy-nginx-release-env-lock
-      params:
-        release: envoy-nginx-release-env-lock
+  - put: envoy-nginx-release-env-lock
+    params:
+      release: envoy-nginx-release-env-lock
 
 #! versioning
 - name: patch-bump

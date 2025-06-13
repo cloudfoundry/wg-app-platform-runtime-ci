@@ -32,7 +32,9 @@ groups:
   - manual-cleanup-trigger
   - check-work-locks
   - cleanup-env
-  - release-work-locks
+  - release-work-lock-cats
+  - release-work-lock-export-release
+  - release-work-lock-prepare-env
   - release-env-lock
 
 - name: version
@@ -964,27 +966,45 @@ jobs:
         params:
           release: nats-release-env-lock
 
-- name: release-work-locks
+- name: release-work-lock-prepare-env
   plan:
-  - get: nats-release-env-lock
-  - get: nats-release-lock-prepare-env
-  - get: nats-release-lock-cats
-  - get: nats-release-lock-export-release
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
-  - try: *release-work-locks
+  - get: nats-release-lock-prepare-env
+  - put: nats-release-lock-prepare-env
+    params:
+      release: nats-release-lock-prepare-env
+
+- name: release-work-lock-cats
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: nats-release-lock-cats
+  - put: nats-release-lock-cats
+    params:
+      release: nats-release-lock-cats
+
+- name: release-work-lock-export-release
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: nats-release-lock-export-release
+  - put: nats-release-lock-export-release
+    params:
+      release: nats-release-lock-export-release
 
 - name: release-env-lock
   plan:
-  - get: nats-release-env-lock
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
-  - try:
-      put: nats-release-env-lock
-      params:
-        release: nats-release-env-lock
+  - get: nats-release-env-lock
+  - put: nats-release-env-lock
+    params:
+      release: nats-release-env-lock
 
 #! versioning
 - name: patch-bump

@@ -29,7 +29,8 @@ groups:
   - manual-cleanup-trigger
   - check-work-locks
   - cleanup-env
-  - release-work-locks
+  - release-work-lock-export-release
+  - release-work-lock-prepare-env
   - release-env-lock
 
 - name: version
@@ -733,26 +734,35 @@ jobs:
         params:
           release: healthchecker-release-env-lock
 
-- name: release-work-locks
+- name: release-work-lock-prepare-env
   plan:
-  - get: healthchecker-release-lock-prepare-env
-  - get: healthchecker-release-lock-export-release
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
-  - try: *release-work-locks
+  - get: healthchecker-release-lock-prepare-env
+  - put: healthchecker-release-lock-prepare-env
+    params:
+      release: healthchecker-release-lock-prepare-env
+
+- name: release-work-lock-export-release
+  plan:
+  - get: manual-lock-release-trigger
+    trigger: true
+    passed: [ manual-lock-release-trigger ]
+  - get: healthchecker-release-lock-export-release
+  - put: healthchecker-release-lock-export-release
+    params:
+      release: healthchecker-release-lock-export-release
 
 - name: release-env-lock
   plan:
-  - get: healthchecker-release-env-lock
   - get: manual-lock-release-trigger
     trigger: true
     passed: [ manual-lock-release-trigger ]
-  - try:
-      do:
-      - put: healthchecker-release-env-lock
-        params:
-          release: healthchecker-release-env-lock
+  - get: healthchecker-release-env-lock
+  - put: healthchecker-release-env-lock
+    params:
+      release: healthchecker-release-env-lock
 
 #! versioning
 - name: patch-bump
