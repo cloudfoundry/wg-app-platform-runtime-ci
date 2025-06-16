@@ -61,6 +61,11 @@ resource_types:
     username: _json_key
     password: ((gcp-wg-arp-service-account/config-json))
     tag: latest
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: latest
 
 #! Define-Resources
 resources:
@@ -270,6 +275,12 @@ resources:
   source:
     interval: '1m'
 
+- name: slack-ci-channel
+  type: slack-notification
+  source:
+    url: ((slack-ci-channel/webhook))
+
+
 - name: github-release
   type: github-release
   icon: github
@@ -440,7 +451,7 @@ jobs:
       - get: updated-go-mod-groot-windows
       - get: updated-go-mod-winc
       - get: weekly
-        trigger: false
+        trigger: true
   - do:
     - task: cert-injector-bump-dependencies-go-mod
       file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
@@ -525,9 +536,9 @@ jobs:
     - get: repo
     - get: image
     - get: go-version
-      trigger: false
+      trigger: true
     - get: golang-release-latest
-      trigger: false
+      trigger: true
 
   - task: bump-golang-package-name
     image: image
@@ -564,12 +575,12 @@ jobs:
         params:
           globs:
           - x86_64-*-release-posix-seh-ucrt-*.7z
-        trigger: false
+        trigger: true
       - get: seven-zip
         params:
           globs:
           - 7z*.msi
-        trigger: false
+        trigger: true
   - do:
     - task: bump-bosh-blob-mingw
       image: image
@@ -613,7 +624,7 @@ jobs:
       - get: #@ "{}-repo".format(repo.name)
 #@ end
       - get: shared-templates
-        trigger: false
+        trigger: true
   - do:
     - task: sync-dot-github-dir-winc-release
       file: ci/shared/tasks/sync-dot-github-dir/linux.yml
@@ -1086,6 +1097,10 @@ jobs:
 #!        release: windows-worker-lock
 
 - name: ship-what
+  on_success:
+    put: slack-ci-channel
+    params:
+      text: ":concourse-succeeded: $BUILD_PIPELINE_NAME ship-what just ran. Maybe you should cut a release? $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME"
   plan:
     - in_parallel:
         steps:
