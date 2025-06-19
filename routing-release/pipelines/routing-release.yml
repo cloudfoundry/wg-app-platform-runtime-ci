@@ -1247,7 +1247,6 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: cf-smoke-tests-release
     - get: routing-release-lock-cfsmoke
-      passed: [prepare-env]
   - task: create-cfsmoke-config
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
     image: image
