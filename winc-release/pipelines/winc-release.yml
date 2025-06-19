@@ -792,7 +792,7 @@ jobs:
 
 - name: prepare-env
   serial: true
-  ensure:
+  on_success:
     put: winc-release-lock-prepare-env
     params:
       release: winc-release-lock-prepare-env

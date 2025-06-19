@@ -776,7 +776,7 @@ jobs:
 - name: prepare-env
   serial: true
   serial_groups: [acceptance]
-  ensure:
+  on_success:
     put: smb-volume-release-lock-prepare-env
     params:
       release: smb-volume-release-lock-prepare-env

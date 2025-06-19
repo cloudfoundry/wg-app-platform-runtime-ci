@@ -866,7 +866,7 @@ jobs:
 - name: prepare-env
   serial: true
   serial_groups: [acceptance]
-  ensure:
+  on_success:
     put: nfs-volume-release-lock-prepare-env
     params:
       release: nfs-volume-release-lock-prepare-env

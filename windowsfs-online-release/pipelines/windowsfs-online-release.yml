@@ -434,7 +434,7 @@ jobs:
 
 - name: prepare-env
   serial: true
-  ensure:
+  on_success:
     put: windowsfs-online-release-lock-prepare-env
     params:
       release: windowsfs-online-release-lock-prepare-env

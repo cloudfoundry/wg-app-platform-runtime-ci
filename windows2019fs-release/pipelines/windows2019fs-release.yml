@@ -453,7 +453,7 @@ jobs:
 
 - name: prepare-env
   serial: true
-  ensure:
+  on_success:
     put: windows2019fs-release-lock-prepare-env
     params:
       release: windows2019fs-release-lock-prepare-env

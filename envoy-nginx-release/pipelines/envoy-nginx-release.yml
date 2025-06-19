@@ -573,7 +573,7 @@ jobs:
 
 - name: prepare-env
   serial: true
-  ensure:
+  on_success:
     put: envoy-nginx-release-lock-prepare-env
     params:
       release: envoy-nginx-release-lock-prepare-env

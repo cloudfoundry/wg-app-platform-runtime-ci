@@ -875,7 +875,7 @@ jobs:
 
 - name: prepare-env
   serial: true
-  ensure:
+  on_success:
     put: routing-release-lock-prepare-env
     params:
       release: routing-release-lock-prepare-env

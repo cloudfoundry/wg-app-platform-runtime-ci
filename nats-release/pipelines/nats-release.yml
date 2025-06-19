@@ -572,13 +572,13 @@ jobs:
       BBL_STATE_DIR: bbl-nats-env
 
 - name: prepare-env
-  ensure:
+  serial: true
+  on_success:
     put: nats-release-lock-prepare-env
     params:
       release: nats-release-lock-prepare-env
   on_abort: *release-work-locks
   on_failure: *release-work-locks
-  serial: true
   plan:
   - in_parallel:
     - get: ci

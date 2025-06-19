@@ -1218,7 +1218,7 @@ jobs:
 - name: prepare-env
   serial: true
   serial_groups: [acceptance]
-  ensure:
+  on_success:
     put: diego-release-lock-prepare-env
     params:
       release: diego-release-lock-prepare-env 
