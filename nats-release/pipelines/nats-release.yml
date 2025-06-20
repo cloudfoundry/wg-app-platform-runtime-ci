@@ -28,13 +28,11 @@ groups:
 - name: cleanup
   jobs:
   - cleanup-time-gate
-  - manual-lock-release-trigger
+  - wait-for-env-lock-claim
+  - wait-for-acceptance-tests
   - manual-cleanup-trigger
-  - check-work-locks
   - cleanup-env
-  - release-work-lock-cats
-  - release-work-lock-export-release
-  - release-work-lock-prepare-env
+  - force-cleanup-env
   - release-env-lock
 
 - name: version
@@ -51,6 +49,11 @@ resource_types:
   source:
     repository: cfcommunity/slack-notification-resource
     tag: latest
+
+- name: fork-pool
+  type: registry-image
+  source:
+    repository: ebroberson/pool-resource
 
 #! Define-Resources
 resources:
@@ -174,18 +177,13 @@ resources:
     days:
       - Monday
 
-- name: lock-check-timer
+- name: cleanup-timer
   type: time
   icon: clock
   source:
     interval: '1h'
 
 - name: manual-release-trigger
-  type: time
-  source:
-    interval: '1m'
-
-- name: manual-lock-release-trigger
   type: time
   source:
     interval: '1m'
@@ -246,7 +244,7 @@ resources:
     json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
 - name: nats-release-env-lock
-  type: pool
+  type: fork-pool
   icon: cloud-lock
   source:
     branch: main
@@ -254,36 +252,6 @@ resources:
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
     paths: nats-release-env-lock
-
-- name: nats-release-lock-prepare-env
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: nats-release-lock-prepare-env
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: nats-release-lock-prepare-env
-
-- name: nats-release-lock-cats
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: nats-release-lock-cats
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: nats-release-lock-cats
-
-- name: nats-release-lock-export-release
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: nats-release-lock-export-release
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: nats-release-lock-export-release
 
 - name: image
   type: registry-image
@@ -307,10 +275,6 @@ jobs:
 - name: manual-release-trigger
   plan:
   - put: manual-release-trigger
-
-- name: manual-lock-release-trigger
-  plan:
-  - put: manual-lock-release-trigger
 
 - name: manual-cleanup-trigger
   plan:
@@ -517,18 +481,12 @@ jobs:
 
 - name: claim-env
   serial: true
-  on_abort: &release-work-locks
+  on_abort: &release-env-lock
     do:
-      - put: nats-release-lock-prepare-env
+      - put: nats-release-env-lock
         params:
-          release: nats-release-lock-prepare-env
-      - put: nats-release-lock-cats
-        params:
-          release: nats-release-lock-cats
-      - put: nats-release-lock-export-release
-        params:
-          release: nats-release-lock-export-release
-  on_failure: *release-work-locks
+          release: nats-release-env-lock
+  on_failure: *release-env-lock
   plan:
   - in_parallel:
     - get: manual-release-trigger
@@ -540,22 +498,10 @@ jobs:
       passed: [ release-time-gate ]
     - get: image
     - get: env
-  - get: nats-release-env-lock
-  - get: nats-release-lock-prepare-env
-  - get: nats-release-lock-cats
-  - get: nats-release-lock-export-release
+    - get: nats-release-env-lock
   - put: nats-release-env-lock
     params:
       claim: nats-release-env-lock
-  - put: nats-release-lock-prepare-env
-    params:
-      claim: nats-release-lock-prepare-env
-  - put: nats-release-lock-cats
-    params:
-      claim: nats-release-lock-cats
-  - put: nats-release-lock-export-release
-    params:
-      claim: nats-release-lock-export-release
   - task: start-bbl-envs
     image: image
     file: ci/shared/tasks/start-gcp-instance/linux.yml
@@ -573,12 +519,8 @@ jobs:
 
 - name: prepare-env
   serial: true
-  on_success:
-    put: nats-release-lock-prepare-env
-    params:
-      release: nats-release-lock-prepare-env
-  on_abort: *release-work-locks
-  on_failure: *release-work-locks
+  on_abort: *release-env-lock
+  on_failure: *release-env-lock
   plan:
   - in_parallel:
     - get: ci
@@ -592,13 +534,7 @@ jobs:
       passed: [ claim-env ]
     - get: nats-release-env-lock
       passed: [ claim-env ]
-    - get: nats-release-lock-prepare-env
-      passed: [ claim-env ]
-    - get: nats-release-lock-cats
-      passed: [ claim-env ]
-    - get: nats-release-lock-export-release
-      passed: [ claim-env ]
-  - try:
+  - try: &delete-cf-deployment
       do:
       - task: bosh-deld
         image: image
@@ -693,10 +629,6 @@ jobs:
 - name: run-cats
   serial: true
   serial_groups: [acceptance]
-  ensure:
-    put: nats-release-lock-cats
-    params:
-      release: nats-release-lock-cats
   plan:
   - in_parallel:
     - get: ci
@@ -710,8 +642,6 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests
     - get: cf-deployment
-    - get: nats-release-lock-cats
-      passed: [ prepare-env ]
   - task: create-cats-config
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
@@ -734,10 +664,6 @@ jobs:
 - name: export-release
   serial: true
   serial_groups: [acceptance]
-  ensure:
-    put: nats-release-lock-export-release
-    params:
-      release: nats-release-lock-export-release
   plan:
   - in_parallel:
     - get: ci
@@ -749,8 +675,6 @@ jobs:
       passed: [ prepare-env ]
       trigger: true
     - get: cf-deployment-concourse-tasks
-    - get: nats-release-lock-export-release
-      passed: [ prepare-env ]
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
@@ -890,121 +814,87 @@ jobs:
 
 - name: cleanup-time-gate
   plan:
-  - get: lock-check-timer
+  - get: cleanup-timer
     trigger: true
 
-- name: check-work-locks
+- name: wait-for-env-lock-claim
   serial: true
   plan:
-  - get: lock-check-timer
+  - get: cleanup-timer
     trigger: true
     passed: [ cleanup-time-gate ]
   - get: nats-release-env-lock
-  - get: nats-release-lock-prepare-env
-  - get: nats-release-lock-cats
-  - get: nats-release-lock-export-release
-  - put: check-lock-prepare-env
-    resource: nats-release-lock-prepare-env
+  - put: check-unclaimed-env-lock
+    resource: nats-release-env-lock
     params:
-      check: nats-release-lock-prepare-env
-      retry-delay: 10m
-  - put: check-lock-cats
-    resource: nats-release-lock-cats
-    params:
-      check: nats-release-lock-cats
-      retry-delay: 10m
-  - put: check-lock-export-release
-    resource: nats-release-lock-export-release
-    params:
-      check: nats-release-lock-export-release
-      retry-delay: 10m
+      check_unclaimed: nats-release-env-lock
+      retry-delay: 60m
+
+- name: wait-for-acceptance-tests
+  plan:
+  - get: image
+  - get: nats-release-env-lock
+    passed: [ wait-for-env-lock-claim ]
+    trigger: true
+  - task: sleep
+    image: image
+    config:
+      platform: linux
+      run: 
+        path: sh
+        args:
+        - -exc
+        - sleep 3h
 
 - name: cleanup-env
   serial: true
   plan:
   - in_parallel:
       steps:
-        - get: ci
-        - get: env
-        - get: image
-        - get: manual-cleanup-trigger
-          trigger: true
-          passed: [ manual-cleanup-trigger ]
-        - get: lock-check-timer
-          trigger: true
-          passed: [ check-work-locks ]
-        - get: nats-release-env-lock
-          passed: [ check-work-locks ]
-        - get: nats-release-lock-prepare-env
-          passed: [ check-work-locks ]
-        - get: nats-release-lock-cats
-          passed: [ check-work-locks ]
-        - get: nats-release-lock-export-release
-          passed: [ check-work-locks ]
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-nats-env
-          DEPLOYMENT_NAME: cf
-  - try:
-      do:
-      - task: stop-bbl-envs
-        image: image
-        file: ci/shared/tasks/stop-gcp-instance/linux.yml
-        input_mapping:
-          bbl-state: env
-        params:
-          SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
-          BBL_STATE_DIR: bbl-nats-env
-          SUSPEND: false
-  - try:
-      do:
-      - put: nats-release-env-lock
-        params:
-          release: nats-release-env-lock
-
-- name: release-work-lock-prepare-env
-  plan:
-  - get: manual-lock-release-trigger
-    trigger: true
-    passed: [ manual-lock-release-trigger ]
-  - get: nats-release-lock-prepare-env
-  - put: nats-release-lock-prepare-env
+      - get: ci
+      - get: env
+      - get: image
+      - get: manual-cleanup-trigger
+        trigger: true
+        passed: [ manual-cleanup-trigger ]
+      - get: nats-release-env-lock
+        passed: [ wait-for-acceptance-tests ]
+        trigger: true
+  - try: *delete-cf-deployment
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
     params:
-      release: nats-release-lock-prepare-env
-
-- name: release-work-lock-cats
-  plan:
-  - get: manual-lock-release-trigger
-    trigger: true
-    passed: [ manual-lock-release-trigger ]
-  - get: nats-release-lock-cats
-  - put: nats-release-lock-cats
-    params:
-      release: nats-release-lock-cats
-
-- name: release-work-lock-export-release
-  plan:
-  - get: manual-lock-release-trigger
-    trigger: true
-    passed: [ manual-lock-release-trigger ]
-  - get: nats-release-lock-export-release
-  - put: nats-release-lock-export-release
-    params:
-      release: nats-release-lock-export-release
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-nats-env
+      SUSPEND: false
+  - try: *release-env-lock
 
 - name: release-env-lock
   plan:
-  - get: manual-lock-release-trigger
-    trigger: true
-    passed: [ manual-lock-release-trigger ]
   - get: nats-release-env-lock
-  - put: nats-release-env-lock
+  - try: *release-env-lock
+
+- name: force-cleanup-env
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: env
+      - get: image
+  - try: *delete-cf-deployment
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
     params:
-      release: nats-release-env-lock
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-nats-env
+      SUSPEND: false
 
 #! versioning
 - name: patch-bump
