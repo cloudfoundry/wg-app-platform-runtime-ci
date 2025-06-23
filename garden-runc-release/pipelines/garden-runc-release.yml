@@ -1939,94 +1939,6 @@ jobs:
         - -exc
         - sleep 5h
 
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-garden-env
-          DEPLOYMENT_NAME: example-app
-  - task: stop-bbl-envs
-    image: image
-    file: ci/shared/tasks/stop-gcp-instance/linux.yml
-    input_mapping:
-      bbl-state: env
-    params:
-      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
-      BBL_STATE_DIR: bbl-garden-env
-      SUSPEND: false
-  - try:
-      do:
-      - put: garden-runc-release-env-lock
-        params:
-          release: garden-runc-release-env-lock
-
-- name: release-env-lock
-  plan:
-  - get: garden-runc-release-env-lock
-  - put: garden-runc-release-env-lock
-    params:
-      release: garden-runc-release-env-lock
-
-- name: force-cleanup-env
-  serial: true
-  plan:
-  - in_parallel:
-      steps:
-      - get: ci
-      - get: env
-      - get: image
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-garden-env
-          DEPLOYMENT_NAME: cf
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-garden-env
-          DEPLOYMENT_NAME: gatsw
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-garden-env
-          DEPLOYMENT_NAME: gats-with-runc
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-garden-env
-          DEPLOYMENT_NAME: gats-with-containerd
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-garden-env
-          DEPLOYMENT_NAME: gats-with-cpu-throttling
-  - task: stop-bbl-envs
-    image: image
-    file: ci/shared/tasks/stop-gcp-instance/linux.yml
-    input_mapping:
-      bbl-state: env
-    params:
-      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
-      BBL_STATE_DIR: bbl-garden-env
-      SUSPEND: false
-
 - name: cleanup-env
   serial: true
   plan:
@@ -2095,6 +2007,71 @@ jobs:
       - put: garden-runc-release-env-lock
         params:
           release: garden-runc-release-env-lock 
+- name: release-env-lock
+  plan:
+  - get: garden-runc-release-env-lock
+  - put: garden-runc-release-env-lock
+    params:
+      release: garden-runc-release-env-lock
+
+- name: force-cleanup-env
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: env
+      - get: image
+  - try:
+      do:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: cf
+  - try:
+      do:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gatsw
+  - try:
+      do:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gats-with-runc
+  - try:
+      do:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gats-with-containerd
+  - try:
+      do:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gats-with-cpu-throttling
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-garden-env
+      SUSPEND: false
+
 
 
 #! versioning
