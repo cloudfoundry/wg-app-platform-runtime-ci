@@ -965,9 +965,9 @@ jobs:
         params:
           CONFIGS: volume-services-acceptance-tests
           ENVS: |
-            volume_service_service_name=nfs
-            volume_service_broker_name=nfsbroker
-            volume_service_plan_name=existing
+            VOLUME_SERVICE_SERVICE_NAME=nfs
+            VOLUME_SERVICE_BROKER_NAME=nfsbroker
+            VOLUME_SERVICE_PLAN_NAME=existing
           BBL_STATE_DIR: bbl-nfs-volume-env
       - task: run-bin-test-cf-volume-services-acceptance-tests-without-ldap
         file: ci/shared/tasks/run-bin-test/linux.yml
@@ -992,9 +992,9 @@ jobs:
           CONFIGS: volume-services-acceptance-tests
           WITH_ISOSEG: true
           ENVS: |
-            volume_service_service_name=nfs
-            volume_service_broker_name=nfsldapbroker
-            volume_service_plan_name=existing
+            VOLUME_SERVICE_SERVICE_NAME=nfs
+            VOLUME_SERVICE_BROKER_NAME=nfsldapbroker
+            VOLUME_SERVICE_PLAN_NAME=existing
           BBL_STATE_DIR: bbl-nfs-volume-env
       - task: run-bin-test-cf-volume-services-acceptance-tests-with-ldap
         file: ci/shared/tasks/run-bin-test/linux.yml
