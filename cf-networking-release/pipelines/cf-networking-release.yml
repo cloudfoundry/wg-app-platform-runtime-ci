@@ -785,6 +785,9 @@ jobs:
   on_failure: *release-env-lock
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ claim-env ]
     - get: ci
     - get: silk-repo
       passed: [claim-env]
@@ -925,6 +928,9 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: silk-repo
       passed: [prepare-env]
@@ -961,6 +967,9 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: silk-repo
       passed: [prepare-env]
@@ -1015,6 +1024,9 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: silk-repo
       passed: [prepare-env]
@@ -1067,6 +1079,9 @@ jobs:
   serial: true
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: cf-networking-repo
       passed: [prepare-env]
       trigger: true
@@ -1115,6 +1130,9 @@ jobs:
   serial: true
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: silk-repo
       passed: [prepare-env]
@@ -1150,6 +1168,14 @@ jobs:
   plan:
     - in_parallel:
         steps:
+        - get: manual-release-trigger
+          trigger: true
+          passed:
+            - run-cats
+            - run-cf-networking-acceptance-tests
+            - run-service-discovery-acceptance-tests
+            - run-service-discovery-performance-tests
+            - export-release
         - get: ci
         - get: silk-repo
           passed:

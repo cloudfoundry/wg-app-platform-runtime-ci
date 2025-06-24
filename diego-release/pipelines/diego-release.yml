@@ -1116,6 +1116,9 @@ jobs:
   on_failure: *release-env-lock
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ claim-env ]
     - get: ci
     - get: repo
       trigger: true
@@ -1250,6 +1253,9 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -1283,6 +1289,9 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -1319,6 +1328,9 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -1339,6 +1351,9 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -1361,6 +1376,9 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -1395,6 +1413,14 @@ jobs:
   plan:
     - in_parallel:
         steps:
+        - get: manual-release-trigger
+          trigger: true
+          passed:
+            - run-cats
+            - run-wats
+            - export-release
+            - run-vizzini
+            - run-bosh-restart
         - get: ci
         - get: repo
           passed:

@@ -31,6 +31,7 @@ groups:
   - cleanup-env
   - force-cleanup-env
   - release-env-lock
+  - restart-wait-for-env-lock-claim
 
 - name: version
   jobs:
@@ -52,8 +53,25 @@ resource_types:
   source:
     repository: ebroberson/pool-resource
 
+- name: fly
+  type: docker-image
+  source:
+    repository: troykinsella/concourse-fly-resource
+    tag: latest
+
 #! Define-Resources
 resources:
+- name: fly
+  type: fly
+  source:
+    url: "https://ci.funtime.lol"
+    username: username
+    password: password
+    team: "wg-arp-networking"
+    target: "wg-arp-networking"
+    secure_output: true
+    debug: false
+
 - name: golang-release-latest
   type: git
   icon: tag-outline
@@ -444,6 +462,9 @@ jobs:
   on_failure: *release-env-lock
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ claim-env ]
     - get: ci
     - get: repo
       passed: [claim-env]
@@ -493,6 +514,9 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -516,6 +540,10 @@ jobs:
   plan:
     - in_parallel:
         steps:
+        - get: manual-release-trigger
+          trigger: true
+          passed:
+            - export-release
         - get: ci
         - get: repo
           passed:
@@ -677,6 +705,15 @@ jobs:
       BBL_STATE_DIR: bbl-hlthchk-env
       SUSPEND: false
   - try: *release-env-lock
+  
+- name: restart-wait-for-env-lock-claim
+  plan:
+  - get: healthchecker-release-env-lock
+    passed: [ cleanup-env ]
+    trigger: true
+  - put: fly
+    params:
+      options: trigger-job -j healthchecker-release/wait-for-env-lock-claim
 
 - name: release-env-lock
   plan:

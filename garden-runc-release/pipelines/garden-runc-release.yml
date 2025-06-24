@@ -1303,6 +1303,9 @@ jobs:
   on_failure: *release-env-lock
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ claim-env ]
     - get: ci
     - get: repo
       trigger: true
@@ -1408,6 +1411,9 @@ jobs:
   serial: true
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [ prepare-env ]
@@ -1439,6 +1445,9 @@ jobs:
   serial: true
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [ prepare-env ]
@@ -1511,6 +1520,9 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -1561,6 +1573,9 @@ jobs:
   serial_groups: [ acceptance ]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [ prepare-env ]
@@ -1598,6 +1613,9 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [ prepare-env ]
@@ -1643,6 +1661,9 @@ jobs:
   serial_groups: [ acceptance ]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [ prepare-env ]
@@ -1690,6 +1711,9 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [ prepare-env ]
@@ -1743,6 +1767,9 @@ jobs:
   serial: true
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [ prepare-env ]
@@ -1766,6 +1793,17 @@ jobs:
   plan:
     - in_parallel:
         steps:
+        - get: manual-release-trigger
+          trigger: true
+          passed:
+            - run-cats
+            - export-release
+            - run-standalone-gdn-gats
+            - run-gatsw
+            - run-gats-with-cpu-throttling
+            - run-gats-with-runc
+            - run-gats-with-containerd
+            - run-gats-with-containerd-cgroupsv2
         - get: ci
         - get: repo
           passed:

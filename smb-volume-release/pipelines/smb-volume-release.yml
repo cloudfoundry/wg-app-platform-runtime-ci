@@ -690,6 +690,9 @@ jobs:
   on_failure: *release-env-lock
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ claim-env ]
     - get: ci
     - get: repo
       trigger: true
@@ -796,6 +799,9 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -837,6 +843,9 @@ jobs:
   - in_parallel:
       fail_fast: true
       steps:
+      - get: manual-release-trigger
+        trigger: true
+        passed: [ prepare-env ]
       - get: cf-volume-services-acceptance-tests
       - get: ci
       - get: image
@@ -886,6 +895,9 @@ jobs:
   - in_parallel:
       fail_fast: true
       steps:
+      - get: manual-release-trigger
+        trigger: true
+        passed: [ prepare-env ]
       - get: ci
       - get: image
       - get: env
@@ -909,6 +921,9 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -932,6 +947,13 @@ jobs:
   plan:
     - in_parallel:
         steps:
+        - get: manual-release-trigger
+          trigger: true
+          passed:
+            - run-cats
+            - volume-services-acceptance-tests
+            - dockerdriver-integration
+            - export-release
         - get: ci
         - get: repo
           passed:
