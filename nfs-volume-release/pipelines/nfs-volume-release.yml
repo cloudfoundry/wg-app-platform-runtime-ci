@@ -981,7 +981,7 @@ jobs:
           image_tag: ((.:image_tag))
         params:
           ENVS: |
-            config=$pwd/input-01/volume-services-acceptance-tests.json
+            CONFIG=$PWD/input-01/volume-services-acceptance-tests.json
     - do: 
       - task: generate-cf-volume-services-acceptance-tests-config-with-ldap
         image: image
