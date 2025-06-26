@@ -27,11 +27,11 @@ function get_updated_blob_info() {
     # --> uniq_name=openssl/fips/openssl-
     # --> uniq_name=openssl/openssl-
 
-    previus_version="$(echo "${b}" | grep -oP "(\d*\.\d*\.*\d)")"
+    previous_version="$(echo "${b}" | grep -oP "(\d*\.\d*\.*\d)")"
     # examples
-    # --> previus_version=1.10.5
-    # --> previus_version=3.0.9
-    # --> previus_version=3.4.1
+    # --> previous_version=1.10.5
+    # --> previous_version=3.0.9
+    # --> previous_version=3.4.1
 
     new_version="$(git show "${END_REF}:${BLOB_LOCATION}" | grep "${uniq_name}" | grep -oP "(\d*\.\d*\.*\d)")"
     # examples
@@ -39,8 +39,8 @@ function get_updated_blob_info() {
     # --> new_version=3.0.9
     # --> new_version=3.5.0
 
-    if [ "$previus_version" != "$new_version" ]; then
-      JSON="$(jq --arg name "$display_name" --arg previus_version "$previus_version" --arg new_version "$new_version" '.blobs += [{name: $name, previus_version: $previus_version, new_version: $new_version}]' <<< "$JSON")"
+    if [ "$previous_version" != "$new_version" ]; then
+      JSON="$(jq --arg name "$display_name" --arg previous_version "$previous_version" --arg new_version "$new_version" '.blobs += [{name: $name, previous_version: $previous_version, new_version: $new_version}]' <<< "$JSON")"
     fi
 
   done <<< "$(git show "${START_REF}:${BLOB_LOCATION}" | yq keys[])"
@@ -48,7 +48,7 @@ function get_updated_blob_info() {
   # exmaple result
   # JSON='{
   #   "blobs": [
-  #     { "name": "openssl", "previus_version": "3.4.1", "new_version": "3.5.0" },
+  #     { "name": "openssl", "previous_version": "3.4.1", "new_version": "3.5.0" },
   #   ]
   # }'
 }
@@ -80,16 +80,16 @@ function get_go_mod_diff() {
   
   while read -r p; do
     name="$(echo "${p}" | jq -r .Path )"
-    previus_version="$(echo "${p}" | jq -r .Version)"
+    previous_version="$(echo "${p}" | jq -r .Version)"
     new_version=$(echo "${END_GO_MOD_JSON}" | jq -r --arg name "$name" '.Require[] | select(.Path == $name) | .Version')
 
-    if [ "$previus_version" != "$new_version" ]; then
-      JSON="$(jq --arg name "$name" --arg previus_version "$previus_version" --arg new_version "$new_version" '.packages += [{name: $name, previus_version: $previus_version, new_version: $new_version}]' <<< "$JSON")"
+    if [ "$previous_version" != "$new_version" ]; then
+      JSON="$(jq --arg name "$name" --arg previous_version "$previous_version" --arg new_version "$new_version" '.packages += [{name: $name, previous_version: $previous_version, new_version: $new_version}]' <<< "$JSON")"
     fi
   done <<< "$(echo "${START_GO_MOD_JSON}" | jq .Require[] -c)"
   rm "${START_GO_MOD}" "${END_GO_MOD}"
 
   echo "${JSON}"
   # example result:
-  # {"packages":[{"name":"code.cloudfoundry.org/cf-networking-helpers","previus_version":"v0.37.0","new_version":"v0.45.0"}]}
+  # {"packages":[{"name":"code.cloudfoundry.org/cf-networking-helpers","previous_version":"v0.37.0","new_version":"v0.45.0"}]}
 }
