@@ -1,7 +1,15 @@
 ---
 readme: |
   This task will build generic config file to be consumed. It will create a config.json and config.yml in the output dir
+extra_inputs:
+  input-*: |
+    (Optional) Generic inputs for passing in config files or files needed
 oses:
   - linux
 params:
-  CONFIG: Config struct to be created
+  EVAL_YAML_CONFIG: bash command that outputs a valid YAML 
+  ENVS: |
+    This parameter defines a list of environment variables will be loaded at runtime, as opposed to
+    container-creation time. The purpose here is to allow users to extend the list of environment
+    variables used by the task simply by updating the pipeline config, rather than by updating the task definition
+    in linux.yml or windows.yml.
