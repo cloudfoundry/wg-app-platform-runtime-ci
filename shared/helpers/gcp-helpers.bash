@@ -142,7 +142,7 @@ function list_long_running_vms_per_project() {
     project="${1}"
     vm_info_json=$(gcloud compute instances list --filter "status:RUNNING" --project "${project}" --format json)
     vm_count=$(echo "${vm_info_json}" | jq '. | length')
-    echo "* suspicous long running VMs for project '${p}'"
+    echo "* suspicious long running VMs for project '${p}'"
 
     while read -r vm; do
         local name
