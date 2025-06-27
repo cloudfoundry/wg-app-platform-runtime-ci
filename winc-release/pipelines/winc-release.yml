@@ -907,9 +907,9 @@ jobs:
     - get: garden-runc-release
     - get: windows-utilities-release
     - get: cf-deployment-concourse-tasks
-  - try:
-      do:
-        - task: bosh-deld
+  - try: &delete-gatsw-deployment
+      do: 
+        - task: bosh-deld 
           image: image
           file: ci/shared/tasks/bosh-deld/linux.yml
           params:
@@ -939,6 +939,13 @@ jobs:
       BBL_STATE_DIR: bbl-winc-env
       DEPLOYMENT_NAME: gatsw
       ERRAND_NAME: gats
+  - task: bosh-deld
+    image: image
+    file: ci/shared/tasks/bosh-deld/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-winc-env
+      DEPLOYMENT_NAME: gatsw
+
 
 - name: export-release
   serial: true
@@ -1185,6 +1192,7 @@ jobs:
         passed: [ wait-for-acceptance-tests ]
         trigger: true
   - try: *delete-cf-deployment
+  - try: *delete-gatsw-deployment
   - task: stop-bbl-envs
     image: image
     file: ci/shared/tasks/stop-gcp-instance/linux.yml
@@ -1210,6 +1218,7 @@ jobs:
       - get: env
       - get: image
   - try: *delete-cf-deployment
+  - try: *delete-gatsw-deployment
   - task: stop-bbl-envs
     image: image
     file: ci/shared/tasks/stop-gcp-instance/linux.yml
