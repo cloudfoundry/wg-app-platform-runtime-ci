@@ -5,7 +5,6 @@
 groups:
 - name: release
   jobs:
-  - release-time-gate
   - manual-release-trigger
   - template-tests
   - unit-and-integration-tests
@@ -385,15 +384,6 @@ jobs:
   plan:
   - put: manual-cleanup-trigger
 
-- name: release-time-gate
-  plan:
-  - get: repo
-    passed:
-      - unit-and-integration-tests
-      - template-tests
-      - lint-repo
-  - get: env-weekly
-    trigger: true
 
 - name: bump-dependencies-go-mod
   serial: true
@@ -700,8 +690,12 @@ jobs:
       passed: [ manual-release-trigger ]
     - get: ci
     - get: repo
+      passed:
+        - unit-and-integration-tests
+        - template-tests
+        - lint-repo
+    - get: env-weekly
       trigger: true
-      passed: [ release-time-gate ]
     - get: image
     - get: env
     - get: winc-release-env-lock

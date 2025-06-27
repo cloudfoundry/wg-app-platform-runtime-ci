@@ -6,7 +6,6 @@
 groups:
 - name: release
   jobs:
-  - release-time-gate
   - manual-release-trigger
   - template-tests
   - unit-and-integration-tests
@@ -719,21 +718,6 @@ jobs:
     input_mapping:
       repo: silk-repo
 
-- name: release-time-gate
-  plan:
-  - get: cf-networking-repo
-    passed:
-      - template-tests
-      - unit-and-integration-tests
-      - lint-repo
-  - get: silk-repo
-    passed:
-      - template-tests
-      - unit-and-integration-tests
-      - lint-repo
-  - get: env-weekly
-    trigger: true
-
 - name: claim-env
   serial: true
   on_abort: &release-env-lock
@@ -747,13 +731,21 @@ jobs:
     - get: manual-release-trigger
       trigger: true
       passed: [ manual-release-trigger ]
+    - get: env-weekly
+      trigger: true
     - get: ci
     - get: cf-networking-repo
-      trigger: true
-      passed: [ release-time-gate ]
+      trigger: false
+      passed:
+        - template-tests
+        - unit-and-integration-tests
+        - lint-repo
     - get: silk-repo
-      trigger: true
-      passed: [ release-time-gate ]
+      trigger: false
+      passed:
+        - template-tests
+        - unit-and-integration-tests
+        - lint-repo
     - get: image
     - get: env
     - get: cf-networking-release-env-lock

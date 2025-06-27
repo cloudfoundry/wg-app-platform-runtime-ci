@@ -5,7 +5,6 @@
 groups:
 - name: release
   jobs:
-  - release-time-gate
   - manual-release-trigger
   - template-tests
   - unit-and-integration-tests
@@ -633,15 +632,6 @@ jobs:
     file: ci/shared/tasks/lint-repo/linux.yml
     image: image
 
-- name: release-time-gate
-  plan:
-  - get: repo
-    passed:
-      - template-tests
-      - unit-and-integration-tests
-      - lint-repo
-  - get: env-weekly
-    trigger: true
 
 - name: claim-env
   serial: true
@@ -658,8 +648,12 @@ jobs:
       passed: [ manual-release-trigger ]
     - get: ci
     - get: repo
+      passed:
+        - template-tests
+        - unit-and-integration-tests
+        - lint-repo
+    - get: env-weekly
       trigger: true
-      passed: [ release-time-gate ]
     - get: image
     - get: env
     - get: smb-volume-release-env-lock

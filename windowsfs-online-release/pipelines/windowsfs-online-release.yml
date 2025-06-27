@@ -5,7 +5,6 @@
 groups:
 - name: release
   jobs:
-  - release-time-gate
   - manual-release-trigger
   - bump-windowsfs-online-release
   - claim-env
@@ -326,14 +325,6 @@ jobs:
       rebase: true
       repository: bumped-repo
 
-- name: release-time-gate
-  plan:
-  - get: repo
-    passed: [ bump-windowsfs-online-release ]
-  - get: windows2016fs
-    passed: [ bump-windowsfs-online-release ]
-  - get: env-weekly
-    trigger: true
 
 - name: claim-env
   serial: true
@@ -350,12 +341,13 @@ jobs:
       passed: [ manual-release-trigger ] 
     - get: ci 
     - get: repo 
+      passed: [ bump-windowsfs-online-release ]
+    - get: env-weekly
       trigger: true
-      passed: [ release-time-gate ]
     - get: image
     - get: env
     - get: windows2016fs
-      passed: [ release-time-gate ]
+      passed: [ bump-windowsfs-online-release ]
     - get: windowsfs-online-release-env-lock
   - put: windowsfs-online-release-env-lock
     params:

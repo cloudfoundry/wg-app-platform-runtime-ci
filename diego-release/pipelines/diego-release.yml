@@ -5,7 +5,6 @@
 groups:
 - name: release
   jobs:
-  - release-time-gate
   - manual-release-trigger
   - template-tests
   - unit-and-integration-tests
@@ -1057,19 +1056,6 @@ jobs:
       DEFAULT_PARAMS: ci/diego-release/default-params/lint-repo/linux.yml
     image: image
 
-- name: release-time-gate
-  plan:
-  - get: repo
-    passed:
-      - template-tests
-      - unit-and-integration-tests
-      - lint-repo
-      - inigo-mysql-linux
-      - inigo-postgres-linux
-      - inigo-mysql-windows
-  - get: env-weekly
-    trigger: true
-
 - name: claim-env
   serial: true
   on_abort: &release-env-lock
@@ -1084,9 +1070,17 @@ jobs:
       trigger: true
       passed: [ manual-release-trigger ]
     - get: ci
-    - get: repo
+    - get: env-weekly
       trigger: true
-      passed: [ release-time-gate ]
+    - get: repo
+      trigger: false
+      passed:
+        - template-tests
+        - unit-and-integration-tests
+        - lint-repo
+        - inigo-mysql-linux
+        - inigo-postgres-linux
+        - inigo-mysql-windows
     - get: image
     - get: env
     - get: diego-release-env-lock

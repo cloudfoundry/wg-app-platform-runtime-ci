@@ -5,7 +5,6 @@
 groups:
 - name: release
   jobs:
-  - release-time-gate
   - manual-release-trigger
   - bump-windows2019fs-release
   - claim-env
@@ -344,16 +343,6 @@ jobs:
       rebase: true
       repository: bumped-repo
 
-- name: release-time-gate
-  plan:
-  - get: repo
-    passed:
-      - bump-windows2019fs-release
-  - get: windows2016fs
-    passed:
-      - bump-windows2019fs-release
-  - get: env-weekly
-    trigger: true
 
 - name: claim-env
   serial: true
@@ -369,13 +358,16 @@ jobs:
     - get: image
     - get: env
     - get: windows2016fs
-      passed: [ release-time-gate ]
+      passed:
+        - bump-windows2019fs-release
+    - get: env-weekly
+      trigger: true
     - get: manual-release-trigger
       trigger: true
       passed: [ manual-release-trigger ]
     - get: repo
-      trigger: true
-      passed: [ release-time-gate ]
+      passed:
+        - bump-windows2019fs-release
     - get: windows2019fs-release-env-lock
   - put: windows2019fs-release-env-lock
     params:
