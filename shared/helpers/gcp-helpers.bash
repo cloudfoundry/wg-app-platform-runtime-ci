@@ -148,7 +148,7 @@ function list_long_running_vms_per_project() {
         local name
         id=$(get_gcp_vm_identifier "${vm}")
         name=$(get_gcp_vm_name "${vm}")
-        creation_time=$(echo "${vm}" | jq -r .creationTimestamp)
+        creation_time=$(echo "${vm}" | jq -r .lastStartTimestamp)
         hours_since="$(( ($(date +%s) - $(date -d "${creation_time}" +%s)) / (60*60) ))"
         if [[ "${hours_since}" -ge 12 ]]; then
             ok=$(is_okay_to_be_long_running ${id})
