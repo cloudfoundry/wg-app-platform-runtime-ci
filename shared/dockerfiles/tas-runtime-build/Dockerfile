@@ -151,12 +151,6 @@ RUN \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/syft /usr/local/bin/syft
 
-#    staticcheck
-RUN \
-  url="$(curl -s https://api.github.com/repos/dominikh/go-tools/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains($target_arch)) and (.name | contains("sha256") |not )).browser_download_url')" && \
-  curl -L "${url}" | tar -xz -C /tmp/ && \
-  install /tmp/staticcheck/staticcheck /usr/local/bin/staticcheck
-
 #    yq
 RUN \
   url="$(curl -s https://api.github.com/repos/mikefarah/yq/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar")) and (.name | contains($target_arch)) ).browser_download_url')" && \
@@ -196,6 +190,11 @@ RUN go install github.com/onsi/ginkgo/v2/ginkgo@latest
 RUN go install github.com/stephendotcarter/unpack@latest
 RUN go install github.com/vito/gosub@master
 RUN go install github.com/cloudfoundry/uptimer@latest
+
+#    staticcheck
+RUN \
+  staticcheck_version="$(curl -s https://api.github.com/repos/dominikh/go-tools/releases | jq -r '.[0].tag_name')" && \
+  go install "honnef.co/go/tools/cmd/staticcheck@$staticcheck_version"
 
 #    credhub cli
 RUN \

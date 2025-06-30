@@ -9,13 +9,13 @@ source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
 source "$THIS_FILE_DIR/../../../shared/helpers/bosh-helpers.bash"
 unset THIS_FILE_DIR
 
+deployment_name="export-release-$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 5 ; echo '')"
 
 function run(){
   local task_tmp_dir="${1:?provide temp dir for task}"
   shift 1
 
   bosh_target
-  local deployment_name="export-release-$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 5 ; echo '')"
 
   pushd repo > /dev/null
   local release_name=$(bosh_release_name)
@@ -61,10 +61,10 @@ bosh -d ${deployment_name} -n deploy ${deployment_manifest}
 
 debug "Running 'bosh export-release -d ${deployment_name} ${release} ${stemcell}'"
 bosh export-release -d "${deployment_name}" "${release}" "${stemcell}"
-bosh -d "${deployment_name}" -n deld
 }
 
 function cleanup() {
+  bosh -d "${deployment_name}" -n deld
   rm -rf "${task_tmp_dir}"
 }
 

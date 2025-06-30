@@ -8,4 +8,4 @@ oses:
   - linux
 params:
   BOSH_IO_ORG: The name of the org used on bosh.io for boshrelease links. Defaults to 'cloudfoundry'
-  GITHUB_ORG:  The name of the github org to use for release note links. Defaults to 'cloudfoundry'
+  GITHUB_ORG_URL:  The URL of the github org to use for release note links. Defaults to 'https://github.com/cloudfoundry'

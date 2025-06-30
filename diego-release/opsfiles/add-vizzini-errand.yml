@@ -22,6 +22,7 @@
         enable_declarative_healthcheck: true
         enable_privileged_container_tests: false
         vizzini:
+          nodes: 1
           bbs:
             ca_cert: "((diego_bbs_client.ca))"
             client_cert: "((diego_bbs_client.certificate))"

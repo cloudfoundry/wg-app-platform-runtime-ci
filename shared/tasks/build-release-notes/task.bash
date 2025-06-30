@@ -73,7 +73,7 @@ function run(){
 ${spec_diff}
 ${built_with_go}
 
-**Full Changelog**: https://github.com/${GITHUB_ORG}/${repo_name}/compare/${old_version}...${new_tag_version}
+**Full Changelog**: ${GITHUB_ORG_URL}/${repo_name}/compare/${old_version}...${new_tag_version}
 
 ${bosh_io_resources}
 ${extra_metadata:-}

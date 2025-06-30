@@ -5,14 +5,14 @@
 groups:
 - name: release
   jobs:
+  - manual-release-trigger
   - unit-and-integration-tests
   - lint-repo
   - claim-env
-  - example-app-deployment
+  - prepare-env
   - export-release
   - ship-what
   - ship-it
-  - unclaim-env
 
 - name: periodics
   jobs:
@@ -21,9 +21,16 @@ groups:
   - sync-dot-github-dir
   - sync-readme
 
-- name: manual
+- name: cleanup
   jobs:
+  - cleanup-time-gate
+  - wait-for-env-lock-claim
+  - wait-for-acceptance-tests
+  - manual-cleanup-trigger
+  - cleanup-env
+  - force-cleanup-env
   - release-env-lock
+  - restart-wait-for-env-lock-claim
 
 - name: version
   jobs:
@@ -40,8 +47,30 @@ resource_types:
     repository: cfcommunity/slack-notification-resource
     tag: latest
 
+- name: fork-pool
+  type: registry-image
+  source:
+    repository: ebroberson/pool-resource
+
+- name: fly
+  type: docker-image
+  source:
+    repository: troykinsella/concourse-fly-resource
+    tag: latest
+
 #! Define-Resources
 resources:
+- name: fly
+  type: fly
+  source:
+    url: "https://ci.funtime.lol"
+    username: username
+    password: password
+    team: "wg-arp-networking"
+    target: "wg-arp-networking"
+    secure_output: true
+    debug: false
+
 - name: golang-release-latest
   type: git
   icon: tag-outline
@@ -59,13 +88,11 @@ resources:
     ignore_paths:
     - .github/
     - .gitignore
-    - .final_builds/
     - CODEOWNERS
     - LICENSE
     - NOTICE
     - README.md
     - docs/
-    - releases/
 
 #! repo-synced is a write-only resource to prevent readme
 #! changes from triggering pipeline runs. See the description of "ignore_path"
@@ -131,6 +158,32 @@ resources:
     days:
       - Thursday 
 
+- name: env-weekly
+  type: time
+  icon: clock
+  source:
+    interval: '168h'
+    start: 01:00
+    stop: 01:59
+    days:
+      - Friday
+
+- name: cleanup-timer
+  type: time
+  icon: clock
+  source:
+    interval: '1h'
+
+- name: manual-release-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: manual-cleanup-trigger
+  type: time
+  source:
+    interval: '1m'
+
 - name: slack-ci-channel
   type: slack-notification
   source:
@@ -181,14 +234,15 @@ resources:
     key: healthchecker-release/version
     json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
-- name: env-lock
-  type: pool
+- name: healthchecker-release-env-lock
+  type: fork-pool
   icon: cloud-lock
   source:
     branch: main
     pool: healthchecker-release-env-lock 
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: healthchecker-release-env-lock 
 
 - name: image
   type: registry-image
@@ -206,6 +260,14 @@ resources:
 
 #! Define-Jobs
 jobs:
+- name: manual-release-trigger
+  plan:
+  - put: manual-release-trigger
+
+- name: manual-cleanup-trigger
+  plan:
+  - put: manual-cleanup-trigger
+
 - name: bump-dependencies-go-mod
   serial: true
   on_failure: &ci-notification
@@ -345,23 +407,31 @@ jobs:
 
 - name: claim-env
   serial: true
-  on_failure:
-    put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
+  on_abort: &release-env-lock
+    do:
+      - put: healthchecker-release-env-lock
+        params:
+          release: healthchecker-release-env-lock
+  on_failure: *release-env-lock
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ manual-release-trigger ]
     - get: ci
     - get: repo
-      trigger: true
+      trigger: false
       passed:
         - unit-and-integration-tests
         - lint-repo
+    - get: env-weekly
+      trigger: true
     - get: image
     - get: env
-    - put: env-lock
-      params:
-        acquire: true
+    - get: healthchecker-release-env-lock
+  - put: healthchecker-release-env-lock
+    params:
+      claim: healthchecker-release-env-lock
   - task: start-bbl-envs
     image: image
     file: ci/shared/tasks/start-gcp-instance/linux.yml
@@ -370,18 +440,23 @@ jobs:
     params:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
       BBL_STATE_DIR: bbl-hlthchk-env
-      RESUME: true
+      RESUME: false
   - task: wait-for-bosh-api
     file: ci/shared/tasks/wait-for-bosh-api/linux.yml
     image: image
     params:
       BBL_STATE_DIR: bbl-hlthchk-env
 
-- name: example-app-deployment
+- name: prepare-env
   serial: true
   serial_groups: [acceptance]
+  on_abort: *release-env-lock
+  on_failure: *release-env-lock
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ claim-env ]
     - get: ci
     - get: repo
       passed: [claim-env]
@@ -391,7 +466,7 @@ jobs:
       passed: [claim-env]
       trigger: true
     - get: bpm
-  - try:
+  - try: &delete-ea-deployment
       do:
         - task: bosh-deld
           image: image
@@ -431,13 +506,16 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
-      passed: [example-app-deployment]
+      passed: [prepare-env]
       trigger: true
     - get: image
     - get: env
-      passed: [example-app-deployment]
+      passed: [prepare-env]
       trigger: true
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
@@ -454,6 +532,10 @@ jobs:
   plan:
     - in_parallel:
         steps:
+        - get: manual-release-trigger
+          trigger: true
+          passed:
+            - export-release
         - get: ci
         - get: repo
           passed:
@@ -556,26 +638,55 @@ jobs:
       resource: version
       params: {file: next-version/number}
 
-- name: unclaim-env
+- name: cleanup-time-gate
+  plan:
+  - get: cleanup-timer
+    trigger: true
+
+- name: wait-for-env-lock-claim
+  serial: true
+  plan:
+  - get: cleanup-timer
+    trigger: true
+    passed: [ cleanup-time-gate ]
+  - get: healthchecker-release-env-lock
+  - put: check-unclaimed-env-lock
+    resource: healthchecker-release-env-lock
+    params:
+      check_unclaimed: healthchecker-release-env-lock
+      retry-delay: 15m
+
+- name: wait-for-acceptance-tests
+  plan:
+  - get: image
+  - get: healthchecker-release-env-lock
+    passed: [ wait-for-env-lock-claim ]
+    trigger: true
+  - task: sleep
+    image: image
+    config:
+      platform: linux
+      run: 
+        path: sh
+        args:
+        - -exc
+        - sleep 30m
+
+- name: cleanup-env
   serial: true
   plan:
   - in_parallel:
       steps:
-      - get: env
-        passed: [ship-what]
-        trigger: true
-      - get: env-lock
-      - get: image
       - get: ci
-  - task: bosh-deld
-    image: image
-    file: ci/shared/tasks/bosh-deld/linux.yml
-    params:
-      BBL_STATE_DIR: bbl-hlthchk-env
-      DEPLOYMENT_NAME: example-app
-  - put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
+      - get: env
+      - get: image
+      - get: manual-cleanup-trigger
+        trigger: true
+        passed: [ manual-cleanup-trigger ]
+      - get: healthchecker-release-env-lock
+        passed: [ wait-for-acceptance-tests ]
+        trigger: true
+  - try: *delete-ea-deployment
   - task: stop-bbl-envs
     image: image
     file: ci/shared/tasks/stop-gcp-instance/linux.yml
@@ -584,39 +695,41 @@ jobs:
     params:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
       BBL_STATE_DIR: bbl-hlthchk-env
-      SUSPEND: true
+      SUSPEND: false
+  - try: *release-env-lock
+  
+- name: restart-wait-for-env-lock-claim
+  plan:
+  - get: healthchecker-release-env-lock
+    passed: [ cleanup-env ]
+    trigger: true
+  - put: fly
+    params:
+      options: trigger-job -j healthchecker-release/wait-for-env-lock-claim
 
 - name: release-env-lock
   plan:
+  - get: healthchecker-release-env-lock
+  - try: *release-env-lock
+
+- name: force-cleanup-env
+  serial: true
+  plan:
   - in_parallel:
       steps:
-      - get: env-lock
-      - get: env
       - get: ci
+      - get: env
       - get: image
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-hlthchk-env
-          DEPLOYMENT_NAME: example-app
-  - try:
-      do:
-      - task: stop-bbl-envs
-        image: image
-        file: ci/shared/tasks/stop-gcp-instance/linux.yml
-        input_mapping:
-          bbl-state: env
-        params:
-          SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
-          BBL_STATE_DIR: bbl-hlthchk-env
-          SUSPEND: true
-  ensure:
-    put: env-lock
+  - try: *delete-ea-deployment
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
     params:
-      release: env-lock #! path to the resource in the above get
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-hlthchk-env
+      SUSPEND: false
 
 #! versioning
 - name: patch-bump

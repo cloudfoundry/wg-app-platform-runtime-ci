@@ -5,6 +5,7 @@
 groups:
 - name: release
   jobs:
+  - manual-release-trigger
   - template-tests
   - unit-and-integration-tests
   - lint-repo
@@ -14,7 +15,6 @@ groups:
   - export-release
   - ship-what
   - ship-it
-  - unclaim-env
 
 - name: periodics
   jobs:
@@ -24,8 +24,14 @@ groups:
   - sync-dot-github-dir
   - sync-readme
 
-- name: manual
+- name: cleanup
   jobs:
+  - cleanup-time-gate
+  - wait-for-env-lock-claim
+  - wait-for-acceptance-tests
+  - manual-cleanup-trigger
+  - cleanup-env
+  - force-cleanup-env
   - release-env-lock
 
 - name: version
@@ -42,6 +48,11 @@ resource_types:
   source:
     repository: cfcommunity/slack-notification-resource
     tag: latest
+
+- name: fork-pool
+  type: registry-image
+  source:
+    repository: ebroberson/pool-resource
 
 #! Define-Resources
 resources:
@@ -62,13 +73,11 @@ resources:
     ignore_paths:
     - .github/
     - .gitignore
-    - .final_builds/
     - CODEOWNERS
     - LICENSE
     - NOTICE
     - README.md
     - docs/
-    - releases/
 
 #! repo-synced is a write-only resource to prevent readme
 #! changes from triggering pipeline runs. See the description of "ignore_path"
@@ -155,6 +164,32 @@ resources:
     days:
       - Sunday
 
+- name: env-weekly
+  type: time
+  icon: clock
+  source:
+    interval: '168h'
+    start: 01:00
+    stop: 01:59
+    days:
+      - Monday
+
+- name: cleanup-timer
+  type: time
+  icon: clock
+  source:
+    interval: '1h'
+
+- name: manual-release-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: manual-cleanup-trigger
+  type: time
+  source:
+    interval: '1m'
+
 - name: slack-ci-channel
   type: slack-notification
   source:
@@ -205,14 +240,15 @@ resources:
     key: nats-release/version
     json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
-- name: env-lock
-  type: pool
+- name: nats-release-env-lock
+  type: fork-pool
   icon: cloud-lock
   source:
     branch: main
     pool: nats-release-env-lock 
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: nats-release-env-lock
 
 - name: image
   type: registry-image
@@ -233,6 +269,14 @@ resources:
 
 #! Define-Jobs
 jobs:
+- name: manual-release-trigger
+  plan:
+  - put: manual-release-trigger
+
+- name: manual-cleanup-trigger
+  plan:
+  - put: manual-cleanup-trigger
+
 - name: bump-dependencies-go-mod
   serial: true
   on_failure: &ci-notification
@@ -424,24 +468,32 @@ jobs:
 
 - name: claim-env
   serial: true
-  on_failure:
-    put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
+  on_abort: &release-env-lock
+    do:
+      - put: nats-release-env-lock
+        params:
+          release: nats-release-env-lock
+  on_failure: *release-env-lock
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ manual-release-trigger ]
     - get: ci
     - get: repo
-      trigger: true
+      trigger: false
       passed:
         - template-tests
         - unit-and-integration-tests
         - lint-repo
+    - get: env-weekly
+      trigger: true
     - get: image
     - get: env
-    - put: env-lock
-      params:
-       acquire: true
+    - get: nats-release-env-lock
+  - put: nats-release-env-lock
+    params:
+      claim: nats-release-env-lock
   - task: start-bbl-envs
     image: image
     file: ci/shared/tasks/start-gcp-instance/linux.yml
@@ -450,7 +502,7 @@ jobs:
     params:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
       BBL_STATE_DIR: bbl-nats-env
-      RESUME: true
+      RESUME: false
   - task: wait-for-bosh-api
     image: image
     file: ci/shared/tasks/wait-for-bosh-api/linux.yml
@@ -459,21 +511,25 @@ jobs:
 
 - name: prepare-env
   serial: true
+  on_abort: *release-env-lock
+  on_failure: *release-env-lock
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ claim-env ]
     - get: ci
     - get: repo
       trigger: true
-      passed: [claim-env]
+      passed: [ claim-env ]
     - get: image
     - get: cf-deployment
     - get: cf-deployment-concourse-tasks
     - get: env
-      passed: [claim-env]
-    - get: env-lock
-      passed: [claim-env]
-      trigger: true
-  - try:
+      passed: [ claim-env ]
+    - get: nats-release-env-lock
+      passed: [ claim-env ]
+  - try: &delete-cf-deployment
       do:
       - task: bosh-deld
         image: image
@@ -481,11 +537,6 @@ jobs:
         params:
           BBL_STATE_DIR: bbl-nats-env
           DEPLOYMENT_NAME: cf
-  - task: prepare-cf-deployment-env
-    image: image
-    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
-    params:
-      BBL_STATE_DIR: bbl-nats-env
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
@@ -575,13 +626,16 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
-      passed: [prepare-env]
+      passed: [ prepare-env ]
       trigger: true
     - get: image
     - get: env
-      passed: [prepare-env]
+      passed: [ prepare-env ]
       trigger: true
     - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests
@@ -610,13 +664,16 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
-      passed: [prepare-env]
+      passed: [ prepare-env ]
       trigger: true
     - get: image
     - get: env
-      passed: [prepare-env]
+      passed: [ prepare-env ]
       trigger: true
     - get: cf-deployment-concourse-tasks
   - task: export-release
@@ -633,6 +690,11 @@ jobs:
   plan:
     - in_parallel:
         steps:
+        - get: manual-release-trigger
+          trigger: true
+          passed:
+            - run-cats
+            - export-release
         - get: ci
         - get: repo
           passed:
@@ -756,26 +818,55 @@ jobs:
       resource: version
       params: {file: next-version/number}
 
-- name: unclaim-env
+- name: cleanup-time-gate
+  plan:
+  - get: cleanup-timer
+    trigger: true
+
+- name: wait-for-env-lock-claim
+  serial: true
+  plan:
+  - get: cleanup-timer
+    trigger: true
+    passed: [ cleanup-time-gate ]
+  - get: nats-release-env-lock
+  - put: check-unclaimed-env-lock
+    resource: nats-release-env-lock
+    params:
+      check_unclaimed: nats-release-env-lock
+      retry-delay: 60m
+
+- name: wait-for-acceptance-tests
+  plan:
+  - get: image
+  - get: nats-release-env-lock
+    passed: [ wait-for-env-lock-claim ]
+    trigger: true
+  - task: sleep
+    image: image
+    config:
+      platform: linux
+      run: 
+        path: sh
+        args:
+        - -exc
+        - sleep 3h
+
+- name: cleanup-env
   serial: true
   plan:
   - in_parallel:
       steps:
-        - get: env
-          passed: [ship-what]
-          trigger: true
-        - get: image
-        - get: env-lock
-        - get: ci
-  - task: bosh-deld
-    image: image
-    file: ci/shared/tasks/bosh-deld/linux.yml
-    params:
-      BBL_STATE_DIR: bbl-nats-env
-      DEPLOYMENT_NAME: cf
-  - put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
+      - get: ci
+      - get: env
+      - get: image
+      - get: manual-cleanup-trigger
+        trigger: true
+        passed: [ manual-cleanup-trigger ]
+      - get: nats-release-env-lock
+        passed: [ wait-for-acceptance-tests ]
+        trigger: true
+  - try: *delete-cf-deployment
   - task: stop-bbl-envs
     image: image
     file: ci/shared/tasks/stop-gcp-instance/linux.yml
@@ -784,39 +875,32 @@ jobs:
     params:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
       BBL_STATE_DIR: bbl-nats-env
-      SUSPEND: true
+      SUSPEND: false
+  - try: *release-env-lock
 
 - name: release-env-lock
   plan:
+  - get: nats-release-env-lock
+  - try: *release-env-lock
+
+- name: force-cleanup-env
+  serial: true
+  plan:
   - in_parallel:
       steps:
-        - get: env-lock
-        - get: env
-        - get: ci
-        - get: image
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          DEPLOYMENT_NAME: cf
-          BBL_STATE_DIR: bbl-nats-env
-  - try:
-      do:
-      - task: stop-bbl-envs
-        image: image
-        file: ci/shared/tasks/stop-gcp-instance/linux.yml
-        input_mapping:
-          bbl-state: env
-        params:
-          SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
-          BBL_STATE_DIR: bbl-nats-env
-          SUSPEND: true
-  ensure:
-    put: env-lock
+      - get: ci
+      - get: env
+      - get: image
+  - try: *delete-cf-deployment
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
     params:
-      release: env-lock #! path to the resource in the above get
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-nats-env
+      SUSPEND: false
 
 #! versioning
 - name: patch-bump

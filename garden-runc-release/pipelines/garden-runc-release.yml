@@ -5,6 +5,7 @@
 groups:
 - name: release
   jobs:
+  - manual-release-trigger
   - template-tests
   - unit-and-integration-tests
   - lint-repo
@@ -20,7 +21,6 @@ groups:
   - export-release
   - ship-what
   - ship-it
-  - unclaim-env
 
 - name: periodics
   jobs:
@@ -30,8 +30,14 @@ groups:
   - sync-dot-github-dir
   - sync-readme
 
-- name: manual
+- name: cleanup
   jobs:
+  - cleanup-time-gate
+  - wait-for-env-lock-claim
+  - wait-for-acceptance-tests
+  - manual-cleanup-trigger
+  - cleanup-env
+  - force-cleanup-env
   - release-env-lock
 
 - name: version
@@ -49,6 +55,7 @@ resource_types:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/frodenas/gcs-resource
     username: _json_key
     password: ((gcp-wg-arp-service-account/config-json))
+
 - name: command-runner
   type: docker-image
   source:
@@ -56,11 +63,17 @@ resource_types:
     username: _json_key
     password: ((gcp-wg-arp-service-account/config-json))
     tag: latest
+
 - name: slack-notification
   type: docker-image
   source:
     repository: cfcommunity/slack-notification-resource
     tag: latest
+
+- name: fork-pool
+  type: registry-image
+  source:
+    repository: ebroberson/pool-resource
 
 #! Define-Resources
 resources:
@@ -81,13 +94,11 @@ resources:
     ignore_paths:
     - .github/
     - .gitignore
-    - .final_builds/
     - CODEOWNERS
     - LICENSE
     - NOTICE
     - README.md
     - docs/
-    - releases/
 
 #! repo-synced is a write-only resource to prevent readme
 #! changes from triggering pipeline runs. See the description of "ignore_path"
@@ -249,6 +260,32 @@ resources:
     days:
       - Wednesday
 
+- name: env-weekly
+  type: time
+  icon: clock
+  source:
+    interval: '168h'
+    start: 01:00
+    stop: 01:59
+    days:
+      - Thursday
+
+- name: cleanup-timer
+  type: time
+  icon: clock
+  source:
+    interval: '1h'
+
+- name: manual-release-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: manual-cleanup-trigger
+  type: time
+  source:
+    interval: '1m'
+
 - name: slack-ci-channel
   type: slack-notification
   source:
@@ -321,15 +358,6 @@ resources:
     key: garden-runc-release/version
     json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
-- name: env-lock
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: garden-env-lock
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-
 - name: windows-worker-lock
   type: pool
   icon: cloud-lock
@@ -338,6 +366,16 @@ resources:
     pool: windows-worker-lock
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+
+- name: garden-runc-release-env-lock
+  type: fork-pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: garden-runc-release-env-lock
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: garden-runc-release-env-lock
 
 - name: image
   type: registry-image
@@ -503,6 +541,14 @@ resources:
 
 #! Define-Jobs
 jobs:
+- name: manual-release-trigger
+  plan:
+  - put: manual-release-trigger
+
+- name: manual-cleanup-trigger
+  plan:
+  - put: manual-cleanup-trigger
+
 - name: bump-dependencies-go-mod
   on_failure: &ci-notification
     put: slack-ci-channel
@@ -1202,24 +1248,32 @@ jobs:
 
 - name: claim-env
   serial: true
-  on_failure:
-    put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
+  on_abort: &release-env-lock
+    do:
+      - put: garden-runc-release-env-lock
+        params:
+          release: garden-runc-release-env-lock
+  on_failure: *release-env-lock
   plan:
   - in_parallel:
     - get: ci
     - get: repo
-      trigger: true
+      trigger: false
       passed:
         - template-tests
         - unit-and-integration-tests
         - lint-repo
+    - get: env-weekly
+      trigger: true
     - get: image
     - get: env
-    - put: env-lock
-      params:
-       acquire: true
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ manual-release-trigger ]
+    - get: garden-runc-release-env-lock
+  - put: garden-runc-release-env-lock
+    params:
+      claim: garden-runc-release-env-lock
   - task: start-bbl-envs
     image: image
     file: ci/shared/tasks/start-gcp-instance/linux.yml
@@ -1228,7 +1282,7 @@ jobs:
     params:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
       BBL_STATE_DIR: bbl-garden-env
-      RESUME: true
+      RESUME: false
   - task: wait-for-bosh-api
     image: image
     file: ci/shared/tasks/wait-for-bosh-api/linux.yml
@@ -1237,26 +1291,25 @@ jobs:
 
 - name: prepare-env
   serial: true
+  on_abort: *release-env-lock
+  on_failure: *release-env-lock
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ claim-env ]
     - get: ci
     - get: repo
       trigger: true
-      passed: [claim-env]
+      passed: [ claim-env ]
     - get: image
     - get: cf-deployment
     - get: cf-deployment-concourse-tasks
     - get: env
-      passed: [claim-env]
+      passed: [ claim-env ]
       trigger: true
-  - try:
-      do:
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-garden-env
-            DEPLOYMENT_NAME: cf
+    - get: garden-runc-release-env-lock
+      passed: [ claim-env ]
   - task: prepare-cf-deployment-env
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
@@ -1350,13 +1403,16 @@ jobs:
   serial: true
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
-      passed: [prepare-env]
+      passed: [ prepare-env ]
       trigger: true
     - get: image
     - get: env
-      passed: [prepare-env]
+      passed: [ prepare-env ]
       trigger: true
     - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests
@@ -1381,13 +1437,16 @@ jobs:
   serial: true
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
-      passed: [prepare-env]
+      passed: [ prepare-env ]
       trigger: true
     - get: image
     - get: env
-      passed: [prepare-env]
+      passed: [ prepare-env ]
       trigger: true
     - get: package-release
       resource: golang-release-latest
@@ -1453,6 +1512,9 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -1473,14 +1535,6 @@ jobs:
     params:
       BBL_STATE_DIR: bbl-garden-env
       STEMCELL_URL: https://bosh.io/d/stemcells/bosh-google-kvm-windows2019-go_agent
-  - try:
-      do:
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-garden-env
-            DEPLOYMENT_NAME: gatsw
   - task: bosh-deploy-gatsw
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -1508,29 +1562,24 @@ jobs:
 
 - name: run-gats-with-cpu-throttling
   serial: true
-  serial_groups: [acceptance]
+  serial_groups: [ acceptance ]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
-      passed: [prepare-env]
+      passed: [ prepare-env ]
       trigger: true
     - get: image
     - get: env
-      passed: [prepare-env]
+      passed: [ prepare-env ]
       trigger: true
     - get: package-release
       resource: golang-release-latest
     - get: garden-ci-artifacts-release
     - get: cf-deployment-concourse-tasks
-  - try:
-      do:
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-garden-env
-            DEPLOYMENT_NAME: gats-with-cpu-throttling
   - task: bosh-deploy-gats
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -1556,26 +1605,21 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
-      passed: [prepare-env]
+      passed: [ prepare-env ]
       trigger: true
     - get: image
     - get: env
-      passed: [prepare-env]
+      passed: [ prepare-env ]
       trigger: true
     - get: package-release
       resource: golang-release-latest
     - get: garden-ci-artifacts-release
     - get: cf-deployment-concourse-tasks
-  - try:
-      do:
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-garden-env
-            DEPLOYMENT_NAME: gats-with-runc
   - task: bosh-deploy-gats
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -1606,29 +1650,24 @@ jobs:
 
 - name: run-gats-with-containerd
   serial: true
-  serial_groups: [acceptance]
+  serial_groups: [ acceptance ]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
-      passed: [prepare-env]
+      passed: [ prepare-env ]
       trigger: true
     - get: image
     - get: env
-      passed: [prepare-env]
+      passed: [ prepare-env ]
       trigger: true
     - get: package-release
       resource: golang-release-latest
     - get: garden-ci-artifacts-release
     - get: cf-deployment-concourse-tasks
-  - try:
-      do:
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-garden-env
-            DEPLOYMENT_NAME: gats-with-containerd
   - task: bosh-deploy-gats
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -1664,13 +1703,16 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
-      passed: [prepare-env]
+      passed: [ prepare-env ]
       trigger: true
     - get: image
     - get: env
-      passed: [prepare-env]
+      passed: [ prepare-env ]
       trigger: true
     - get: package-release
       resource: golang-release-latest
@@ -1693,19 +1735,22 @@ jobs:
         WITH_CONTAINERD_MODE=true
         WITH_CPU_THROTTLING=false
         CF_STEMCELL_OS=ubuntu-noble
+      BBL_STATE_DIR: bbl-garden-env
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-garden-env
       DEPLOYMENT_NAME: gats-with-containerd-cgroupsv2
       ERRAND_NAME: gats
       INSTANCE: gats
   - task: run-gpats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-garden-env
       DEPLOYMENT_NAME: gats-with-containerd-cgroupsv2
       ERRAND_NAME: gpats
       INSTANCE: gpats
@@ -1714,13 +1759,16 @@ jobs:
   serial: true
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
-      passed: [prepare-env]
+      passed: [ prepare-env ]
       trigger: true
     - get: image
     - get: env
-      passed: [prepare-env]
+      passed: [ prepare-env ]
       trigger: true
     - get: cf-deployment-concourse-tasks
   - task: export-release
@@ -1737,6 +1785,17 @@ jobs:
   plan:
     - in_parallel:
         steps:
+        - get: manual-release-trigger
+          trigger: true
+          passed:
+            - run-cats
+            - export-release
+            - run-standalone-gdn-gats
+            - run-gatsw
+            - run-gats-with-cpu-throttling
+            - run-gats-with-runc
+            - run-gats-with-containerd
+            - run-gats-with-containerd-cgroupsv2
         - get: ci
         - get: repo
           passed:
@@ -1876,52 +1935,94 @@ jobs:
       resource: version
       params: {file: next-version/number}
 
-- name: unclaim-env
+- name: cleanup-time-gate
+  plan:
+  - get: cleanup-timer
+    trigger: true
+
+- name: wait-for-env-lock-claim
+  serial: true
+  plan:
+  - get: cleanup-timer
+    trigger: true
+    passed: [ cleanup-time-gate ]
+  - get: garden-runc-release-env-lock
+  - put: check-unclaimed-env-lock
+    resource: garden-runc-release-env-lock
+    params:
+      check_unclaimed: garden-runc-release-env-lock
+      retry-delay: 60m
+
+- name: wait-for-acceptance-tests
+  plan:
+  - get: image
+  - get: garden-runc-release-env-lock
+    passed: [ wait-for-env-lock-claim ]
+    trigger: true
+  - task: sleep
+    image: image
+    config:
+      platform: linux
+      run: 
+        path: sh
+        args:
+        - -exc
+        - sleep 5h
+
+- name: cleanup-env
   serial: true
   plan:
   - in_parallel:
       steps:
-      - get: env
-        passed: [ship-what]
-        trigger: true
-      - get: image
-      - get: env-lock
       - get: ci
-  - in_parallel:
-      steps:
+      - get: env
+      - get: image
+      - get: manual-cleanup-trigger
+        trigger: true
+        passed: [ manual-cleanup-trigger ]
+      - get: garden-runc-release-env-lock
+        passed: [ wait-for-acceptance-tests ]
+        trigger: true
+  - try:
+      do:
       - task: bosh-deld
         image: image
         file: ci/shared/tasks/bosh-deld/linux.yml
         params:
           BBL_STATE_DIR: bbl-garden-env
           DEPLOYMENT_NAME: cf
+  - try:
+      do:
       - task: bosh-deld
         image: image
         file: ci/shared/tasks/bosh-deld/linux.yml
         params:
           BBL_STATE_DIR: bbl-garden-env
           DEPLOYMENT_NAME: gatsw
+  - try:
+      do:
       - task: bosh-deld
         image: image
         file: ci/shared/tasks/bosh-deld/linux.yml
         params:
           BBL_STATE_DIR: bbl-garden-env
           DEPLOYMENT_NAME: gats-with-runc
+  - try:
+      do:
       - task: bosh-deld
         image: image
         file: ci/shared/tasks/bosh-deld/linux.yml
         params:
           BBL_STATE_DIR: bbl-garden-env
           DEPLOYMENT_NAME: gats-with-containerd
+  - try:
+      do:
       - task: bosh-deld
         image: image
         file: ci/shared/tasks/bosh-deld/linux.yml
         params:
           BBL_STATE_DIR: bbl-garden-env
           DEPLOYMENT_NAME: gats-with-cpu-throttling
-  - put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
   - task: stop-bbl-envs
     image: image
     file: ci/shared/tasks/stop-gcp-instance/linux.yml
@@ -1930,65 +2031,78 @@ jobs:
     params:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
       BBL_STATE_DIR: bbl-garden-env
-      SUSPEND: true
-
-
+      SUSPEND: false
+  - try:
+      do:
+      - put: garden-runc-release-env-lock
+        params:
+          release: garden-runc-release-env-lock 
 - name: release-env-lock
+  plan:
+  - get: garden-runc-release-env-lock
+  - put: garden-runc-release-env-lock
+    params:
+      release: garden-runc-release-env-lock
+
+- name: force-cleanup-env
+  serial: true
   plan:
   - in_parallel:
       steps:
-      - get: env-lock
-      - get: env
       - get: ci
+      - get: env
       - get: image
   - try:
-      in_parallel:
-        steps:
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-garden-env
-            DEPLOYMENT_NAME: cf
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-garden-env
-            DEPLOYMENT_NAME: gatsw
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-garden-env
-            DEPLOYMENT_NAME: gats-with-runc
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-garden-env
-            DEPLOYMENT_NAME: gats-with-containerd
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-garden-env
-            DEPLOYMENT_NAME: gats-with-cpu-throttling
+      do:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: cf
   - try:
       do:
-      - task: stop-bbl-envs
+      - task: bosh-deld
         image: image
-        file: ci/shared/tasks/stop-gcp-instance/linux.yml
-        input_mapping:
-          bbl-state: env
+        file: ci/shared/tasks/bosh-deld/linux.yml
         params:
-          SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
           BBL_STATE_DIR: bbl-garden-env
-          SUSPEND: true
-  ensure:
-    put: env-lock
+          DEPLOYMENT_NAME: gatsw
+  - try:
+      do:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gats-with-runc
+  - try:
+      do:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gats-with-containerd
+  - try:
+      do:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gats-with-cpu-throttling
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
     params:
-      release: env-lock #! path to the resource in the above get
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-garden-env
+      SUSPEND: false
+
+
 
 #! versioning
 - name: patch-bump

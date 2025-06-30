@@ -14,8 +14,12 @@ function run(){
     local task_tmp_dir="${1:?provide temp dir for task}"
     shift 1
 
-    echo ${CONFIG} | yq -r . > "./built-config-file/config.yml"
-    echo ${CONFIG} | yq -r . -o "json" | jq -r . > "./built-config-file/config.json"
+    local env_file="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-env.bash')"
+    expand_envs "${env_file}"
+    . "${env_file}"
+
+    eval "${EVAL_YAML_CONFIG}" | yq -r . > "./built-config-file/config.yml"
+    eval "${EVAL_YAML_CONFIG}" | yq -r . -o "json" | jq -r . > "./built-config-file/config.json"
 }
 
 function cleanup() {

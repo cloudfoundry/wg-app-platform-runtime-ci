@@ -5,6 +5,7 @@
 groups:
 - name: release
   jobs:
+  - manual-release-trigger
   - template-tests
   - unit-and-integration-tests
   - lint-repo
@@ -16,7 +17,6 @@ groups:
 #!  - verify-iwa-login
   - ship-what
   - ship-it
-  - unclaim-env
 
 - name: periodics
   jobs:
@@ -25,8 +25,14 @@ groups:
   - bump-bosh-blobs
   - sync-dot-github-dir
 
-- name: manual
+- name: cleanup
   jobs:
+  - cleanup-time-gate
+  - wait-for-env-lock-claim
+  - wait-for-acceptance-tests
+  - manual-cleanup-trigger
+  - cleanup-env
+  - force-cleanup-env
   - release-env-lock
 
 - name: version
@@ -44,6 +50,7 @@ resource_types:
     repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/bosh-deployment-resource
     username: _json_key
     password: ((gcp-wg-arp-service-account/config-json))
+
 - name: cf-cli-resource
   type: registry-image
   source:
@@ -51,6 +58,17 @@ resource_types:
     username: _json_key
     password: ((gcp-wg-arp-service-account/config-json))
     tag: latest
+
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: latest
+
+- name: fork-pool
+  type: registry-image
+  source:
+    repository: ebroberson/pool-resource
 
 #! Define-Resources
 resources:
@@ -158,6 +176,7 @@ resources:
     branch: main
     uri: git@github.com:cloudfoundry/diff-exporter.git
     private_key: ((github-appruntimeplatform-bot/private-key))
+
 - name: updated-go-mod-groot-windows
   type: git
   icon: source-branch
@@ -165,6 +184,7 @@ resources:
     branch: main
     uri: git@github.com:cloudfoundry/groot-windows.git
     private_key: ((github-appruntimeplatform-bot/private-key))
+
 - name: updated-go-mod-winc
   type: git
   icon: source-branch
@@ -172,6 +192,7 @@ resources:
     branch: main
     uri: git@github.com:cloudfoundry/winc.git
     private_key: ((github-appruntimeplatform-bot/private-key))
+
 - name: updated-go-mod-certsplitter
   type: git
   icon: source-branch
@@ -179,6 +200,7 @@ resources:
     branch: main
     uri: git@github.com:cloudfoundry/certsplitter.git
     private_key: ((github-appruntimeplatform-bot/private-key))
+
 - name: updated-go-mod-cert-injector
   type: git
   icon: source-branch
@@ -229,6 +251,37 @@ resources:
     days:
       - Wednesday
 
+- name: env-weekly
+  type: time
+  icon: clock
+  source:
+    interval: '168h'
+    start: 01:00
+    stop: 01:59
+    days:
+      - Thursday
+
+- name: cleanup-timer
+  type: time
+  icon: clock
+  source:
+    interval: '1h'
+
+- name: manual-release-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: manual-cleanup-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: slack-ci-channel
+  type: slack-notification
+  source:
+    url: ((slack-ci-channel/webhook))
+
 - name: github-release
   type: github-release
   icon: github
@@ -258,14 +311,15 @@ resources:
     key: version
     region_name: us-east-1
 
-- name: env-lock
-  type: pool
+- name: winc-release-env-lock
+  type: fork-pool
   icon: cloud-lock
   source:
     branch: main
     pool: winc-release-env-lock
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+    paths: winc-release-env-lock
 
 - name: windows-worker-lock
   type: pool
@@ -322,6 +376,15 @@ resources:
 
 #! Define-Jobs
 jobs:
+- name: manual-release-trigger
+  plan:
+  - put: manual-release-trigger
+
+- name: manual-cleanup-trigger
+  plan:
+  - put: manual-cleanup-trigger
+
+
 - name: bump-dependencies-go-mod
   serial: true
   plan:
@@ -336,7 +399,7 @@ jobs:
       - get: updated-go-mod-groot-windows
       - get: updated-go-mod-winc
       - get: weekly
-        trigger: false
+        trigger: true
   - do:
     - task: cert-injector-bump-dependencies-go-mod
       file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
@@ -421,9 +484,9 @@ jobs:
     - get: repo
     - get: image
     - get: go-version
-      trigger: false
+      trigger: true
     - get: golang-release-latest
-      trigger: false
+      trigger: true
 
   - task: bump-golang-package-name
     image: image
@@ -460,12 +523,12 @@ jobs:
         params:
           globs:
           - x86_64-*-release-posix-seh-ucrt-*.7z
-        trigger: false
+        trigger: true
       - get: seven-zip
         params:
           globs:
           - 7z*.msi
-        trigger: false
+        trigger: true
   - do:
     - task: bump-bosh-blob-mingw
       image: image
@@ -509,7 +572,7 @@ jobs:
       - get: #@ "{}-repo".format(repo.name)
 #@ end
       - get: shared-templates
-        trigger: false
+        trigger: true
   - do:
     - task: sync-dot-github-dir-winc-release
       file: ci/shared/tasks/sync-dot-github-dir/linux.yml
@@ -614,24 +677,31 @@ jobs:
 
 - name: claim-env
   serial: true
-  on_failure:
-    put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
+  on_abort: &release-env-lock
+    do:
+      - put: winc-release-env-lock
+        params:
+          release: winc-release-env-lock
+  on_failure: *release-env-lock
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ manual-release-trigger ]
     - get: ci
     - get: repo
-      trigger: true
       passed:
-        - template-tests
         - unit-and-integration-tests
+        - template-tests
         - lint-repo
+    - get: env-weekly
+      trigger: true
     - get: image
     - get: env
-    - put: env-lock
-      params:
-       acquire: true
+    - get: winc-release-env-lock
+  - put: winc-release-env-lock
+    params:
+      claim: winc-release-env-lock
   - task: start-bbl-envs
     image: image
     file: ci/shared/tasks/start-gcp-instance/linux.yml
@@ -640,7 +710,7 @@ jobs:
     params:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
       BBL_STATE_DIR: bbl-winc-env
-      RESUME: true
+      RESUME: false
   - task: wait-for-bosh-api
     image: image
     file: ci/shared/tasks/wait-for-bosh-api/linux.yml
@@ -649,8 +719,13 @@ jobs:
 
 - name: prepare-env
   serial: true
+  on_abort: *release-env-lock
+  on_failure: *release-env-lock
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ claim-env ]
     - get: ci
     - get: repo
       trigger: true
@@ -664,7 +739,9 @@ jobs:
     - get: linux-stemcell
     - get: windows-stemcell
     - get: winc-release
-  - try:
+    - get: winc-release-env-lock
+      passed: [claim-env]
+  - try: &delete-cf-deployment
       do:
         - task: bosh-deld
           image: image
@@ -737,22 +814,22 @@ jobs:
       BBL_STATE_DIR: bbl-winc-env
       SYSTEM_DOMAIN: bbl-winc-env.arp.cloudfoundry.org
       ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
-  - task: start-sql-server-vm
-    image: image
-    file: ci/shared/tasks/start-gcp-instance/linux.yml
-    params:
-      INSTANCE_NAME: sql-server-pesto
-      ZONE: us-east1-b
-      PROJECT: cf-garden-windows-dev
-      SERVICE_ACCOUNT_KEY: ((gcp-cf-garden-windows-dev-service-account-json))
-  - task: start-sql-server-vm
-    image: image
-    file: ci/shared/tasks/start-gcp-instance/linux.yml
-    params:
-      INSTANCE_NAME: manager
-      ZONE: us-central1-a
-      PROJECT: cf-diego-pivotal
-      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
+#!  - task: start-sql-server-vm
+#!    image: image
+#!    file: ci/shared/tasks/start-gcp-instance/linux.yml
+#!    params:
+#!      INSTANCE_NAME: sql-server-pesto
+#!      ZONE: us-east1-b
+#!      PROJECT: cf-garden-windows-dev
+#!      SERVICE_ACCOUNT_KEY: ((gcp-cf-garden-windows-dev-service-account-json))
+#!  - task: start-sql-server-vm
+#!    image: image
+#!    file: ci/shared/tasks/start-gcp-instance/linux.yml
+#!    params:
+#!      INSTANCE_NAME: manager
+#!      ZONE: us-central1-a
+#!      PROJECT: cf-diego-pivotal
+#!      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
 #!  - task: deploy-and-setup-iwa-test-app
 #!    file: ci/winc-release/tasks/setup-iwa-test-app/linux.yml
 #!    image: image
@@ -771,6 +848,9 @@ jobs:
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -804,6 +884,9 @@ jobs:
   serial: true
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -818,9 +901,9 @@ jobs:
     - get: garden-runc-release
     - get: windows-utilities-release
     - get: cf-deployment-concourse-tasks
-  - try:
-      do:
-        - task: bosh-deld
+  - try: &delete-gatsw-deployment
+      do: 
+        - task: bosh-deld 
           image: image
           file: ci/shared/tasks/bosh-deld/linux.yml
           params:
@@ -850,12 +933,22 @@ jobs:
       BBL_STATE_DIR: bbl-winc-env
       DEPLOYMENT_NAME: gatsw
       ERRAND_NAME: gats
+  - task: bosh-deld
+    image: image
+    file: ci/shared/tasks/bosh-deld/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-winc-env
+      DEPLOYMENT_NAME: gatsw
+
 
 - name: export-release
   serial: true
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -920,9 +1013,20 @@ jobs:
 #!        release: windows-worker-lock
 
 - name: ship-what
+  on_success:
+    put: slack-ci-channel
+    params:
+      text: ":concourse-succeeded: $BUILD_PIPELINE_NAME ship-what just ran. Maybe you should cut a release? $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME"
   plan:
     - in_parallel:
         steps:
+        - get: manual-release-trigger
+          trigger: true
+          passed:
+            - run-wats
+            - run-gatsw
+            - export-release
+#!            - verify-iwa-login
         - get: ci
         - get: repo
           passed:
@@ -1033,34 +1137,56 @@ jobs:
       resource: version
       params: {file: next-version/number}
 
-- name: unclaim-env
+- name: cleanup-time-gate
+  plan:
+  - get: cleanup-timer
+    trigger: true
+
+- name: wait-for-env-lock-claim
+  serial: true
+  plan:
+  - get: cleanup-timer
+    trigger: true
+    passed: [ cleanup-time-gate ]
+  - get: winc-release-env-lock
+  - put: check-unclaimed-env-lock
+    resource: winc-release-env-lock
+    params:
+      check_unclaimed: winc-release-env-lock
+      retry-delay: 60m
+
+- name: wait-for-acceptance-tests
+  plan:
+  - get: image
+  - get: winc-release-env-lock
+    passed: [ wait-for-env-lock-claim ]
+    trigger: true
+  - task: sleep
+    image: image
+    config:
+      platform: linux
+      run: 
+        path: sh
+        args:
+        - -exc
+        - sleep 4h
+
+- name: cleanup-env
   serial: true
   plan:
   - in_parallel:
       steps:
-      - get: env
-        passed: [ship-what]
-        trigger: true
-      - get: image
-      - get: env-lock
       - get: ci
-  - in_parallel:
-      steps:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-winc-env
-          DEPLOYMENT_NAME: cf
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-winc-env
-          DEPLOYMENT_NAME: gatsw
-  - put: env-lock
-    params:
-      release: env-lock #! path to the resource in the above get
+      - get: env
+      - get: image
+      - get: manual-cleanup-trigger
+        trigger: true
+        passed: [ manual-cleanup-trigger ]
+      - get: winc-release-env-lock
+        passed: [ wait-for-acceptance-tests ]
+        trigger: true
+  - try: *delete-cf-deployment
+  - try: *delete-gatsw-deployment
   - task: stop-bbl-envs
     image: image
     file: ci/shared/tasks/stop-gcp-instance/linux.yml
@@ -1069,47 +1195,33 @@ jobs:
     params:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
       BBL_STATE_DIR: bbl-winc-env
-      SUSPEND: true
-
+      SUSPEND: false
+  - try: *release-env-lock
 
 - name: release-env-lock
   plan:
+  - get: winc-release-env-lock
+  - try: *release-env-lock
+
+- name: force-cleanup-env
+  serial: true
+  plan:
   - in_parallel:
       steps:
-      - get: env-lock
-      - get: env
       - get: ci
+      - get: env
       - get: image
-  - try:
-      in_parallel:
-        steps:
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-winc-env
-            DEPLOYMENT_NAME: cf
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-winc-env
-            DEPLOYMENT_NAME: gatsw
-  - try:
-      do:
-      - task: stop-bbl-envs
-        image: image
-        file: ci/shared/tasks/stop-gcp-instance/linux.yml
-        input_mapping:
-          bbl-state: env
-        params:
-          SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
-          BBL_STATE_DIR: bbl-winc-env
-          SUSPEND: true
-  ensure:
-    put: env-lock
+  - try: *delete-cf-deployment
+  - try: *delete-gatsw-deployment
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
     params:
-      release: env-lock #! path to the resource in the above get
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-winc-env
+      SUSPEND: false
 
 #! versioning
 - name: patch-bump
