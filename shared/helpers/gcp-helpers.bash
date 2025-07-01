@@ -19,7 +19,7 @@ function check_for_unattached_disks_per_project() {
     project="${1}"
     disk_info_json=$(gcloud compute disks list --filter="users:null" --project "${project}" --format json )
     disk_count=$(echo "${disk_info_json}" | jq '. | length')
-    echo "* project '${p}' has '${disk_count}' unattached disks" 
+    echo "* project '${project}' has '${disk_count}' unattached disks"
     
     if [[ "${disk_count}" != 0 ]]; then
         while read -r disk_info; do
@@ -31,7 +31,7 @@ function check_for_unattached_disks_per_project() {
             echo "Name: ${disk_name}"
             echo "LastAttach: ${last_attach}"
             echo "LastDetach: ${last_detach}"
-            echo "To remove: gcloud compute disks delete ${disk_name} --project ${p} --zone ${zone}"
+            echo "To remove: gcloud compute disks delete ${disk_name} --project ${project} --zone ${zone}"
             echo "------------------------"
         done <<< "$( echo "${disk_info_json}" | jq -cr '.[]')"
     fi
@@ -58,7 +58,7 @@ function list_running_vms_per_project() {
     JSON='{"vms":[]}'
     vm_info_json="$(gcloud compute instances list --filter "status:RUNNING" --project "${project}" --format json )"
     vm_count=$(echo "${vm_info_json}" | jq '. | length')
-    echo "* project '${p}' has '${vm_count}' running VMs" 
+    echo "* project '${project}' has '${vm_count}' running VMs"
 
     while read -r vm; do
         local name
@@ -142,7 +142,7 @@ function list_long_running_vms_per_project() {
     project="${1}"
     vm_info_json=$(gcloud compute instances list --filter "status:RUNNING" --project "${project}" --format json)
     vm_count=$(echo "${vm_info_json}" | jq '. | length')
-    echo "* suspicious long running VMs for project '${p}'"
+    echo "* suspicious long running VMs for project '${project}'"
 
     while read -r vm; do
         local name
