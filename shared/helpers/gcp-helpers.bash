@@ -63,7 +63,7 @@ function get_running_info_from_gcp_json() {
 function get_running_vms_per_project_json() {
     project="${1}"
     JSON='{"vms":[]}'
-    vm_info_json="$(get_running_json_info_from_gcp "${project}")"
+    vm_info_json="$(get_running_info_from_gcp_json "${project}")"
     while read -r vm; do
         local name
         name=$(get_gcp_vm_identifier "${vm}")
@@ -155,7 +155,7 @@ function list_long_running_vms_locally() {
 
 function get_long_running_vms_per_project_json() {
     project="${1}"
-    vm_info_json=$(get_running_json_info_from_gcp "${project}")
+    vm_info_json=$(get_running_info_from_gcp_json "${project}")
     JSON='{"vms":[]}'
 
     while read -r vm; do
@@ -170,7 +170,7 @@ function get_long_running_vms_per_project_json() {
                 JSON="$(jq --arg name "$name" --arg id "$id" --arg hours "$hours_since" '.vms += [{"name": $name, "id": $id, "hours_running": $hours}]' <<< "$JSON")"
             fi
         fi
-    done <<< "$(get_running_json_info_from_gcp "${project}" | jq -cr '.[]')"
+    done <<< "$(get_running_info_from_gcp_json "${project}" | jq -cr '.[]')"
     echo "$JSON"
 }
 
