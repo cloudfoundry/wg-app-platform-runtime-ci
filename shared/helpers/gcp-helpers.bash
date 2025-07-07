@@ -24,7 +24,7 @@ function list_unattached_disks_locally() {
     for p in "${projects[@]}";
     do
         disk_info_json="$(get_unattached_disks_per_project_json "${p}")"
-        disk_count=$(echo "${disk_info_json}" | jq '. | length')
+        disk_count=$(echo "${disk_info_json}" | jq -r '. | length')
         echo "* project '${project}' has '${disk_count}' unattached disks"
         if [[ "${disk_count}" != 0 ]]; then
             while read -r disk; do
@@ -48,7 +48,7 @@ function list_running_vms_locally() {
     for p in "${projects[@]}";
     do
         vm_info_json=$(get_running_vms_per_project_json "${p}")
-        vm_count=$(echo "${vm_info_json}" | jq '.[] | length')
+        vm_count=$(echo "${vm_info_json}" | jq -r '.[] | length')
         echo "* project '${p}' has '${vm_count}' running VMs"
         echo "${vm_info_json}" | jq -r .vms[] | sort | uniq -c
         echo ""
@@ -138,14 +138,14 @@ function list_long_running_vms_locally() {
     for p in "${projects[@]}";
     do
         vm_info_json="$(get_long_running_vms_per_project_json "${p}")"
-        vm_count=$(echo "${vm_info_json}" | jq '.[] | length')
+        vm_count=$(echo "${vm_info_json}" | jq -r '.[] | length')
         echo "* project '${p}' has '${vm_count}' suspicious long running VMs"
 
         if [[ "${vm_count}" != 0 ]]; then
             while read -r vm; do
-                id=$(echo "${vm}" | jq .id)
-                name=$(echo "${vm}" | jq .name)
-                hours_running=$(echo "${vm}" | jq .hours_running)
+                id=$(echo "${vm}" | jq -r .id)
+                name=$(echo "${vm}" | jq -r .name)
+                hours_running=$(echo "${vm}" | jq -r .hours_running)
                 echo "     ${id} - ${name} - ${hours_running} hours"
             done <<< "$(echo "${vm_info_json}"| jq -cr '.vms[]')"
             echo ""
@@ -167,7 +167,7 @@ function get_long_running_vms_per_project_json() {
         if [[ "${hours_since}" -ge 12 ]]; then
             ok=$(is_okay_to_be_long_running "${id}")
             if [[ "${ok}" == false ]]; then
-                JSON="$(jq --arg name "$name" --arg id "$id" --arg hours "$hours_since" '.vms += [{"name": $name, "id": $id, "hours_running": $hours}]' <<< "$JSON")"
+                JSON="$(jq --arg name $name --arg id $id --arg hours $hours_since '.vms += [{"name": $name, "id": $id, "hours_running": $hours}]' <<< "$JSON")"
             fi
         fi
     done <<< "$(get_running_info_from_gcp_json "${project}" | jq -cr '.[]')"
