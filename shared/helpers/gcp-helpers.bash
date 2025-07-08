@@ -25,7 +25,7 @@ function list_unattached_disks_locally() {
     do
         disk_info_json="$(get_unattached_disks_per_project_json "${p}")"
         disk_count=$(echo "${disk_info_json}" | jq -r '. | length')
-        echo "* project '${project}' has '${disk_count}' unattached disks"
+        echo "* project '${p}' has '${disk_count}' unattached disks"
         if [[ "${disk_count}" != 0 ]]; then
             while read -r disk; do
                 echo "------------------------"
@@ -36,7 +36,7 @@ function list_unattached_disks_locally() {
                 echo "Name: ${disk_name}"
                 echo "LastAttach: ${last_attach}"
                 echo "LastDetach: ${last_detach}"
-                echo "To remove: gcloud compute disks delete ${disk_name} --project ${project} --zone ${zone}"
+                echo "To remove: gcloud compute disks delete ${disk_name} --project ${p} --zone ${zone}"
                 echo "------------------------"
                 echo ""
             done <<< "$(echo "${disk_info_json}" | jq -cr '.[]')"
