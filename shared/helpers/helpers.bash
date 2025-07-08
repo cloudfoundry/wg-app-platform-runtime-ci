@@ -138,6 +138,20 @@ function debug(){
     echo "${@}" >> "/tmp/$TASK_NAME.log"
 }
 
+function get_linux_go_version_for_release_from_ref() {
+    local dir="${1:?Provide release directory path}"
+    local ref="${2:?Provide a ref}"
+
+    pushd "${dir}" > /dev/null
+    package_path=$(git ls-tree "${ref}" --name-only packages/ | grep "golang" | grep "linux" | head -n1)
+    if [ -n "$package_path" ]; then
+        package_name=$(basename "${package_path}")
+        spec_lock_value=$(git show "${ref}:${package_path}/spec.lock" | yq .fingerprint)
+        get_go_version_for_package "${spec_lock_value}" "${package_name}"
+    fi
+    popd > /dev/null
+}
+
 function get_go_version_for_package(){
     debug "running get_go_version_for_package with args $*"
     local spec_lock_value="${1:?Provide a spec lock value}"
