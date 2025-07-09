@@ -77,9 +77,9 @@ resources:
   type: registry-image
   icon: docker
   source:                                        
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: 'latest'
 
 - name: golang-release-latest

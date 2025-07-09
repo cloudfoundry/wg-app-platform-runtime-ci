@@ -52,16 +52,16 @@ resource_types:
 - name: gcs
   type: registry-image
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/frodenas/gcs-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/frodenas/gcs-resource
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
 
 - name: command-runner
   type: docker-image
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: slack-notification
@@ -381,27 +381,27 @@ resources:
   type: registry-image
   icon: docker
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: garden-runc-release-rootfs
   type: registry-image
   icon: docker
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/garden-rootfs
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/garden-rootfs
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: garden-runc-release-fuse-rootfs
   type: registry-image
   icon: docker
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/garden-fuse
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/garden-fuse
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: artifacts-bucket-gdn
