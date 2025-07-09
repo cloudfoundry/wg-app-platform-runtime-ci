@@ -25,9 +25,9 @@ function bosh_target(){
         chmod 600 "/tmp/${ENVIRONMENT_NAME}.key"
         BOSH_ALL_PROXY="ssh+socks5://ubuntu@${OM_PUBLIC_IP}:22?private-key=/tmp/${ENVIRONMENT_NAME}.key"
         CREDHUB_PROXY="ssh+socks5://ubuntu@${OM_PUBLIC_IP}:22?private-key=/tmp/${ENVIRONMENT_NAME}.key"
-        GCP_SERVICE_ACCOUNT_KEY_JSON="$(om curl -sp /api/v0/staged/director/manifest | jq -r .manifest.cloud_provider.properties.google.json_key -r)"
+        GCP_SERVICE_ACCOUNT_KEY_JSON="$(om -k curl -sp /api/v0/staged/director/manifest | jq -r .manifest.cloud_provider.properties.google.json_key -r)"
         export BOSH_ALL_PROXY CREDHUB_PROXY GCP_SERVICE_ACCOUNT_KEY_JSON
-        eval "$(om bosh-env)"
+        eval "$(om -k bosh-env)"
     fi
 }
 
