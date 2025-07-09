@@ -1763,14 +1763,38 @@ jobs:
   - in_parallel:
     - get: manual-release-trigger
       trigger: true
-      passed: [ prepare-env ]
+      passed:
+        - run-cats
+        - export-release
+        - run-standalone-gdn-gats
+        - run-gatsw
+        - run-gats-with-cpu-throttling
+        - run-gats-with-runc
+        - run-gats-with-containerd
+        - run-gats-with-containerd-cgroupsv2
     - get: ci
     - get: repo
-      passed: [ prepare-env ]
+      passed:
+        - run-cats
+        - export-release
+        - run-standalone-gdn-gats
+        - run-gatsw
+        - run-gats-with-cpu-throttling
+        - run-gats-with-runc
+        - run-gats-with-containerd
+        - run-gats-with-containerd-cgroupsv2
       trigger: true
     - get: image
     - get: env
-      passed: [ prepare-env ]
+      passed:
+        - run-cats
+        - export-release
+        - run-standalone-gdn-gats
+        - run-gatsw
+        - run-gats-with-cpu-throttling
+        - run-gats-with-runc
+        - run-gats-with-containerd
+        - run-gats-with-containerd-cgroupsv2
       trigger: true
     - get: cf-deployment-concourse-tasks
   - task: export-release
@@ -1790,25 +1814,11 @@ jobs:
         - get: manual-release-trigger
           trigger: true
           passed:
-            - run-cats
             - export-release
-            - run-standalone-gdn-gats
-            - run-gatsw
-            - run-gats-with-cpu-throttling
-            - run-gats-with-runc
-            - run-gats-with-containerd
-            - run-gats-with-containerd-cgroupsv2
         - get: ci
         - get: repo
           passed:
-            - run-cats
             - export-release
-            - run-standalone-gdn-gats
-            - run-gatsw
-            - run-gats-with-cpu-throttling
-            - run-gats-with-runc
-            - run-gats-with-containerd
-            - run-gats-with-containerd-cgroupsv2
           trigger: true
         - get: image
         - get: release-branch
@@ -1818,14 +1828,7 @@ jobs:
         - get: version
         - get: env
           passed:
-            - run-cats
             - export-release
-            - run-standalone-gdn-gats
-            - run-gatsw
-            - run-gats-with-cpu-throttling
-            - run-gats-with-runc
-            - run-gats-with-containerd
-            - run-gats-with-containerd-cgroupsv2
           trigger: true
 
     - task: check-safe-to-release-repo
