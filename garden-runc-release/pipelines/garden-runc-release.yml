@@ -1765,7 +1765,6 @@ jobs:
       trigger: true
       passed:
         - run-cats
-        - export-release
         - run-standalone-gdn-gats
         - run-gatsw
         - run-gats-with-cpu-throttling
@@ -1776,7 +1775,6 @@ jobs:
     - get: repo
       passed:
         - run-cats
-        - export-release
         - run-standalone-gdn-gats
         - run-gatsw
         - run-gats-with-cpu-throttling
@@ -1788,7 +1786,6 @@ jobs:
     - get: env
       passed:
         - run-cats
-        - export-release
         - run-standalone-gdn-gats
         - run-gatsw
         - run-gats-with-cpu-throttling
