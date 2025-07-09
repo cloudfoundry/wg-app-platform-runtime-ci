@@ -147,6 +147,7 @@ function list_long_running_vms_locally() {
                 name=$(echo "${vm}" | jq -r .name)
                 hours_running=$(echo "${vm}" | jq -r .hours_running)
                 echo "     ${id} - ${name} - ${hours_running} hours"
+                echo "        # gcloud compute instances stop ${name} --project ${p}"
             done <<< "$(echo "${vm_info_json}"| jq -cr '.vms[]')"
             echo ""
         fi
@@ -164,7 +165,7 @@ function get_long_running_vms_per_project_json() {
         name=$(get_gcp_vm_name "${vm}")
         creation_time=$(echo "${vm}" | jq -r .lastStartTimestamp)
         hours_since="$(( ($(date +%s) - $(date -d "${creation_time}" +%s)) / (60*60) ))"
-        if [[ "${hours_since}" -ge 12 ]]; then
+        if [[ "${hours_since}" -ge 8 ]]; then
             ok=$(is_okay_to_be_long_running "${id}")
             if [[ "${ok}" == false ]]; then
                 JSON="$(jq --arg name $name --arg id $id --arg hours $hours_since '.vms += [{"name": $name, "id": $id, "hours_running": $hours}]' <<< "$JSON")"
