@@ -164,3 +164,29 @@ function display_go_mod_diff() {
     fi
   done <<< "$(echo "${go_mod_changes_json}" | jq -cr .packages[])"
 }
+
+function get_bosh_job_spec_diff(){
+  START_REF="${1}" # ex: "v0.0.7"
+  END_REF="${2}" # ex: "v0.0.8"
+
+  job_spec_diff="$(git --no-pager diff "${START_REF}...${END_REF}" jobs/*/spec)"
+  if [[ -n "${job_spec_diff}" ]]; then
+    echo "## Bosh Job Spec changes"
+    echo "${job_spec_diff}"
+  fi
+}
+
+function display_full_changelog() {
+  START_REF="${1}" # ex: "v0.0.7"
+  END_REF="${2}" # ex: "v0.0.8"
+  REPO_NAME="${3}"
+  GITHUB_ORG_URL="${4}"
+  echo "## **Full Changelog**: ${GITHUB_ORG_URL}/${REPO_NAME}/compare/$START_REF}...${END_REF}"
+}
+
+function display_built_with_go_linux() {
+  REPO_LOCATION="${1}"
+  END_REF="${2}" # ex: "v0.0.8"
+  echo "## ✨  Built with go $(get_linux_go_version_for_release_from_ref "${REPO_LOCATION}" "${END_REF}")"
+}
+
