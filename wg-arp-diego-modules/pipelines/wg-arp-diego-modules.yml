@@ -185,7 +185,7 @@ jobs:
       privileged: #@ helpers.privileged(package)
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
 #@ if helpers.on_windows(package):
     - do:
@@ -257,7 +257,7 @@ jobs:
       privileged: #@ helpers.privileged(package)
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DB: #@ db.value

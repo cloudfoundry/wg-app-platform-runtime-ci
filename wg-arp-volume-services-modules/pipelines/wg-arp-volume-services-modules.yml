@@ -184,7 +184,7 @@ jobs:
       privileged: #@ helpers.privileged(package)
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
 #@ if helpers.on_windows(package):
     - do:

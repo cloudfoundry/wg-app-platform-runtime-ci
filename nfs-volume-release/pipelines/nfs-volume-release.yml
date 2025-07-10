@@ -687,7 +687,7 @@ jobs:
       privileged: #@ helpers.privileged(repo)
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(repo.name)
@@ -972,7 +972,7 @@ jobs:
         attempts: 2
         vars:
           image_repository: cloudfoundry/tas-runtime-build
-          image_password: ((gcp-wg-arp-service-account/config-json))
+          image_password: ((gcp-arp-artifact-registry-service-account-token))
           image_tag: ((.:image_tag))
         params:
           ENVS: |
@@ -999,7 +999,7 @@ jobs:
         attempts: 2
         vars:
           image_repository: cloudfoundry/tas-runtime-build
-          image_password: ((gcp-wg-arp-service-account/config-json))
+          image_password: ((gcp-arp-artifact-registry-service-account-token))
           image_tag: ((.:image_tag))
         params:
           ENVS: |

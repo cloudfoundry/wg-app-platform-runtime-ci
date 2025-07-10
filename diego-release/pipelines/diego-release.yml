@@ -716,7 +716,7 @@ jobs:
         DEFAULT_PARAMS: "ci/diego-release/default-params/build-binaries/linux.yml"
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
     - task: build-binaries-for-windows
       tags: [ diego-windows ]
@@ -736,7 +736,7 @@ jobs:
         built-binaries: linux-built-binaries
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -767,7 +767,7 @@ jobs:
         built-binaries: linux-built-binaries
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -834,7 +834,7 @@ jobs:
         DEFAULT_PARAMS: "ci/diego-release/default-params/build-binaries/linux.yml"
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
     - task: build-binaries-for-garden-runc-release-linux
       file: ci/shared/tasks/build-binaries/linux.yml
@@ -846,7 +846,7 @@ jobs:
         DEFAULT_PARAMS: "ci/garden-runc-release/default-params/build-binaries/linux.yml"
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
   - task: combine-built-binaries
     file: ci/shared/tasks/combine-assets/linux.yml
@@ -880,7 +880,7 @@ jobs:
         input-03: diego-inigo-ci-rootfs
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DIR: src/code.cloudfoundry.org/inigo
