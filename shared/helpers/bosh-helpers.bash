@@ -14,20 +14,21 @@ function bosh_target(){
         fi
         export ENVIRONMENT_NAME
     else
+        OM_SKIP_SSL_VALIDATION=true
         OM_USERNAME="$(jq -r .ops_manager.username "$(env_metadata)")"
         OM_PASSWORD="$(jq -r .ops_manager.password "$(env_metadata)")"
         OM_TARGET="$(jq -r .ops_manager.url "$(env_metadata)")"
         OM_PRIVATE_KEY="$(jq -r .ops_manager_private_key "$(env_metadata)")"
         OM_PUBLIC_IP="$(jq -r .ops_manager_public_ip "$(env_metadata)")"
         ENVIRONMENT_NAME="$(jq -r .name "$(env_metadata)")"
-        export OM_USERNAME OM_PASSWORD OM_TARGET OM_PRIVATE_KEY OM_PUBLIC_IP ENVIRONMENT_NAME 
+        export OM_USERNAME OM_PASSWORD OM_TARGET OM_PRIVATE_KEY OM_PUBLIC_IP ENVIRONMENT_NAME OM_SKIP_SSL_VALIDATION
         echo "${OM_PRIVATE_KEY}" > "/tmp/${ENVIRONMENT_NAME}.key"
         chmod 600 "/tmp/${ENVIRONMENT_NAME}.key"
         BOSH_ALL_PROXY="ssh+socks5://ubuntu@${OM_PUBLIC_IP}:22?private-key=/tmp/${ENVIRONMENT_NAME}.key"
         CREDHUB_PROXY="ssh+socks5://ubuntu@${OM_PUBLIC_IP}:22?private-key=/tmp/${ENVIRONMENT_NAME}.key"
-        GCP_SERVICE_ACCOUNT_KEY_JSON="$(om -k curl -sp /api/v0/staged/director/manifest | jq -r .manifest.cloud_provider.properties.google.json_key -r)"
+        GCP_SERVICE_ACCOUNT_KEY_JSON="$(om curl -sp /api/v0/staged/director/manifest | jq -r .manifest.cloud_provider.properties.google.json_key -r)"
         export BOSH_ALL_PROXY CREDHUB_PROXY GCP_SERVICE_ACCOUNT_KEY_JSON
-        eval "$(om -k bosh-env)"
+        eval "$(om bosh-env)"
     fi
 }
 
