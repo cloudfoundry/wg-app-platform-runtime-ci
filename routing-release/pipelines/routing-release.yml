@@ -652,7 +652,7 @@ jobs:
     file: ci/shared/tasks/build-binaries/linux.yml
     vars:
       image_repository: cloudfoundry/tas-runtime-mysql-5.7 #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag_mysql_5_7))
     params:
       DEFAULT_PARAMS: "ci/routing-release/default-params/build-binaries/linux.yml"
@@ -664,7 +664,7 @@ jobs:
       attempts: 3
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -679,7 +679,7 @@ jobs:
       attempts: 3
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -1003,7 +1003,7 @@ jobs:
       DEFAULT_PARAMS: "ci/routing-release/default-params/build-binaries/linux.yml"
     vars:
       image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
   - task: update-cf-with-tls-support-on-tcp-router-and-mtls-only
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
@@ -1029,7 +1029,7 @@ jobs:
       FUNCTIONS: "ci/routing-release/helpers/configure-binaries.bash"
     vars:
       image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
   - task: update-cf-with-no-tls-tcp-route-support
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
@@ -1055,7 +1055,7 @@ jobs:
       FUNCTIONS: "ci/routing-release/helpers/configure-binaries.bash"
     vars:
       image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
   - task: reset-to-original-cf-deployment-settings
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml

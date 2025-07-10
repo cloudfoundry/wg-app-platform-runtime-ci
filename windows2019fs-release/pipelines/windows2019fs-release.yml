@@ -327,7 +327,7 @@ jobs:
       DEFAULT_PARAMS: "ci/windows2019fs-release/default-params/build-binaries/linux.yml"
     vars:
       image_repository: cloudfoundry/tas-runtime-build
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
   - task: bump-repo-windows2019fs-release-version
     file: ci/shared/tasks/bump-repo-version-file/linux.yml
@@ -445,7 +445,7 @@ jobs:
       DEFAULT_PARAMS: "ci/windows2019fs-release/default-params/build-binaries/linux.yml"
     vars:
       image_repository: cloudfoundry/tas-runtime-build
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
   - task: bump-repo-windows2019fs-release-version
     file: ci/shared/tasks/bump-repo-version-file/linux.yml
