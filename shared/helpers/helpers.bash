@@ -294,3 +294,13 @@ function is_env_cf_deployment() {
     fi
 }
 export -f is_env_cf_deployment
+
+function is_env_shepherd_v2() {
+    local has_v2=$(jq 'any(.;.v2)' "$(env_metadata)")
+    if [[ "$has_v2" == "true" ]]; then
+        echo  "yes"
+    else
+        echo "no"
+    fi
+}
+export -f is_env_shepherd_v2
