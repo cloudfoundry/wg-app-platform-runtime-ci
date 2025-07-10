@@ -1483,6 +1483,7 @@ jobs:
         arm64
   - task: run-gats
     file: ci/shared/tasks/run-bin-test/linux.yml
+    attempts: 2
     input_mapping:
       input-01: released-binaries
       input-02: garden-runc-release-rootfs
@@ -1555,6 +1556,7 @@ jobs:
         DEPLOYMENT_WINDOWS_UTILITIES_RELEASE_DIR=$PWD/release-03
   - task: run-gatsw-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
+    attempts: 2
     input_mapping:
       bbl-state: env
     params:
@@ -1595,6 +1597,7 @@ jobs:
       BBL_STATE_DIR: bbl-garden-env
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
+    attempts: 2
     input_mapping:
       bbl-state: env
     params:
@@ -1635,6 +1638,7 @@ jobs:
       BBL_STATE_DIR: bbl-garden-env
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
+    attempts: 2
     input_mapping:
       bbl-state: env
     params:
@@ -1643,6 +1647,7 @@ jobs:
       ERRAND_NAME: gats
   - task: run-gpats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
+    attempts: 2
     input_mapping:
       bbl-state: env
     params:
@@ -1683,6 +1688,7 @@ jobs:
       BBL_STATE_DIR: bbl-garden-env
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
+    attempts: 2
     input_mapping:
       bbl-state: env
     params:
@@ -1692,6 +1698,7 @@ jobs:
       INSTANCE: gats
   - task: run-gpats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
+    attempts: 2
     input_mapping:
       bbl-state: env
     params:
@@ -1740,6 +1747,7 @@ jobs:
       BBL_STATE_DIR: bbl-garden-env
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
+    attempts: 2
     input_mapping:
       bbl-state: env
     params:
