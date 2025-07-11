@@ -2101,6 +2101,14 @@ jobs:
         file: ci/shared/tasks/bosh-deld/linux.yml
         params:
           BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gats-with-containerd-cgroupsv2
+  - try:
+      do:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
           DEPLOYMENT_NAME: gats-with-cpu-throttling
   - task: stop-bbl-envs
     image: image
