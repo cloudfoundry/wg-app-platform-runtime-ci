@@ -44,7 +44,7 @@ resources:
   icon: source-branch
   source:
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci.git
-    branch: groot-windows-docker-images
+    branch: main
     private_key: ((github-appruntimeplatform-bot/private-key))
     paths:
     - winc-release/dockerfiles/whiteout/Dockerfile
@@ -53,7 +53,7 @@ resources:
   type: git
   icon: source-branch
   source:
-    branch: groot-windows-docker-images
+    branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: image
