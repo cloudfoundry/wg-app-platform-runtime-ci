@@ -10,6 +10,9 @@ db_flavors:
   value: mysql
 
 internal_repos:
+- name: routing-api
+
+tests_that_require_db:
 - name: gorouter
   configure_db: true
 - name: cf-tcp-router
@@ -21,6 +24,7 @@ internal_repos:
 - name: routing-api-cli
 - name: routing-acceptance-tests
   acceptance: true
+
 opsfiles:
 - add-lb-ca-cert.yml
 - scale-for-cats.yml
