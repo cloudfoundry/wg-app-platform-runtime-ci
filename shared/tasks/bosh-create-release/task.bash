@@ -17,6 +17,8 @@ function run() {
     exit 1
   fi
 
+  echo "${GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY}" > config/t.key
+
   pushd repo > /dev/null
   local private_yml="./config/private.yml"
   bosh_configure_private_yml "$private_yml"
