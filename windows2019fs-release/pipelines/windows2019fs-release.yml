@@ -470,6 +470,7 @@ jobs:
         {input-01/operations/windows2019-cell.yml,combined-assets}
         {input-01/operations/use-offline-windows2019fs.yml,combined-assets}
   - task: deploy-cf-deployment-with-windows2019fs-release
+    attempts: 2
     file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping:
       ops-files: combined-assets
