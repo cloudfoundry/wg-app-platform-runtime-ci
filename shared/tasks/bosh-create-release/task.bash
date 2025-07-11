@@ -17,7 +17,7 @@ function run() {
     exit 1
   fi
 
-  echo "${GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY}" > config/t.key
+  echo "${GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY}" > t.key
 
   pushd repo > /dev/null
   local private_yml="./config/private.yml"
