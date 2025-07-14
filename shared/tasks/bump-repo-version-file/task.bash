@@ -26,6 +26,8 @@ function run(){
     fi
 
     pushd repo > /dev/null
+    local private_yml="./config/private.yml"
+    bosh_configure_private_yml "$private_yml"
 
     eval "${BUMP_ACTION}"
 
