@@ -305,13 +305,11 @@ resources:
   type: semver
   icon: counter
   source:
-    access_key_id: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
-    secret_access_key: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
-    assume_role_arn: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
-    bucket: winc-release
-    initial_version: 0.0.0
-    key: version
-    region_name: us-east-1
+    driver: gcs
+    bucket: ci-release-versions
+    key: winc-release/version
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
+    initial_version: 2.40.0
 
 - name: winc-release-env-lock
   type: fork-pool
