@@ -506,7 +506,7 @@ jobs:
       PACKAGE_NAME: golang-*-windows
       AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
       AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
-      AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+      #! AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
 
   - put: repo
     params:
@@ -541,7 +541,7 @@ jobs:
         BOSH_BLOB_PATH: mingw/x86_64-*-release-posix-seh-ucrt-*-*.7z
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
-        AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+        #! AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
     - put: repo
       params:
        rebase: true
@@ -556,7 +556,7 @@ jobs:
         BOSH_BLOB_PATH: 7zip/7z*.msi
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
-        AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+        #! AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
     - put: repo
       params:
        rebase: true
@@ -1099,7 +1099,7 @@ jobs:
       params:
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
-        AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
+        #! AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
 
     - put: release-branch
       params:
