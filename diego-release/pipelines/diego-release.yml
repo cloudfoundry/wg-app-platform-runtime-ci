@@ -1086,8 +1086,9 @@ jobs:
     - get: image
     - get: env
     - get: diego-release-env-lock
-      params:
-        claim: diego-release-env-lock
+  - put: diego-release-env-lock
+    params:
+      claim: diego-release-env-lock
   - task: start-bbl-envs
     image: image
     file: ci/shared/tasks/start-gcp-instance/linux.yml
