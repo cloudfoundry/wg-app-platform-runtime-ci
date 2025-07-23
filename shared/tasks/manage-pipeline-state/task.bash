@@ -51,7 +51,19 @@ function validate() {
 
 function run() {
     validate
+    cat pipeline-state
+    local selector=$(get_selector)
     
+    cat pipeline-state | jq -r '"${selector}"'
+}
+
+function get_selector() {
+  local selector="."
+  if [[ "${COMMAND}" == "claim" || "${COMMAND}" == "unclaim" ]]; then
+    selector=".env"
+  fi
+
+  echo $selector
 }
 
 trap 'err_reporter $LINENO' ERR
