@@ -51,6 +51,15 @@ function validate() {
 
 function run() {
     validate
+    modify
+    verify
+}
+
+function verify() {
+  echo true
+}
+
+function modify() {
     current_state="pipeline-state/pipeline-state"
     new_state="updated-pipeline-state/pipeline-state"
     task_tmp_dir=$(mktemp -d -t 'manage-pipeline-state-XXXX')
@@ -64,10 +73,10 @@ function run() {
     echo "Selector for command ${COMMAND}: ${selector}"
     
     echo "Current result of selector:"
-    cat "${current_state}" | jq -r ''"${selector}"''
+    cat < "${current_state}" | jq -r ''"${selector}"''
 
     echo "Setting ${selector} to 'claimed'"
-    cat "${current_state}" | jq --arg newval "claimed" ''"${selector}"' |= $newval' > "${tmpfile}"
+    cat < "${current_state}" | jq --arg newval "claimed" ''"${selector}"' |= $newval' > "${tmpfile}"
     
     echo "New result:"
     cat "${tmpfile}"
