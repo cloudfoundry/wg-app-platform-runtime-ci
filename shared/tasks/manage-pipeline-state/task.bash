@@ -19,7 +19,7 @@ function validate() {
     exit 1
   fi
   
-  if [[ -z "${STATE}" ]]; then
+  if [[ -n "${STATE}" ]]; then
     if [[ ! " ${states[*]} " =~ " ${STATE} " ]]; then
       echo "ERROR: ${STATE} is not a valid state"
       exit 1
