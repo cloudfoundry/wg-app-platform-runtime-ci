@@ -4,8 +4,7 @@ groups:
 - name: individual
   jobs:
   - state-claim-env
-  - state-create-new
-  - state-get-current
+  - state-reset
   - state-unclaim-env
   - state-update-acceptance-test
   - state-update-job
@@ -44,29 +43,17 @@ resources:
     tag: latest
 
 jobs:
-- name: state-create-new
+- name: state-reset
   plan:
   - in_parallel:
     - get: ci
     - get: image
     - get: pipeline-state
-  - task: create-pipeline-state
+  - task: reset-pipeline-state
     image: image
     file: ci/shared/tasks/manage-pipeline-state/linux.yml
     params:
-      COMMAND: create
-
-- name: state-get-current
-  plan:
-  - in_parallel:
-    - get: ci
-    - get: image
-    - get: pipeline-state
-  - task: get-pipeline-state
-    image: image
-    file: ci/shared/tasks/manage-pipeline-state/linux.yml
-    params:
-      COMMAND: get
+      COMMAND: reset
 
 - name: state-claim-env
   plan:
