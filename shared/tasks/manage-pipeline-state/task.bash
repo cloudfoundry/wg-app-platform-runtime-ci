@@ -51,10 +51,10 @@ function validate() {
 
 function run() {
     validate
-    cat pipeline-state
+    cat pipeline-state/pipeline-state
     local selector=$(get_selector)
     
-    cat pipeline-state | jq -r '"${selector}"'
+    cat pipeline-state/pipeline-state | jq -r '"${selector}"'
 }
 
 function get_selector() {
