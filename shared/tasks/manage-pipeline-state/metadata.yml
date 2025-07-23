@@ -1,0 +1,10 @@
+readme: |
+  This task will manage the state for a pipeline.
+  We've decided to use GCS and implement our own type of lock given the problems we've had with the Concouse lock resource.
+oses:
+  - linux
+params:
+  COMMAND: Action to perform (claim/unclaim/update-job/acceptance/reset)
+  JOB: (for update-job command) Concourse job whose state should be changed
+  TEST: (for acceptance command) Acceptance test whose state should be changed
+  STATE: New state value for the given job/test (pass/fail/running/aborted)

@@ -1,0 +1,18 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+- name: pipeline-state
+
+outputs:
+- name: updated-pipeline-state
+
+params:
+  COMMAND:
+  JOB:
+  TEST:
+  STATE:
+
+run:
+  path: ci/shared/tasks/manage-pipeline-state/task.bash

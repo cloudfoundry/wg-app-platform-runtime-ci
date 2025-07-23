@@ -1,0 +1,121 @@
+
+
+groups:
+- name: individual
+  jobs:
+  - state-claim-env
+  - state-create-new
+  - state-get-current
+  - state-unclaim-env
+  - state-update-acceptance-test
+  - state-update-job
+
+resources:
+- name: ci
+  type: git
+  icon: source-branch
+  source:
+    branch: ci-pipeline-state
+    uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci
+    private_key: ((github-appruntimeplatform-bot/private-key))
+
+- name: pipeline-state
+  type: gcs-resource
+  source:
+    bucket: ci-pipeline-state
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
+    key: test/pipeline-state
+    initial_content_text: "{}"
+
+- name: image
+  type: registry-image
+  icon: docker
+  source:                                        
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
+    username: _json_key
+    password: ((gcp-arp-artifact-registry-service-account-token))
+    tag: latest
+
+jobs:
+- name: state-create-new
+  plan:
+  - in_parallel:
+    steps:
+    - get: ci
+    - get: image
+    - get: pipeline-state
+  - task: create-pipeline-state
+    image: image
+    file: ci/shared/tasks/manage-pipeline-state/linux.yml
+    params:
+      COMMAND: create
+
+- name: state-get-current
+  plan:
+  - in_parallel:
+    steps:
+    - get: ci
+    - get: image
+    - get: pipeline-state
+  - task: get-pipeline-state
+    image: image
+    file: ci/shared/tasks/manage-pipeline-state/linux.yml
+    params:
+      COMMAND: get
+
+- name: state-claim-env
+  plan:
+  - in_parallel:
+    steps:
+    - get: ci
+    - get: image
+    - get: pipeline-state
+  - task: claim-env
+    image: image
+    file: ci/shared/tasks/manage-pipeline-state/linux.yml
+    params:
+      COMMAND: claim
+
+- name: state-unclaim-env
+  plan:
+  - in_parallel:
+    steps:
+    - get: ci
+    - get: image
+    - get: pipeline-state
+  - task: unclaim-env
+    image: image
+    file: ci/shared/tasks/manage-pipeline-state/linux.yml
+    params:
+      COMMAND: unclaim
+
+- name: state-update-job
+  plan:
+  - in_parallel:
+    steps:
+    - get: ci
+    - get: image
+    - get: pipeline-state
+  - task: update-job-claim-env
+    image: image
+    file: ci/shared/tasks/manage-pipeline-state/linux.yml
+    params:
+      COMMAND: update-job
+      JOB: claim-env
+      STATE: pass
+
+- name: state-update-acceptance-test
+  plan:
+  - in_parallel:
+    steps:
+    - get: ci
+    - get: image
+    - get: pipeline-state
+  - task: update-acceptance-cats
+    image: image
+    file: ci/shared/tasks/manage-pipeline-state/linux.yml
+    params:
+      COMMAND: acceptance
+      TEST: run-cats
+      STATE: fail
+

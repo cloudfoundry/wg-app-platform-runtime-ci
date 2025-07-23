@@ -16,6 +16,8 @@ main() {
 
   fly_pipeline "release-environments" -f "${pipeline_dir}/release-environments.yml" \
     -f "${REPO}/index.yml"
+
+  fly_pipeline "ci-pipeline-state" -f "${pipeline_dir}/ci-pipeline-state.yml"
 }
 
 main
