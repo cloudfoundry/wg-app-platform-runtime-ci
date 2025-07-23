@@ -52,7 +52,7 @@ function validate() {
 function run() {
     validate
     current_state="pipeline-state/pipeline-state"
-    task_tmp_dir=$(mktemp -d -t '/tmp/manage-pipeline-state-XXXX')
+    task_tmp_dir=$(mktemp -d -t 'manage-pipeline-state-XXXX')
     tmpfile="$(mktemp -p "${task_tmp_dir}" -t 'new-state-XXXX.json')"
 
     echo "Current state"
