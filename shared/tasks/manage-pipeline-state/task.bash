@@ -52,6 +52,7 @@ function validate() {
 function run() {
     validate
     current_state="pipeline-state/pipeline-state"
+    new_state="updated-pipeline-state/pipeline-state"
     task_tmp_dir=$(mktemp -d -t 'manage-pipeline-state-XXXX')
     tmpfile="$(mktemp -p "${task_tmp_dir}" -t 'new-state-XXXX.json')"
 
@@ -70,6 +71,11 @@ function run() {
     
     echo "New result:"
     cat "${tmpfile}"
+
+    cat "${tmpfile}" > "${new_state}"
+
+    echo "New state:"
+    cat "${new_state}"
 }
 
 function get_selector() {
