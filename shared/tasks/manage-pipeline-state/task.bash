@@ -51,12 +51,25 @@ function validate() {
 
 function run() {
     validate
+    current_state="pipeline-state/pipeline-state"
+    task_tmp_dir=$(mktemp -d -t '/tmp/manage-pipeline-state-XXXX')
+    tmpfile="$(mktemp -p "${task_tmp_dir}" -t 'new-state-XXXX.json')"
+
     echo "Current state"
-    cat pipeline-state/pipeline-state
+    cat "${current_state}" > "${tmpfile}"
+    cat "${tmpfile}"
+
     local selector=$(get_selector)
     echo "Selector for command ${COMMAND}: ${selector}"
     
-    cat pipeline-state/pipeline-state | jq -r ''"${selector}"''
+    echo "Current result of selector:"
+    cat "${current_state}" | jq -r ''"${selector}"''
+
+    echo "Setting ${selector} to 'claimed'"
+    cat "${current_state}" | jq --arg newval "claimed" ''"${selector}"' |= $newval' > "${tmpfile}"
+    
+    echo "New result:"
+    cat "${tmpfile}"
 }
 
 function get_selector() {
