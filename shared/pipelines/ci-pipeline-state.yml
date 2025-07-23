@@ -79,6 +79,9 @@ jobs:
     file: ci/shared/tasks/manage-pipeline-state/linux.yml
     params:
       COMMAND: claim
+  - put: pipeline-state
+    params:
+      file: updated-pipeline-state/pipeline-state
 
 - name: state-unclaim-env
   plan:
