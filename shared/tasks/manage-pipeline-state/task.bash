@@ -52,11 +52,6 @@ function validate() {
 function run() {
     validate
     modify
-    verify
-}
-
-function verify() {
-  echo true
 }
 
 function modify() {
@@ -69,14 +64,15 @@ function modify() {
     cat "${current_state}" > "${tmpfile}"
     cat "${tmpfile}"
 
-    local selector=$(get_selector)
+    selector=$(get_selector)
     echo "Selector for command ${COMMAND}: ${selector}"
     
     echo "Current result of selector:"
     cat < "${current_state}" | jq -r ''"${selector}"''
 
-    echo "Setting ${selector} to 'claimed'"
-    cat < "${current_state}" | jq --arg newval "claimed" ''"${selector}"' |= $newval' > "${tmpfile}"
+    new_value="$(get_new_value)"
+    echo "Setting ${selector} to ${new_value}"
+    cat < "${current_state}" | jq --arg newval "${new_value}" ''"${selector}"' |= $newval' > "${tmpfile}"
     
     echo "New result:"
     cat "${tmpfile}"
@@ -87,13 +83,30 @@ function modify() {
     cat "${new_state}"
 }
 
-function get_selector() {
-  local selector="."
-  if [[ "${COMMAND}" == "claim" || "${COMMAND}" == "unclaim" ]]; then
-    selector=".env"
+function get_new_value() {
+  local new_value="${STATE}"
+
+  if [[ "${COMMAND}" == "claim" ]]; then
+    new_value="claimed"
+  elif [[ "${COMMAND}" == "unclaim" ]]; then
+    new_value="unclaimed"
   fi
 
-  echo $selector
+  echo "${new_value}"
+}
+
+function get_selector() {
+  local selector="."
+
+  if [[ "${COMMAND}" == "claim" || "${COMMAND}" == "unclaim" ]]; then
+    selector=".env"
+  elif [[ "${COMMAND}" == "update-job" ]]; then
+    selector=".jobs.${JOB}"
+  elif [[ "${COMMAND}" == "acceptance" ]]; then
+    selector=".acceptance.${TEST}"
+  fi
+
+  echo "${selector}"
 }
 
 trap 'err_reporter $LINENO' ERR
