@@ -101,9 +101,9 @@ function get_selector() {
   if [[ "${COMMAND}" == "claim" || "${COMMAND}" == "unclaim" ]]; then
     selector=".env"
   elif [[ "${COMMAND}" == "update-job" ]]; then
-    selector=".jobs.${JOB}"
+    selector=".jobs[]?.${JOB}"
   elif [[ "${COMMAND}" == "acceptance" ]]; then
-    selector=".acceptance.${TEST}"
+    selector=".acceptance[]?.${TEST}"
   fi
 
   echo "${selector}"
