@@ -51,10 +51,12 @@ function validate() {
 
 function run() {
     validate
+    echo "Current state"
     cat pipeline-state/pipeline-state
     local selector=$(get_selector)
+    echo "Selector for command ${COMMAND}: ${selector}"
     
-    cat pipeline-state/pipeline-state | jq -r '"${selector}"'
+    cat pipeline-state/pipeline-state | jq -r ''"${selector}"''
 }
 
 function get_selector() {
