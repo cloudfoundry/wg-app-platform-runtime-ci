@@ -1,0 +1,24 @@
+---
+platform: linux
+
+inputs:
+- name: ci
+- name: repo
+- name: input-01
+  optional: true
+- name: input-02
+  optional: true
+- name: input-03
+  optional: true
+- name: input-04
+  optional: true
+outputs:
+- name: transformed-repo
+
+params:
+  DIR:
+  ENVS:
+  EVAL_CMD:
+  GIT_MESSAGE:
+run:
+  path: ci/shared/tasks/transform-repo/task.bash
