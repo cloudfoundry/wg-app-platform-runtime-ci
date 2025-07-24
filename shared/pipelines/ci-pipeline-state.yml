@@ -81,6 +81,9 @@ jobs:
     file: ci/shared/tasks/manage-pipeline-state/linux.yml
     params:
       COMMAND: unclaim
+  - put: pipeline-state
+    params:
+      file: updated-pipeline-state/pipeline-state
 
 - name: state-update-job
   plan:
@@ -95,6 +98,9 @@ jobs:
       COMMAND: update-job
       JOB: claim-env
       STATE: pass
+  - put: pipeline-state
+    params:
+      file: updated-pipeline-state/pipeline-state
 
 - name: state-update-acceptance-test
   plan:
@@ -109,4 +115,7 @@ jobs:
       COMMAND: acceptance
       TEST: run-cats
       STATE: fail
+  - put: pipeline-state
+    params:
+      file: updated-pipeline-state/pipeline-state
 
