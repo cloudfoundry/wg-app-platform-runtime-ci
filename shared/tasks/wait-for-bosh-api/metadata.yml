@@ -6,4 +6,5 @@ oses:
 inputs:
    - env
 params:
+  DIR: (Defaults to .). Change working dir prior to bosh_target
   BBL_STATE_DIR: path to the bbl state directory (relative to the env input)

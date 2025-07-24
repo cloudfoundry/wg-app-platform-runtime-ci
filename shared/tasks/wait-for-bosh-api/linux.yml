@@ -6,6 +6,7 @@ inputs:
 - name: env
 
 params:
+  DIR: .
   BBL_STATE_DIR:
 
 run:
