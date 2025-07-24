@@ -55,9 +55,38 @@ function validate() {
 }
 
 function run() {
-    validate
+  validate
+  if [[ "${COMMAND}" == "reset" ]]; then
+    reset
+  else
     ensure_objects
     modify
+  fi
+}
+
+function reset() {
+  echo "Resetting pipeline state..."
+  ensure_entry "env"
+
+  ensure_object "jobs"
+  ensure_object_entry "jobs" "claim-env"
+  ensure_object_entry "jobs" "prepare-env"
+  
+  ensure_object "acceptance"
+  # get acceptance tests from index.yml and set here
+  ensure_object_entry "acceptance" "run-cats"
+  ensure_object_entry "acceptance" "run-wats"
+  ensure_object_entry "acceptance" "run-vizzini"
+  ensure_object_entry "acceptance" "export-release"
+  ensure_object_entry "acceptance" "run-bosh-restart"
+  
+  echo "Working state:"
+  cat "${workingfile}"
+
+  cat "${workingfile}" > "${new_state}"
+
+  echo "Reset state:"
+  cat "${new_state}"
 }
 
 function modify() {
@@ -86,6 +115,19 @@ function modify() {
   cat "${new_state}"
 }
 
+function ensure_entry() {
+  local entry="${1?:Must set entry for ensure_entry}"
+  local selector=".${entry}"
+  found_entry=$(jq ''"${selector}"'' "${workingfile}")
+
+  if [[ "${found_entry}" == "null" ]]; then
+    echo "${entry} not found...creating"
+    entrytmpfile="$(mktemp -p "${task_tmp_dir}" -t ''"${value}"'tmp-XXXX.json')"
+    jq ''"${selector}"'' "${workingfile}" > "${entrytmpfile}"
+    mv "${entrytmpfile}" "${workingfile}"
+  fi
+}
+
 function ensure_objects() {
   cat "${original_state}" > "${workingfile}"
 
@@ -108,6 +150,7 @@ function ensure_object() {
   local value="${1?:Must set object name for ensure_object}"
   selector=".${value}"
   current_object=$(jq ''"${selector}"'' "${workingfile}")
+
   if [[ "${current_object}" == "null" ]]; then
     echo "${value} not found...creating"
     objecttmpfile="$(mktemp -p "${task_tmp_dir}" -t ''"${value}"'tmp-XXXX.json')"
