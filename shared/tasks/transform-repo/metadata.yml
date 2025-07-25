@@ -7,6 +7,7 @@ extra_inputs:
 oses:
   - linux
 params:
+  GCP_SERVICE_ACCOUNT_KEY: Environment secret
   DIR: (Defaults to .) Change working DIR for running the command
   ENVS: |
     This parameter defines a list of environment variables will be loaded at runtime, as opposed to

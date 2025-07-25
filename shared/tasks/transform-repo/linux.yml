@@ -16,6 +16,7 @@ outputs:
 - name: transformed-repo
 
 params:
+  GCP_SERVICE_ACCOUNT_KEY:
   DIR:
   ENVS:
   EVAL_CMD:
