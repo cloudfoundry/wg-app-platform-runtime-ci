@@ -79,15 +79,21 @@ function reset() {
   cat "${original_state}"
 
   ensure_entry "env"
+  cat "${workingfile}"
 
   ensure_object "jobs"
+  cat "${workingfile}"
   ensure_object_entry "jobs" "claim-env"
+  cat "${workingfile}"
   ensure_object_entry "jobs" "prepare-env"
+  cat "${workingfile}"
   
   ensure_object "acceptance"
+  cat "${workingfile}"
   readarray -t acceptance_array <<< "${ACCEPTANCE_JOBS[@]}"
   for acceptance_job in "${acceptance_array[@]}"; do
     ensure_object_entry "acceptance" "${acceptance_job}"
+    cat "${workingfile}"
   done
   
   echo "Working state:"
