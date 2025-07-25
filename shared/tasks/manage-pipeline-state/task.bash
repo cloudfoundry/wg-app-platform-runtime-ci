@@ -2,6 +2,7 @@
 
 set -eEu
 set -o pipefail
+set -x
 
 THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 export TASK_NAME="$(basename $THIS_FILE_DIR)"
@@ -73,6 +74,10 @@ function run() {
 
 function reset() {
   echo "Resetting pipeline state..."
+
+  echo "Original state"
+  cat "${original_state}"
+
   ensure_entry "env"
 
   ensure_object "jobs"
