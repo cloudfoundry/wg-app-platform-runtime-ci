@@ -131,7 +131,7 @@ function ensure_entry() {
 
   if [[ -z "${found_entry}" || "${found_entry}" == "null" ]]; then
     echo "${entry} not found...creating"
-    entrytmpfile="$(mktemp -p "${task_tmp_dir}" -t ''"${value}"'tmp-XXXX.json')"
+    entrytmpfile="$(mktemp -p "${task_tmp_dir}" -t ''"${entry}"'tmp-XXXX.json')"
     jq ''"${selector}"'' "${workingfile}" > "${entrytmpfile}"
     mv "${entrytmpfile}" "${workingfile}"
   fi
