@@ -3,12 +3,11 @@ platform: linux
 
 inputs:
 - name: ci
-- name: pipeline-state
-
-outputs:
-- name: updated-pipeline-state
 
 params:
+  SERVICE_ACCOUNT_KEY:
+  BUCKET:
+  STATE_PATH:
   COMMAND:
   JOB:
   TEST:

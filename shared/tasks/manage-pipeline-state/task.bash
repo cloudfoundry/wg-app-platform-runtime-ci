@@ -2,22 +2,27 @@
 
 set -eEu
 set -o pipefail
-set -x
+set +x
 
 THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 export TASK_NAME="$(basename $THIS_FILE_DIR)"
 source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
 unset THIS_FILE_DIR
 
+: "${SERVICE_ACCOUNT_KEY:?Need to set SERVICE_ACCOUNT_KEY}"
 : "${COMMAND:?Need to set COMMAND}"
+: "${BUCKET:?Need to set BUCKET}"
+: "${STATE_PATH:?Need to set STATE_PATH}"
+: "${DEBUG:=false}"
 
-commands=("claim" "unclaim" "reset" "update-job" "acceptance")
+commands=("claim" "unclaim" "reset" "update-job" "acceptance" "lock" "unlock")
 states=("pass" "fail" "running" "stopped")
-original_state="pipeline-state/pipeline-state"
-new_state="updated-pipeline-state/pipeline-state"
 task_tmp_dir=$(mktemp -d -t 'manage-pipeline-state-XXXX')
-resultfile="$(mktemp -p "${task_tmp_dir}" -t 'new-state-XXXX.json')"
+updatefile="$(mktemp -p "${task_tmp_dir}" -t 'new-state-XXXX.json')"
 workingfile="$(mktemp -p "${task_tmp_dir}" -t 'working-XXXX.json')"
+state_path="gs://${BUCKET}/${STATE_PATH}"
+
+statelock="state-lock"
 
 function validate() {
   if [[ ! " ${commands[*]} " =~ " ${COMMAND} " ]]; then
@@ -63,74 +68,100 @@ function validate() {
 }
 
 function run() {
+  login
+  get_current_state
   validate
+  perform_update
+}
+
+function perform_update() {
   if [[ "${COMMAND}" == "reset" ]]; then
-    reset
+    reset_state
+  elif [[ "${COMMAND}" == "lock" ]]; then
+    lock_state
+  elif [[ "${COMMAND}" == "unlock" ]]; then
+    unlock_state
   else
     ensure_objects
-    modify
+    modify_state
+  fi
+
+  upload_to_gcs
+}
+
+function get_current_state() {
+  gcloud storage cp "${state_path}" "${workingfile}"
+}
+
+function upload_to_gcs() {
+  gcloud storage cp "${workingfile}" "${state_path}"
+}
+
+function login() {
+  keyfile="$(mktemp -p "${task_tmp_dir}" -t 'key-XXXX.json')"
+  echo "${SERVICE_ACCOUNT_KEY}" > "${keyfile}"
+
+  gcloud auth activate-service-account --key-file "${keyfile}"
+}
+
+function wait_for_lock() {
+  locked="$(jq '.'"${statelock}"'' "${workingfile}")"
+  if [[ "${locked}" == "true" ]]; then
+    echo "State is currently being modified. Waiting..."
+    while [[ "${locked}" == "true" ]]; do
+      echo "."
+      sleep 10
+      get_current_state
+      locked="$(jq '.'"${statelock}"'' "${workingfile}")"
+    done
   fi
 }
 
-function reset() {
+function lock_state() {
+  ensure_entry "${statelock}" "true"
+}
+
+function unlock_state() {
+  ensure_entry "${statelock}" "false"
+}
+
+function reset_state() {
+  # bypasses lock intentionally
   echo "Resetting pipeline state..."
 
-  echo "Original state"
-  cat "${original_state}"
+  if [[ "${DEBUG}" == "true" ]]; then
+    echo "Original state:"
+    cat "${workingfile}"
+  fi
 
   echo "{}" > "${workingfile}"
 
   ensure_entry "env" "unclaimed"
-  cat "${workingfile}"
-
-  ensure_object "jobs"
-  cat "${workingfile}"
-  ensure_object_entry "jobs" "claim-env"
-  cat "${workingfile}"
-  ensure_object_entry "jobs" "prepare-env"
-  cat "${workingfile}"
-  
-  ensure_object "acceptance"
-  cat "${workingfile}"
-  readarray -t acceptance_array <<< "${ACCEPTANCE_JOBS[@]}"
-  for acceptance_job in "${acceptance_array[@]}"; do
-    ensure_object_entry "acceptance" "${acceptance_job}"
-    cat "${workingfile}"
-  done
-  
-  echo "Working state:"
-  cat "${workingfile}"
-
-  cat "${workingfile}" > "${new_state}"
-
-  echo "Reset state:"
-  cat "${new_state}"
+  ensure_entry "${statelock}" "false"
+  ensure_objects
 }
 
-function modify() {
-  echo "Original state"
-  cat "${original_state}"
+function modify_state() {
+  wait_for_lock
+  lock_state
 
-  echo "Working state"
-  cat "${workingfile}"
+  if [[ "${DEBUG}" == "true" ]]; then
+    echo "Original state"
+    cat "${workingfile}"
+  fi
 
   selector=$(get_selector)
-  echo "Selector for command ${COMMAND}: ${selector}"
 
-  echo "Current result of selector:"
-  jq -r ''"${selector}"'' "${workingfile}"
+  if [[ "${DEBUG}" == "true" ]]; then
+    echo "Result of ${COMMAND} selector ${selector}:"
+    jq -r ''"${selector}"'' "${workingfile}"
+  fi
 
-  new_value="$(get_new_value)"
-  echo "Setting ${selector} to ${new_value}"
-  jq --arg newval "${new_value}" ''"${selector}"' |= $newval' "${workingfile}" > "${resultfile}"
+  new_state="$(get_new_state)"
+  jq --arg newval "${new_state}" ''"${selector}"' |= $newval' "${workingfile}" > "${updatefile}"
+  mv "${updatefile}" "${workingfile}"
 
-  echo "New result:"
-  cat "${resultfile}"
-
-  cat "${resultfile}" > "${new_state}"
-
-  echo "New state:"
-  cat "${new_state}"
+  unlock_state
 }
 
 function ensure_entry() {
@@ -148,21 +179,15 @@ function ensure_entry() {
 }
 
 function ensure_objects() {
-  cat "${original_state}" > "${workingfile}"
-
-  local object="jobs"
-  ensure_object "${object}"
-
-  local entry="claim-env"
-  ensure_object_entry "${object}" "${entry}"
-  entry="prepare-env"
-  ensure_object_entry "${object}" "${entry}"
-
-  local object="acceptance"
-  ensure_object "${object}"
-  # set acceptance tests in index.yml and feed into pipeline for passthrough to this task
-  entry="run-cats"
-  ensure_object_entry "${object}" "${entry}"
+  ensure_object "jobs"
+  ensure_object_entry "jobs" "claim-env"
+  ensure_object_entry "jobs" "prepare-env"
+  
+  ensure_object "acceptance"
+  readarray -t acceptance_array <<< "${ACCEPTANCE_JOBS[@]}"
+  for acceptance_job in "${acceptance_array[@]}"; do
+    ensure_object_entry "acceptance" "${acceptance_job}"
+  done
 }
 
 function ensure_object() {
@@ -194,16 +219,16 @@ function ensure_object_entry() {
   fi
 }
 
-function get_new_value() {
-  local new_value="${STATE}"
+function get_new_state() {
+  local new_state="${STATE}"
 
   if [[ "${COMMAND}" == "claim" ]]; then
-    new_value="claimed"
+    new_state="claimed"
   elif [[ "${COMMAND}" == "unclaim" ]]; then
-    new_value="unclaimed"
+    new_state="unclaimed"
   fi
 
-  echo "${new_value}"
+  echo "${new_state}"
 }
 
 function get_selector() {
@@ -220,5 +245,10 @@ function get_selector() {
   echo "${selector}"
 }
 
+function cleanup() {
+  rm -rf "${task_tmp_dir}"
+}
+
+trap cleanup EXIT
 trap 'err_reporter $LINENO' ERR
 run "$@"
