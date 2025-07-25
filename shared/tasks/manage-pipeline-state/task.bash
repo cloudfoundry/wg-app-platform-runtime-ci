@@ -78,6 +78,8 @@ function reset() {
   echo "Original state"
   cat "${original_state}"
 
+  echo "{}" > "${workingfile}"
+
   ensure_entry "env"
   cat "${workingfile}"
 
