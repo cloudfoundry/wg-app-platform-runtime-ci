@@ -85,7 +85,8 @@ function reset() {
   ensure_object_entry "jobs" "prepare-env"
   
   ensure_object "acceptance"
-  for acceptance_job in "${ACCEPTANCE_JOBS[@]}"; do
+  readarray -t acceptance_array <<< "${ACCEPTANCE_JOBS[@]}"
+  for acceptance_job in "${acceptance_array[@]}"; do
     ensure_object_entry "acceptance" "${acceptance_job}"
   done
   
