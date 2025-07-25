@@ -2,6 +2,7 @@
 
 set -eEu
 set -o pipefail
+set -x
 
 THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 export TASK_NAME="$(basename $THIS_FILE_DIR)"
@@ -73,15 +74,28 @@ function run() {
 
 function reset() {
   echo "Resetting pipeline state..."
-  ensure_entry "env"
+
+  echo "Original state"
+  cat "${original_state}"
+
+  echo "{}" > "${workingfile}"
+
+  ensure_entry "env" "unclaimed"
+  cat "${workingfile}"
 
   ensure_object "jobs"
+  cat "${workingfile}"
   ensure_object_entry "jobs" "claim-env"
+  cat "${workingfile}"
   ensure_object_entry "jobs" "prepare-env"
+  cat "${workingfile}"
   
   ensure_object "acceptance"
-  for acceptance_job in "${ACCEPTANCE_JOBS[@]}"; do
+  cat "${workingfile}"
+  readarray -t acceptance_array <<< "${ACCEPTANCE_JOBS[@]}"
+  for acceptance_job in "${acceptance_array[@]}"; do
     ensure_object_entry "acceptance" "${acceptance_job}"
+    cat "${workingfile}"
   done
   
   echo "Working state:"
@@ -121,13 +135,14 @@ function modify() {
 
 function ensure_entry() {
   local entry="${1?:Must set entry for ensure_entry}"
+  local value="${2:=""}"
   local selector=".${entry}"
   found_entry=$(jq ''"${selector}"'' "${workingfile}")
 
-  if [[ "${found_entry}" == "null" ]]; then
+  if [[ -z "${found_entry}" || "${found_entry}" == "null" ]]; then
     echo "${entry} not found...creating"
-    entrytmpfile="$(mktemp -p "${task_tmp_dir}" -t ''"${value}"'tmp-XXXX.json')"
-    jq ''"${selector}"'' "${workingfile}" > "${entrytmpfile}"
+    entrytmpfile="$(mktemp -p "${task_tmp_dir}" -t ''"${entry}"'tmp-XXXX.json')"
+    jq --arg newval "${value}" ''"${selector}"' = $newval' "${workingfile}" > "${entrytmpfile}"
     mv "${entrytmpfile}" "${workingfile}"
   fi
 }
@@ -155,7 +170,7 @@ function ensure_object() {
   selector=".${value}"
   current_object=$(jq ''"${selector}"'' "${workingfile}")
 
-  if [[ "${current_object}" == "null" ]]; then
+  if [[ -z "${current_object}" ]] || [[ "${current_object}" == "null" ]]; then
     echo "${value} not found...creating"
     objecttmpfile="$(mktemp -p "${task_tmp_dir}" -t ''"${value}"'tmp-XXXX.json')"
     jq ''"${selector}"' |= {}' "${workingfile}" > "${objecttmpfile}"
@@ -171,7 +186,7 @@ function ensure_object_entry() {
 
   found_entry="$(jq ''"${check_selector}"'' "${workingfile}")"
 
-  if [[ "${found_entry}" == "null" ]]; then
+  if [[ -z "${found_entry}" ]] || [[ "${found_entry}" == "null" ]]; then
     echo "${object}[${entry}] not found...creating"
     entrytmpfile="$(mktemp -p "${task_tmp_dir}" -t ''"${entry}"'tmp-XXXX.json')"
     jq ''"${add_selector}"'' "${workingfile}" > "${entrytmpfile}"
