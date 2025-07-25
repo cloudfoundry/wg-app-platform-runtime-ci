@@ -56,6 +56,9 @@ jobs:
     params:
       COMMAND: reset
       ACCEPTANCE_JOBS: #@ "\n".join(data.values.acceptance_jobs)
+  - put: pipeline-state
+    params:
+      file: updated-pipeline-state/pipeline-state
 
 - name: state-claim-env
   plan:
