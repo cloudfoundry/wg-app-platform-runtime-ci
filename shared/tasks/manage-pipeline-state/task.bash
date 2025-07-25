@@ -129,7 +129,7 @@ function ensure_entry() {
   local selector=".${entry}"
   found_entry=$(jq ''"${selector}"'' "${workingfile}")
 
-  if [[ "${found_entry}" == "null" ]]; then
+  if [[ -z "${found_entry}" || "${found_entry}" == "null" ]]; then
     echo "${entry} not found...creating"
     entrytmpfile="$(mktemp -p "${task_tmp_dir}" -t ''"${value}"'tmp-XXXX.json')"
     jq ''"${selector}"'' "${workingfile}" > "${entrytmpfile}"
@@ -160,7 +160,7 @@ function ensure_object() {
   selector=".${value}"
   current_object=$(jq ''"${selector}"'' "${workingfile}")
 
-  if [[ "${current_object}" == "null" ]]; then
+  if [[ -z "${current_object}" ]] || [[ "${current_object}" == "null" ]]; then
     echo "${value} not found...creating"
     objecttmpfile="$(mktemp -p "${task_tmp_dir}" -t ''"${value}"'tmp-XXXX.json')"
     jq ''"${selector}"' |= {}' "${workingfile}" > "${objecttmpfile}"
@@ -176,7 +176,7 @@ function ensure_object_entry() {
 
   found_entry="$(jq ''"${check_selector}"'' "${workingfile}")"
 
-  if [[ "${found_entry}" == "null" ]]; then
+  if [[ -z "${found_entry}" ]] || [[ "${found_entry}" == "null" ]]; then
     echo "${object}[${entry}] not found...creating"
     entrytmpfile="$(mktemp -p "${task_tmp_dir}" -t ''"${entry}"'tmp-XXXX.json')"
     jq ''"${add_selector}"'' "${workingfile}" > "${entrytmpfile}"
