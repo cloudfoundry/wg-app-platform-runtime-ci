@@ -25,16 +25,15 @@ function run(){
 
     path=${PATH}
     pushd "repo/$DIR"  > /dev/null
-
     eval "${EVAL_CMD}"
+    popd > /dev/null
 
+    pushd "repo"  > /dev/null
     if [[ $(git status --porcelain) ]]; then
         git add -A .
         git commit -m "${GIT_MESSAGE:-Update repo}"
     fi
-
     rsync -a $PWD/ "$TRANSFORMED_REPO_DIR"
-
     popd  > /dev/null
 }
 
