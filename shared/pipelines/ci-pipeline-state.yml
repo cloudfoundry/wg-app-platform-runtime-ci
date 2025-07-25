@@ -1,4 +1,5 @@
-
+#@ load("@ytt:data", "data")
+#@ load("ytt-helpers.star", "helpers")
 
 groups:
 - name: individual
@@ -54,6 +55,7 @@ jobs:
     file: ci/shared/tasks/manage-pipeline-state/linux.yml
     params:
       COMMAND: reset
+      ACCEPTANCE_JOBS: #@ "\n".join(data.values.acceptance_jobs)
 
 - name: state-claim-env
   plan:

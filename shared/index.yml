@@ -42,3 +42,10 @@ environments:
   - name: bbl-windowsfs-online-env
     bosh_lite: false
     pipeline_lock: windowsfs-online-release-env-lock
+
+acceptance_jobs:
+- run-cats
+- run-wats
+- run-bosh-restart
+- run-vizzini
+- export-release

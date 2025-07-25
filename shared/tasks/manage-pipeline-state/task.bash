@@ -31,6 +31,13 @@ function validate() {
     fi
   fi
 
+  if [[ "${COMMAND}" == "reset" ]]; then
+    if [[ -z "${ACCEPTANCE_JOBS}" ]]; then
+      echo "ERROR: ${COMMAND} must have ACCEPTANCE_JOBS specified"
+      exit 1
+    fi
+  fi
+
   if [[ "${COMMAND}" == "update-job" ]]; then
     if [[ -z "${JOB}" ]]; then
       echo "ERROR: ${COMMAND} must have a JOB specified"
@@ -73,12 +80,9 @@ function reset() {
   ensure_object_entry "jobs" "prepare-env"
   
   ensure_object "acceptance"
-  # get acceptance tests from index.yml and set here
-  ensure_object_entry "acceptance" "run-cats"
-  ensure_object_entry "acceptance" "run-wats"
-  ensure_object_entry "acceptance" "run-vizzini"
-  ensure_object_entry "acceptance" "export-release"
-  ensure_object_entry "acceptance" "run-bosh-restart"
+  for acceptance_job in "${ACCEPTANCE_JOBS[@]}"; do
+    ensure_object_entry "acceptance" "${acceptance_job}"
+  done
   
   echo "Working state:"
   cat "${workingfile}"
