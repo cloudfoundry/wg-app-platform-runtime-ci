@@ -2,22 +2,27 @@
 
 set -eEu
 set -o pipefail
-set -x
+set +x
 
 THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 export TASK_NAME="$(basename $THIS_FILE_DIR)"
 source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
 unset THIS_FILE_DIR
 
+: "${SERVICE_ACCOUNT_KEY:?Need to set SERVICE_ACCOUNT_KEY}"
 : "${COMMAND:?Need to set COMMAND}"
+: "${BUCKET:?Need to set BUCKET}"
+: "${STATE_PATH:?Need to set STATE_PATH}"
+: "${DEBUG:=false}"
 
-commands=("claim" "unclaim" "reset" "update-job" "acceptance")
+commands=("claim" "unclaim" "reset" "update-job" "acceptance" "lock" "unlock")
 states=("pass" "fail" "running" "stopped")
-original_state="pipeline-state/pipeline-state"
-new_state="updated-pipeline-state/pipeline-state"
 task_tmp_dir=$(mktemp -d -t 'manage-pipeline-state-XXXX')
-resultfile="$(mktemp -p "${task_tmp_dir}" -t 'new-state-XXXX.json')"
+updatefile="$(mktemp -p "${task_tmp_dir}" -t 'new-state-XXXX.json')"
 workingfile="$(mktemp -p "${task_tmp_dir}" -t 'working-XXXX.json')"
+state_path="gs://${BUCKET}/${STATE_PATH}"
+
+statelock="state-lock"
 
 function validate() {
   if [[ ! " ${commands[*]} " =~ " ${COMMAND} " ]]; then
@@ -63,117 +68,150 @@ function validate() {
 }
 
 function run() {
+  login
+  get_current_state
   validate
+  perform_update
+}
+
+function perform_update() {
   if [[ "${COMMAND}" == "reset" ]]; then
-    reset
+    reset_state
+  elif [[ "${COMMAND}" == "lock" ]]; then
+    lock_state
+  elif [[ "${COMMAND}" == "unlock" ]]; then
+    unlock_state
   else
     ensure_objects
-    modify
+    modify_state
+  fi
+
+  upload_to_gcs
+}
+
+function get_current_state() {
+  echo "Retrieving latest state"
+  gcloud storage cp "${state_path}" "${workingfile}"
+}
+
+function upload_to_gcs() {
+  echo "Updating state"
+  gcloud storage cp "${workingfile}" "${state_path}"
+}
+
+function login() {
+  keyfile="$(mktemp -p "${task_tmp_dir}" -t 'key-XXXX.json')"
+  echo "${SERVICE_ACCOUNT_KEY}" > "${keyfile}"
+
+  gcloud auth activate-service-account --key-file "${keyfile}"
+}
+
+function wait_for_lock() {
+  lock_selector="$(get_selector "${statelock}")"
+  # use -r here because we actually want to compare the value
+  locked=$(jq -r ''"${lock_selector}"'' "${workingfile}")
+  if [[ "${locked}" == "true" ]]; then
+    echo "State is currently being modified. Waiting..."
+    while [[ "${locked}" == "true" ]]; do
+      echo "."
+      sleep 10
+      get_current_state
+      locked="$(jq -r ''"${lock_selector}"'' "${workingfile}")"
+    done
   fi
 }
 
-function reset() {
+function lock_state() {
+  lock_selector="$(get_selector "${statelock}")"
+  edit_selection "${lock_selector}" "true"
+}
+
+function unlock_state() {
+  lock_selector="$(get_selector "${statelock}")"
+  edit_selection "${lock_selector}" "false"
+}
+
+function reset_state() {
+  # bypasses lock intentionally
   echo "Resetting pipeline state..."
 
-  echo "Original state"
-  cat "${original_state}"
+  if [[ "${DEBUG}" == "true" ]]; then
+    echo "Original state:"
+    cat "${workingfile}"
+  fi
 
   echo "{}" > "${workingfile}"
 
   ensure_entry "env" "unclaimed"
-  cat "${workingfile}"
-
-  ensure_object "jobs"
-  cat "${workingfile}"
-  ensure_object_entry "jobs" "claim-env"
-  cat "${workingfile}"
-  ensure_object_entry "jobs" "prepare-env"
-  cat "${workingfile}"
-  
-  ensure_object "acceptance"
-  cat "${workingfile}"
-  readarray -t acceptance_array <<< "${ACCEPTANCE_JOBS[@]}"
-  for acceptance_job in "${acceptance_array[@]}"; do
-    ensure_object_entry "acceptance" "${acceptance_job}"
-    cat "${workingfile}"
-  done
-  
-  echo "Working state:"
-  cat "${workingfile}"
-
-  cat "${workingfile}" > "${new_state}"
-
-  echo "Reset state:"
-  cat "${new_state}"
+  ensure_entry "${statelock}" "false"
+  ensure_objects
 }
 
-function modify() {
-  echo "Original state"
-  cat "${original_state}"
+function modify_state() {
+  wait_for_lock
+  lock_state
 
-  echo "Working state"
-  cat "${workingfile}"
+  if [[ "${DEBUG}" == "true" ]]; then
+    echo "Original state"
+    cat "${workingfile}"
+  fi
 
-  selector=$(get_selector)
-  echo "Selector for command ${COMMAND}: ${selector}"
+  command_selector=$(get_command_selector)
 
-  echo "Current result of selector:"
-  jq -r ''"${selector}"'' "${workingfile}"
+  if [[ "${DEBUG}" == "true" ]]; then
+    echo "Result of ${COMMAND} selector ${command_selector}:"
+    jq -r ''"${command_selector}"'' "${workingfile}"
+  fi
 
-  new_value="$(get_new_value)"
-  echo "Setting ${selector} to ${new_value}"
-  jq --arg newval "${new_value}" ''"${selector}"' |= $newval' "${workingfile}" > "${resultfile}"
+  new_state="$(get_new_state)"
+  edit_selection "${command_selector}" "${new_state}"
 
-  echo "New result:"
-  cat "${resultfile}"
+  unlock_state
+}
 
-  cat "${resultfile}" > "${new_state}"
-
-  echo "New state:"
-  cat "${new_state}"
+function edit_selection() {
+  # only use this for selectors retrieved from get_selector
+  edit_selector="${1}"
+  new_value="${2}"
+  jq --arg newval "${new_value}" ''"${edit_selector}"' |= $newval' "${workingfile}" > "${updatefile}"
+  mv "${updatefile}" "${workingfile}"
 }
 
 function ensure_entry() {
   local entry="${1?:Must set entry for ensure_entry}"
   local value="${2:=""}"
-  local selector=".${entry}"
-  found_entry=$(jq ''"${selector}"'' "${workingfile}")
+  entry_selector="$(get_selector "${entry}")"
+  found_entry=$(jq -r ''"${entry_selector}"'' "${workingfile}")
 
   if [[ -z "${found_entry}" || "${found_entry}" == "null" ]]; then
     echo "${entry} not found...creating"
     entrytmpfile="$(mktemp -p "${task_tmp_dir}" -t ''"${entry}"'tmp-XXXX.json')"
-    jq --arg newval "${value}" ''"${selector}"' = $newval' "${workingfile}" > "${entrytmpfile}"
+    jq --arg newval "${value}" ''"${entry_selector}"' = $newval' "${workingfile}" > "${entrytmpfile}"
     mv "${entrytmpfile}" "${workingfile}"
   fi
 }
 
 function ensure_objects() {
-  cat "${original_state}" > "${workingfile}"
-
-  local object="jobs"
-  ensure_object "${object}"
-
-  local entry="claim-env"
-  ensure_object_entry "${object}" "${entry}"
-  entry="prepare-env"
-  ensure_object_entry "${object}" "${entry}"
-
-  local object="acceptance"
-  ensure_object "${object}"
-  # set acceptance tests in index.yml and feed into pipeline for passthrough to this task
-  entry="run-cats"
-  ensure_object_entry "${object}" "${entry}"
+  ensure_object "jobs"
+  ensure_object_entry "jobs" "claim-env"
+  ensure_object_entry "jobs" "prepare-env"
+  
+  ensure_object "acceptance"
+  readarray -t acceptance_array <<< "${ACCEPTANCE_JOBS[@]}"
+  for acceptance_job in "${acceptance_array[@]}"; do
+    ensure_object_entry "acceptance" "${acceptance_job}"
+  done
 }
 
 function ensure_object() {
   local value="${1?:Must set object name for ensure_object}"
-  selector=".${value}"
-  current_object=$(jq ''"${selector}"'' "${workingfile}")
+  object_selector="$(get_selector "${value}")"
+  current_object=$(jq -r ''"${object_selector}"'' "${workingfile}")
 
   if [[ -z "${current_object}" ]] || [[ "${current_object}" == "null" ]]; then
     echo "${value} not found...creating"
     objecttmpfile="$(mktemp -p "${task_tmp_dir}" -t ''"${value}"'tmp-XXXX.json')"
-    jq ''"${selector}"' |= {}' "${workingfile}" > "${objecttmpfile}"
+    jq ''"${object_selector}"' |= {}' "${workingfile}" > "${objecttmpfile}"
     mv "${objecttmpfile}" "${workingfile}"
   fi
 }
@@ -181,10 +219,10 @@ function ensure_object() {
 function ensure_object_entry() {
   local object="${1?:Must set object name for ensure_object_entry}"
   local entry="${2?:Must set entry for ensure_object_entry}"
-  check_selector=".${object}[\"${entry}\"]"
-  add_selector=".${object}[\"${entry}\"] = \"\""
+  check_selector="$(get_selector "${object}" "${entry}")"
+  add_selector="${check_selector} = \"\""
 
-  found_entry="$(jq ''"${check_selector}"'' "${workingfile}")"
+  found_entry="$(jq -r ''"${check_selector}"'' "${workingfile}")"
 
   if [[ -z "${found_entry}" ]] || [[ "${found_entry}" == "null" ]]; then
     echo "${object}[${entry}] not found...creating"
@@ -194,31 +232,50 @@ function ensure_object_entry() {
   fi
 }
 
-function get_new_value() {
-  local new_value="${STATE}"
+function get_new_state() {
+  local new_state="${STATE}"
 
   if [[ "${COMMAND}" == "claim" ]]; then
-    new_value="claimed"
+    new_state="claimed"
   elif [[ "${COMMAND}" == "unclaim" ]]; then
-    new_value="unclaimed"
+    new_state="unclaimed"
   fi
 
-  echo "${new_value}"
+  echo "${new_state}"
 }
 
 function get_selector() {
-  local selector="."
+  local selector="${1:-""}"
+  local sub_selector="${2:-""}"
 
-  if [[ "${COMMAND}" == "claim" || "${COMMAND}" == "unclaim" ]]; then
-    selector=".env"
-  elif [[ "${COMMAND}" == "update-job" ]]; then
-    selector=".jobs[\"${JOB}\"]"
-  elif [[ "${COMMAND}" == "acceptance" ]]; then
-    selector=".acceptance[\"${TEST}\"]"
+  if [[ "${selector}" =~ "-" ]]; then
+    selector="\"${selector}\""
   fi
 
+  if [[ "${sub_selector}" =~ "-" ]]; then
+    selector="${selector}[\"${sub_selector}\"]"
+  fi
+
+  echo ".${selector}"
+}
+
+function get_command_selector() {
+  local selector="."
+  if [[ "${COMMAND}" == "claim" || "${COMMAND}" == "unclaim" ]]; then
+    selector="$(get_selector "env")"
+  elif [[ "${COMMAND}" == "update-job" ]]; then
+    selector="$(get_selector "jobs" "${JOB}")"
+  elif [[ "${COMMAND}" == "acceptance" ]]; then
+    selector="$(get_selector "acceptance" "${TEST}")"
+  fi
+  
   echo "${selector}"
 }
 
+function cleanup() {
+  rm -rf "${task_tmp_dir}"
+}
+
+trap cleanup EXIT
 trap 'err_reporter $LINENO' ERR
 run "$@"

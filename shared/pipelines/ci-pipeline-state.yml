@@ -9,6 +9,8 @@ groups:
   - state-unclaim-env
   - state-update-acceptance-test
   - state-update-job
+  - state-lock
+  - state-unlock
 
 resource_types:
 - name: gcs-resource
@@ -25,15 +27,6 @@ resources:
     uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci
     private_key: ((github-appruntimeplatform-bot/private-key))
 
-- name: pipeline-state
-  type: gcs-resource
-  source:
-    bucket: ci-pipeline-state
-    json_key: ((gcp-wg-arp-oss-service-account/config-json))
-    versioned_file: test/pipeline-state
-    initial_version: "1"
-    initial_content_text: "{}"
-
 - name: image
   type: registry-image
   icon: docker
@@ -49,78 +42,101 @@ jobs:
   - in_parallel:
     - get: ci
     - get: image
-    - get: pipeline-state
   - task: reset-pipeline-state
     image: image
     file: ci/shared/tasks/manage-pipeline-state/linux.yml
     params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
+      BUCKET: #@ data.values.pipeline_state.bucket
+      STATE_PATH: #@ data.values.pipeline_state.state_path
       COMMAND: reset
-      ACCEPTANCE_JOBS: #@ "\n".join(data.values.acceptance_jobs)
-  - put: pipeline-state
+      ACCEPTANCE_JOBS: #@ "\n".join(data.values.pipeline_state.acceptance_jobs)
+
+- name: state-lock
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: image
+  - task: lock-state
+    image: image
+    file: ci/shared/tasks/manage-pipeline-state/linux.yml
     params:
-      file: updated-pipeline-state/pipeline-state
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
+      BUCKET: #@ data.values.pipeline_state.bucket
+      STATE_PATH: #@ data.values.pipeline_state.state_path
+      COMMAND: lock
+
+- name: state-unlock
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: image
+  - task: unlock-state
+    image: image
+    file: ci/shared/tasks/manage-pipeline-state/linux.yml
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
+      BUCKET: #@ data.values.pipeline_state.bucket
+      STATE_PATH: #@ data.values.pipeline_state.state_path
+      COMMAND: unlock
 
 - name: state-claim-env
   plan:
   - in_parallel:
     - get: ci
     - get: image
-    - get: pipeline-state
   - task: claim-env
     image: image
     file: ci/shared/tasks/manage-pipeline-state/linux.yml
     params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
+      BUCKET: #@ data.values.pipeline_state.bucket
+      STATE_PATH: #@ data.values.pipeline_state.state_path
       COMMAND: claim
-  - put: pipeline-state
-    params:
-      file: updated-pipeline-state/pipeline-state
 
 - name: state-unclaim-env
   plan:
   - in_parallel:
     - get: ci
     - get: image
-    - get: pipeline-state
   - task: unclaim-env
     image: image
     file: ci/shared/tasks/manage-pipeline-state/linux.yml
     params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
+      BUCKET: #@ data.values.pipeline_state.bucket
+      STATE_PATH: #@ data.values.pipeline_state.state_path
       COMMAND: unclaim
-  - put: pipeline-state
-    params:
-      file: updated-pipeline-state/pipeline-state
 
 - name: state-update-job
   plan:
   - in_parallel:
     - get: ci
     - get: image
-    - get: pipeline-state
   - task: update-job-claim-env
     image: image
     file: ci/shared/tasks/manage-pipeline-state/linux.yml
     params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
+      BUCKET: #@ data.values.pipeline_state.bucket
+      STATE_PATH: #@ data.values.pipeline_state.state_path
       COMMAND: update-job
       JOB: claim-env
       STATE: pass
-  - put: pipeline-state
-    params:
-      file: updated-pipeline-state/pipeline-state
 
 - name: state-update-acceptance-test
   plan:
   - in_parallel:
     - get: ci
     - get: image
-    - get: pipeline-state
   - task: update-acceptance-cats
     image: image
     file: ci/shared/tasks/manage-pipeline-state/linux.yml
     params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
+      BUCKET: #@ data.values.pipeline_state.bucket
+      STATE_PATH: #@ data.values.pipeline_state.state_path
       COMMAND: acceptance
       TEST: run-cats
       STATE: fail
-  - put: pipeline-state
-    params:
-      file: updated-pipeline-state/pipeline-state
 

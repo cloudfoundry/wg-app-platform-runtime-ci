@@ -43,9 +43,12 @@ environments:
     bosh_lite: false
     pipeline_lock: windowsfs-online-release-env-lock
 
-acceptance_jobs:
-- run-cats
-- run-wats
-- run-bosh-restart
-- run-vizzini
-- export-release
+pipeline_state:
+  bucket: ci-pipeline-state
+  state_path: test/pipeline-state
+  acceptance_jobs:
+  - run-cats
+  - run-wats
+  - run-bosh-restart
+  - run-vizzini
+  - export-release
