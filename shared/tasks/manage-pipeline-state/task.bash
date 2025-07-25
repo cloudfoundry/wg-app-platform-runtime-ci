@@ -80,7 +80,7 @@ function reset() {
 
   echo "{}" > "${workingfile}"
 
-  ensure_entry "env"
+  ensure_entry "env" "unclaimed"
   cat "${workingfile}"
 
   ensure_object "jobs"
@@ -135,13 +135,14 @@ function modify() {
 
 function ensure_entry() {
   local entry="${1?:Must set entry for ensure_entry}"
+  local value="${2:=""}"
   local selector=".${entry}"
   found_entry=$(jq ''"${selector}"'' "${workingfile}")
 
   if [[ -z "${found_entry}" || "${found_entry}" == "null" ]]; then
     echo "${entry} not found...creating"
     entrytmpfile="$(mktemp -p "${task_tmp_dir}" -t ''"${entry}"'tmp-XXXX.json')"
-    jq ''"${selector}"': ""' "${workingfile}" > "${entrytmpfile}"
+    jq ''"${selector}"' = "${value}"' "${workingfile}" > "${entrytmpfile}"
     mv "${entrytmpfile}" "${workingfile}"
   fi
 }
