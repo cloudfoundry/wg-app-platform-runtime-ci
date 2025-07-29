@@ -12,6 +12,11 @@ groups:
   - state-lock
   - state-unlock
 
+- name: cleanup-flow
+  jobs:
+  - check-pipeline-state
+  - cleanup
+
 resource_types:
 - name: gcs-resource
   type: docker-image

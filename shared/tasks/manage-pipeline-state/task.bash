@@ -15,29 +15,32 @@ unset THIS_FILE_DIR
 : "${STATE_PATH:?Need to set STATE_PATH}"
 : "${DEBUG:=false}"
 
-commands=("claim" "unclaim" "reset" "update-job" "acceptance" "lock" "unlock")
-states=("pass" "fail" "running" "stopped")
+commands=("claim" "unclaim" "reset" "update-job" "acceptance" "lock" "unlock" "cleanup" "preserve")
+states=("pass" "fail" "running" "pending")
 task_tmp_dir=$(mktemp -d -t 'manage-pipeline-state-XXXX')
 updatefile="$(mktemp -p "${task_tmp_dir}" -t 'new-state-XXXX.json')"
 workingfile="$(mktemp -p "${task_tmp_dir}" -t 'working-XXXX.json')"
 state_path="gs://${BUCKET}/${STATE_PATH}"
+cleanup_path="gs://${BUCKET}/${STATE_PATH}-cleanup"
 
 statelock="state-lock"
 
 function validate() {
   if [[ ! " ${commands[*]} " =~ " ${COMMAND} " ]]; then
     echo "ERROR: ${COMMAND} is not a valid command"
+    echo "Valid commands include: ${commands[*]}"
     exit 1
   fi
   
   if [[ -n "${STATE}" ]]; then
     if [[ ! " ${states[*]} " =~ " ${STATE} " ]]; then
       echo "ERROR: ${STATE} is not a valid state"
+      echo "Valid states include: ${states[*]}"
       exit 1
     fi
   fi
 
-  if [[ "${COMMAND}" == "reset" ]]; then
+  if [[ "${COMMAND}" == "reset" ]] || [[ "${COMMAND}" == "cleanup" ]]; then
     if [[ -z "${ACCEPTANCE_JOBS}" ]]; then
       echo "ERROR: ${COMMAND} must have ACCEPTANCE_JOBS specified"
       exit 1
@@ -81,6 +84,13 @@ function perform_update() {
     lock_state
   elif [[ "${COMMAND}" == "unlock" ]]; then
     unlock_state
+  elif [[ "${COMMAND}" == "check" ]]; then
+    check_state
+  elif [[ "${COMMAND}" == "preserve" ]]; then
+    preserve_env
+  elif [[ "${COMMAND}" == "cleanup" ]]; then
+    do_cleanup
+    exit 0
   else
     ensure_objects
     modify_state
@@ -90,13 +100,21 @@ function perform_update() {
 }
 
 function get_current_state() {
-  echo "Retrieving latest state"
   gcloud storage cp "${state_path}" "${workingfile}"
 }
 
 function upload_to_gcs() {
-  echo "Updating state"
   gcloud storage cp "${workingfile}" "${state_path}"
+}
+
+function do_cleanup() {
+  reset_state 
+  touch_cleanup
+}
+
+function touch_cleanup() {
+  cleanupfile="$(mktemp -p "${task_tmp_dir}" -t 'cleanup-XXXX.json')"
+  gcloud storage cp "${cleanupfile}" "${cleanup_path}"
 }
 
 function login() {
@@ -143,8 +161,14 @@ function reset_state() {
   echo "{}" > "${workingfile}"
 
   ensure_entry "env" "unclaimed"
+  ensure_entry "preserve" "false"
   ensure_entry "${statelock}" "false"
   ensure_objects
+}
+
+function preserve_env() {
+  preserve_selector="$(get_selector "preserve")"
+  edit_selection "${preserve_selector}" "true"
 }
 
 function modify_state() {
@@ -220,7 +244,7 @@ function ensure_object_entry() {
   local object="${1?:Must set object name for ensure_object_entry}"
   local entry="${2?:Must set entry for ensure_object_entry}"
   check_selector="$(get_selector "${object}" "${entry}")"
-  add_selector="${check_selector} = \"\""
+  add_selector="${check_selector} = \"pending\""
 
   found_entry="$(jq -r ''"${check_selector}"'' "${workingfile}")"
 
@@ -270,6 +294,93 @@ function get_command_selector() {
   fi
   
   echo "${selector}"
+}
+
+function check_state() {
+  claim_selector="$(get_selector "claim-env")"
+  claim_completed="$(has_completed "${claim_selector}")"
+  if [[ "${claim_completed}" == "false" ]]; then
+    exit 0
+  fi
+
+  prepare_selector="$(get_selector "prepare-env")"
+  prepare_completed="$(has_completed "${prepare_selector}")"
+  if [[ "${prepare_completed}" == "false" ]]; then
+    exit 0
+  else
+    prepare_status="$(job_status "${prepare_selector}")"
+    if [[ "${prepare_status}" == "fail" ]]; then
+      # what to do here? don't necessarily want to clean up because
+      # the env can be reused, but don't want to keep things running either
+      # state will no longer be updated because there's nothing running
+      # probably need an alert on prepare-env failures
+
+      true # do nothing for now, and we don't care about pass
+    fi
+  fi
+
+  something_failed="false"
+  readarray -t acceptance_array <<< "${ACCEPTANCE_JOBS[@]}"
+  for acceptance_job in "${acceptance_array[@]}"; do
+    if [[ "${acceptance_job}" == "export-release" ]]; then
+      continue # part of acceptance, but after other tests
+    fi
+
+    accept_selector="$(get_selector "acceptance" "${acceptance_job}")"
+    accept_completed="$(has_completed "${accept_selector}")"
+
+    if [[ "${accept_completed}" == "false" ]]; then
+      exit 0
+    else
+      accept_status="$(job_status "${accept_selector}")"
+      if [[ "${accept_status}" == "fail" ]]; then
+        something_failed="true"
+      fi
+    fi
+  done
+
+  # only run this while export-release is dependent on other acceptance tests
+  if false; then
+    export_release_selector="$(get_selector "acceptance" "export-release")"
+    export_release_completed="$(has_completed "${export_release_selector}")"
+    export_release_status="$(job_status "${export_release_selector}")"
+
+    if [[ "${export_release_completed}" == "true" ]]; then
+      do_cleanup
+      exit 0
+    fi
+
+    # if any acceptance tests have failed, then export-release will not run
+    if [[ "${something_failed}" == "true" ]]; then
+      preserved="$(is_env_preserved)"
+      if [[ "${preserved}" == "false" ]]; then
+        do_cleanup
+      fi
+    fi
+  fi
+}
+
+function job_status() {
+  job_status_selector="${1:?Must set a selector for job_status}"
+  result="$(jq -r ''"${job_status_selector}"'' "${workingfile}")"
+  echo "${result}"
+}
+
+function is_env_preserved() {
+  preserve_selector="$(get_selector "preserve")"
+  result="$(jq -r ''"${preserve_selector}"'' "${workingfile}")"
+  echo "${result}"
+}
+
+function has_completed() {
+  completed_selector="${1:?Must set a selector for has_completed}"
+  result="$(jq -r ''"${completed_selector}"'' "${workingfile}")"
+
+  if [[ "${result}" == "pass" ]] || [[ "${result}" == "fail" ]]; then
+    echo "true"
+  else
+    echo "false"
+  fi
 }
 
 function cleanup() {
