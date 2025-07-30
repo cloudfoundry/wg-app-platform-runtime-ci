@@ -1592,6 +1592,8 @@ jobs:
         WITH_BPM=false
         WITH_CONTAINERD_MODE=false
         WITH_CPU_THROTTLING=true
+        DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
+        DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
       BBL_STATE_DIR: bbl-garden-env
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
@@ -1737,6 +1739,8 @@ jobs:
         WITH_CONTAINERD_MODE=true
         WITH_CPU_THROTTLING=false
         CF_STEMCELL_OS=ubuntu-noble
+        DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
+        DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
       BBL_STATE_DIR: bbl-garden-env
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
