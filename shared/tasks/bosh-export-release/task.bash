@@ -21,12 +21,8 @@ function run(){
   local release_name=$(bosh_release_name)
   popd > /dev/null
 
-  local release_version=$(bosh releases --json | jq --arg name "${release_name}" -r '.Tables[0].Rows[] | select(.name==$name) | .version' | grep '\*' | cut -d'*' -f1)
-
-  if (( $(echo "${release_version}" | wc -l) > 1 )); then
-    echo "multiple versions ${release_version} is used with release ${release_name}"
-    exit 1
-  fi
+  local release_version=$(bosh deployments --json | jq -r '.Tables[0].Rows[] | select(.name == "cf") | .release_s' |sed 's/\\n/\n/g' | grep "$release_name" |  cut -d'/' -f2)
+   echo "release version: ${release_version}"
 
   local release="${release_name}/${release_version}"
 
