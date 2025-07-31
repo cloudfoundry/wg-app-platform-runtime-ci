@@ -20,7 +20,7 @@ function run(){
     chmod 600 "${JUMPBOX_PRIVATE_KEY}"
     wait_for_bosh_lock
     bosh -n -d "${DEPLOYMENT}" start "${INSTANCE_GROUP}"
-    sleep 60 # sleep to make sure the vm finishes starting up happily for all things that rely on it
+    sleep 120 # sleep to make sure the vm finishes starting up happily for all things that rely on it
 }
 
 function cleanup() {
