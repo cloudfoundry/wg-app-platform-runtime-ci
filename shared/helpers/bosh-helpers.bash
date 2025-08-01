@@ -191,7 +191,7 @@ function credhub_admin_client_secret() {
     local value=$(bosh_get_password_from_credhub "credhub_admin")
     local regex="^[a-zA-Z0-9]+$"
 
-    if [[ "$data" =~ $regex ]]; then
+    if [[ "$value" =~ $regex ]]; then
         echo $value
     else
         echo $value | jq -r .password
