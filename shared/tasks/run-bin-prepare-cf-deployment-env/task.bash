@@ -23,7 +23,7 @@ function run(){
 
     export -f test_api
 
-    timeout 30 bash -c test_api
+    timeout 60 bash -c test_api
     if [[ "$(bosh_is_cf_deployed)" == "yes" ]]; then
         cf_target
     fi
