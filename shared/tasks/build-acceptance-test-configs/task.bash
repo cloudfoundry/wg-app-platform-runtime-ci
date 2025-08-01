@@ -18,8 +18,10 @@ function run(){
     expand_envs "${env_file}"
     . "${env_file}"
 
+    pushd $DIR > /dev/null
     bosh_target
     cf_target
+    popd
 
     for entry in ${CONFIGS}
     do
