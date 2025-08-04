@@ -35,7 +35,6 @@ code.cloudfoundry.org/locket
 code.cloudfoundry.org/operationq
 code.cloudfoundry.org/rep
 code.cloudfoundry.org/route-emitter
-code.cloudfoundry.org/routing-api
 code.cloudfoundry.org/routing-info
 code.cloudfoundry.org/vendor
 code.cloudfoundry.org/vizzini
