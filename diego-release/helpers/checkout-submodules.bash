@@ -6,7 +6,7 @@ function run() {
   routing_api_version=70020201ed76f98cd276ad094b687cf73cc2dd04
 
   pushd "${repo_path}" > /dev/null
-  pushd src/routing-api > /dev/null
+  pushd src/code.cloudfoundry.org/routing-api > /dev/null
   echo "Checking out ${routing_api_version} routing-api"
   git checkout $routing_api_version
   popd > /dev/null
