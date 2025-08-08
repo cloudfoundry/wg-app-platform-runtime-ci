@@ -15,7 +15,9 @@ function run(){
   local task_tmp_dir="${1:?provide temp dir for task}"
   shift 1
 
+  pushd $DIR > /dev/null
   bosh_target
+  popd > /dev/null
 
   pushd repo > /dev/null
   local release_name=$(bosh_release_name)
