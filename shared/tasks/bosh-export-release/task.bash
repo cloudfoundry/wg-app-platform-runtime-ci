@@ -23,7 +23,7 @@ function run(){
   local release_name=$(bosh_release_name)
   popd > /dev/null
 
-  local release_version=$(bosh deployments --json | jq -r --arg name "cf" '(first(.Tables[0].Rows[]? | select(.name == $name)) // .Tables[0].Rows[0]? // {}) | .release_s' |sed 's/\\n/\n/g' | grep "$release_name" |  cut -d'/' -f2)
+  local release_version=$(bosh deployments --json | jq -r --arg name "$DEPLOYMENT_NAME_CONTAINS" '(first(.Tables[0].Rows[]? | select(.name | contains($name))) // .Tables[0].Rows[0]? // {}) | .release_s' |sed 's/\\n/\n/g' | grep "$release_name" |  cut -d'/' -f2)
 
   if [[ -z "$release_version" ]]; then
     echo "ERROR: Could not find release '$release_name'." >&2
