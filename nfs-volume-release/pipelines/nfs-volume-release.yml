@@ -780,6 +780,7 @@ jobs:
             BBL_STATE_DIR: bbl-nfs-volume-env
             DEPLOYMENT_NAME: cf
   - task: prepare-cf-deployment-env
+    attempts: 10
     image: image
     params:
       BBL_STATE_DIR: bbl-nfs-volume-env

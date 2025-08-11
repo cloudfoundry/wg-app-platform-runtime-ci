@@ -392,6 +392,7 @@ jobs:
             BBL_STATE_DIR: <REPLACE_ME>
             DEPLOYMENT_NAME: cf
   - task: prepare-cf-deployment-env
+    attempts: 10
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
     params:

@@ -771,6 +771,7 @@ jobs:
             BBL_STATE_DIR: bbl-routing-env
             DEPLOYMENT_NAME: cf
   - task: prepare-cf-deployment-env
+    attempts: 10
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
     params:

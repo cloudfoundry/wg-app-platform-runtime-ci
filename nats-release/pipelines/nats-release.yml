@@ -564,6 +564,7 @@ jobs:
       FAIL_ON_DOWNTIME: "false"
       OPS_FILES: #@ "\n".join(data.values.opsfiles)
   - task: prepare-cf-deployment-env-with-cf-vars
+    attempts: 10
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
     params:
