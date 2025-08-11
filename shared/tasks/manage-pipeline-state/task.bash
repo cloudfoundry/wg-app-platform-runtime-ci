@@ -16,7 +16,7 @@ unset THIS_FILE_DIR
 : "${DEBUG:=false}"
 
 commands=("claim" "unclaim" "reset" "update-job" "acceptance" "lock" "unlock" "cleanup" "preserve")
-states=("pass" "fail" "running" "pending")
+states=("pass" "fail" "aborted" "running" "pending")
 task_tmp_dir=$(mktemp -d -t 'manage-pipeline-state-XXXX')
 updatefile="$(mktemp -p "${task_tmp_dir}" -t 'new-state-XXXX.json')"
 workingfile="$(mktemp -p "${task_tmp_dir}" -t 'working-XXXX.json')"
@@ -90,7 +90,6 @@ function perform_update() {
     preserve_env
   elif [[ "${COMMAND}" == "cleanup" ]]; then
     do_cleanup
-    exit 0
   else
     ensure_objects
     modify_state
@@ -110,6 +109,7 @@ function upload_to_gcs() {
 function do_cleanup() {
   reset_state 
   touch_cleanup
+  exit 0
 }
 
 function touch_cleanup() {
@@ -118,10 +118,10 @@ function touch_cleanup() {
 }
 
 function login() {
-  keyfile="$(mktemp -p "${task_tmp_dir}" -t 'key-XXXX.json')"
-  echo "${SERVICE_ACCOUNT_KEY}" > "${keyfile}"
+  # keyfile="$(mktemp -p "${task_tmp_dir}" -t 'key-XXXX.json')"
+  # echo "${SERVICE_ACCOUNT_KEY}" > "${keyfile}"
 
-  gcloud auth activate-service-account --key-file "${keyfile}"
+  gcloud auth activate-service-account --key-file <("${SERVICE_ACCOUNT_KEY}")
 }
 
 function wait_for_lock() {
@@ -194,7 +194,9 @@ function modify_state() {
 }
 
 function edit_selection() {
+  # bypasses lock
   # only use this for selectors retrieved from get_selector
+
   edit_selector="${1}"
   new_value="${2}"
   jq --arg newval "${new_value}" ''"${edit_selector}"' |= $newval' "${workingfile}" > "${updatefile}"
@@ -338,26 +340,6 @@ function check_state() {
       fi
     fi
   done
-
-  # only run this while export-release is dependent on other acceptance tests
-  if false; then
-    export_release_selector="$(get_selector "acceptance" "export-release")"
-    export_release_completed="$(has_completed "${export_release_selector}")"
-    export_release_status="$(job_status "${export_release_selector}")"
-
-    if [[ "${export_release_completed}" == "true" ]]; then
-      do_cleanup
-      exit 0
-    fi
-
-    # if any acceptance tests have failed, then export-release will not run
-    if [[ "${something_failed}" == "true" ]]; then
-      preserved="$(is_env_preserved)"
-      if [[ "${preserved}" == "false" ]]; then
-        do_cleanup
-      fi
-    fi
-  fi
 }
 
 function job_status() {

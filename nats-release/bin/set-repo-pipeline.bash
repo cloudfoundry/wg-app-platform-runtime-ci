@@ -12,6 +12,10 @@ main() {
   fly_pipeline nats-release -f "${pipeline_dir}/nats-release.yml" \
     -f "$REPO/index.yml" \
     -f "$REPO/../shared/helpers/ytt-helpers.star"
+
+  fly_pipeline pipeline-state-nats-release -f "${pipeline_dir}/pipeline-state-nats-release.yml" \
+    -f "$REPO/index.yml" \
+    -f "$REPO/../shared/helpers/ytt-helpers.star"
 }
 
 main

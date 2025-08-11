@@ -17,12 +17,6 @@ groups:
   - check-pipeline-state
   - cleanup
 
-resource_types:
-- name: gcs-resource
-  type: docker-image
-  source:
-    repository: frodenas/gcs-resource
-
 resources:
 - name: ci
   type: git

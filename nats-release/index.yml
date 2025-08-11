@@ -9,3 +9,10 @@ opsfiles:
 - use-compiled-releases.yml
 - bosh-lite.yml
 - scale-down-for-bosh-lite.yml
+
+pipeline_state:
+  bucket: ci-pipeline-state
+  state_path: nats-release/pipeline-state
+  acceptance_jobs:
+  - run-cats
+  - export-release

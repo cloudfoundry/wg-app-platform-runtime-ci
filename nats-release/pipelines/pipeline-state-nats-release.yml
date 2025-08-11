@@ -1,0 +1,865 @@
+#@ load("@ytt:data", "data")
+#@ load("ytt-helpers.star", "helpers")
+
+#! Define-Variables
+variables:
+  state-bucket: #@ data.values.pipeline_state.bucket
+  state-path: #@ data.values.pipeline_state.state_path
+  acceptance-jobs: #@ "\n".join(data.values.pipeline_state.acceptance_jobs)
+  gcp-wg-arp-oss-service-account: ((gcp-wg-arp-oss-service-account/config-json))
+
+define: &pipeline-state-vars
+  SERVICE_ACCOUNT_KEY: ${{ variables.gcp-wg-arp-oss-service-account }}
+  BUCKET: ${{ variables.state-bucket }}
+  STATE_PATH: ${{ variables.state-path }}
+
+#! Define-Groups
+groups:
+- name: release
+  jobs:
+  - manual-release-trigger
+  - template-tests
+  - unit-and-integration-tests
+  - lint-repo
+  - claim-env
+  - prepare-env
+  - run-cats
+  - export-release
+  - ship-what
+  - ship-it
+
+- name: periodics
+  jobs:
+  - bump-dependencies-go-mod
+  - bump-bosh-blobs
+  - bump-package-golang
+  - sync-dot-github-dir
+  - sync-readme
+
+- name: pipeline-state
+  jobs:
+    - manual-cleanup-trigger
+    - force-cleanup-env
+
+- name: version
+  jobs:
+  - major-bump
+  - minor-bump
+  - patch-bump
+
+
+#! Define-ResourceGroups
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cfcommunity/slack-notification-resource
+    username: _json_key
+    password: ((gcp-arp-artifact-registry-service-account-token))
+    tag: latest
+
+#! Define-Resources
+resources:
+- name: golang-release-latest
+  type: git
+  icon: tag-outline
+  source:
+    tag_filter: v*
+    uri: https://github.com/bosh-packages/golang-release.git
+
+- name: repo
+  type: git
+  icon: source-branch
+  source:
+    branch: develop
+    uri: git@github.com:cloudfoundry/nats-release
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    ignore_paths:
+    - .github/
+    - .gitignore
+    - CODEOWNERS
+    - LICENSE
+    - NOTICE
+    - README.md
+    - docs/
+
+#! repo-synced is a write-only resource to prevent readme
+#! changes from triggering pipeline runs. See the description of "ignore_path"
+#! here for more info: https://github.com/concourse/git-resource
+- name: repo-synced
+  type: git
+  icon: git
+  source:
+    branch: develop
+    uri: git@github.com:cloudfoundry/nats-release
+    private_key: ((github-appruntimeplatform-bot/private-key))
+
+- name: release-branch 
+  type: git
+  icon: source-branch
+  source:
+    uri: git@github.com:cloudfoundry/nats-release.git
+    branch: release
+    private_key: ((github-appruntimeplatform-bot/private-key))
+
+- name: develop-branch-mergeback
+  type: git
+  icon: source-branch
+  source:
+    uri: git@github.com:cloudfoundry/nats-release.git
+    branch: develop
+    private_key: ((github-appruntimeplatform-bot/private-key))
+
+- name: ci
+  type: git
+  icon: source-branch
+  source:
+    branch: ci-pipeline-state
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+
+- name: repo-readme
+  type: git
+  icon: source-branch
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: 
+      - shared/*.md
+      - nats-release/*.md
+      - nats-release/readme/*.md
+
+- name: go-version
+  type: git
+  icon: source-branch
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: [go-version.json]
+
+- name: cf-deployment
+  type: git
+  icon: source-branch
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/cf-deployment.git
+
+- name: cf-deployment-concourse-tasks
+  type: git
+  icon: source-branch
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
+
+- name: cf-acceptance-tests
+  type: git
+  icon: source-branch
+  source:
+    branch: release-candidate
+    uri: https://github.com/cloudfoundry/cf-acceptance-tests
+
+#! TIMERS
+- name: weekly
+  type: time
+  icon: clock
+  source:
+    interval: '168h'
+    start: 04:00
+    stop: 04:59
+    days:
+      - Sunday
+
+- name: env-weekly
+  type: time
+  icon: clock
+  source:
+    interval: '168h'
+    start: 01:00
+    stop: 01:59
+    days:
+      - Monday
+
+- name: manual-release-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: manual-cleanup-trigger
+  type: time
+  source:
+    interval: '1m'
+
+- name: slack-ci-channel
+  type: slack-notification
+  source:
+    url: ((slack-ci-channel/webhook))
+
+- name: env
+  type: git
+  icon: sheep
+  source:
+    branch: main
+    uri: git@github.com:cloudfoundry/app-runtime-platform-envs
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    paths:
+      - bbl-nats-env
+
+- name: github-release
+  type: github-release
+  icon: github
+  source:
+    access_token: ((github-appruntimeplatform-bot/access-token))
+    repository: nats-release
+    owner: cloudfoundry
+
+- name: draft-github-release 
+  type: github-release
+  icon: github
+  source:
+    access_token: ((github-appruntimeplatform-bot/access-token))
+    drafts: true
+    repository: nats-release
+    owner: cloudfoundry
+
+- name: shared-templates
+  type: git
+  icon: source-branch
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: 
+      - shared/github
+
+- name: version
+  type: semver
+  icon: counter
+  source:
+    driver: gcs
+    bucket: ci-release-versions
+    key: nats-release/version
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
+
+- name: image
+  type: registry-image
+  icon: docker
+  source:                                        
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
+    username: _json_key
+    password: ((gcp-arp-artifact-registry-service-account-token))
+    tag: 'latest'
+
+- name: nats-server-gh-release
+  type: github-release
+  icon: github
+  source:
+    access_token: ((github-appruntimeplatform-bot/access-token))
+    owner: nats-io
+    repository: nats-server
+
+#! Define-Jobs
+jobs:
+- name: manual-release-trigger
+  plan:
+  - put: manual-release-trigger
+
+- name: manual-cleanup-trigger
+  plan:
+  - put: manual-cleanup-trigger
+
+- name: bump-dependencies-go-mod
+  serial: true
+  on_failure: &ci-notification
+    put: slack-ci-channel
+    params:
+      text: ":concourse-failed: $BUILD_PIPELINE_NAME failed on <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_JOB_NAME>."
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: repo
+      - get: image
+      - get: weekly
+        trigger: true
+  - task: nats-release-bump-dependencies-go-mod
+    image: image
+    file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
+    params:
+      GO_MODS: src/code.cloudfoundry.org/go.mod
+      EXTRA_GO_TAGS: |
+        nats_server
+  - put: repo
+    params:
+      rebase: true
+      repository: bumped-repo
+
+- name: bump-bosh-blobs
+  on_failure: *ci-notification
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: repo
+      - get: image
+      - get: nats-server-gh-release
+        params:
+          globs:
+            - nats-server-*-linux-amd64.tar.gz
+        trigger: true
+  - do:
+    - task: bump-bosh-blob-nats-server
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: nats-server-gh-release
+      params:
+        BOSH_BLOB_PATH: nats-server-gh-release/nats-server-*-linux-amd64.tar.gz
+        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+
+- name: bump-package-golang
+  on_failure: *ci-notification
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: go-version
+      trigger: true
+    - get: repo
+    - get: image
+    - get: golang-release-latest
+      trigger: true
+
+  - task: bump-golang-package-name
+    image: image
+    file: ci/shared/tasks/bump-golang-package-name/linux.yml
+    params:
+      PLATFORM: linux
+
+  - task: bump-golang-linux
+    file: ci/shared/tasks/bosh-vendor-package/linux.yml
+    image: image
+    input_mapping:
+      repo: bumped-repo
+      package-release: golang-release-latest
+    params:
+      PACKAGE_NAME: golang-*-linux
+      GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
+
+  - put: repo
+    params:
+      rebase: true
+      repository: vendored-repo
+
+- name: sync-dot-github-dir
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get:  repo
+      - get: shared-templates
+        trigger: true
+  - do:
+    - task: sync-dot-github-dir
+      file: ci/shared/tasks/sync-dot-github-dir/linux.yml
+      image: image
+    - put: repo-synced
+      params:
+       rebase: true
+       repository: synced-repo
+
+- name: template-tests
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+    - get: image
+  - task: template-tests
+    image: image
+    file: ci/shared/tasks/run-tests-templates/linux.yml
+    timeout: 30m
+
+- name: sync-readme
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: image
+      - get: repo
+      - get: weekly
+        trigger: true
+      - get: repo-readme
+        trigger: false
+  - do:
+    - task: sync-readme
+      file: ci/shared/tasks/sync-readme/linux.yml
+      image: image
+    - put: repo-synced
+      params:
+       rebase: true
+       repository: synced-repo
+
+- name: unit-and-integration-tests
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+    - get: image
+    - get: package-release
+      resource: golang-release-latest
+  - task: determine-image-tag
+    image: image
+    file: ci/shared/tasks/determine-image-tag/linux.yml
+  - load_var: image_tag
+    file: determined-image-tag/tag
+  - in_parallel:
+#@ for package in helpers.packages_without_configure_db(data.values.internal_repos):
+    - task: #@ package.name
+      file: ci/shared/tasks/run-bin-test/linux.yml
+      vars:
+        image_repository: cloudfoundry/tas-runtime-build
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
+        image_tag: ((.:image_tag))
+      params:
+        DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
+        FLAGS: |
+          --keep-going
+          --trace
+          -r
+          --fail-on-pending
+          --randomize-all
+          -p
+          --race
+          --timeout 20m
+          --flake-attempts 2
+#@ end
+
+- name: lint-repo
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: repo
+      trigger: true
+    - get: image
+  - task: lint-repo
+    file: ci/shared/tasks/lint-repo/linux.yml
+    image: image
+
+- name: claim-env
+  serial: true
+  on_abort: &reset-and-cleanup
+    do:
+      - task: reset-and-cleanup
+        image: image
+        file: ci/shared/tasks/manage-pipeline-state/linux.yml
+        params:
+          <<: *pipeline-state-vars
+          COMMAND: cleanup
+          ACCEPTANCE_JOBS: ${{ variable.acceptance-jobs }}
+  on_failure: *reset-and-cleanup
+  on_success:
+    do:
+      - task: pass-claim-env
+        image: image
+        file: ci/shared/tasks/manage-pipeline-state/linux.yml
+        params: 
+          <<: *pipeline-state-vars
+          COMMAND: update-job
+          JOB: claim-env
+          STATE: pass
+  plan:
+  - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ manual-release-trigger ]
+    - get: ci
+    - get: repo
+      trigger: false
+      passed:
+        - template-tests
+        - unit-and-integration-tests
+        - lint-repo
+    - get: env-weekly
+      trigger: true
+    - get: image
+    - get: env
+  - task: state-claim
+    image: image
+    file: ci/shared/tasks/manage-pipeline-state/linux.yml
+    params:
+      <<: *pipeline-state-vars
+      COMMAND: claim
+  - task: start-bbl-envs
+    image: image
+    file: ci/shared/tasks/start-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ${{ variables.gcp-wg-arp-oss-service-account }}
+      BBL_STATE_DIR: bbl-nats-env
+      RESUME: false
+  - task: wait-for-bosh-api
+    image: image
+    file: ci/shared/tasks/wait-for-bosh-api/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-nats-env
+
+- name: prepare-env
+  serial: true
+  on_abort: *reset-and-cleanup
+  on_failure: *reset-and-cleanup
+  plan:
+  - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ claim-env ]
+    - get: ci
+    - get: repo
+      trigger: true
+      passed: [ claim-env ]
+    - get: image
+    - get: cf-deployment
+    - get: cf-deployment-concourse-tasks
+    - get: env
+      passed: [ claim-env ]
+  - try: &delete-cf-deployment
+      do:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-nats-env
+          DEPLOYMENT_NAME: cf
+  - task: combine-ops-files
+    file: ci/shared/tasks/combine-assets/linux.yml
+    image: image
+    input_mapping:
+      input-01: cf-deployment
+    params:
+      COPY_ACTIONS: |
+        {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
+        {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
+        {ci/shared/opsfiles/scale-down-for-bosh-lite.yml,combined-assets}
+        {input-01/operations/bosh-lite.yml,combined-assets}
+        {input-01/operations/use-compiled-releases.yml,combined-assets}
+  - task: deploy-cf-deployment
+    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    input_mapping:
+      ops-files: combined-assets
+      bbl-state: env
+    params:
+      BOSH_LITE: true
+      BBL_STATE_DIR: bbl-nats-env
+      DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
+      SYSTEM_DOMAIN: bbl-nats-env.arp.cloudfoundry.org
+      FAIL_ON_DOWNTIME: "false"
+      OPS_FILES: #@ "\n".join(data.values.opsfiles)
+  - task: prepare-cf-deployment-env-with-cf-vars
+    image: image
+    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-nats-env
+  - task: uptimer-measure-with-nats-release-update
+    file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
+    input_mapping:
+      ops-files: combined-assets
+      release: repo
+      vars-files: prepared-env
+      bbl-state: env
+    params:
+      BBL_STATE_DIR: bbl-nats-env
+      SYSTEM_DOMAIN: bbl-nats-env.arp.cloudfoundry.org
+      TCP_DOMAIN: tcp.bbl-nats-env.arp.cloudfoundry.org
+      BOSH_LITE: true
+      DEPLOY_WITH_UPTIME_MEASUREMENTS: "true"
+      APP_PUSHABILITY_THRESHOLD: "20"
+      APP_STATS_THRESHOLD: "20"
+      HTTP_AVAILABILITY_THRESHOLD: "20"
+      TCP_AVAILABILITY_THRESHOLD: "20"
+      AVAILABLE_PORT: "-1"
+      TCP_PORT: "1029"
+      FAIL_ON_DOWNTIME: "true"
+      MEASURE_SYSLOG_AVAILABILITY: "false"
+      MEASURE_TCP_AVAILABILITY: "true"
+      RECENT_LOGS_THRESHOLD: "50"
+      STREAMING_LOGS_THRESHOLD: "50"
+      APP_SYSLOG_AVAILABILITY_THRESHOLD: "50"
+      USE_SINGLE_APP_INSTANCE: "false"
+      VARS_FILES: vars.yml
+      OPS_FILES: #@ "\n".join(data.values.opsfiles)
+  - task: open-asg-for-credhub
+    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      BBL_STATE_DIR: bbl-nats-env
+      SYSTEM_DOMAIN: bbl-nats-env.arp.cloudfoundry.org
+      INSTANCE_GROUP_NAME: credhub
+      SECURITY_GROUP_NAME: credhub
+  - task: open-asg-for-uaa
+    file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      BBL_STATE_DIR: bbl-nats-env
+      SYSTEM_DOMAIN: bbl-nats-env.arp.cloudfoundry.org
+      INSTANCE_GROUP_NAME: uaa
+      SECURITY_GROUP_NAME: uaa
+  - task: enable-feature-flags-for-cats
+    file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      BBL_STATE_DIR: bbl-nats-env
+      SYSTEM_DOMAIN: bbl-nats-env.arp.cloudfoundry.org
+      ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
+
+- name: run-cats
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
+    - get: ci
+    - get: repo
+      passed: [ prepare-env ]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [ prepare-env ]
+      trigger: true
+    - get: cf-deployment-concourse-tasks
+    - get: cf-acceptance-tests
+    - get: cf-deployment
+  - task: create-cats-config
+    image: image
+    file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
+    params:
+      CONFIGS: cats
+      WITH_ISOSEG: false
+      WITH_DYNAMIC_ASG: true
+      BBL_STATE_DIR: bbl-nats-env
+  - task: cats
+    file: cf-deployment-concourse-tasks/run-cats/task.yml
+    attempts: 2
+    input_mapping:
+      integration-config: built-acceptance-test-configs
+    params:
+      BBL_STATE_DIR: bbl-nats-env
+      CONFIG_FILE_PATH: cats.json
+      NODES: 12
+      TIMEOUT: 3h
+
+- name: export-release
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
+    - get: ci
+    - get: repo
+      passed: [ prepare-env ]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [ prepare-env ]
+      trigger: true
+    - get: cf-deployment-concourse-tasks
+  - task: export-release
+    file: ci/shared/tasks/bosh-export-release/linux.yml
+    image: image
+    params:
+      BBL_STATE_DIR: bbl-nats-env
+
+- name: ship-what
+  on_success:
+    put: slack-ci-channel
+    params:
+      text: ":concourse-succeeded: $BUILD_PIPELINE_NAME ship-what just ran. Maybe you should cut a release? $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME"
+  plan:
+    - in_parallel:
+        steps:
+        - get: manual-release-trigger
+          trigger: true
+          passed:
+            - run-cats
+            - export-release
+        - get: ci
+        - get: repo
+          passed:
+            - run-cats
+            - export-release
+          trigger: true
+        - get: image
+        - get: release-branch
+          params:
+            submodules: none
+        - get: github-release
+        - get: version
+        - get: env
+          passed:
+            - run-cats
+            - export-release
+          trigger: true
+
+    - task: check-safe-to-release-repo
+      image: image
+      file: ci/shared/tasks/check-safe-to-release-repo/linux.yml
+      input_mapping:
+        release-repo: release-branch
+
+    - task: get-nats-server-version
+      image: image
+      file: ci/shared/tasks/run-command-for-repo/linux.yml
+      params:
+        CMD: |
+          export COMMAND_OUTPUT=$PWD/../command-output
+          cd src/code.cloudfoundry.org
+          echo "## ✨  Built with $(go list -m github.com/nats-io/nats-server/v2)" > $COMMAND_OUTPUT/nats-version.md
+
+    - task: build-release-notes-nats
+      image: image
+      file: ci/shared/tasks/build-release-notes/linux.yml
+      input_mapping:
+        previous-github-release: github-release
+        extra-metadata: command-output
+
+- name: ship-it
+  serial: true
+  plan:
+    - in_parallel:
+        steps:
+        - get: ci
+        - get: repo
+          passed: [ ship-what ]
+        - get: image
+        - get: release-branch
+          params:
+            submodules: none
+        - get: github-release
+        - get: version
+        - get: develop-branch-mergeback
+          params:
+            submodules: none
+
+    - task: check-safe-to-release-branch
+      image: image
+      file: ci/shared/tasks/check-safe-to-release-repo/linux.yml
+      input_mapping:
+        release-repo: release-branch
+
+    - task: get-nats-server-version
+      image: image
+      file: ci/shared/tasks/run-command-for-repo/linux.yml
+      params:
+        CMD: |
+          export COMMAND_OUTPUT=$PWD/../command-output
+          cd src/code.cloudfoundry.org
+          echo "## ✨  Built with $(go list -m github.com/nats-io/nats-server/v2)" > $COMMAND_OUTPUT/nats-version.md
+
+    - task: build-release-notes-nats
+      image: image
+      file: ci/shared/tasks/build-release-notes/linux.yml
+      input_mapping:
+        previous-github-release: github-release
+
+    - task: bosh-finalize-release
+      image: image
+      file: ci/shared/tasks/bosh-finalize-release/linux.yml
+      params:
+        GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-oss-service-account/config-json))
+
+    - put: release-branch
+      params:
+        repository: finalized-release-repo
+        tag: version/number
+        tag_prefix: v
+
+    - task: merge-release-onto-develop
+      image: image
+      file: ci/shared/tasks/git-merge-branches/linux.yml
+      input_mapping:
+        source-branch: release-branch
+        onto-branch: develop-branch-mergeback
+      params:
+        SOURCE_BRANCH_NAME: release
+        ONTO_BRANCH_NAME: develop
+
+    - in_parallel:
+        steps:
+        - put: draft-github-release
+          params:
+            name: version/number
+            tag: version/number
+            tag_prefix: v
+            body: built-release-notes/notes.md
+            globs:
+            - finalized-release-tarball/nats*.tgz
+        - put: develop-branch-mergeback
+          params:
+            repository: merged-branch
+            merge: true
+
+    - get: next-version
+      resource: version
+      params: {bump: minor}
+    - put: next-version
+      resource: version
+      params: {file: next-version/number}
+
+- name: force-cleanup-env
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: env
+      - get: image
+  - try: *delete-cf-deployment
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-nats-env
+      SUSPEND: false
+
+#! versioning
+- name: patch-bump
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: patch}
+  - put: version
+    params: {file: version/number}
+
+- name: minor-bump
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: minor}
+  - put: version
+    params: {file: version/number}
+
+- name: major-bump
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: major}
+  - put: version
+    params: {file: version/number}
