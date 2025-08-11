@@ -171,46 +171,6 @@ resources:
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
     paths: [go-version.json]
 
-- name: updated-go-mod-diff-exporter
-  type: git
-  icon: source-branch
-  source:
-    branch: main
-    uri: git@github.com:cloudfoundry/diff-exporter.git
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
-- name: updated-go-mod-groot-windows
-  type: git
-  icon: source-branch
-  source:
-    branch: main
-    uri: git@github.com:cloudfoundry/groot-windows.git
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
-- name: updated-go-mod-winc
-  type: git
-  icon: source-branch
-  source:
-    branch: main
-    uri: git@github.com:cloudfoundry/winc.git
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
-- name: updated-go-mod-certsplitter
-  type: git
-  icon: source-branch
-  source:
-    branch: main
-    uri: git@github.com:cloudfoundry/certsplitter.git
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
-- name: updated-go-mod-cert-injector
-  type: git
-  icon: source-branch
-  source:
-    branch: main
-    uri: git@github.com:cloudfoundry/cert-injector.git
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
 - name: garden-ci-artifacts-release
   type: git
   icon: source-branch
@@ -393,84 +353,20 @@ jobs:
       - get: ci
       - get: repo
       - get: image
-      - get: updated-go-mod-cert-injector
-      - get: updated-go-mod-certsplitter
-      - get: updated-go-mod-diff-exporter
-      - get: updated-go-mod-groot-windows
-      - get: updated-go-mod-winc
       - get: weekly
         trigger: true
   - do:
-    - task: cert-injector-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-cert-injector
-      params:
-        GO_MODS: go.mod
-        GOOS: windows
-    - put: updated-go-mod-cert-injector
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: certsplitter-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-certsplitter
-      params:
-        GO_MODS: go.mod
-        GOOS: windows
-    - put: updated-go-mod-certsplitter
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: diff-exporter-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-diff-exporter
-      params:
-        GO_MODS: go.mod
-        GOOS: windows
-    - put: updated-go-mod-diff-exporter
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: groot-windows-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-groot-windows
-      params:
-        GO_MODS: go.mod
-        GOOS: windows
-    - put: updated-go-mod-groot-windows
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: winc-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-winc
-      params:
-        GO_MODS: go.mod
-        GOOS: windows
-    - put: updated-go-mod-winc
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: winc-release-bump-dependencies-go-mod
+    - task: bump-dependencies-go-mod
       file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
       image: image
       params:
-        GO_MODS: src/code.cloudfoundry.org/nstar/go.mod
+        GO_MODS: |
+          src/code.cloudfoundry.org/diff-exporter/go.mod
+          src/code.cloudfoundry.org/certsplitter
+          src/code.cloudfoundry.org/cert-injector
+          src/code.cloudfoundry.org/nstar/go.mod
+          src/code.cloudfoundry.org/groot-windows/go.mod
+          src/code.cloudfoundry.org/winc/go.mod
         GOOS: windows
     - put: repo
       params:
