@@ -19,7 +19,6 @@ function run(){
 
     pushd $DIR > /dev/null
     bosh_target
-    popd > /dev/null
 
     local default_envs_file="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-env.bash')"
     if [[ "$(bosh_is_cf_deployed)" == "yes" ]]; then
@@ -28,6 +27,7 @@ function run(){
         bosh_extract_manifest_defaults_from_cf "${cf_manifest}" "${cloud_config}" > "${default_envs_file}"
         debug "Extracted defaults vars from CF: $(cat ${default_envs_file})"
     fi
+    popd > /dev/null
 
     local env_file="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-env.bash')"
     expand_envs "${env_file}"
