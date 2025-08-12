@@ -16,8 +16,8 @@ releases:
   version: create
 
 stemcells:
-- alias: windows2019
-  os: windows2019
+- alias: windows
+  os: ((WINDOWS_STEMCELL_OS))
   version: latest
 - alias: stemcell
   os: ((CF_STEMCELL_OS))
@@ -42,7 +42,7 @@ instance_groups:
   vm_type: small-highmem
   vm_extensions:
     - 100GB_ephemeral_disk
-  stemcell: windows2019
+  stemcell: windows
   azs: [((CF_AZ))]
   networks:
   - name: ((CF_NETWORK))

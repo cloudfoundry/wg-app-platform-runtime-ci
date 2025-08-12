@@ -72,12 +72,14 @@ function bosh_extract_manifest_defaults_from_cf(){
         echo  "export CF_STEMCELL_OS=$(bosh int "${manifest}" --path /stemcells/alias=default/os)
 export CF_AZ=$(bosh int "${manifest}" --path /instance_groups/0/azs/0)
 export CF_NETWORK=$(bosh int "${manifest}" --path /instance_groups/0/networks/0/name)
-export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)"
+export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)
+export WINDOWS_STEMCELL_OS=$(bosh ss --json | jq -r ' .Tables[0].Rows[] | select(.os | contains("windows")) | .os')"
     elif [[ "$(is_env_shepherd_v2)" == "yes"  ]]; then
         echo  "export CF_STEMCELL_OS=$(bosh int "${manifest}" --path /stemcells/0/os)
 export CF_AZ=$(bosh int "${manifest}" --path /instance_groups/0/azs/0)
 export CF_NETWORK=$(bosh int "${manifest}" --path /instance_groups/0/networks/0/name)
-export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)"
+export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)
+export WINDOWS_STEMCELL_OS=$(bosh ss --json | jq -r ' .Tables[0].Rows[] | select(.os | contains("windows")) | .os')"
     else
         echo  "export CF_STEMCELL_OS=$(bosh int "${manifest}" --path /stemcells/0/os)
 export CF_AZ=$(bosh int "${manifest}" --path /instance_groups/0/azs/0)
@@ -86,7 +88,8 @@ export CF_NETWORK_CIDR=$(bosh int "${cloud_config}" --path /networks/1/subnets/0
 export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)
 export CF_LARGE_VM_TYPE=e2-standard-8
 export CF_NETWORK_SERVICES=$(bosh int "${cloud_config}" --path /networks/2/name)
-export CF_NETWORK_SERVICES_CIDR=$(bosh int "${cloud_config}" --path /networks/2/subnets/0/range)"
+export CF_NETWORK_SERVICES_CIDR=$(bosh int "${cloud_config}" --path /networks/2/subnets/0/range)
+export WINDOWS_STEMCELL_OS=$(bosh ss --json | jq -r ' .Tables[0].Rows[] | select(.os | contains("windows")) | .os')"
     fi
 }
 
