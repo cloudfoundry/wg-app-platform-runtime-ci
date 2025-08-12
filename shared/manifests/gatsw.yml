@@ -39,7 +39,7 @@ instance_groups:
       windows_rootfs: docker://mcr.microsoft.com/windows/nanoserver:ltsc2019
 - name: garden-windows
   instances: 1
-  vm_type: small-highmem
+  vm_type: ((CF_VM_TYPE))
   vm_extensions:
     - 100GB_ephemeral_disk
   stemcell: windows
