@@ -144,6 +144,7 @@ function display_go_mod_diff() {
   START_REF="${1}" # example: "v0.0.7"
   END_REF="${2}" # ex: "v0.0.8"
   GO_MOD_LOCATION="${3}"
+  OPTIONAL_SUBMODULE_NAME="${4:-}"
   count=1
 
   go_mod_changes_json=$(get_go_mod_diff_json "${START_REF}" "${END_REF}" "${GO_MOD_LOCATION}")
@@ -152,8 +153,12 @@ function display_go_mod_diff() {
       continue
     fi
     if [[ $count == 1 ]]; then
-      echo "## Go Package Updates"
       count="not-1"
+      if [[ $OPTIONAL_SUBMODULE_NAME != "" ]]; then
+        echo "## Go Package Updates for '${OPTIONAL_SUBMODULE_NAME}'"
+      else
+        echo "## Go Package Updates"
+      fi
     fi
     name="$(echo "${b}" | jq -r .name)"
     new_version="$(echo "${b}" | jq -r .new_version)"
