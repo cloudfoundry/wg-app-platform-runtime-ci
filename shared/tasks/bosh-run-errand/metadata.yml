@@ -1,0 +1,9 @@
+---
+readme: |
+  This task will run an errand for a deployment
+oses:
+  - linux
+params:
+  DIR: (Defaults to .) Change DIR before bosh_target
+  DEPLOYMENT_NAME: Name of deployment
+  ERRAND_NAME: Name of errand to run
