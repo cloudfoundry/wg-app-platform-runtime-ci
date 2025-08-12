@@ -6,3 +6,4 @@ oses:
 params:
   BBL_STATE_DIR: name of bbl state dir (relative to the env resource)
   DEPLOYMENT_NAME: Name of deployment
+  DIR: (Defaults to .) Change DIR before running bosh_target

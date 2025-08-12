@@ -16,7 +16,10 @@ function run(){
 
     local cf_manifest="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-cf.yml')"
     local cloud_config="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-cc.yml')"
+
+    pushd $DIR > /dev/null
     bosh_target
+    popd > /dev/null
 
     local default_envs_file="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-env.bash')"
     if [[ "$(bosh_is_cf_deployed)" == "yes" ]]; then

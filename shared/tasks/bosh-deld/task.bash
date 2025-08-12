@@ -14,7 +14,9 @@ function run(){
     local task_tmp_dir="${1:?provide temp dir for task}"
     shift 1
 
+    pushd $DIR > /dev/null
     bosh_target
+    popd > /dev/null
     bosh -n -d ${DEPLOYMENT_NAME} deld --force
     bosh -n clean-up --all
 }
