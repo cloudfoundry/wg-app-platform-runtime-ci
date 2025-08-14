@@ -220,7 +220,7 @@ resources:
   source:
     bucket: grace-assets
     regexp: grace-*.tgz
-    json_key: ((gcp-wg-arp-service-account/config-json))
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
 - name: ci
   type: git
