@@ -1,15 +1,18 @@
 ---
 readme: |
-  This task will build generic config file to be consumed. It will create a config.json and config.yml in the output dir
+  This task will transform a repo by running an arbitrary command
 extra_inputs:
   input-*: |
-    (Optional) Generic inputs for passing in config files or files needed
+    (Optional) Generic inputs for passing in config files or files needed for EVAL_CMD.
 oses:
   - linux
 params:
-  EVAL_YAML_CONFIG: bash command that outputs a valid YAML 
+  GCP_SERVICE_ACCOUNT_KEY: Environment secret
+  DIR: (Defaults to .) Change working DIR for running the command
   ENVS: |
     This parameter defines a list of environment variables will be loaded at runtime, as opposed to
     container-creation time. The purpose here is to allow users to extend the list of environment
     variables used by the task simply by updating the pipeline config, rather than by updating the task definition
     in linux.yml or windows.yml.
+  EVAL_CMD: Multiline command to be evaluated
+  GIT_MESSAGE: Optional git message to include when the repo is changed

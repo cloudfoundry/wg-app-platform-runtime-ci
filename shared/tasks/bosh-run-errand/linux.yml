@@ -1,0 +1,14 @@
+---
+platform: linux
+
+inputs:
+  - name: ci
+  - name: env
+
+params:
+  DIR: .
+  DEPLOYMENT_NAME:
+  ERRAND_NAME:
+
+run:
+  path: ci/shared/tasks/bosh-run-errand/task.bash

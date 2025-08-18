@@ -5,7 +5,6 @@
 groups:
 - name: release
   jobs:
-  - release-time-gate
   - manual-release-trigger
   - template-tests
   - unit-and-integration-tests
@@ -34,11 +33,11 @@ groups:
 - name: cleanup
   jobs:
   - cleanup-time-gate
-  - manual-lock-release-trigger
+  - wait-for-env-lock-claim
+  - wait-for-acceptance-tests
   - manual-cleanup-trigger
-  - check-work-locks
   - cleanup-env
-  - release-work-locks
+  - force-cleanup-env
   - release-env-lock
 
 - name: version
@@ -53,21 +52,30 @@ resource_types:
 - name: gcs
   type: registry-image
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/frodenas/gcs-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/frodenas/gcs-resource
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
+
 - name: command-runner
   type: docker-image
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
+
 - name: slack-notification
   type: docker-image
   source:
-    repository: cfcommunity/slack-notification-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cfcommunity/slack-notification-resource
+    username: _json_key
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
+
+- name: fork-pool
+  type: registry-image
+  source:
+    repository: ebroberson/pool-resource
 
 #! Define-Resources
 resources:
@@ -88,13 +96,11 @@ resources:
     ignore_paths:
     - .github/
     - .gitignore
-    - .final_builds/
     - CODEOWNERS
     - LICENSE
     - NOTICE
     - README.md
     - docs/
-    - releases/
 
 #! repo-synced is a write-only resource to prevent readme
 #! changes from triggering pipeline runs. See the description of "ignore_path"
@@ -266,18 +272,13 @@ resources:
     days:
       - Thursday
 
-- name: lock-check-timer
+- name: cleanup-timer
   type: time
   icon: clock
   source:
     interval: '1h'
 
 - name: manual-release-trigger
-  type: time
-  source:
-    interval: '1m'
-
-- name: manual-lock-release-trigger
   type: time
   source:
     interval: '1m'
@@ -369,7 +370,7 @@ resources:
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: garden-runc-release-env-lock
-  type: pool
+  type: fork-pool
   icon: cloud-lock
   source:
     branch: main
@@ -378,121 +379,31 @@ resources:
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
     paths: garden-runc-release-env-lock
 
-- name: garden-runc-release-lock-prepare-env
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: garden-runc-release-lock-prepare-env
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: garden-runc-release-lock-prepare-env
-
-- name: garden-runc-release-lock-export-release
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: garden-runc-release-lock-export-release
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: garden-runc-release-lock-export-release
-
-- name: garden-runc-release-lock-cats
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: garden-runc-release-lock-cats
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: garden-runc-release-lock-cats
-
-- name: garden-runc-release-lock-gats-with-containerd
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: garden-runc-release-lock-gats-with-containerd
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: garden-runc-release-lock-gats-with-containerd
-
-- name: garden-runc-release-lock-gats-with-containerd-cgroupsv2
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: garden-runc-release-lock-gats-with-containerd-cgroupsv2
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: garden-runc-release-lock-gats-with-containerd-cgroupsv2
-
-- name: garden-runc-release-lock-gats-with-cpu-throttling
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: garden-runc-release-lock-gats-with-cpu-throttling
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: garden-runc-release-lock-gats-with-cpu-throttling
-
-- name: garden-runc-release-lock-gats-with-runc
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: garden-runc-release-lock-gats-with-runc
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: garden-runc-release-lock-gats-with-runc
-
-- name: garden-runc-release-lock-gatsw
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: garden-runc-release-lock-gatsw
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: garden-runc-release-lock-gatsw
-
-- name: garden-runc-release-lock-standalone-gdn-gats
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: garden-runc-release-lock-standalone-gdn-gats
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: garden-runc-release-lock-standalone-gdn-gats
-
 - name: image
   type: registry-image
   icon: docker
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: garden-runc-release-rootfs
   type: registry-image
   icon: docker
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/garden-rootfs
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/garden-rootfs
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: garden-runc-release-fuse-rootfs
   type: registry-image
   icon: docker
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/garden-fuse
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/garden-fuse
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: artifacts-bucket-gdn
@@ -635,10 +546,6 @@ jobs:
 - name: manual-release-trigger
   plan:
   - put: manual-release-trigger
-
-- name: manual-lock-release-trigger
-  plan:
-  - put: manual-lock-release-trigger
 
 - name: manual-cleanup-trigger
   plan:
@@ -1258,7 +1165,7 @@ jobs:
         DEFAULT_PARAMS: "ci/garden-runc-release/default-params/build-binaries/linux.yml"
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
   - put: windows-worker-lock
     params:
@@ -1277,7 +1184,7 @@ jobs:
       file: ci/shared/tasks/run-bin-test/linux.yml
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
       input_mapping:
         input-01: garden-runc-release-rootfs
@@ -1295,7 +1202,7 @@ jobs:
       file: ci/shared/tasks/run-bin-test/linux.yml
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
       input_mapping:
         input-01: garden-runc-release-rootfs
@@ -1341,98 +1248,34 @@ jobs:
     file: ci/shared/tasks/lint-repo/linux.yml
     image: image
 
-- name: release-time-gate
-  plan:
-  - get: repo
-    passed:
-      - template-tests
-      - unit-and-integration-tests
-      - lint-repo
-  - get: env-weekly
-    trigger: true
-
 - name: claim-env
   serial: true
-  on_abort: &release-work-locks
+  on_abort: &release-env-lock
     do:
-      - put: garden-runc-release-lock-prepare-env
+      - put: garden-runc-release-env-lock
         params:
-          release: garden-runc-release-lock-prepare-env
-      - put: garden-runc-release-lock-cats
-        params:
-          release: garden-runc-release-lock-cats
-      - put: garden-runc-release-lock-gats-with-containerd
-        params:
-          release: garden-runc-release-lock-gats-with-containerd
-      - put: garden-runc-release-lock-gats-with-containerd-cgroupsv2
-        params:
-          release: garden-runc-release-lock-gats-with-containerd-cgroupsv2
-      - put: garden-runc-release-lock-gats-with-cpu-throttling
-        params:
-          release: garden-runc-release-lock-gats-with-cpu-throttling
-      - put: garden-runc-release-lock-gats-with-runc
-        params:
-          release: garden-runc-release-lock-gats-with-runc
-      - put: garden-runc-release-lock-gatsw
-        params:
-          release: garden-runc-release-lock-gatsw
-      - put: garden-runc-release-lock-standalone-gdn-gats
-        params:
-          release: garden-runc-release-lock-standalone-gdn-gats
-      - put: garden-runc-release-lock-export-release
-        params:
-          release: garden-runc-release-lock-export-release
-  on_failure: *release-work-locks
+          release: garden-runc-release-env-lock
+  on_failure: *release-env-lock
   plan:
   - in_parallel:
     - get: ci
     - get: repo
+      trigger: false
+      passed:
+        - template-tests
+        - unit-and-integration-tests
+        - lint-repo
+    - get: env-weekly
       trigger: true
-      passed: [ release-time-gate ]
     - get: image
     - get: env
     - get: manual-release-trigger
       trigger: true
       passed: [ manual-release-trigger ]
-  - get: garden-runc-release-lock-prepare-env
-  - get: garden-runc-release-lock-cats
-  - get: garden-runc-release-lock-gats-with-containerd
-  - get: garden-runc-release-lock-gats-with-containerd-cgroupsv2
-  - get: garden-runc-release-lock-gats-with-cpu-throttling
-  - get: garden-runc-release-lock-gats-with-runc
-  - get: garden-runc-release-lock-gatsw
-  - get: garden-runc-release-lock-standalone-gdn-gats
-  - get: garden-runc-release-lock-export-release
+    - get: garden-runc-release-env-lock
   - put: garden-runc-release-env-lock
     params:
       claim: garden-runc-release-env-lock
-  - put: garden-runc-release-lock-prepare-env
-    params:
-      claim: garden-runc-release-lock-prepare-env
-  - put: garden-runc-release-lock-cats
-    params:
-      claim: garden-runc-release-lock-cats
-  - put: garden-runc-release-lock-gats-with-containerd
-    params:
-      claim: garden-runc-release-lock-gats-with-containerd
-  - put: garden-runc-release-lock-gats-with-containerd-cgroupsv2
-    params:
-      claim: garden-runc-release-lock-gats-with-containerd-cgroupsv2
-  - put: garden-runc-release-lock-gats-with-cpu-throttling
-    params:
-      claim: garden-runc-release-lock-gats-with-cpu-throttling
-  - put: garden-runc-release-lock-gats-with-runc
-    params:
-      claim: garden-runc-release-lock-gats-with-runc
-  - put: garden-runc-release-lock-gatsw
-    params:
-      claim: garden-runc-release-lock-gatsw
-  - put: garden-runc-release-lock-standalone-gdn-gats
-    params:
-      claim: garden-runc-release-lock-standalone-gdn-gats
-  - put: garden-runc-release-lock-export-release
-    params:
-      claim: garden-runc-release-lock-export-release
   - task: start-bbl-envs
     image: image
     file: ci/shared/tasks/start-gcp-instance/linux.yml
@@ -1450,14 +1293,13 @@ jobs:
 
 - name: prepare-env
   serial: true
-  ensure:
-    put: garden-runc-release-lock-prepare-env
-    params:
-      release: garden-runc-release-lock-prepare-env
-  on_abort: *release-work-locks
-  on_failure: *release-work-locks
+  on_abort: *release-env-lock
+  on_failure: *release-env-lock
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ claim-env ]
     - get: ci
     - get: repo
       trigger: true
@@ -1468,33 +1310,10 @@ jobs:
     - get: env
       passed: [ claim-env ]
       trigger: true
-    - get: garden-runc-release-lock-prepare-env 
+    - get: garden-runc-release-env-lock
       passed: [ claim-env ]
-    - get: garden-runc-release-lock-cats
-      passed: [ claim-env ]
-    - get: garden-runc-release-lock-gats-with-containerd
-      passed: [ claim-env ]
-    - get: garden-runc-release-lock-gats-with-containerd-cgroupsv2
-      passed: [ claim-env ]
-    - get: garden-runc-release-lock-gats-with-cpu-throttling
-      passed: [ claim-env ]
-    - get: garden-runc-release-lock-gats-with-runc
-      passed: [ claim-env ]
-    - get: garden-runc-release-lock-gatsw
-      passed: [ claim-env ]
-    - get: garden-runc-release-lock-standalone-gdn-gats
-      passed: [ claim-env ]
-    - get: garden-runc-release-lock-export-release
-      passed: [ claim-env ]
-  - try:
-      do:
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-garden-env
-            DEPLOYMENT_NAME: cf
   - task: prepare-cf-deployment-env
+    attempts: 10
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
     params:
@@ -1585,12 +1404,11 @@ jobs:
 
 - name: run-cats
   serial: true
-  ensure:
-    put: garden-runc-release-lock-cats
-    params:
-      release: garden-runc-release-lock-cats
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [ prepare-env ]
@@ -1602,8 +1420,6 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests
     - get: cf-deployment
-    - get: garden-runc-release-lock-cats
-      passed: [prepare-env]
   - task: create-cats-config
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
@@ -1622,12 +1438,11 @@ jobs:
 
 - name: run-standalone-gdn-gats
   serial: true
-  ensure:
-    put: garden-runc-release-lock-standalone-gdn-gats
-    params:
-      release: garden-runc-release-lock-standalone-gdn-gats
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [ prepare-env ]
@@ -1641,8 +1456,6 @@ jobs:
     - get: garden-runc-release-rootfs
       params:
         format: rootfs
-    - get: garden-runc-release-lock-standalone-gdn-gats
-      passed: [ prepare-env ]
   - task: determine-image-tag
     image: image
     file: ci/shared/tasks/determine-image-tag/linux.yml
@@ -1657,7 +1470,7 @@ jobs:
       ENVS: WITH_MUSL=true
     vars:
       image_repository: cloudfoundry/tas-runtime-build
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
   - task: release-standalone-gdn
     file: ci/shared/tasks/run-bin-release-binaries/linux.yml
@@ -1688,7 +1501,7 @@ jobs:
         LIMITS_TEST_URI="docker://busybox"
     vars:
       image_repository: cloudfoundry/tas-runtime-build
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
   - put: artifacts-bucket-gdn
     params:
@@ -1700,12 +1513,11 @@ jobs:
 - name: run-gatsw
   serial: true
   serial_groups: [acceptance]
-  ensure:
-    put: garden-runc-release-lock-gatsw
-    params:
-      release: garden-runc-release-lock-gatsw
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -1720,22 +1532,12 @@ jobs:
     - get: winc-release
     - get: windows-utilities-release
     - get: cf-deployment-concourse-tasks
-    - get: garden-runc-release-lock-gatsw
-      passed: [ prepare-env ]
   - task: upload-windows-stemcell
     file: ci/shared/tasks/bosh-upload-stemcell/linux.yml
     image: image
     params:
       BBL_STATE_DIR: bbl-garden-env
       STEMCELL_URL: https://bosh.io/d/stemcells/bosh-google-kvm-windows2019-go_agent
-  - try:
-      do:
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-garden-env
-            DEPLOYMENT_NAME: gatsw
   - task: bosh-deploy-gatsw
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -1762,14 +1564,13 @@ jobs:
       ERRAND_NAME: gats
 
 - name: run-gats-with-cpu-throttling
-  ensure:
-    put: garden-runc-release-lock-gats-with-cpu-throttling
-    params:
-      release: garden-runc-release-lock-gats-with-cpu-throttling
   serial: true
   serial_groups: [ acceptance ]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [ prepare-env ]
@@ -1782,16 +1583,6 @@ jobs:
       resource: golang-release-latest
     - get: garden-ci-artifacts-release
     - get: cf-deployment-concourse-tasks
-    - get: garden-runc-release-lock-gats-with-cpu-throttling
-      passed: [ prepare-env ]
-  - try:
-      do:
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-garden-env
-            DEPLOYMENT_NAME: gats-with-cpu-throttling
   - task: bosh-deploy-gats
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -1802,6 +1593,8 @@ jobs:
         WITH_BPM=false
         WITH_CONTAINERD_MODE=false
         WITH_CPU_THROTTLING=true
+        DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
+        DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
       BBL_STATE_DIR: bbl-garden-env
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
@@ -1815,12 +1608,11 @@ jobs:
 - name: run-gats-with-runc
   serial: true
   serial_groups: [acceptance]
-  ensure:
-    put: garden-runc-release-lock-gats-with-runc
-    params:
-      release: garden-runc-release-lock-gats-with-runc
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [ prepare-env ]
@@ -1833,16 +1625,6 @@ jobs:
       resource: golang-release-latest
     - get: garden-ci-artifacts-release
     - get: cf-deployment-concourse-tasks
-    - get: garden-runc-release-lock-gats-with-runc
-      passed: [ prepare-env ]
-  - try:
-      do:
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-garden-env
-            DEPLOYMENT_NAME: gats-with-runc
   - task: bosh-deploy-gats
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -1874,12 +1656,11 @@ jobs:
 - name: run-gats-with-containerd
   serial: true
   serial_groups: [ acceptance ]
-  ensure:
-    put: garden-runc-release-lock-gats-with-containerd
-    params:
-      release: garden-runc-release-lock-gats-with-containerd
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [ prepare-env ]
@@ -1892,16 +1673,6 @@ jobs:
       resource: golang-release-latest
     - get: garden-ci-artifacts-release
     - get: cf-deployment-concourse-tasks
-    - get: garden-runc-release-lock-gats-with-containerd
-      passed: [ prepare-env ]
-  - try:
-      do:
-        - task: bosh-deld
-          image: image
-          file: ci/shared/tasks/bosh-deld/linux.yml
-          params:
-            BBL_STATE_DIR: bbl-garden-env
-            DEPLOYMENT_NAME: gats-with-containerd
   - task: bosh-deploy-gats
     image: image
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
@@ -1935,12 +1706,11 @@ jobs:
 - name: run-gats-with-containerd-cgroupsv2
   serial: true
   serial_groups: [acceptance]
-  ensure:
-    put: garden-runc-release-lock-gats-with-containerd-cgroupsv2
-    params:
-      release: garden-runc-release-lock-gats-with-containerd-cgroupsv2
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [ prepare-env ]
@@ -1953,8 +1723,6 @@ jobs:
       resource: golang-release-latest
     - get: garden-ci-artifacts-release
     - get: cf-deployment-concourse-tasks
-    - get: garden-runc-release-lock-gats-with-containerd-cgroupsv2
-      passed: [ prepare-env ]
   - task: upload-noble-stemcell
     file: ci/shared/tasks/bosh-upload-stemcell/linux.yml
     image: image
@@ -1972,31 +1740,35 @@ jobs:
         WITH_CONTAINERD_MODE=true
         WITH_CPU_THROTTLING=false
         CF_STEMCELL_OS=ubuntu-noble
+        DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
+        DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
+      BBL_STATE_DIR: bbl-garden-env
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-garden-env
       DEPLOYMENT_NAME: gats-with-containerd-cgroupsv2
       ERRAND_NAME: gats
       INSTANCE: gats
   - task: run-gpats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
-      toolsmiths-env: env
+      bbl-state: env
     params:
+      BBL_STATE_DIR: bbl-garden-env
       DEPLOYMENT_NAME: gats-with-containerd-cgroupsv2
       ERRAND_NAME: gpats
       INSTANCE: gpats
 
 - name: export-release
   serial: true
-  ensure:
-    put: garden-runc-release-lock-export-release
-    params:
-      release: garden-runc-release-lock-export-release
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [ prepare-env ]
@@ -2006,8 +1778,6 @@ jobs:
       passed: [ prepare-env ]
       trigger: true
     - get: cf-deployment-concourse-tasks
-    - get: garden-runc-release-lock-export-release
-      passed: [ prepare-env ]
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
@@ -2022,6 +1792,17 @@ jobs:
   plan:
     - in_parallel:
         steps:
+        - get: manual-release-trigger
+          trigger: true
+          passed:
+            - run-cats
+            - export-release
+            - run-standalone-gdn-gats
+            - run-gatsw
+            - run-gats-with-cpu-throttling
+            - run-gats-with-runc
+            - run-gats-with-containerd
+            - run-gats-with-containerd-cgroupsv2
         - get: ci
         - get: repo
           passed:
@@ -2163,70 +1944,37 @@ jobs:
 
 - name: cleanup-time-gate
   plan:
-  - get: lock-check-timer
+  - get: cleanup-timer
     trigger: true
 
-- name: check-work-locks
+- name: wait-for-env-lock-claim
   serial: true
   plan:
-  - get: lock-check-timer
+  - get: cleanup-timer
     trigger: true
     passed: [ cleanup-time-gate ]
   - get: garden-runc-release-env-lock
-  - get: garden-runc-release-lock-prepare-env
-  - get: garden-runc-release-lock-cats
-  - get: garden-runc-release-lock-gats-with-containerd
-  - get: garden-runc-release-lock-gats-with-containerd-cgroupsv2
-  - get: garden-runc-release-lock-gats-with-cpu-throttling
-  - get: garden-runc-release-lock-gats-with-runc
-  - get: garden-runc-release-lock-gatsw
-  - get: garden-runc-release-lock-standalone-gdn-gats
-  - get: garden-runc-release-lock-export-release
-  - put: check-lock-prepare-env
-    resource: garden-runc-release-lock-prepare-env
+  - put: check-unclaimed-env-lock
+    resource: garden-runc-release-env-lock
     params:
-      check: garden-runc-release-lock-prepare-env
-      retry-delay: 10m
-  - put: check-lock-cats
-    resource: garden-runc-release-lock-cats
-    params:
-      check: garden-runc-release-lock-cats
-      retry-delay: 10m
-  - put: check-lock-gats-with-containerd
-    resource: garden-runc-release-lock-gats-with-containerd
-    params:
-      check: garden-runc-release-lock-gats-with-containerd
-      retry-delay: 10m
-  - put: check-lock-gats-with-containerd-cgroupsv2
-    resource: garden-runc-release-lock-gats-with-containerd-cgroupsv2
-    params:
-      check: garden-runc-release-lock-gats-with-containerd-cgroupsv2
-      retry-delay: 10m
-  - put: check-lock-gats-with-cpu-throttling
-    resource: garden-runc-release-lock-gats-with-cpu-throttling
-    params:
-      check: garden-runc-release-lock-gats-with-cpu-throttling
-      retry-delay: 10m
-  - put: check-lock-gats-with-runc
-    resource: garden-runc-release-lock-gats-with-runc
-    params:
-      check: garden-runc-release-lock-gats-with-runc
-      retry-delay: 10m
-  - put: check-lock-gatsw
-    resource: garden-runc-release-lock-gatsw
-    params:
-      check: garden-runc-release-lock-gatsw
-      retry-delay: 10m
-  - put: check-lock-standalone-gdn-gats
-    resource: garden-runc-release-lock-standalone-gdn-gats
-    params:
-      check: garden-runc-release-lock-standalone-gdn-gats
-      retry-delay: 10m
-  - put: check-lock-export-release
-    resource: garden-runc-release-lock-export-release
-    params:
-      check: garden-runc-release-lock-export-release
-      retry-delay: 10m
+      check_unclaimed: garden-runc-release-env-lock
+      retry-delay: 60m
+
+- name: wait-for-acceptance-tests
+  plan:
+  - get: image
+  - get: garden-runc-release-env-lock
+    passed: [ wait-for-env-lock-claim ]
+    trigger: true
+  - task: sleep
+    image: image
+    config:
+      platform: linux
+      run: 
+        path: sh
+        args:
+        - -exc
+        - sleep 5h
 
 - name: cleanup-env
   serial: true
@@ -2239,29 +1987,9 @@ jobs:
       - get: manual-cleanup-trigger
         trigger: true
         passed: [ manual-cleanup-trigger ]
-      - get: lock-check-timer
-        trigger: true
-        passed: [ check-work-locks ]
       - get: garden-runc-release-env-lock
-        passed: [ check-work-locks ]
-      - get: garden-runc-release-lock-prepare-env
-        passed: [ check-work-locks ]
-      - get: garden-runc-release-lock-cats
-        passed: [ check-work-locks ]
-      - get: garden-runc-release-lock-gats-with-containerd
-        passed: [ check-work-locks ]
-      - get: garden-runc-release-lock-gats-with-containerd-cgroupsv2
-        passed: [ check-work-locks ]
-      - get: garden-runc-release-lock-gats-with-cpu-throttling
-        passed: [ check-work-locks ]
-      - get: garden-runc-release-lock-gats-with-runc
-        passed: [ check-work-locks ]
-      - get: garden-runc-release-lock-gatsw
-        passed: [ check-work-locks ]
-      - get: garden-runc-release-lock-standalone-gdn-gats
-        passed: [ check-work-locks ]
-      - get: garden-runc-release-lock-export-release
-        passed: [ check-work-locks ]
+        passed: [ wait-for-acceptance-tests ]
+        trigger: true
   - try:
       do:
       - task: bosh-deld
@@ -2301,53 +2029,103 @@ jobs:
         file: ci/shared/tasks/bosh-deld/linux.yml
         params:
           BBL_STATE_DIR: bbl-garden-env
-          DEPLOYMENT_NAME: gats-with-cpu-throttling
+          DEPLOYMENT_NAME: gats-with-containerd-cgroupsv2
   - try:
       do:
-      - task: stop-bbl-envs
+      - task: bosh-deld
         image: image
-        file: ci/shared/tasks/stop-gcp-instance/linux.yml
-        input_mapping:
-          bbl-state: env
+        file: ci/shared/tasks/bosh-deld/linux.yml
         params:
-          SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
           BBL_STATE_DIR: bbl-garden-env
-          SUSPEND: false
+          DEPLOYMENT_NAME: gats-with-cpu-throttling
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-garden-env
+      SUSPEND: false
   - try:
       do:
       - put: garden-runc-release-env-lock
         params:
           release: garden-runc-release-env-lock 
-
-- name: release-work-locks
-  plan:
-  - get: garden-runc-release-lock-prepare-env
-  - get: garden-runc-release-lock-cats
-  - get: garden-runc-release-lock-gats-with-containerd
-  - get: garden-runc-release-lock-gats-with-containerd-cgroupsv2
-  - get: garden-runc-release-lock-gats-with-cpu-throttling
-  - get: garden-runc-release-lock-gats-with-runc
-  - get: garden-runc-release-lock-gatsw
-  - get: garden-runc-release-lock-standalone-gdn-gats
-  - get: garden-runc-release-lock-export-release
-  - get: manual-lock-release-trigger
-    trigger: true
-    passed: [ manual-lock-release-trigger ]
-  - try: *release-work-locks
-
 - name: release-env-lock
+  plan:
+  - get: garden-runc-release-env-lock
+  - put: garden-runc-release-env-lock
+    params:
+      release: garden-runc-release-env-lock
+
+- name: force-cleanup-env
+  serial: true
   plan:
   - in_parallel:
       steps:
-      - get: garden-runc-release-env-lock
-      - get: manual-lock-release-trigger
-        trigger: true
-        passed: [ manual-lock-release-trigger ]
+      - get: ci
+      - get: env
+      - get: image
   - try:
       do:
-      - put: garden-runc-release-env-lock
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
         params:
-          release: garden-runc-release-env-lock 
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: cf
+  - try:
+      do:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gatsw
+  - try:
+      do:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gats-with-runc
+  - try:
+      do:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gats-with-containerd
+  - try:
+      do:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gats-with-containerd-cgroupsv2
+  - try:
+      do:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gats-with-cpu-throttling
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-garden-env
+      SUSPEND: false
+
+
 
 #! versioning
 - name: patch-bump

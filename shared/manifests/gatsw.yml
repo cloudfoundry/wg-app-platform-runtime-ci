@@ -16,8 +16,8 @@ releases:
   version: create
 
 stemcells:
-- alias: windows2019
-  os: windows2019
+- alias: windows
+  os: ((WINDOWS_STEMCELL_OS))
   version: latest
 - alias: stemcell
   os: ((CF_STEMCELL_OS))
@@ -39,10 +39,10 @@ instance_groups:
       windows_rootfs: docker://mcr.microsoft.com/windows/nanoserver:ltsc2019
 - name: garden-windows
   instances: 1
-  vm_type: small-highmem
+  vm_type: ((CF_VM_TYPE))
   vm_extensions:
     - 100GB_ephemeral_disk
-  stemcell: windows2019
+  stemcell: windows
   azs: [((CF_AZ))]
   networks:
   - name: ((CF_NETWORK))

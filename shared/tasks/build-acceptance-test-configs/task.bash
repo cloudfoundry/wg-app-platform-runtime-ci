@@ -18,8 +18,10 @@ function run(){
     expand_envs "${env_file}"
     . "${env_file}"
 
+    pushd $DIR > /dev/null
     bosh_target
     cf_target
+    popd
 
     for entry in ${CONFIGS}
     do
@@ -209,7 +211,7 @@ function wats() {
   "apps_domain": "${CF_SYSTEM_DOMAIN}",
   "credhub_client": "credhub_admin_client",
   "credhub_mode": "assisted",
-  "credhub_secret": "$(bosh_get_password_from_credhub credhub_admin_client_secret)",
+  "credhub_secret": "$(credhub_admin_client_secret)",
   "include_apps": false,
   "include_container_networking": false,
   "include_detect": false,

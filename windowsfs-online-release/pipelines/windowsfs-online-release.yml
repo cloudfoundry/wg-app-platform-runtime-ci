@@ -5,7 +5,6 @@
 groups:
 - name: release
   jobs:
-  - release-time-gate
   - manual-release-trigger
   - bump-windowsfs-online-release
   - claim-env
@@ -23,20 +22,26 @@ groups:
 - name: cleanup
   jobs:
   - cleanup-time-gate
-  - manual-lock-release-trigger
+  - wait-for-env-lock-claim
+  - wait-for-acceptance-tests
   - manual-cleanup-trigger
-  - check-work-locks
   - cleanup-env
-  - release-work-locks
+  - force-cleanup-env
   - release-env-lock
 
 resource_types:
 - name: slack-notification
   type: docker-image
   source:
-    repository: cfcommunity/slack-notification-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cfcommunity/slack-notification-resource
+    username: _json_key
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
+- name: fork-pool
+  type: registry-image
+  source:
+    repository: ebroberson/pool-resource
 
 #! Define-Resources
 resources:
@@ -58,13 +63,11 @@ resources:
     ignore_paths:
     - .github/
     - .gitignore
-    - .final_builds/
     - CODEOWNERS
     - LICENSE
     - NOTICE
     - README.md
     - docs/
-    - releases/
 
 - name: release-branch 
   type: git
@@ -90,7 +93,7 @@ resources:
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: windowsfs-online-release-env-lock
-  type: pool
+  type: fork-pool
   icon: cloud-lock
   source:
     branch: main
@@ -98,36 +101,6 @@ resources:
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
     paths: windowsfs-online-release-env-lock 
-
-- name: windowsfs-online-release-lock-prepare-env
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: windowsfs-online-release-lock-prepare-env
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: windowsfs-online-release-lock-prepare-env
-
-- name: windowsfs-online-release-lock-export-release
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: windowsfs-online-release-lock-export-release
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: windowsfs-online-release-lock-export-release
-
-- name: windowsfs-online-release-lock-wats
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: windowsfs-online-release-lock-wats
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: windowsfs-online-release-lock-wats
 
 - name: cf-deployment
   type: git
@@ -155,9 +128,9 @@ resources:
   type: registry-image
   icon: docker
   source:                                        
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: 'latest'
 
 - name: slack-ci-channel
@@ -237,18 +210,13 @@ resources:
     days:
       - Thursday
 
-- name: lock-check-timer
+- name: cleanup-timer
   type: time
   icon: clock
   source:
     interval: '1h'
 
 - name: manual-release-trigger
-  type: time
-  source:
-    interval: '1m'
-
-- name: manual-lock-release-trigger
   type: time
   source:
     interval: '1m'
@@ -263,10 +231,6 @@ jobs:
 - name: manual-release-trigger
   plan:
   - put: manual-release-trigger
-
-- name: manual-lock-release-trigger
-  plan:
-  - put: manual-lock-release-trigger
 
 - name: manual-cleanup-trigger
   plan:
@@ -363,29 +327,15 @@ jobs:
       rebase: true
       repository: bumped-repo
 
-- name: release-time-gate
-  plan:
-  - get: repo
-    passed: [ bump-windowsfs-online-release ]
-  - get: windows2016fs
-    passed: [ bump-windowsfs-online-release ]
-  - get: env-weekly
-    trigger: true
 
 - name: claim-env
   serial: true
-  on_abort: &release-work-locks
+  on_abort: &release-env-lock
     do:
-      - put: windowsfs-online-release-lock-prepare-env
+      - put: windowsfs-online-release-env-lock
         params:
-          release: windowsfs-online-release-lock-prepare-env
-      - put: windowsfs-online-release-lock-export-release
-        params:
-          release: windowsfs-online-release-lock-export-release
-      - put: windowsfs-online-release-lock-wats
-        params:
-          release: windowsfs-online-release-lock-wats
-  on_failure: *release-work-locks
+          release: windowsfs-online-release-env-lock
+  on_failure: *release-env-lock
   plan:
   - in_parallel:
     - get: manual-release-trigger
@@ -393,28 +343,17 @@ jobs:
       passed: [ manual-release-trigger ] 
     - get: ci 
     - get: repo 
+      passed: [ bump-windowsfs-online-release ]
+    - get: env-weekly
       trigger: true
-      passed: [ release-time-gate ]
     - get: image
     - get: env
     - get: windows2016fs
-      passed: [ release-time-gate ]
-  - get: windowsfs-online-release-env-lock
-  - get: windowsfs-online-release-lock-prepare-env
-  - get: windowsfs-online-release-lock-export-release
-  - get: windowsfs-online-release-lock-wats
+      passed: [ bump-windowsfs-online-release ]
+    - get: windowsfs-online-release-env-lock
   - put: windowsfs-online-release-env-lock
     params:
       claim: windowsfs-online-release-env-lock
-  - put: windowsfs-online-release-lock-prepare-env
-    params:
-      claim: windowsfs-online-release-lock-prepare-env
-  - put: windowsfs-online-release-lock-export-release
-    params:
-      claim: windowsfs-online-release-lock-export-release
-  - put: windowsfs-online-release-lock-wats
-    params:
-      claim: windowsfs-online-release-lock-wats
   - task: start-bbl-envs
     image: image
     file: ci/shared/tasks/start-gcp-instance/linux.yml
@@ -432,14 +371,13 @@ jobs:
 
 - name: prepare-env
   serial: true
-  ensure:
-    put: windowsfs-online-release-lock-prepare-env
-    params:
-      release: windowsfs-online-release-lock-prepare-env
-  on_abort: *release-work-locks
-  on_failure: *release-work-locks
+  on_abort: *release-env-lock
+  on_failure: *release-env-lock
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ claim-env ] 
     - get: ci
     - get: repo
       trigger: true
@@ -454,13 +392,7 @@ jobs:
       passed: [claim-env]
     - get: windowsfs-online-release-env-lock
       passed: [claim-env]
-    - get: windowsfs-online-release-lock-prepare-env
-      passed: [claim-env]
-    - get: windowsfs-online-release-lock-export-release
-      passed: [claim-env]
-    - get: windowsfs-online-release-lock-wats
-      passed: [claim-env]
-  - try:
+  - try: &delete-cf-deployment
       do:
         - task: bosh-deld
           image: image
@@ -521,12 +453,11 @@ jobs:
 - name: run-wats
   serial: true
   serial_groups: [acceptance]
-  ensure:
-    put: windowsfs-online-release-lock-wats
-    params:
-      release: windowsfs-online-release-lock-wats
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ] 
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -539,8 +470,6 @@ jobs:
     - get: cf-acceptance-tests
     - get: cf-deployment
     - get: windows2016fs
-      passed: [prepare-env]
-    - get: windowsfs-online-release-lock-wats
       passed: [prepare-env]
   - task: create-cats-config
     image: image
@@ -563,12 +492,11 @@ jobs:
 - name: export-release
   serial: true
   serial_groups: [acceptance]
-  ensure:
-    put: windowsfs-online-release-lock-export-release
-    params:
-      release: windowsfs-online-release-lock-export-release
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ] 
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -580,8 +508,6 @@ jobs:
     - get: windows2016fs
       passed: [prepare-env]
     - get: cf-deployment-concourse-tasks
-    - get: windowsfs-online-release-lock-export-release
-      passed: [prepare-env]
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
@@ -597,6 +523,11 @@ jobs:
   plan:
     - in_parallel:
         steps:
+        - get: manual-release-trigger
+          trigger: true
+          passed:
+            - run-wats
+            - export-release
         - get: ci
         - get: repo
           passed:
@@ -733,35 +664,37 @@ jobs:
 
 - name: cleanup-time-gate
   plan:
-  - get: lock-check-timer
+  - get: cleanup-timer
     trigger: true
 
-- name: check-work-locks
+- name: wait-for-env-lock-claim
   serial: true
   plan:
-  - get: lock-check-timer
+  - get: cleanup-timer
     trigger: true
     passed: [ cleanup-time-gate ]
   - get: windowsfs-online-release-env-lock
-  - get: windowsfs-online-release-lock-prepare-env
-  - get: windowsfs-online-release-lock-export-release
-  - get: windowsfs-online-release-lock-wats
-  - put: check-lock-prepare-env
-    resource: windowsfs-online-release-lock-prepare-env
+  - put: check-unclaimed-env-lock
+    resource: windowsfs-online-release-env-lock
     params:
-      check: windowsfs-online-release-lock-prepare-env
-      retry-delay: 10m
-  - put: check-lock-wats
-    resource: windowsfs-online-release-lock-wats
-    params:
-      check: windowsfs-online-release-lock-wats
-      retry-delay: 10m
-  - put: check-lock-export-release
-    resource: windowsfs-online-release-lock-export-release
-    params:
-      check: windowsfs-online-release-lock-export-release
-      retry-delay: 10m
+      check_unclaimed: windowsfs-online-release-env-lock
+      retry-delay: 15m
 
+- name: wait-for-acceptance-tests
+  plan:
+  - get: image
+  - get: windowsfs-online-release-env-lock
+    passed: [ wait-for-env-lock-claim ]
+    trigger: true
+  - task: sleep
+    image: image
+    config:
+      platform: linux
+      run: 
+        path: sh
+        args:
+        - -exc
+        - sleep 4h
 
 - name: cleanup-env
   serial: true
@@ -774,60 +707,41 @@ jobs:
       - get: manual-cleanup-trigger
         trigger: true
         passed: [ manual-cleanup-trigger ]
-      - get: lock-check-timer
-        trigger: true
-        passed: [ check-work-locks ]
       - get: windowsfs-online-release-env-lock
-        passed: [ check-work-locks ]
-      - get: windowsfs-online-release-lock-prepare-env
-        passed: [ check-work-locks ]
-      - get: windowsfs-online-release-lock-export-release
-        passed: [ check-work-locks ]
-      - get: windowsfs-online-release-lock-wats
-        passed: [ check-work-locks ]
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-windowsfs-online-env
-          DEPLOYMENT_NAME: cf
-  - try:
-      do:
-      - task: stop-bbl-envs
-        image: image
-        file: ci/shared/tasks/stop-gcp-instance/linux.yml
-        input_mapping:
-          bbl-state: env
-        params:
-          SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
-          BBL_STATE_DIR: bbl-windowsfs-online-env
-          SUSPEND: false
-  - try:
-      do:
-      - put: windowsfs-online-release-env-lock
-        params:
-          release: windowsfs-online-release-env-lock
-
-- name: release-work-locks
-  plan:
-  - get: windowsfs-online-release-lock-prepare-env
-  - get: windowsfs-online-release-lock-export-release
-  - get: windowsfs-online-release-lock-wats
-  - get: manual-lock-release-trigger
-    trigger: true
-    passed: [ manual-lock-release-trigger ]
-  - try: *release-work-locks
+        passed: [ wait-for-acceptance-tests ]
+        trigger: true
+  - try: *delete-cf-deployment
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-windowsfs-online-env
+      SUSPEND: false
+  - try: *release-env-lock
 
 - name: release-env-lock
   plan:
   - get: windowsfs-online-release-env-lock
-  - get: manual-lock-release-trigger
-    trigger: true
-    passed: [ manual-lock-release-trigger ]
-  - try:
-      do:
-      - put: windowsfs-online-release-env-lock
-        params:
-          release: windowsfs-online-release-env-lock
+  - try: *release-env-lock
+
+- name: force-cleanup-env
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: env
+      - get: image
+  - try: *delete-cf-deployment
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-windowsfs-online-env
+      SUSPEND: false

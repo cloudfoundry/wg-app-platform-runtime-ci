@@ -43,7 +43,7 @@ function run() {
   if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/config.yml" ]]; then
     cp -r "${CI_DIR}/${PARENT_TEMPLATE_DIR}/github/config.yml" ".github/ISSUE_TEMPLATE/"
   elif [[ -f "${CI_CONFIG_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/config.yml" ]]; then
-    cp -r "${CI_CONFIG_cDIR}/${PARENT_TEMPLATE_DIR}/github/config.yml" ".github/ISSUE_TEMPLATE/"
+    cp -r "${CI_CONFIG_DIR}/${PARENT_TEMPLATE_DIR}/github/config.yml" ".github/ISSUE_TEMPLATE/"
   else
     cp -r "${CI_DIR}/shared/github/config.yml" ".github/ISSUE_TEMPLATE/"
   fi

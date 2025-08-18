@@ -11,7 +11,9 @@ source "$THIS_FILE_DIR/../../../shared/helpers/bosh-helpers.bash"
 unset THIS_FILE_DIR
 
 function run(){
+    pushd $DIR > /dev/null
     bosh_target
+    popd > /dev/null
     bosh upload-stemcell --fix  ${STEMCELL_URL}
 }
 

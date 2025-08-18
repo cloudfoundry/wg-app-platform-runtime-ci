@@ -3,12 +3,19 @@ platform: linux
 
 inputs:
 - name: ci
+- name: input-01
+  optional: true
+- name: input-02
+  optional: true
+- name: input-03
+  optional: true
 
 outputs:
 - name: built-config-file
 
 params:
-  CONFIG:
+  EVAL_YAML_CONFIG:
+  ENVS:
 
 run:
   path: ci/shared/tasks/build-config-file/task.bash

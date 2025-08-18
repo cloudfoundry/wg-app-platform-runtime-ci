@@ -3,5 +3,5 @@
   path: /instance_groups/name=diego-cell/jobs/name=silk-cni/properties/outbound_connections?
   value:
     limit: true
-    burst: 60
+    burst: 30
     rate_per_sec: 2

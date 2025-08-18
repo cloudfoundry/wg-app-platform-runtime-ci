@@ -11,6 +11,7 @@ outputs:
 params:
   BBL_STATE_DIR:
   CONFIGS:
+  DIR: .
   ENVS:
   WITH_ISOSEG: false
   WITH_DYNAMIC_ASG: false

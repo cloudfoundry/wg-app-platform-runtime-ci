@@ -5,7 +5,6 @@
 groups:
 - name: release
   jobs:
-  - release-time-gate
   - manual-release-trigger
   - template-tests
   - unit-and-integration-tests
@@ -34,11 +33,11 @@ groups:
 - name: cleanup
   jobs:
   - cleanup-time-gate
-  - manual-lock-release-trigger
+  - wait-for-env-lock-claim
+  - wait-for-acceptance-tests
   - manual-cleanup-trigger
-  - check-work-locks
   - cleanup-env
-  - release-work-locks
+  - force-cleanup-env
   - release-env-lock
 
 - name: version
@@ -55,8 +54,15 @@ resource_types:
 - name: slack-notification
   type: docker-image
   source:
-    repository: cfcommunity/slack-notification-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cfcommunity/slack-notification-resource
+    username: _json_key
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
+
+- name: fork-pool
+  type: registry-image
+  source:
+    repository: ebroberson/pool-resource
 
 resources:
 #! REPOS
@@ -84,13 +90,11 @@ resources:
     ignore_paths:
     - .github/
     - .gitignore
-    - .final_builds/
     - CODEOWNERS
     - LICENSE
     - NOTICE
     - README.md
     - docs/
-    - releases/
 
 #! repo-synced is a write-only resource to prevent readme
 #! changes from triggering pipeline runs. See the description of "ignore_path"
@@ -250,24 +254,20 @@ resources:
   type: time
   icon: clock
   source:
+    initial_version: true
     interval: '168h'
     start: 01:00
     stop: 01:59
     days:
       - Monday
 
-- name: lock-check-timer
+- name: cleanup-timer
   type: time
   icon: clock
   source:
     interval: '1h'
 
 - name: manual-release-trigger
-  type: time
-  source:
-    interval: '1m'
-
-- name: manual-lock-release-trigger
   type: time
   source:
     interval: '1m'
@@ -339,7 +339,7 @@ resources:
     driver: gcs
 
 - name: routing-release-env-lock
-  type: pool
+  type: fork-pool
   icon: cloud-lock
   source:
     branch: main
@@ -348,83 +348,13 @@ resources:
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
     paths: routing-release-env-lock 
 
-- name: routing-release-lock-cats
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: routing-release-lock-cats
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: routing-release-lock-cats
-
-- name: routing-release-lock-rats
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: routing-release-lock-rats
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: routing-release-lock-rats
-
-- name: routing-release-lock-drats
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: routing-release-lock-drats
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: routing-release-lock-drats
-
-- name: routing-release-lock-cfsmoke
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: routing-release-lock-cfsmoke
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: routing-release-lock-cfsmoke
-
-- name: routing-release-lock-cipher-suite
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: routing-release-lock-cipher-suite
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: routing-release-lock-cipher-suite
-
-- name: routing-release-lock-prepare-env
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: routing-release-lock-prepare-env
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: routing-release-lock-prepare-env
-
-- name: routing-release-lock-export-release
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: routing-release-lock-export-release
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: routing-release-lock-export-release
-
 - name: image
   type: registry-image
   icon: docker
   source:                                        
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: 'latest'
 
 - name: jq
@@ -446,10 +376,6 @@ jobs:
 - name: manual-release-trigger
   plan:
   - put: manual-release-trigger
-
-- name: manual-lock-release-trigger
-  plan:
-  - put: manual-lock-release-trigger
 
 - name: manual-cleanup-trigger
   plan:
@@ -726,11 +652,11 @@ jobs:
     file: ci/shared/tasks/build-binaries/linux.yml
     vars:
       image_repository: cloudfoundry/tas-runtime-mysql-5.7 #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag_mysql_5_7))
     params:
       DEFAULT_PARAMS: "ci/routing-release/default-params/build-binaries/linux.yml"
-#@ for package in helpers.packages_with_configure_db(data.values.internal_repos):
+#@ for package in helpers.packages_with_configure_db(data.values.tests_that_require_db):
   - in_parallel:
 #@ for db in data.values.db_flavors:
     - task: #@ "{}-{}".format(package.name,db.image)
@@ -738,7 +664,7 @@ jobs:
       attempts: 3
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -747,13 +673,13 @@ jobs:
 #@ end
 #@ end
   - in_parallel:
-#@ for package in helpers.packages_without_configure_db(data.values.internal_repos):
+#@ for package in helpers.packages_without_configure_db(data.values.tests_that_require_db):
     - task: #@ package.name
       file: ci/shared/tasks/run-bin-test/linux.yml
       attempts: 3
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -772,42 +698,15 @@ jobs:
     file: ci/shared/tasks/lint-repo/linux.yml
     image: image
 
-- name: release-time-gate
-  plan:
-  - get: repo
-    passed:
-      - unit-and-integration-tests
-      - template-tests
-      - lint-repo
-  - get: env-weekly
-    trigger: true
 
 - name: claim-env
   serial: true
-  on_abort: &release-work-locks
+  on_abort: &release-env-lock
     do:
-      - put: routing-release-lock-prepare-env
+      - put: routing-release-env-lock
         params:
-          release: routing-release-lock-prepare-env
-      - put: routing-release-lock-cats
-        params:
-          release: routing-release-lock-cats
-      - put: routing-release-lock-rats
-        params:
-          release: routing-release-lock-rats
-      - put: routing-release-lock-drats
-        params:
-          release: routing-release-lock-drats
-      - put: routing-release-lock-cfsmoke
-        params:
-          release: routing-release-lock-cfsmoke
-      - put: routing-release-lock-cipher-suite
-        params:
-          release: routing-release-lock-cipher-suite
-      - put: routing-release-lock-export-release
-        params:
-          release: routing-release-lock-export-release
-  on_failure: *release-work-locks
+          release: routing-release-env-lock
+  on_failure: *release-env-lock
   plan:
   - in_parallel:
     - get: manual-release-trigger
@@ -815,42 +714,18 @@ jobs:
       passed: [ manual-release-trigger ]
     - get: ci
     - get: repo
+      passed:
+        - unit-and-integration-tests
+        - template-tests
+        - lint-repo
+    - get: env-weekly
       trigger: true
-      passed: [ release-time-gate ]
     - get: image
     - get: env
-  - get: routing-release-env-lock
-  - get: routing-release-lock-prepare-env
-  - get: routing-release-lock-cats
-  - get: routing-release-lock-rats
-  - get: routing-release-lock-drats
-  - get: routing-release-lock-cfsmoke
-  - get: routing-release-lock-cipher-suite
-  - get: routing-release-lock-export-release
+    - get: routing-release-env-lock
   - put: routing-release-env-lock
     params:
       claim: routing-release-env-lock
-  - put: routing-release-lock-prepare-env
-    params:
-      claim: routing-release-lock-prepare-env
-  - put: routing-release-lock-cats
-    params:
-      claim: routing-release-lock-cats
-  - put: routing-release-lock-rats
-    params:
-      claim: routing-release-lock-rats
-  - put: routing-release-lock-drats
-    params:
-      claim: routing-release-lock-drats
-  - put: routing-release-lock-cfsmoke
-    params:
-      claim: routing-release-lock-cfsmoke
-  - put: routing-release-lock-cipher-suite
-    params:
-      claim: routing-release-lock-cipher-suite
-  - put: routing-release-lock-export-release
-    params:
-      claim: routing-release-lock-export-release
   - task: start-bbl-envs
     image: image
     file: ci/shared/tasks/start-gcp-instance/linux.yml
@@ -868,14 +743,13 @@ jobs:
 
 - name: prepare-env
   serial: true
-  ensure:
-    put: routing-release-lock-prepare-env
-    params:
-      release: routing-release-lock-prepare-env
-  on_abort: *release-work-locks
-  on_failure: *release-work-locks
+  on_abort: *release-env-lock
+  on_failure: *release-env-lock
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ claim-env ]
     - get: ci
     - get: repo
       trigger: true
@@ -888,21 +762,7 @@ jobs:
       trigger: true
     - get: routing-release-env-lock
       passed: [claim-env]
-    - get: routing-release-lock-prepare-env
-      passed: [claim-env]
-    - get: routing-release-lock-cats
-      passed: [claim-env]
-    - get: routing-release-lock-rats
-      passed: [claim-env]
-    - get: routing-release-lock-drats
-      passed: [claim-env]
-    - get: routing-release-lock-cfsmoke
-      passed: [claim-env]
-    - get: routing-release-lock-cipher-suite
-      passed: [claim-env]
-    - get: routing-release-lock-export-release
-      passed: [claim-env]
-  - try:
+  - try: &delete-cf-deployment
       do:
         - task: bosh-deld
           image: image
@@ -911,6 +771,7 @@ jobs:
             BBL_STATE_DIR: bbl-routing-env
             DEPLOYMENT_NAME: cf
   - task: prepare-cf-deployment-env
+    attempts: 10
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
     params:
@@ -1005,14 +866,13 @@ jobs:
       ENABLED_FEATURE_FLAGS: diego_docker service_instance_sharing
 
 - name: run-cats
-  ensure:
-    put: routing-release-lock-cats
-    params:
-      release: routing-release-lock-cats
   serial: true
   serial_groups: [acceptance]
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -1024,8 +884,6 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests
     - get: cf-deployment
-    - get: routing-release-lock-cats
-      passed: [prepare-env]
   - task: create-cats-config
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
@@ -1045,12 +903,11 @@ jobs:
 - name: run-drats
   serial: true
   serial_groups: [acceptance]
-  ensure:
-    put: routing-release-lock-drats
-    params:
-      release: routing-release-lock-drats
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -1062,8 +919,6 @@ jobs:
     - get: bbr-binary-release
     - get: disaster-recovery-acceptance-tests
     - get: cf-deployment
-    - get: routing-release-lock-drats
-      passed: [prepare-env]
   - task: create-drats-config
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
@@ -1082,12 +937,11 @@ jobs:
 - name: run-rats
   serial: true
   serial_groups: [acceptance]
-  ensure:
-    put: routing-release-lock-rats
-    params:
-      release: routing-release-lock-rats
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -1100,8 +954,6 @@ jobs:
       resource: golang-release-latest
     - get: cf-deployment
     - get: cf-deployment-concourse-tasks
-    - get: routing-release-lock-rats
-      passed: [prepare-env]
   - task: determine-image-tag
     image: image
     file: ci/shared/tasks/determine-image-tag/linux.yml
@@ -1152,7 +1004,7 @@ jobs:
       DEFAULT_PARAMS: "ci/routing-release/default-params/build-binaries/linux.yml"
     vars:
       image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
   - task: update-cf-with-tls-support-on-tcp-router-and-mtls-only
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
@@ -1178,7 +1030,7 @@ jobs:
       FUNCTIONS: "ci/routing-release/helpers/configure-binaries.bash"
     vars:
       image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
   - task: update-cf-with-no-tls-tcp-route-support
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
@@ -1204,7 +1056,7 @@ jobs:
       FUNCTIONS: "ci/routing-release/helpers/configure-binaries.bash"
     vars:
       image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
   - task: reset-to-original-cf-deployment-settings
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
@@ -1223,12 +1075,11 @@ jobs:
 - name: run-cfsmoke
   serial: true
   serial_groups: [acceptance]
-  ensure:
-    put: routing-release-lock-cfsmoke
-    params:
-      release: routing-release-lock-cfsmoke
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -1239,8 +1090,6 @@ jobs:
       trigger: true
     - get: cf-deployment-concourse-tasks
     - get: cf-smoke-tests-release
-    - get: routing-release-lock-cfsmoke
-      passed: [prepare-env]
   - task: create-cfsmoke-config
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
     image: image
@@ -1260,12 +1109,11 @@ jobs:
 - name: export-release
   serial: true
   serial_groups: [acceptance]
-  ensure:
-    put: routing-release-lock-export-release
-    params:
-      release: routing-release-lock-export-release
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -1275,8 +1123,6 @@ jobs:
       passed: [prepare-env]
       trigger: true
     - get: cf-deployment-concourse-tasks
-    - get: routing-release-lock-export-release
-      passed: [prepare-env]
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
@@ -1284,12 +1130,11 @@ jobs:
       BBL_STATE_DIR: bbl-routing-env
 
 - name: run-cipher-suite
-  ensure:
-    put: routing-release-lock-cipher-suite
-    params:
-      release: routing-release-lock-cipher-suite
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -1302,9 +1147,7 @@ jobs:
     - get: cipher-test-release
       trigger: true
     - get: gcp-stemcell-bionic
-    - get: routing-release-lock-cipher-suite
-      passed: [prepare-env]
-  - try:
+  - try: &delete-cipher-deployment
       do:
         - task: bosh-deld
           image: image
@@ -1341,6 +1184,15 @@ jobs:
   plan:
     - in_parallel:
         steps:
+        - get: manual-release-trigger
+          trigger: true
+          passed:
+            - run-cats
+            - run-rats
+            - run-drats
+            - run-cfsmoke
+            - run-cipher-suite
+            - export-release
         - get: ci
         - get: repo
           passed:
@@ -1456,58 +1308,37 @@ jobs:
 
 - name: cleanup-time-gate
   plan:
-  - get: lock-check-timer
+  - get: cleanup-timer
     trigger: true
 
-- name: check-work-locks
+- name: wait-for-env-lock-claim
   serial: true
   plan:
-  - get: lock-check-timer
+  - get: cleanup-timer
     trigger: true
     passed: [ cleanup-time-gate ]
   - get: routing-release-env-lock
-  - get: routing-release-lock-prepare-env
-  - get: routing-release-lock-cats
-  - get: routing-release-lock-rats
-  - get: routing-release-lock-drats
-  - get: routing-release-lock-cfsmoke
-  - get: routing-release-lock-cipher-suite
-  - get: routing-release-lock-export-release
-  - put: check-lock-prepare-env
-    resource: routing-release-lock-prepare-env
+  - put: check-unclaimed-env-lock
+    resource: routing-release-env-lock
     params:
-      check: routing-release-lock-prepare-env
-      retry-delay: 10m
-  - put: check-lock-cats
-    resource: routing-release-lock-cats
-    params:
-      check: routing-release-lock-cats
-      retry-delay: 10m
-  - put: check-lock-rats
-    resource: routing-release-lock-rats
-    params:
-      check: routing-release-lock-rats
-      retry-delay: 10m
-  - put: check-lock-drats
-    resource: routing-release-lock-drats
-    params:
-      check: routing-release-lock-drats
-      retry-delay: 10m
-  - put: check-lock-cfsmoke
-    resource: routing-release-lock-cfsmoke
-    params:
-      check: routing-release-lock-cfsmoke
-      retry-delay: 10m
-  - put: check-lock-cipher-suite
-    resource: routing-release-lock-cipher-suite
-    params:
-      check: routing-release-lock-cipher-suite
-      retry-delay: 10m
-  - put: check-lock-export-release
-    resource: routing-release-lock-export-release
-    params:
-      check: routing-release-lock-export-release
-      retry-delay: 10m
+      check_unclaimed: routing-release-env-lock
+      retry-delay: 60m
+
+- name: wait-for-acceptance-tests
+  plan:
+  - get: image
+  - get: routing-release-env-lock
+    passed: [ wait-for-env-lock-claim ]
+    trigger: true
+  - task: sleep
+    image: image
+    config:
+      platform: linux
+      run: 
+        path: sh
+        args:
+        - -exc
+        - sleep 5h
 
 - name: cleanup-env
   serial: true
@@ -1520,83 +1351,47 @@ jobs:
       - get: manual-cleanup-trigger
         trigger: true
         passed: [ manual-cleanup-trigger ]
-      - get: lock-check-timer
-        trigger: true
-        passed: [ check-work-locks ]
       - get: routing-release-env-lock
-        passed: [ check-work-locks ]
-      - get: routing-release-lock-prepare-env
-        passed: [ check-work-locks ]
-      - get: routing-release-lock-cats
-        passed: [ check-work-locks ]
-      - get: routing-release-lock-rats
-        passed: [ check-work-locks ]
-      - get: routing-release-lock-drats
-        passed: [ check-work-locks ]
-      - get: routing-release-lock-cfsmoke
-        passed: [ check-work-locks ]
-      - get: routing-release-lock-cipher-suite
-        passed: [ check-work-locks ]
-      - get: routing-release-lock-export-release
-        passed: [ check-work-locks ]
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-routing-env
-          DEPLOYMENT_NAME: cf
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-routing-env
-          DEPLOYMENT_NAME: cipher
-  - try:
-      do:
-      - task: stop-bbl-envs
-        image: image
-        file: ci/shared/tasks/stop-gcp-instance/linux.yml
-        input_mapping:
-          bbl-state: env
-        params:
-          SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
-          BBL_STATE_DIR: bbl-routing-env
-          SUSPEND: false
-  - try:
-      do:
-      - put: routing-release-env-lock
-        params:
-          release: routing-release-env-lock 
-
-- name: release-work-locks
-  plan:
-  - get: routing-release-lock-prepare-env
-  - get: routing-release-lock-cats
-  - get: routing-release-lock-rats
-  - get: routing-release-lock-drats
-  - get: routing-release-lock-cfsmoke
-  - get: routing-release-lock-cipher-suite
-  - get: routing-release-lock-export-release
-  - get: manual-lock-release-trigger
-    trigger: true
-    passed: [ manual-lock-release-trigger ]
-  - try: *release-work-locks
+        passed: [ wait-for-acceptance-tests ]
+        trigger: true
+  - try: *delete-cf-deployment
+  - try: *delete-cipher-deployment
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-routing-env
+      SUSPEND: false
+  - try: *release-env-lock
 
 - name: release-env-lock
   plan:
   - get: routing-release-env-lock
-  - get: manual-lock-release-trigger
-    trigger: true
-    passed: [ manual-lock-release-trigger ]
-  - try:
-      do:
-      - put: routing-release-env-lock
-        params:
-          release: routing-release-env-lock
+  - try: *release-env-lock
+
+- name: force-cleanup-env
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: env
+      - get: image
+  - try: *delete-cf-deployment
+  - try: *delete-cipher-deployment
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-routing-env
+      SUSPEND: false
+
 
 #! versioning
 - name: patch-bump

@@ -61,7 +61,6 @@ function cf_create_tcp_domain(){
 
 function cf_command() {
     local cmd=("$@")
-    debug "Running CF Command with Args: ${cmd[*]}"
     cf "${cmd[@]}"
 }
 

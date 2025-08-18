@@ -6,7 +6,6 @@
 groups:
 - name: release
   jobs:
-  - release-time-gate
   - manual-release-trigger
   - template-tests
   - unit-and-integration-tests
@@ -35,11 +34,11 @@ groups:
 - name: cleanup
   jobs:
   - cleanup-time-gate
-  - manual-lock-release-trigger
+  - wait-for-env-lock-claim
+  - wait-for-acceptance-tests
   - manual-cleanup-trigger
-  - check-work-locks
   - cleanup-env
-  - release-work-locks
+  - force-cleanup-env
   - release-env-lock
 
 - name: version
@@ -54,8 +53,15 @@ resource_types:
 - name: slack-notification
   type: docker-image
   source:
-    repository: cfcommunity/slack-notification-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cfcommunity/slack-notification-resource
+    username: _json_key
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
+
+- name: fork-pool
+  type: registry-image
+  source:
+    repository: ebroberson/pool-resource
 
 #! Define-Resources
 resources:
@@ -76,13 +82,11 @@ resources:
     ignore_paths:
     - .github/
     - .gitignore
-    - .final_builds/
     - CODEOWNERS
     - LICENSE
     - NOTICE
     - README.md
     - docs/
-    - releases/
 
 - name: silk-repo
   type: git
@@ -94,13 +98,11 @@ resources:
     ignore_paths:
     - .github/
     - .gitignore
-    - .final_builds/
     - CODEOWNERS
     - LICENSE
     - NOTICE
     - README.md
     - docs/
-    - releases/
 
 - name: cf-networking-release-branch
   type: git
@@ -236,18 +238,13 @@ resources:
     days:
       - Monday
 
-- name: lock-check-timer
+- name: cleanup-timer
   type: time
   icon: clock
   source:
     interval: '1h'
 
 - name: manual-release-trigger
-  type: time
-  source:
-    interval: 1m
-
-- name: manual-lock-release-trigger
   type: time
   source:
     interval: 1m
@@ -325,82 +322,23 @@ resources:
     json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
 - name: cf-networking-release-env-lock
-  type: pool
+  type: fork-pool
   icon: cloud-lock
   source:
     branch: main
     pool: cf-networking-release-env-lock
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-
-- name: cf-networking-release-lock-cats
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: cf-networking-release-lock-cats
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: cf-networking-release-lock-cats
-
-- name: cf-networking-release-lock-cf-networking-acceptance
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: cf-networking-release-lock-cf-networking-acceptance
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: cf-networking-release-lock-cf-networking-acceptance
-
-- name: cf-networking-release-lock-export-release
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: cf-networking-release-lock-export-release
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: cf-networking-release-lock-export-release
-
-- name: cf-networking-release-lock-prepare-env
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: cf-networking-release-lock-prepare-env
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: cf-networking-release-lock-prepare-env
-
-- name: cf-networking-release-lock-service-discovery-acceptance
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: cf-networking-release-lock-service-discovery-acceptance
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: cf-networking-release-lock-service-discovery-acceptance
-
-- name: cf-networking-release-lock-service-discovery-performance
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: cf-networking-release-lock-service-discovery-performance
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: cf-networking-release-lock-service-discovery-performance
+    paths: cf-networking-release-env-lock
 
 - name: image
   type: registry-image
   icon: docker
   source:                                        
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     tag: 'latest'
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
 
 
 #! Define-Jobs
@@ -408,10 +346,6 @@ jobs:
 - name: manual-release-trigger
   plan:
   - put: manual-release-trigger
-
-- name: manual-lock-release-trigger
-  plan:
-  - put: manual-lock-release-trigger
 
 - name: manual-cleanup-trigger
   plan:
@@ -741,7 +675,7 @@ jobs:
       attempts: 3
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -756,7 +690,7 @@ jobs:
       privileged: #@ helpers.privileged(package)
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
       attempts: 3
       params:
@@ -786,86 +720,40 @@ jobs:
     input_mapping:
       repo: silk-repo
 
-- name: release-time-gate
-  plan:
-  - get: cf-networking-repo
-    passed:
-      - template-tests
-      - unit-and-integration-tests
-      - lint-repo
-  - get: silk-repo
-    passed:
-      - template-tests
-      - unit-and-integration-tests
-      - lint-repo
-  - get: env-weekly
-    trigger: true
-
 - name: claim-env
   serial: true
-  on_abort: &release-work-locks
+  on_abort: &release-env-lock
     do:
-      - put: cf-networking-release-lock-prepare-env
+      - put: cf-networking-release-env-lock
         params:
-          release: cf-networking-release-lock-prepare-env
-      - put: cf-networking-release-lock-cats
-        params:
-          release: cf-networking-release-lock-cats
-      - put: cf-networking-release-lock-cf-networking-acceptance
-        params:
-          release: cf-networking-release-lock-cf-networking-acceptance
-      - put: cf-networking-release-lock-export-release
-        params:
-          release: cf-networking-release-lock-export-release
-      - put: cf-networking-release-lock-service-discovery-acceptance
-        params:
-          release: cf-networking-release-lock-service-discovery-acceptance
-      - put: cf-networking-release-lock-service-discovery-performance
-        params:
-          release: cf-networking-release-lock-service-discovery-performance
-  on_failure: *release-work-locks
+          release: cf-networking-release-env-lock
+  on_failure: *release-env-lock
   plan:
   - in_parallel:
     - get: manual-release-trigger
       trigger: true
       passed: [ manual-release-trigger ]
+    - get: env-weekly
+      trigger: true
     - get: ci
     - get: cf-networking-repo
-      trigger: true
-      passed: [ release-time-gate ]
+      trigger: false
+      passed:
+        - template-tests
+        - unit-and-integration-tests
+        - lint-repo
     - get: silk-repo
-      trigger: true
-      passed: [ release-time-gate ]
+      trigger: false
+      passed:
+        - template-tests
+        - unit-and-integration-tests
+        - lint-repo
     - get: image
     - get: env
-  - get: cf-networking-release-env-lock
-  - get: cf-networking-release-lock-cats
-  - get: cf-networking-release-lock-cf-networking-acceptance
-  - get: cf-networking-release-lock-export-release
-  - get: cf-networking-release-lock-prepare-env
-  - get: cf-networking-release-lock-service-discovery-acceptance
-  - get: cf-networking-release-lock-service-discovery-performance
+    - get: cf-networking-release-env-lock
   - put: cf-networking-release-env-lock
     params:
       claim: cf-networking-release-env-lock
-  - put: cf-networking-release-lock-cats
-    params:
-      claim: cf-networking-release-lock-cats
-  - put: cf-networking-release-lock-cf-networking-acceptance
-    params:
-      claim: cf-networking-release-lock-cf-networking-acceptance
-  - put: cf-networking-release-lock-export-release
-    params:
-      claim: cf-networking-release-lock-export-release
-  - put: cf-networking-release-lock-prepare-env
-    params:
-      claim: cf-networking-release-lock-prepare-env
-  - put: cf-networking-release-lock-service-discovery-acceptance
-    params:
-      claim: cf-networking-release-lock-service-discovery-acceptance
-  - put: cf-networking-release-lock-service-discovery-performance
-    params:
-      claim: cf-networking-release-lock-service-discovery-performance
   - task: start-bbl-envs
     image: image
     file: ci/shared/tasks/start-gcp-instance/linux.yml
@@ -883,14 +771,13 @@ jobs:
 
 - name: prepare-env
   serial: true
-  ensure:
-    put: cf-networking-release-lock-prepare-env
-    params:
-      release: cf-networking-release-lock-prepare-env
-  on_abort: *release-work-locks
-  on_failure: *release-work-locks
+  on_abort: *release-env-lock
+  on_failure: *release-env-lock
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ claim-env ]
     - get: ci
     - get: silk-repo
       passed: [claim-env]
@@ -906,19 +793,7 @@ jobs:
       trigger: true
     - get: cf-networking-release-env-lock
       passed: [ claim-env ]
-    - get: cf-networking-release-lock-cats
-      passed: [ claim-env ]
-    - get: cf-networking-release-lock-cf-networking-acceptance
-      passed: [ claim-env ]
-    - get: cf-networking-release-lock-export-release
-      passed: [ claim-env ]
-    - get: cf-networking-release-lock-prepare-env
-      passed: [ claim-env ]
-    - get: cf-networking-release-lock-service-discovery-acceptance
-      passed: [ claim-env ]
-    - get: cf-networking-release-lock-service-discovery-performance
-      passed: [ claim-env ]
-  - try:
+  - try: &delete-cf-deployment
       do:
         - task: bosh-deld
           image: image
@@ -927,6 +802,7 @@ jobs:
             BBL_STATE_DIR: bbl-cfnetworking-env
             DEPLOYMENT_NAME: cf
   - task: prepare-cf-deployment-env
+    attempts: 10
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
     input_mapping:
@@ -1041,12 +917,11 @@ jobs:
 - name: run-cats
   serial: true
   serial_groups: [acceptance]
-  ensure:
-    put: cf-networking-release-lock-cats
-    params:
-      release: cf-networking-release-lock-cats
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: silk-repo
       passed: [prepare-env]
@@ -1061,8 +936,6 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests
     - get: cf-deployment
-    - get: cf-networking-release-lock-cats
-      passed: [ prepare-env ]
   - task: create-config
     image: image
     file: ci/shared/tasks/build-acceptance-test-configs/linux.yml
@@ -1083,12 +956,11 @@ jobs:
 - name: run-service-discovery-acceptance-tests
   serial: true
   serial_groups: [acceptance]
-  ensure:
-    put: cf-networking-release-lock-service-discovery-acceptance
-    params:
-      release: cf-networking-release-lock-service-discovery-acceptance
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: silk-repo
       passed: [prepare-env]
@@ -1105,8 +977,6 @@ jobs:
     - get: cf-deployment
     - get: package-release
       resource: golang-release-latest
-    - get: cf-networking-release-lock-service-discovery-acceptance
-      passed: [ prepare-env ]
   - task: determine-image-tag
     image: image
     file: ci/shared/tasks/determine-image-tag/linux.yml
@@ -1126,7 +996,7 @@ jobs:
     file: ci/shared/tasks/run-bin-test/linux.yml
     vars:
       image_repository: cloudfoundry/tas-runtime-build
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
     attempts: 2
     input_mapping:
@@ -1143,12 +1013,11 @@ jobs:
 - name: run-cf-networking-acceptance-tests
   serial: true
   serial_groups: [acceptance]
-  ensure:
-    put: cf-networking-release-lock-cf-networking-acceptance
-    params:
-      release: cf-networking-release-lock-cf-networking-acceptance
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: silk-repo
       passed: [prepare-env]
@@ -1165,8 +1034,6 @@ jobs:
     - get: cf-deployment
     - get: package-release
       resource: golang-release-latest
-    - get: cf-networking-release-lock-cf-networking-acceptance
-      passed: [ prepare-env ]
   - task: determine-image-tag
     image: image
     file: ci/shared/tasks/determine-image-tag/linux.yml
@@ -1186,7 +1053,7 @@ jobs:
     file: ci/shared/tasks/run-bin-test/linux.yml
     vars:
       image_repository: cloudfoundry/tas-runtime-build
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
     attempts: 10
     input_mapping:
@@ -1197,16 +1064,15 @@ jobs:
         CONFIG=$PWD/input-01/cf-networking-acceptance-tests.json
         APPS_DIR=$PWD/repo/src/example-apps
       DIR: src/code.cloudfoundry.org/test/acceptance
-      FLAGS: "--procs=1" #!TODO: acceptance tests can't run in parallel, overwrite default ginkgo flag to run in serial
+      FLAGS: "--trace --keep-going --race --randomize-all --timeout 1h  -r --fail-on-pending --nodes=1 --flake-attempts=5" #!TODO: acceptance tests can't run in parallel, overwrite default ginkgo flag to run in serial
 
 - name: run-service-discovery-performance-tests
   serial: true
-  ensure:
-    put: cf-networking-release-lock-service-discovery-performance
-    params:
-      release: cf-networking-release-lock-service-discovery-performance
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: cf-networking-repo
       passed: [prepare-env]
       trigger: true
@@ -1219,9 +1085,7 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: ci
     - get: image
-    - get: cf-networking-release-lock-service-discovery-performance
-      passed: [ prepare-env ]
-  - try:
+  - try: &delete-sdpt-deployment
       do:
         - task: bosh-deld
           image: image
@@ -1255,12 +1119,11 @@ jobs:
 
 - name: export-release
   serial: true
-  ensure:
-    put: cf-networking-release-lock-export-release
-    params:
-      release: cf-networking-release-lock-export-release
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: silk-repo
       passed: [prepare-env]
@@ -1273,8 +1136,6 @@ jobs:
       passed: [prepare-env]
       trigger: true
     - get: cf-deployment-concourse-tasks
-    - get: cf-networking-release-lock-export-release
-      passed: [ prepare-env ]
   - task: cf-networking-export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
@@ -1298,6 +1159,14 @@ jobs:
   plan:
     - in_parallel:
         steps:
+        - get: manual-release-trigger
+          trigger: true
+          passed:
+            - run-cats
+            - run-cf-networking-acceptance-tests
+            - run-service-discovery-acceptance-tests
+            - run-service-discovery-performance-tests
+            - export-release
         - get: ci
         - get: silk-repo
           passed:
@@ -1489,52 +1358,37 @@ jobs:
 
 - name: cleanup-time-gate
   plan:
-  - get: lock-check-timer
+  - get: cleanup-timer
     trigger: true
 
-- name: check-work-locks
+- name: wait-for-env-lock-claim
   serial: true
   plan:
-  - get: lock-check-timer
+  - get: cleanup-timer
     trigger: true
     passed: [ cleanup-time-gate ]
   - get: cf-networking-release-env-lock
-  - get: cf-networking-release-lock-cats
-  - get: cf-networking-release-lock-cf-networking-acceptance
-  - get: cf-networking-release-lock-export-release
-  - get: cf-networking-release-lock-prepare-env
-  - get: cf-networking-release-lock-service-discovery-acceptance
-  - get: cf-networking-release-lock-service-discovery-performance
-  - put: check-lock-prepare-env
-    resource: cf-networking-release-lock-prepare-env
+  - put: check-unclaimed-env-lock
+    resource: cf-networking-release-env-lock
     params:
-      check: cf-networking-release-lock-prepare-env
-      retry-delay: 10m
-  - put: check-lock-cats
-    resource: cf-networking-release-lock-cats
-    params:
-      check: cf-networking-release-lock-cats
-      retry-delay: 10m
-  - put: check-lock-cf-networking-acceptance
-    resource: cf-networking-release-lock-cf-networking-acceptance
-    params:
-      check: cf-networking-release-lock-cf-networking-acceptance
-      retry-delay: 10m
-  - put: check-lock-export-release
-    resource: cf-networking-release-lock-export-release
-    params:
-      check: cf-networking-release-lock-export-release
-      retry-delay: 10m
-  - put: check-lock-service-discovery-acceptance
-    resource: cf-networking-release-lock-service-discovery-acceptance
-    params:
-      check: cf-networking-release-lock-service-discovery-acceptance
-      retry-delay: 10m
-  - put: check-lock-service-discovery-performance
-    resource: cf-networking-release-lock-service-discovery-performance
-    params:
-      check: cf-networking-release-lock-service-discovery-performance
-      retry-delay: 10m
+      check_unclaimed: cf-networking-release-env-lock
+      retry-delay: 60m
+
+- name: wait-for-acceptance-tests
+  plan:
+  - get: image
+  - get: cf-networking-release-env-lock
+    passed: [ wait-for-env-lock-claim ]
+    trigger: true
+  - task: sleep
+    image: image
+    config:
+      platform: linux
+      run: 
+        path: sh
+        args:
+        - -exc
+        - sleep 4h
 
 - name: cleanup-env
   serial: true
@@ -1547,79 +1401,46 @@ jobs:
       - get: manual-cleanup-trigger
         trigger: true
         passed: [ manual-cleanup-trigger ]
-      - get: lock-check-timer
-        trigger: true
-        passed: [ check-work-locks ]
       - get: cf-networking-release-env-lock
-        passed: [ check-work-locks ]
-      - get: cf-networking-release-lock-cats
-        passed: [ check-work-locks ]
-      - get: cf-networking-release-lock-cf-networking-acceptance
-        passed: [ check-work-locks ]
-      - get: cf-networking-release-lock-export-release
-        passed: [ check-work-locks ]
-      - get: cf-networking-release-lock-prepare-env
-        passed: [ check-work-locks ]
-      - get: cf-networking-release-lock-service-discovery-acceptance
-        passed: [ check-work-locks ]
-      - get: cf-networking-release-lock-service-discovery-performance
-        passed: [ check-work-locks ]
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-cfnetworking-env
-          DEPLOYMENT_NAME: cf
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-cfnetworking-env
-          DEPLOYMENT_NAME: service-discovery-performance-tests
-  - try:
-      do:
-      - task: stop-bbl-envs
-        image: image
-        file: ci/shared/tasks/stop-gcp-instance/linux.yml
-        input_mapping:
-          bbl-state: env
-        params:
-          SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
-          BBL_STATE_DIR: bbl-cfnetworking-env
-          SUSPEND: false
-  - try:
-      put: cf-networking-release-env-lock
-      params:
-        release: cf-networking-release-env-lock
-
-- name: release-work-locks
-  plan:
-  - get: cf-networking-release-lock-cats
-  - get: cf-networking-release-lock-cf-networking-acceptance
-  - get: cf-networking-release-lock-export-release
-  - get: cf-networking-release-lock-prepare-env
-  - get: cf-networking-release-lock-service-discovery-acceptance
-  - get: cf-networking-release-lock-service-discovery-performance
-  - get: manual-lock-release-trigger
-    trigger: true
-    passed: [ manual-lock-release-trigger ]
-  - try: *release-work-locks
+        passed: [ wait-for-acceptance-tests ]
+        trigger: true
+  - try: *delete-sdpt-deployment
+  - try: *delete-cf-deployment
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-cfnetworking-env
+      SUSPEND: false
+  - try: *release-env-lock
 
 - name: release-env-lock
   plan:
   - get: cf-networking-release-env-lock
-  - get: manual-lock-release-trigger
-    trigger: true
-    passed: [ manual-lock-release-trigger ]
-  - try:
-      put: cf-networking-release-env-lock
-      params:
-        release: cf-networking-release-env-lock
+  - try: *release-env-lock
 
+- name: force-cleanup-env
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: env
+      - get: image
+  - try: *delete-sdpt-deployment
+  - try: *delete-cf-deployment
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-cfnetworking-env
+      SUSPEND: false
 
 #! versioning
 - name: patch-bump

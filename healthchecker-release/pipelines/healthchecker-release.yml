@@ -5,7 +5,6 @@
 groups:
 - name: release
   jobs:
-  - release-time-gate
   - manual-release-trigger
   - unit-and-integration-tests
   - lint-repo
@@ -25,12 +24,13 @@ groups:
 - name: cleanup
   jobs:
   - cleanup-time-gate
-  - manual-lock-release-trigger
+  - wait-for-env-lock-claim
+  - wait-for-acceptance-tests
   - manual-cleanup-trigger
-  - check-work-locks
   - cleanup-env
-  - release-work-locks
+  - force-cleanup-env
   - release-env-lock
+  - restart-wait-for-env-lock-claim
 
 - name: version
   jobs:
@@ -44,11 +44,35 @@ resource_types:
 - name: slack-notification
   type: docker-image
   source:
-    repository: cfcommunity/slack-notification-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cfcommunity/slack-notification-resource
+    username: _json_key
+    password: ((gcp-arp-artifact-registry-service-account-token))
+    tag: latest
+
+- name: fork-pool
+  type: registry-image
+  source:
+    repository: ebroberson/pool-resource
+
+- name: fly
+  type: docker-image
+  source:
+    repository: troykinsella/concourse-fly-resource
     tag: latest
 
 #! Define-Resources
 resources:
+- name: fly
+  type: fly
+  source:
+    url: "https://ci.funtime.lol"
+    username: username
+    password: password
+    team: "wg-arp-networking"
+    target: "wg-arp-networking"
+    secure_output: true
+    debug: false
+
 - name: golang-release-latest
   type: git
   icon: tag-outline
@@ -66,13 +90,11 @@ resources:
     ignore_paths:
     - .github/
     - .gitignore
-    - .final_builds/
     - CODEOWNERS
     - LICENSE
     - NOTICE
     - README.md
     - docs/
-    - releases/
 
 #! repo-synced is a write-only resource to prevent readme
 #! changes from triggering pipeline runs. See the description of "ignore_path"
@@ -148,18 +170,13 @@ resources:
     days:
       - Friday
 
-- name: lock-check-timer
+- name: cleanup-timer
   type: time
   icon: clock
   source:
     interval: '1h'
 
 - name: manual-release-trigger
-  type: time
-  source:
-    interval: '1m'
-
-- name: manual-lock-release-trigger
   type: time
   source:
     interval: '1m'
@@ -220,7 +237,7 @@ resources:
     json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
 - name: healthchecker-release-env-lock
-  type: pool
+  type: fork-pool
   icon: cloud-lock
   source:
     branch: main
@@ -229,33 +246,13 @@ resources:
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
     paths: healthchecker-release-env-lock 
 
-- name: healthchecker-release-lock-prepare-env
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: healthchecker-release-lock-prepare-env
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: healthchecker-release-lock-prepare-env
-
-- name: healthchecker-release-lock-export-release
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: healthchecker-release-lock-export-release
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: healthchecker-release-lock-export-release
-
 - name: image
   type: registry-image
   icon: docker
   source:                                        
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: 'latest'
 
 - name: bpm
@@ -268,10 +265,6 @@ jobs:
 - name: manual-release-trigger
   plan:
   - put: manual-release-trigger
-
-- name: manual-lock-release-trigger
-  plan:
-  - put: manual-lock-release-trigger
 
 - name: manual-cleanup-trigger
   plan:
@@ -396,7 +389,7 @@ jobs:
       file: ci/shared/tasks/run-bin-test/linux.yml
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -414,26 +407,14 @@ jobs:
     file: ci/shared/tasks/lint-repo/linux.yml
     image: image
 
-- name: release-time-gate
-  plan:
-  - get: repo
-    passed:
-      - unit-and-integration-tests
-      - lint-repo
-  - get: env-weekly
-    trigger: true
-
 - name: claim-env
   serial: true
-  on_abort: &release-work-locks
+  on_abort: &release-env-lock
     do:
-      - put: healthchecker-release-lock-prepare-env
+      - put: healthchecker-release-env-lock
         params:
-          release: healthchecker-release-lock-prepare-env
-      - put: healthchecker-release-lock-export-release
-        params:
-          release: healthchecker-release-lock-export-release
-  on_failure: *release-work-locks
+          release: healthchecker-release-env-lock
+  on_failure: *release-env-lock
   plan:
   - in_parallel:
     - get: manual-release-trigger
@@ -441,22 +422,18 @@ jobs:
       passed: [ manual-release-trigger ]
     - get: ci
     - get: repo
+      trigger: false
+      passed:
+        - unit-and-integration-tests
+        - lint-repo
+    - get: env-weekly
       trigger: true
-      passed: [ release-time-gate ]
     - get: image
     - get: env
-  - get: healthchecker-release-env-lock
-  - get: healthchecker-release-lock-prepare-env
-  - get: healthchecker-release-lock-export-release
+    - get: healthchecker-release-env-lock
   - put: healthchecker-release-env-lock
     params:
       claim: healthchecker-release-env-lock
-  - put: healthchecker-release-lock-prepare-env
-    params:
-      claim: healthchecker-release-lock-prepare-env
-  - put: healthchecker-release-lock-export-release
-    params:
-      claim: healthchecker-release-lock-export-release
   - task: start-bbl-envs
     image: image
     file: ci/shared/tasks/start-gcp-instance/linux.yml
@@ -475,14 +452,13 @@ jobs:
 - name: prepare-env
   serial: true
   serial_groups: [acceptance]
-  ensure:
-    put: healthchecker-release-lock-prepare-env
-    params:
-      release: healthchecker-release-lock-prepare-env
-  on_abort: *release-work-locks
-  on_failure: *release-work-locks
+  on_abort: *release-env-lock
+  on_failure: *release-env-lock
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ claim-env ]
     - get: ci
     - get: repo
       passed: [claim-env]
@@ -492,7 +468,7 @@ jobs:
       passed: [claim-env]
       trigger: true
     - get: bpm
-  - try:
+  - try: &delete-ea-deployment
       do:
         - task: bosh-deld
           image: image
@@ -530,12 +506,11 @@ jobs:
 - name: export-release
   serial: true
   serial_groups: [acceptance]
-  ensure:
-    put: healthchecker-release-lock-export-release
-    params:
-      release: healthchecker-release-lock-export-release
   plan:
   - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
     - get: ci
     - get: repo
       passed: [prepare-env]
@@ -544,8 +519,6 @@ jobs:
     - get: env
       passed: [prepare-env]
       trigger: true
-    - get: healthchecker-release-lock-export-release
-      passed: [prepare-env]
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
@@ -561,6 +534,10 @@ jobs:
   plan:
     - in_parallel:
         steps:
+        - get: manual-release-trigger
+          trigger: true
+          passed:
+            - export-release
         - get: ci
         - get: repo
           passed:
@@ -665,28 +642,37 @@ jobs:
 
 - name: cleanup-time-gate
   plan:
-  - get: lock-check-timer
+  - get: cleanup-timer
     trigger: true
 
-- name: check-work-locks
+- name: wait-for-env-lock-claim
   serial: true
   plan:
-  - get: lock-check-timer
+  - get: cleanup-timer
     trigger: true
     passed: [ cleanup-time-gate ]
   - get: healthchecker-release-env-lock
-  - get: healthchecker-release-lock-prepare-env
-  - get: healthchecker-release-lock-export-release
-  - put: check-lock-prepare-env
-    resource: healthchecker-release-lock-prepare-env
+  - put: check-unclaimed-env-lock
+    resource: healthchecker-release-env-lock
     params:
-      check: healthchecker-release-lock-prepare-env
-      retry-delay: 10m
-  - put: check-lock-export-release
-    resource: healthchecker-release-lock-export-release
-    params:
-      check: healthchecker-release-lock-export-release
-      retry-delay: 10m
+      check_unclaimed: healthchecker-release-env-lock
+      retry-delay: 15m
+
+- name: wait-for-acceptance-tests
+  plan:
+  - get: image
+  - get: healthchecker-release-env-lock
+    passed: [ wait-for-env-lock-claim ]
+    trigger: true
+  - task: sleep
+    image: image
+    config:
+      platform: linux
+      run: 
+        path: sh
+        args:
+        - -exc
+        - sleep 30m
 
 - name: cleanup-env
   serial: true
@@ -699,60 +685,53 @@ jobs:
       - get: manual-cleanup-trigger
         trigger: true
         passed: [ manual-cleanup-trigger ]
-      - get: lock-check-timer
-        trigger: true
-        passed: [ check-work-locks ]
       - get: healthchecker-release-env-lock
-        passed: [ check-work-locks ]
-      - get: healthchecker-release-lock-prepare-env
-        passed: [ check-work-locks ]
-      - get: healthchecker-release-lock-export-release
-        passed: [ check-work-locks ]
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-hlthchk-env
-          DEPLOYMENT_NAME: example-app
-  - try:
-      do:
-      - task: stop-bbl-envs
-        image: image
-        file: ci/shared/tasks/stop-gcp-instance/linux.yml
-        input_mapping:
-          bbl-state: env
-        params:
-          SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
-          BBL_STATE_DIR: bbl-hlthchk-env
-          SUSPEND: false
-  - try:
-      do:
-      - put: healthchecker-release-env-lock
-        params:
-          release: healthchecker-release-env-lock
-
-- name: release-work-locks
+        passed: [ wait-for-acceptance-tests ]
+        trigger: true
+  - try: *delete-ea-deployment
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-hlthchk-env
+      SUSPEND: false
+  - try: *release-env-lock
+  
+- name: restart-wait-for-env-lock-claim
   plan:
-  - get: healthchecker-release-lock-prepare-env
-  - get: healthchecker-release-lock-export-release
-  - get: manual-lock-release-trigger
+  - get: healthchecker-release-env-lock
+    passed: [ cleanup-env ]
     trigger: true
-    passed: [ manual-lock-release-trigger ]
-  - try: *release-work-locks
+  - put: fly
+    params:
+      options: trigger-job -j healthchecker-release/wait-for-env-lock-claim
 
 - name: release-env-lock
   plan:
   - get: healthchecker-release-env-lock
-  - get: manual-lock-release-trigger
-    trigger: true
-    passed: [ manual-lock-release-trigger ]
-  - try:
-      do:
-      - put: healthchecker-release-env-lock
-        params:
-          release: healthchecker-release-env-lock
+  - try: *release-env-lock
+
+- name: force-cleanup-env
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: env
+      - get: image
+  - try: *delete-ea-deployment
+  - task: stop-bbl-envs
+    image: image
+    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    input_mapping:
+      bbl-state: env
+    params:
+      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
+      BBL_STATE_DIR: bbl-hlthchk-env
+      SUSPEND: false
 
 #! versioning
 - name: patch-bump

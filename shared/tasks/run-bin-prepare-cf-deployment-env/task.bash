@@ -11,6 +11,8 @@ source "$THIS_FILE_DIR/../../../shared/helpers/cf-helpers.bash"
 source "$THIS_FILE_DIR/../../../shared/helpers/credhub-helpers.bash"
 unset THIS_FILE_DIR
 
+function test_api { until bosh env; do echo failed; sleep 1; done; }
+
 function run(){
     local task_tmp_dir="${1:?provide temp dir for task}"
     shift 1
@@ -18,6 +20,10 @@ function run(){
     expand_functions
 
     bosh_target
+
+    export -f test_api
+
+    timeout 60 bash -c test_api
     if [[ "$(bosh_is_cf_deployed)" == "yes" ]]; then
         cf_target
     fi

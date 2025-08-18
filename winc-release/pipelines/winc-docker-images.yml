@@ -3,9 +3,9 @@ resource_types:
 - name: command-runner
   type: docker-image
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 resources:
@@ -44,7 +44,7 @@ resources:
   icon: source-branch
   source:
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci.git
-    branch: groot-windows-docker-images
+    branch: main
     private_key: ((github-appruntimeplatform-bot/private-key))
     paths:
     - winc-release/dockerfiles/whiteout/Dockerfile
@@ -53,16 +53,16 @@ resources:
   type: git
   icon: source-branch
   source:
-    branch: groot-windows-docker-images
+    branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: image
   type: registry-image
   icon: docker
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
 
 - name: http-golang-download
   type: command-runner

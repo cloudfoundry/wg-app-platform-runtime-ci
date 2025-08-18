@@ -8,6 +8,7 @@ inputs:
 
 params:
   BBL_STATE_DIR:
+  DIR: .
   STEMCELL_URL:
 
 run:

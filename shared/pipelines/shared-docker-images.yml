@@ -2,9 +2,9 @@ resource_types:
 - name: command-runner
   type: registry-image
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 resources:
 - name: ci
@@ -246,9 +246,9 @@ jobs:
       image_resource:
         type: registry-image
         source:
-          repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/concourse/oci-build-task
+          repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/concourse/oci-build-task
           username: _json_key
-          password: ((gcp-wg-arp-service-account/config-json))
+          password: ((gcp-arp-artifact-registry-service-account-token))
       inputs:
         - name: build-dockerfile
         - name: dockerfile-build-args
@@ -347,9 +347,9 @@ jobs:
       image_resource:
         type: registry-image
         source:
-          repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/concourse/oci-build-task
+          repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/concourse/oci-build-task
           username: _json_key
-          password: ((gcp-wg-arp-service-account/config-json))
+          password: ((gcp-arp-artifact-registry-service-account-token))
   - load_var: postgres-image-version
     file: postgres-image-version/version
     format: raw
@@ -454,9 +454,9 @@ jobs:
       image_resource:
         type: registry-image
         source:
-          repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/concourse/oci-build-task
+          repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/concourse/oci-build-task
           username: _json_key
-          password: ((gcp-wg-arp-service-account/config-json))
+          password: ((gcp-arp-artifact-registry-service-account-token))
   - load_var: mysql8-image-version
     file: mysql-8.0-image-version/version
     format: raw
@@ -554,9 +554,9 @@ jobs:
       image_resource:
         type: registry-image
         source:
-          repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/concourse/oci-build-task
+          repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/concourse/oci-build-task
           username: _json_key
-          password: ((gcp-wg-arp-service-account/config-json))
+          password: ((gcp-arp-artifact-registry-service-account-token))
   - load_var: mysql57-image-version
     file: mysql-5.7-image-version/version
     format: raw
