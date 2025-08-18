@@ -52,7 +52,9 @@ CF_MANIFEST_VERSION: "${CF_MANIFEST_VERSION}"
 CF_MANIFEST_FILE: "cf.yml"
 EOF
     fi
-    credhub_save_lb_cert
+    if [[ "$(is_shepherd_v1_deployment)" == "no" ]]; then
+        credhub_save_lb_cert
+    fi
 
     if [[ -n "${VARS}" ]]; then
         echo "${VARS}" | yq -P . >> prepared-env/vars.yml
