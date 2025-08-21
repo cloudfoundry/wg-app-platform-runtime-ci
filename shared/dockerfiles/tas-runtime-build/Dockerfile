@@ -120,7 +120,7 @@ RUN \
 
 #    OM Cli
 RUN \
-  url="$(curl -s https://api.github.com/repos/pivotal-cf/om/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar"))and (.name | contains($target_arch))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/pivotal-cf/om/releases | jq -r --arg target_arch "${TARGETARCH}" '[.[] | select(.prerelease != true)][0].assets[] | select((.name | contains("linux")) and (.name | contains("tar"))and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/om /usr/local/bin/om
 
