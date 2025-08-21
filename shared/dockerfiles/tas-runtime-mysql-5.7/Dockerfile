@@ -19,22 +19,30 @@ ENV DEBIAN_FRONTEND noninteractive
 # other dependencies came from cf-networking-mysql and diego-units(-mysql)
 # totally unsure what's necessary
 RUN rm /etc/apt/sources.list.d/mysql.list
+RUN apt-get update
 RUN \
-  apt-get update && \
   apt-get -y install \
     bison \
-    build-essential \
+    build-essential
+RUN \
+  apt-get -y install \
     ca-certificates \
-    curl \
+    curl
+RUN \
+  apt-get -y install \
     dnsutils \
     g++ \
     git \
-    graphviz \
+    graphviz
+RUN \
+  apt-get -y install \
     htop \
     iproute2 \
     iptables \
     iputils-ping \
-    jq \
+    jq
+RUN \
+  apt-get -y install \
     kmod \
     libffi-dev \
     libgdbm-dev \
@@ -42,22 +50,26 @@ RUN \
     libreadline-dev \
     libssl-dev \
     libyaml-dev \
-    lsof \
+    lsof
+RUN \
+  apt-get -y install \
     mercurial \
     netcat \
     nginx \
     procps \
     psmisc \
-    python \
+    python
+RUN \
+  apt-get -y install \
     rsyslog \
     strace \
     unzip \
     vim \
     wget \
-    zlib1g-dev \
-  && apt-get autoremove -yqq \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    zlib1g-dev
+  RUN apt-get autoremove -yqq
+  RUN apt-get clean
+  RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN \
   if [ "${TARGETARCH}" = "amd64" ]; then cf_arch="linux64"; else cf_arch="linuxarm64"; fi; \
