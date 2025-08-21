@@ -162,3 +162,15 @@ function display_built_with_go_linux() {
   echo "## ✨  Built with go $(get_linux_go_version_for_release_from_ref "${REPO_LOCATION}" "${END_REF}")"
 }
 
+# ex. input="v0.343.0...v0.344.0"
+# ex. output="v0.343.0"
+function get_start_ref_from_range {
+  echo "${1%%...*}"
+}
+
+# ex. input="v0.343.0...v0.344.0"
+# ex. output="v0.344.0"
+function get_end_ref_from_range {
+  echo "${version_range#*...}"
+}
+
