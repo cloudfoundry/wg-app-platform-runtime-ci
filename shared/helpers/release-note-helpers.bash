@@ -171,6 +171,6 @@ function get_start_ref_from_range {
 # ex. input="v0.343.0...v0.344.0"
 # ex. output="v0.344.0"
 function get_end_ref_from_range {
-  echo "${version_range#*...}"
+  echo "${1#*...}"
 }
 
