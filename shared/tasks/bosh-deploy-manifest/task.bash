@@ -17,8 +17,6 @@ function run(){
     local cf_manifest="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-cf.yml')"
     local cloud_config="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-cc.yml')"
 
-    eval "${EVAL_CMD:-}"
-
     pushd $DIR > /dev/null
     bosh_target
 
@@ -35,6 +33,8 @@ function run(){
     expand_envs "${env_file}"
     . "${env_file}"
     debug "Extracted vars from ENV variable: $(cat ${env_file})"
+
+    eval "${EVAL_CMD:-}"
 
     local arguments=$(bosh_extract_vars_from_env_files ${default_envs_file} ${env_file})
     for op in ${OPS_FILES:-}
