@@ -20,6 +20,7 @@ params:
   BBL_STATE_DIR:
   DEPLOYMENT_NAME:
   ENVS:
+  EVAL_CMD:
   MANIFEST:
   OPS_FILES:
   DIR: .

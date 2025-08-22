@@ -17,6 +17,8 @@ function run(){
     local cf_manifest="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-cf.yml')"
     local cloud_config="$(mktemp -p ${task_tmp_dir} -t 'XXXXX-cc.yml')"
 
+    eval "${EVAL_CMD:-}"
+
     pushd $DIR > /dev/null
     bosh_target
 
