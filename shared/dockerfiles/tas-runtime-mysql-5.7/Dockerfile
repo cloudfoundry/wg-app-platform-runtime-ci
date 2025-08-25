@@ -19,8 +19,10 @@ ENV DEBIAN_FRONTEND noninteractive
 # other dependencies came from cf-networking-mysql and diego-units(-mysql)
 # totally unsure what's necessary
 RUN rm /etc/apt/sources.list.d/mysql.list
+RUN sed -i s/security.debian.org/archive.debian.org/g /etc/apt/sources.list
+RUN sed -i s/deb.debian.org/archive.debian.org/g /etc/apt/sources.list
+RUN apt-get --allow-insecure-repositories update
 RUN \
-  apt-get update && \
   apt-get -y install \
     bison \
     build-essential \
