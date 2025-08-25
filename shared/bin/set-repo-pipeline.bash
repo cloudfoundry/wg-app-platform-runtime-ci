@@ -10,7 +10,10 @@ main() {
   local pipeline_dir="$(realpath $REPO/pipelines)"
   fly_login
 
-  fly_pipeline "shared-docker-images" -f "${pipeline_dir}/shared-docker-images.yml"
+  fly_pipeline "shared-docker-images" \
+    -f "${pipeline_dir}/shared-docker-images.yml" \
+    -f "$REPO/index.yml" \
+    -f "$REPO/../shared/helpers/ytt-helpers.star"
 
   fly_pipeline "linters" -f "${pipeline_dir}/linters.yml"
 

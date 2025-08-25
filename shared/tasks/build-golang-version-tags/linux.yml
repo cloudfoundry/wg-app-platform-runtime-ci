@@ -10,6 +10,7 @@ outputs:
 
 params:
   IMAGE:
+  GO_MAJOR_MINOR_VERSION: "1.24"
 
 run:
   path: ci/shared/tasks/build-golang-version-tags/task.bash

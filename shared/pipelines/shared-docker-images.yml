@@ -1,3 +1,6 @@
+#@ load("@ytt:data", "data")
+#@ load("ytt-helpers.star", "helpers")
+
 resource_types:
 - name: command-runner
   type: registry-image
@@ -176,7 +179,8 @@ resources:
     repository: nats-server
 
 jobs:
-- name: build-build-image
+#@ for go_version in data.values.supported_go_versions:
+- name: #@ "build-build-image-{}".format(go_version.name)
   serial: true
   plan:
   - in_parallel:
@@ -201,7 +205,7 @@ jobs:
     image: build-image
     file: ci/shared/tasks/build-golang-version-tags/linux.yml
     params:
-      IMAGE: tas-runtime-build
+      GO_MAJOR_MINOR_VERSION: #@ "{}".format(go_version.name)
   - in_parallel:
     - task: write-build-args
       image: build-image
@@ -266,7 +270,7 @@ jobs:
   - put: build-image-version
     params:
       file: build-image-version/version
-- name: build-postgres-image
+- name: #@ "build-postgres-image-{}".format(go_version.name)
   plan:
   - in_parallel:
     - get: postgres-dockerfile
@@ -274,13 +278,13 @@ jobs:
     - get: build-image-version
       trigger: true
       passed:
-      - build-build-image
+      - #@ "build-build-image-{}".format(go_version.name)
     - get: go-version
       passed:
-      - build-build-image
+      - #@ "build-build-image-{}".format(go_version.name)
     - get: ci
       passed:
-      - build-build-image
+      - #@ "build-build-image-{}".format(go_version.name)
     - get: postgres-image-version
       params:
         bump: patch
@@ -304,7 +308,7 @@ jobs:
       image: build-image
       file: ci/shared/tasks/build-golang-version-tags/linux.yml
       params:
-        IMAGE: tas-runtime-postgres
+        GO_MAJOR_MINOR_VERSION: #@ "{}".format(go_version.name)
     - task: write-build-args
       image: build-image
       config:
@@ -362,7 +366,7 @@ jobs:
   - put: postgres-image-version
     params:
       file: postgres-image-version/version
-- name: build-mysql-8.0-image
+- name: #@ "build-mysql-8.0-image-{}".format(go_version.name)
   plan:
   - in_parallel:
     - get: mysql-8.0-dockerfile
@@ -370,13 +374,13 @@ jobs:
     - get: build-image-version
       trigger: true
       passed:
-      - build-build-image
+      - #@ "build-build-image-{}".format(go_version.name)
     - get: go-version
       passed:
-      - build-build-image
+      - #@ "build-build-image-{}".format(go_version.name)
     - get: ci
       passed:
-      - build-build-image
+      - #@ "build-build-image-{}".format(go_version.name)
     - get: mysql-8.0-image-version
       params:
         bump: patch
@@ -401,7 +405,7 @@ jobs:
       image: build-image
       file: ci/shared/tasks/build-golang-version-tags/linux.yml
       params:
-        IMAGE: tas-runtime-mysql-8.0
+        GO_MAJOR_MINOR_VERSION: #@ "{}".format(go_version.name)
     - task: write-build-args
       image: build-image
       params:
@@ -469,7 +473,7 @@ jobs:
   - put: mysql-8.0-image-version
     params:
       file: mysql-8.0-image-version/version
-- name: build-mysql-5.7-image
+- name: #@ "build-mysql-5.7-image-{}".format(go_version.name)
   plan:
   - in_parallel:
     - get: mysql-5.7-dockerfile
@@ -477,13 +481,13 @@ jobs:
     - get: build-image-version
       trigger: true
       passed:
-      - build-build-image
+      - #@ "build-build-image-{}".format(go_version.name)
     - get: ruby-installer-git
       passed:
-      - build-build-image
+      - #@ "build-build-image-{}".format(go_version.name)
     - get: ruby-git
       passed:
-      - build-build-image
+      - #@ "build-build-image-{}".format(go_version.name)
     - get: mysql-5.7-image-version
       params:
         bump: patch
@@ -491,16 +495,16 @@ jobs:
       trigger: true
     - get: go-version
       passed:
-      - build-build-image
+      - #@ "build-build-image-{}".format(go_version.name)
     - get: ci
       passed:
-      - build-build-image
+      - #@ "build-build-image-{}".format(go_version.name)
     - get: build-image
   - task: print-go-version-tag
     image: build-image
     file: ci/shared/tasks/build-golang-version-tags/linux.yml
     params:
-      IMAGE: tas-runtime-mysql-5.7
+      GO_MAJOR_MINOR_VERSION: #@ "{}".format(go_version.name)
   - in_parallel:
     - task: write-build-args
       image: build-image
@@ -569,3 +573,4 @@ jobs:
   - put: mysql-5.7-image-version
     params:
       file: mysql-5.7-image-version/version
+#@ end
