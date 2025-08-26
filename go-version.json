@@ -1,15 +1,16 @@
 {
     "default": "1.24",
     "releases": {
-        "nats": "1.25",
-        "healthchecker": "1.25",
-        "winc": "1.25",
         "envoy-nginx": "1.25",
-        "windows2019fs": "1.25",
-        "windowsfs-online": "1.25",
-        "windows-tools": "1.25",
-        "test-log-emitter": "1.25",
+        "garden": "1.25",
+        "healthchecker": "1.25",
+        "nats": "1.25",
+        "nfs-volume": "1.25",
         "smb-volume": "1.25",
-        "nfs-volume": "1.25"
+        "test-log-emitter": "1.25",
+        "winc": "1.25",
+        "windows-tools": "1.25",
+        "windows2019fs": "1.25",
+        "windowsfs-online": "1.25"
     }
 }
