@@ -227,6 +227,10 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
       AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
 
+  - task: bump-golang-package-name-in-job-templates
+    image: image
+    file: ci/windows-tools-release/tasks/bump-golang-package-name-in-job-templates/linux.yml
+
   - put: repo
     params:
       rebase: true
