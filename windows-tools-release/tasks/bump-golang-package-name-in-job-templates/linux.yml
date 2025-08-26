@@ -1,0 +1,16 @@
+---
+platform: linux
+
+inputs:
+- name: repo
+- name: ci
+- name: go-version
+
+outputs:
+- name: bumped-repo
+
+params:
+  GO_VERSION_FILE: go-version/go-version.json
+
+run:
+  path: ci/windows-tools-release/tasks/bump-golang-package-name-in-job-templates/task.bash

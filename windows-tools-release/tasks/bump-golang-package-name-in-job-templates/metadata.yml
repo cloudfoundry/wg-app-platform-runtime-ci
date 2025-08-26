@@ -1,0 +1,7 @@
+---
+readme: |
+  This task bump golang-package-name based on version in go-version.json
+oses:
+  - linux
+params:
+  GO_VERSION_FILE: (Defaults to go-version/go-version.json). Path to go-version.json where the new version is defined.
