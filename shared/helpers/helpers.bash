@@ -279,11 +279,7 @@ export -f retry_command
 
 function env_metadata() {
     if [[ -n "${BBL_STATE_DIR}" ]]; then
-        if [[ -f "${BBL_STATE_DIR}/bbl-state.json" ]]; then
-            echo "env/${BBL_STATE_DIR}/bbl-state.json"
-        else
-            echo "env/${BBL_STATE_DIR}/state.json"
-        fi
+        echo "env/${BBL_STATE_DIR}/bbl-state.json"
     else
         echo "env/metadata"
     fi
