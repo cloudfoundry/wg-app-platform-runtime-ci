@@ -31,6 +31,8 @@ function bosh_target(){
             ENVIRONMENT_NAME="$(jq -r .name "$(env_metadata)")"
         fi
         export ENVIRONMENT_NAME
+    elif [[ "${BBL_STATE_DIR:-empty}" != "empty" ]]; then
+        eval "$(bbl print-env --metadata-file "$(env_metadata)")"
     else
         OM_SKIP_SSL_VALIDATION=true
         OM_USERNAME="$(jq -r .ops_manager.username "$(env_metadata)")"
