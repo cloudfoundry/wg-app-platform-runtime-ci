@@ -32,7 +32,6 @@ function display_blob_change_info() {
   START_REF="${1}" # example: "v0.0.7"
   END_REF="${2}" # ex: "v0.0.8"
   BLOB_LOCATION="${3}" # ex: "config/blobs.yml"
-  count=1
 
   blob_changes_json=$(get_blob_info_across_refs_json "${START_REF}" "${END_REF}" "${BLOB_LOCATION}")
   index=0
@@ -40,7 +39,7 @@ function display_blob_change_info() {
     if [[ $b == "" ]]; then # when there are no blobs
       continue
     fi
-    if [[ $count == 1 ]]; then
+    if [[ $index == 1 ]]; then
       echo "## Blob Updates"
       count="not-1"
     fi
