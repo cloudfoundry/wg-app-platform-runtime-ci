@@ -90,15 +90,39 @@ function get_go_mod_diff_json() {
   END_GO_MOD_JSON="$(go mod edit -json "${END_GO_MOD}")"
   JSON='{"packages":[]}'
   
+  # loop through all of the packages at start ref
+  # get their version at start and at end ref and store in JSON
   while read -r p; do
     name="$(echo "${p}" | jq -r .Path )"
     previous_version="$(echo "${p}" | jq -r .Version)"
     new_version=$(echo "${END_GO_MOD_JSON}" | jq -r --arg name "$name" '.Require[] | select(.Path == $name) | .Version')
-
-    if [ "$previous_version" != "$new_version" ]; then
-      JSON="$(jq --arg name "$name" --arg previous_version "$previous_version" --arg new_version "$new_version" '.packages += [{name: $name, previous_version: $previous_version, new_version: $new_version}]' <<< "$JSON")"
-    fi
+    JSON="$(jq --arg name "$name" --arg previous_version "$previous_version" --arg new_version "$new_version" '.packages += [{name: $name, previous_version: $previous_version, new_version: $new_version}]' <<< "$JSON")"
   done <<< "$(echo "${START_GO_MOD_JSON}" | jq .Require[] -c)"
+
+  # loop through all of the packages at end ref
+  # if they are not already in the JSON, add them
+  # this accounts for packages who are newly added
+  while read -r p; do
+    name="$(echo "${p}" | jq -r .Path )"
+    new_version="$(echo "${p}" | jq -r .Version)"
+    is_package_already_listed=$(echo "${JSON}" | jq -r --arg name "$name" '.packages[] | select(.name == $name) | any')
+
+    if [ "$is_package_already_listed" != "true" ]; then
+      JSON="$(jq --arg name "$name" --arg previous_version "" --arg new_version "$new_version" '.packages += [{name: $name, previous_version: $previous_version, new_version: $new_version}]' <<< "$JSON")"
+    fi
+  done <<< "$(echo "${END_GO_MOD_JSON}" | jq .Require[] -c)"
+
+  # loop through all of the packge data gathered so far
+  # delete the item if the previous version and new version are the same
+  while read -r p; do
+    name="$(echo "${p}" | jq -r .name )"
+    previous_version="$(echo "${p}" | jq -r .previous_version)"
+    new_version="$(echo "${p}" | jq -r .new_version)"
+
+    if [ "$previous_version" == "$new_version" ]; then
+      JSON="$(jq --arg name "$name" 'del(.packages[] | select(.name == $name))' <<< "$JSON")"
+    fi
+  done <<< "$(echo "${JSON}" | jq .packages[] -c)"
   rm "${START_GO_MOD}" "${END_GO_MOD}"
 
   echo "${JSON}"
@@ -130,10 +154,14 @@ function display_go_mod_diff() {
     new_version="$(echo "${b}" | jq -r .new_version)"
     previous_version="$(echo "${b}" | jq -r .previous_version)"
 
-    if [ "$previous_version" != "$new_version" ]; then
+    if [ "$previous_version" == "" ]; then
+      echo "* Added go.mod package '${name}' version '${new_version}'"
+    elif [ "$new_version" == "" ]; then
+      echo "* Removed go.mod package '${name}' version '${previous_version}'"
+    else
       echo "* Bumped go.mod package '${name}' from '${previous_version}' to '${new_version}'"
     fi
-  done <<< "$(echo "${go_mod_changes_json}" | jq -cr .packages[])"
+  done <<< "$(echo "${go_mod_changes_json}" | jq -cr '.packages | sort_by(.name) | .[]')"
 }
 
 function get_bosh_job_spec_diff(){
