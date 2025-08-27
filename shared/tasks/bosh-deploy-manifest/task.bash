@@ -48,6 +48,19 @@ function run(){
         fi
         arguments="${arguments} -o ${op}"
     done
+
+    for vs in ${VARS_FILES:-}
+    do
+        if [[ ! -f "${vs}" ]]; then
+            if [[ ! -f "ops-files/${vs}" ]]; then
+                echo "Can't find ops-file ${vs}"
+            else
+                vs="ops-files/${vs}"
+            fi
+        fi
+        arguments="${arguments} -l ${vs}"
+    done
+
     debug "bosh arguments for deploy: ${arguments}"
 
     eval "bosh -d ${DEPLOYMENT_NAME} deploy -n ${MANIFEST} --var=DEPLOYMENT_NAME=${DEPLOYMENT_NAME}${arguments}"
