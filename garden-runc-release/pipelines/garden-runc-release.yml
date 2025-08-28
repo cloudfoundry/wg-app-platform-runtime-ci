@@ -1684,6 +1684,8 @@ jobs:
         WITH_BPM=false
         WITH_CONTAINERD_MODE=true
         WITH_CPU_THROTTLING=false
+        DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
+        DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
       BBL_STATE_DIR: bbl-garden-env
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
