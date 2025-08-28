@@ -14,6 +14,6 @@
         "winc": "1.25",
         "windows-tools": "1.25",
         "windows2019fs": "1.25",
-        "windowsfs-online": "1.25"
+        "windowsfs": "1.25"
     }
 }
