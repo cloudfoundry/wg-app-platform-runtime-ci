@@ -822,6 +822,7 @@ jobs:
         DEPLOYMENT_GARDEN_CI_ARTIFACTS_RELEASE_DIR=$PWD/release-01
         DEPLOYMENT_WINC_RELEASE_DIR=$PWD/repo
         DEPLOYMENT_WINDOWS_UTILITIES_RELEASE_DIR=$PWD/release-03
+        WINDOWS_STEMCELL_OS="$(bosh ss --json | jq -r ' .Tables[0].Rows[] | select(.os | contains("windows")) | .os')"
   - task: run-gatsw-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
