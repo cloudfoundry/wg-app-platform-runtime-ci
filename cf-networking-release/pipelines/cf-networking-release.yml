@@ -165,6 +165,14 @@ resources:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
+- name: go-version
+  type: git
+  icon: source-branch
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: [go-version.json]
+
 - name: silk-readme
   type: git
   icon: source-branch
@@ -413,6 +421,8 @@ jobs:
     - get: cf-networking-repo
     - get: silk-repo
     - get: image
+    - get: go-version
+      trigger: true
     - get: golang-release-latest
       trigger: true
 
