@@ -7,7 +7,6 @@
         "healthchecker": "1.25",
         "nats": "1.25",
         "nfs-volume": "1.25",
-        "routing": "1.25",
         "silk": "1.25",
         "smb-volume": "1.25",
         "test-log-emitter": "1.25",
