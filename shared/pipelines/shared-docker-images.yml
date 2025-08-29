@@ -42,15 +42,48 @@ resources:
     password: ((dockerhub-appruntimeplatform-password))
     repository: cloudfoundry/tas-runtime-build
 
-- name: build-image-version
+#@ for go_version in data.values.supported_go_versions:
+- name: #@ "build-image-version-{}".format(go_version.name)
   type: semver
   icon: counter
   source:
     driver: gcs
     bucket: ci-image-versions
-    key: tas-runtime-build/version
+    key: #@ "tas-runtime-build/version-{}".format(go_version.name)
     json_key: ((gcp-wg-arp-oss-service-account/config-json))
-    initial_version: 0.0.147
+    initial_version: #@ "{}.0".format(go_version.name)
+
+- name: #@ "postgres-image-version-{}".format(go_version.name)
+  type: semver
+  icon: counter
+  source:
+    driver: gcs
+    bucket: ci-image-versions
+    key: #@ "tas-runtime-postgres-{}".format(go_version.name)
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
+    initial_version: #@ "{}.0".format(go_version.name)
+
+- name: #@ "mysql-8.0-image-version-{}".format(go_version.name)
+  type: semver
+  icon: counter
+  source:
+    driver: gcs
+    bucket: ci-image-versions
+    key: #@ "tas-runtime-mysql-8.0-/version-{}".format(go_version.name)
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
+    initial_version: #@ "{}.0".format(go_version.name)
+
+- name: #@ "mysql-5.7-image-version-{}".format(go_version.name)
+  type: semver
+  icon: counter
+  source:
+    driver: gcs
+    bucket: ci-image-versions
+    key: #@ "tas-runtime-mysql-5.7/version-{}".format(go_version.name)
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
+    initial_version: #@ "{}.0".format(go_version.name)
+#@ end
+
 - name: ruby-installer-git
   type: git
   icon: source-branch
@@ -82,15 +115,6 @@ resources:
     username: ((dockerhub-appruntimeplatform-username))
     password: ((dockerhub-appruntimeplatform-password))
     repository: cloudfoundry/tas-runtime-postgres
-- name: postgres-image-version
-  type: semver
-  icon: counter
-  source:
-    driver: gcs
-    bucket: ci-image-versions
-    key: tas-runtime-postgres/version
-    json_key: ((gcp-wg-arp-oss-service-account/config-json))
-    initial_version: 0.0.1
 - name: postgres-docker-repo
   type: git
   icon: source-branch
@@ -114,15 +138,6 @@ resources:
     username: ((dockerhub-appruntimeplatform-username))
     password: ((dockerhub-appruntimeplatform-password))
     repository: cloudfoundry/tas-runtime-mysql-8.0
-- name: mysql-8.0-image-version
-  type: semver
-  icon: counter
-  source:
-    driver: gcs
-    bucket: ci-image-versions
-    key: tas-runtime-mysql-8.0/version
-    json_key: ((gcp-wg-arp-oss-service-account/config-json))
-    initial_version: 0.0.1
 - name: mysql-docker-repo
   type: git
   icon: source-branch
@@ -146,15 +161,6 @@ resources:
     username: ((dockerhub-appruntimeplatform-username))
     password: ((dockerhub-appruntimeplatform-password))
     repository: cloudfoundry/tas-runtime-mysql-5.7
-- name: mysql-5.7-image-version
-  type: semver
-  icon: counter
-  source:
-    driver: gcs
-    bucket: ci-image-versions
-    key: tas-runtime-mysql-5.7/version
-    json_key: ((gcp-wg-arp-oss-service-account/config-json))
-    initial_version: 0.0.1
 - name: official-mysql-5.7-image
   type: registry-image
   icon: docker
@@ -188,7 +194,7 @@ jobs:
       trigger: true
     - get: build-dockerfile
       trigger: true
-    - get: build-image-version
+    - get: #@ "build-image-version-{}".format(go_version.name)
       params:
         bump: patch
     - get: ruby-installer-git
@@ -212,7 +218,7 @@ jobs:
       config:
         platform: linux
         inputs:
-        - name: build-image-version
+        - name: #@ "build-image-version-{}".format(go_version.name)
         - name: ruby-git
         - name: ruby-installer-git
         - name: tag
@@ -259,7 +265,7 @@ jobs:
       outputs:
         - name: image
   - load_var: build-image-version
-    file: build-image-version/version
+    file: #@ "build-image-version-{}/version".format(go_version.name)
     format: raw
   - put: build-image
     params:
@@ -267,15 +273,16 @@ jobs:
       version: ((.:build-image-version))
       additional_tags: tag/tag
       bump_aliases: true
-  - put: build-image-version
+  - put: #@ "build-image-version-{}".format(go_version.name)
     params:
-      file: build-image-version/version
+      file: #@ "build-image-version-{}/version".format(go_version.name)
+
 - name: #@ "build-postgres-image-{}".format(go_version.name)
   plan:
   - in_parallel:
     - get: postgres-dockerfile
       trigger: true
-    - get: build-image-version
+    - get: #@ "build-image-version-{}".format(go_version.name)
       trigger: true
       passed:
       - #@ "build-build-image-{}".format(go_version.name)
@@ -285,7 +292,7 @@ jobs:
     - get: ci
       passed:
       - #@ "build-build-image-{}".format(go_version.name)
-    - get: postgres-image-version
+    - get: #@ "postgres-image-version-{}".format(go_version.name)
       params:
         bump: patch
     - get: postgres-docker-repo
@@ -314,8 +321,8 @@ jobs:
       config:
         platform: linux
         inputs:
-        - name: postgres-image-version
-        - name: build-image-version
+        - name: #@ "postgres-image-version-{}".format(go_version.name)
+        - name: #@ "build-image-version-{}".format(go_version.name)
         outputs:
         - name: dockerfile-build-args
         run:
@@ -325,7 +332,7 @@ jobs:
           - |
             mkdir -p dockerfile-build-args
 
-            export build_uri="cloudfoundry/tas-runtime-build:$(cat build-image-version/version)"
+            export build_uri="cloudfoundry/tas-runtime-build:$(cat build-image-version-*/version)"
 
             cat <<EOF >dockerfile-build-args/build_args
             BUILD_URI=$build_uri
@@ -355,7 +362,7 @@ jobs:
           username: _json_key
           password: ((gcp-arp-artifact-registry-service-account-token))
   - load_var: postgres-image-version
-    file: postgres-image-version/version
+    file: #@ "postgres-image-version-{}/version".format(go_version.name)
     format: raw
   - put: postgres-image
     params:
@@ -363,15 +370,15 @@ jobs:
       additional_tags: tag/tag
       image: image/image
       bump_aliases: true
-  - put: postgres-image-version
+  - put: #@ "postgres-image-version-{}".format(go_version.name)
     params:
-      file: postgres-image-version/version
+      file: #@ "postgres-image-version-{}/version".format(go_version.name)
 - name: #@ "build-mysql-8.0-image-{}".format(go_version.name)
   plan:
   - in_parallel:
     - get: mysql-8.0-dockerfile
       trigger: true
-    - get: build-image-version
+    - get: #@ "build-image-version-{}".format(go_version.name)
       trigger: true
       passed:
       - #@ "build-build-image-{}".format(go_version.name)
@@ -381,7 +388,7 @@ jobs:
     - get: ci
       passed:
       - #@ "build-build-image-{}".format(go_version.name)
-    - get: mysql-8.0-image-version
+    - get: #@ "mysql-8.0-image-version-{}".format(go_version.name)
       params:
         bump: patch
     - get: mysql-docker-repo
@@ -415,7 +422,7 @@ jobs:
         params:
           MYSQL_MAJOR_VERSION: null
         inputs:
-        - name: build-image-version
+        - name: #@ "build-image-version-{}".format(go_version.name)
         - name: mysql-docker-repo
         outputs:
         - name: dockerfile-build-args
@@ -427,7 +434,7 @@ jobs:
             set -eux
             mkdir -p dockerfile-build-args
 
-            export build_uri="cloudfoundry/tas-runtime-build:$(cat build-image-version/version)"
+            export build_uri="cloudfoundry/tas-runtime-build:$(cat build-image-version-*/version)"
             export mysql_major_version="${MYSQL_MAJOR_VERSION:-}"
             export mysql_version=$(jq -r ".[\"${MYSQL_MAJOR_VERSION}\"].version" mysql-docker-repo/versions.json)
 
@@ -462,7 +469,7 @@ jobs:
           username: _json_key
           password: ((gcp-arp-artifact-registry-service-account-token))
   - load_var: mysql8-image-version
-    file: mysql-8.0-image-version/version
+    file: #@ "mysql-8.0-image-version-{}/version".format(go_version.name)
     format: raw
   - put: mysql-8.0-image
     params:
@@ -470,15 +477,15 @@ jobs:
       version: ((.:mysql8-image-version))
       additional_tags: tag/tag
       bump_aliases: true
-  - put: mysql-8.0-image-version
+  - put: #@ "mysql-8.0-image-version-{}".format(go_version.name)
     params:
-      file: mysql-8.0-image-version/version
+      file: #@ "mysql-8.0-image-version-{}/version".format(go_version.name)
 - name: #@ "build-mysql-5.7-image-{}".format(go_version.name)
   plan:
   - in_parallel:
     - get: mysql-5.7-dockerfile
       trigger: true
-    - get: build-image-version
+    - get: #@ "build-image-version-{}".format(go_version.name)
       trigger: true
       passed:
       - #@ "build-build-image-{}".format(go_version.name)
@@ -488,7 +495,7 @@ jobs:
     - get: ruby-git
       passed:
       - #@ "build-build-image-{}".format(go_version.name)
-    - get: mysql-5.7-image-version
+    - get: #@ "mysql-5.7-image-version-{}".format(go_version.name)
       params:
         bump: patch
     - get: official-mysql-5.7-image
@@ -562,7 +569,7 @@ jobs:
           username: _json_key
           password: ((gcp-arp-artifact-registry-service-account-token))
   - load_var: mysql57-image-version
-    file: mysql-5.7-image-version/version
+    file: #@ "mysql-5.7-image-version-{}/version".format(go_version.name)
     format: raw
   - put: mysql-5.7-image
     params:
@@ -570,7 +577,7 @@ jobs:
       version: ((.:mysql57-image-version))
       additional_tags: tag/tag
       bump_aliases: true
-  - put: mysql-5.7-image-version
+  - put: #@ "mysql-5.7-image-version-{}".format(go_version.name)
     params:
-      file: mysql-5.7-image-version/version
+      file: #@ "mysql-5.7-image-version-{}/version".format(go_version.name)
 #@ end
