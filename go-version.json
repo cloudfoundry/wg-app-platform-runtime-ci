@@ -3,6 +3,7 @@
     "releases": {
         "cf-networking": "1.25",
         "envoy-nginx": "1.25",
+        "diego": "1.25",
         "garden-runc": "1.25",
         "healthchecker": "1.25",
         "nats": "1.25",
