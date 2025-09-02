@@ -98,6 +98,15 @@ export CF_AZ=$(bosh int "${manifest}" --path /instance_groups/0/azs/0)
 export CF_NETWORK=$(bosh int "${manifest}" --path /instance_groups/0/networks/0/name)
 export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)"
 
+    elif [[ "$(bosh_number_of_networks "${cloud_config}")" == "3" ]]; then
+        echo  "export CF_STEMCELL_OS=$(bosh int "${manifest}" --path /stemcells/0/os)
+export CF_AZ=$(bosh int "${manifest}" --path /instance_groups/0/azs/0)
+export CF_NETWORK=pas-network
+export CF_NETWORK_CIDR=$(bosh int "${cloud_config}" --path /networks | yq '.[] | select(.name == "pas-network") | .subnets[0].range')
+export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)
+export CF_NETWORK_SERVICES=services-network
+export CF_NETWORK_SERVICES_CIDR=$(bosh int "${cloud_config}" --path /networks | yq '.[] | select(.name == "services-network") | .subnets[0].range')"
+
     elif [[ "$(is_shepherd_v1_deployment)" == "yes" ]]; then
         echo  "export CF_STEMCELL_OS=$(bosh int "${manifest}" --path /stemcells/0/os)
 export CF_AZ=$(bosh int "${manifest}" --path /instance_groups/0/azs/0)
@@ -124,6 +133,11 @@ function bosh_extract_vars_from_env_files(){
         done < "${file}"
     done
     echo "${arguments}"
+}
+
+function bosh_number_of_networks() {
+    local cloud_config="${1:?Provide a cloud-config}"
+    bosh int "${cloud_config}" --path /networks | yq ' . | length'
 }
 
 #Copied from https://github.com/cloudfoundry/cf-deployment-concourse-tasks/blob/9d60cd05a75ae674706201fd083ae46617147373/shared-functions#L351-L369
