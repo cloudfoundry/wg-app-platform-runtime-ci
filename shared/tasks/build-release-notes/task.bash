@@ -50,7 +50,11 @@ function run(){
 
   repo_name="$(git_get_remote_name)"
   spec_diff=$(get_bosh_job_spec_diff)
-  bosh_io_resources="$(get_bosh_io_resources "${BOSH_IO_ORG}" "${repo_name}" "${new_version}")"
+  local bosh_io_resources
+
+  if [[ ${BOSH_IO_ORG:-skip} != "skip" ]]; then
+    bosh_io_resources="$(get_bosh_io_resources "${BOSH_IO_ORG}" "${repo_name}" "${new_version}")"
+  fi
   popd > /dev/null
 
   local extra_metadata
@@ -75,7 +79,7 @@ ${built_with_go}
 
 **Full Changelog**: ${GITHUB_ORG_URL}/${repo_name}/compare/${old_version}...${new_tag_version}
 
-${bosh_io_resources}
+${bosh_io_resources:-}
 ${extra_metadata:-}
 EOF
 

@@ -53,7 +53,7 @@ function run(){
     do
         if [[ ! -f "${vs}" ]]; then
             if [[ ! -f "ops-files/${vs}" ]]; then
-                echo "Can't find ops-file ${vs}"
+                echo "Can't find vars-file ${vs}"
             else
                 vs="ops-files/${vs}"
             fi
