@@ -242,7 +242,7 @@ function wats() {
   "use_http": false,
   "use_windows_context_path": true,
   "use_windows_test_task": true,
-  "windows_stack": "windows"
+  "windows_stack": "${CF_WINDOWS_STACK:-windows}"
 }
 EOF
 }
