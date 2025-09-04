@@ -672,11 +672,11 @@ jobs:
         DEFAULT_PARAMS: "ci/routing-release/default-params/run-bin-test/linux.yml"
 #@ end
 #@ end
-  - in_parallel:
+  - do:
 #@ for package in helpers.packages_without_configure_db(data.values.tests_that_require_db):
     - task: #@ package.name
       file: ci/shared/tasks/run-bin-test/linux.yml
-      attempts: 3
+      attempts: 10
       vars:
         image_repository: cloudfoundry/tas-runtime-build
         image_password: ((gcp-arp-artifact-registry-service-account-token))
