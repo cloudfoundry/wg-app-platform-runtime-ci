@@ -195,7 +195,8 @@ function cfsmoke() {
   "isolation_segment_name": "persistent_isolation_segment",
   "isolation_segment_domain": "iso-seg.${CF_SYSTEM_DOMAIN}",
   "enable_isolation_segment_tests": ${WITH_ISOSEG},
-  "skip_ssl_validation": true
+  "skip_ssl_validation": true,
+  "timeout_scale": 2
 }
 EOF
 }
