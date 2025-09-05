@@ -4,9 +4,9 @@ platform: linux
 image_resource:
   type: registry-image
   source:
-    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/((image_repository))
+    repository: ((image_repository))
     username: _json_key
-    password: ((image_password))
+    # password: ((image_password))
     tag: ((image_tag))
 
 inputs:
