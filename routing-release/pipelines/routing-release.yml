@@ -1021,7 +1021,6 @@ jobs:
       OPS_FILES: #@ "\n".join(data.values.opsfiles + data.values.opsfiles_enable_tcp_routing_tls)
   - task: run-rats
     file: ci/shared/tasks/run-bin-test/linux.yml
-    image: image
     input_mapping:
       input-01: built-acceptance-test-configs
     params:
@@ -1047,7 +1046,6 @@ jobs:
       OPS_FILES: #@ "\n".join(data.values.opsfiles + data.values.opsfiles_disable_tcp_routing_tls)
   - task: run-rats
     file: ci/shared/tasks/run-bin-test/linux.yml
-    image: image
     input_mapping:
       input-01: built-acceptance-test-configs
     params:
