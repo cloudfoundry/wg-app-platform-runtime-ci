@@ -24,12 +24,10 @@ code.cloudfoundry.org/cacheddownloader
 code.cloudfoundry.org/cfdot
 code.cloudfoundry.org/credhub-cli
 code.cloudfoundry.org/diego-ssh
-code.cloudfoundry.org/dockerapplifecycle
 code.cloudfoundry.org/ecrhelper
 code.cloudfoundry.org/executor
 code.cloudfoundry.org/fileserver
 code.cloudfoundry.org/healthcheck
-code.cloudfoundry.org/inigo
 code.cloudfoundry.org/localdriver
 code.cloudfoundry.org/locket
 code.cloudfoundry.org/operationq
