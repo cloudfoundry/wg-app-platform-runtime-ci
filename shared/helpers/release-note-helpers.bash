@@ -39,7 +39,7 @@ function display_blob_change_info() {
     if [[ $b == "" ]]; then # when there are no blobs
       continue
     fi
-    if [[ $index == 1 ]]; then
+    if [[ $index == 0 ]]; then
       echo "## Blob Updates"
       count="not-1"
     fi
