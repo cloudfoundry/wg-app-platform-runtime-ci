@@ -7,6 +7,10 @@ db_flavors:
 - image: mysql-8.0
   value: mysql
 
+inigo_db_flavors:
+- image: mysql-8.0
+  value: mysql
+
 internal_repos:
 - name: "auction"
 - name: "auctioneer"

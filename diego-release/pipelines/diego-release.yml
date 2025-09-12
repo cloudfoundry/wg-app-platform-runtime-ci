@@ -9,7 +9,6 @@ groups:
   - template-tests
   - unit-and-integration-tests
   - inigo-mysql-linux
-  - inigo-postgres-linux
   - inigo-mysql-windows
   - lint-repo
   - claim-env
@@ -792,7 +791,7 @@ jobs:
       INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
 
-#@ for db in data.values.db_flavors:
+#@ for db in data.values.inigo_db_flavors:
 - name: #@ "inigo-{}-linux".format(db.value)
   serial: true
   plan:
@@ -1081,7 +1080,6 @@ jobs:
         - unit-and-integration-tests
         - lint-repo
         - inigo-mysql-linux
-        - inigo-postgres-linux
         - inigo-mysql-windows
     - get: image
     - get: env
