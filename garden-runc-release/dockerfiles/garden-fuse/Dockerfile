@@ -12,9 +12,13 @@ RUN apt-get update && apt-get -y install \
   gcc \
   attr \
   iputils-ping \
-  pkg-config
+  pkg-config \
+  libcap2-bin 
 
 RUN cd /usr/share/doc/libfuse-dev/examples && \
   bash -c "gcc -Wall hello.c $(pkg-config fuse --cflags --libs) -o /usr/bin/hellofs"
 
+
 RUN useradd -m alice
+# set required capabilitites for raw sockets
+RUN setcap cap_net_raw+ep /usr/bin/ping
