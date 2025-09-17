@@ -6,6 +6,7 @@ oses:
 extra_inputs:
   repo: Optional release repo to pass to task to find go version for that release in the packages folder that matches pattern golang-*-linux
   package-release: Optional bosh release for golang package used to find golang package version
+  go-version-json: Optional git resource to pull in a custom go version file if it differs from the ci resource. Use in conjunction with overriding GO_VERSION_FILE
 params:
   GO_VERSION_FILE: (Defaults to ci/go-version.json). Path to go-version.json where the new version is defined.
   IMAGE: The image name in dockerhub, e.g. cloudfoundry/tas-runtime-build
