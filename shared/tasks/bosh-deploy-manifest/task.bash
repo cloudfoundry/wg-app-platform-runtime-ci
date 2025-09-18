@@ -25,7 +25,7 @@ function run(){
         bosh_manifest > "${cf_manifest}"
         bosh_cloud_config > "${cloud_config}"
         bosh_extract_manifest_defaults_from_cf "${cf_manifest}" "${cloud_config}" > "${default_envs_file}"
-        debug "Extracted defaults vars from CF: $(cat ${default_envs_file})"
+        echo "Extracted defaults vars from CF: $(cat ${default_envs_file})"
     fi
     popd > /dev/null
 
@@ -63,6 +63,7 @@ function run(){
 
     debug "bosh arguments for deploy: ${arguments}"
 
+    echo "bosh -d ${DEPLOYMENT_NAME} deploy -n ${MANIFEST} --var=DEPLOYMENT_NAME=${DEPLOYMENT_NAME}${arguments}"
     eval "bosh -d ${DEPLOYMENT_NAME} deploy -n ${MANIFEST} --var=DEPLOYMENT_NAME=${DEPLOYMENT_NAME}${arguments}"
 }
 
