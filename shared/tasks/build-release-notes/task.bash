@@ -19,7 +19,11 @@ function run(){
   local new_version
   new_version="$(cat version/number)"
   local old_version
-  old_version="$(cat previous-github-release/tag)"
+  if [[ -d "previous-github-release" ]]; then
+    old_version="$(cat previous-github-release/tag)"
+  else
+    old_version="$(git --git-dir repo/.git rev-list --max-parents=0 HEAD)"
+  fi
 
   # Compensate for previous github tag having a `v` prefix
   local new_tag_version="${new_version}"

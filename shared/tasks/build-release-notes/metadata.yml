@@ -4,6 +4,7 @@ readme: |
 extra_inputs:
   released-binaries: This input would be helpful when passing binaries for getting version of go
   extra-metadata: This input adds extra-metadata for release notes
+  previous-github-release: Optionally provide the previous github release, or else it will build from the first commit
 oses:
   - linux
 params:
