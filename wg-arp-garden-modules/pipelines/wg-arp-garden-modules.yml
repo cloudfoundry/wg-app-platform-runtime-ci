@@ -224,6 +224,14 @@ jobs:
           DEPLOYMENT: windows-worker
           INSTANCE_GROUP: windows-worker
           BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+      - task: build-binaries
+        file: ci/shared/tasks/build-binaries/windows.yml
+        params:
+          FUNCTIONS: ci/winc-release/helpers/build-binaries.ps1
+          MAPPING: |
+            Build-Groot=src/code.cloudfoundry.org/groot-windows
+            Build-Winc-Network=src/code.cloudfoundry.org/winc/cmd/winc-network
+            Build-Winc=src/code.cloudfoundry.org/winc/cmd/winc
       - task: #@ "{}-windows".format(package.name)
         file: ci/shared/tasks/run-bin-test/windows.yml
         privileged: #@ helpers.privileged(package)
