@@ -61,14 +61,21 @@ function get_non_bot_commits() {
   START_REF="${1}"
   END_REF="${2}"
   OPTIONAL_SUBMODULE_NAME="${3:-}"
-  commits="$(git log "${START_REF}...${END_REF}" --invert-grep --author="App Platform Runtime Working Group CI Bot" --format="* %s - Author: %an - SHA: %H")"
+  commits="$(git log "${START_REF}...${END_REF}" --format="* %s - Author: %an - SHA: %H")"
   if [[ $commits != "" ]]; then
       if [[ $OPTIONAL_SUBMODULE_NAME != "" ]]; then
         echo "## Changes for '${OPTIONAL_SUBMODULE_NAME}'"
       else
         echo "## Changes"
       fi
-    echo "${commits}"
+
+      while read -r c; do
+        if [[ "$c" == *"Upgrade golang"* ]]; then
+          echo "${c}"
+        elif [[ "$c" != *"App Platform Runtime Working Group CI Bot"* ]]; then
+          echo "${c}"
+        fi
+      done <<< "$(echo "${commits}")"
   fi
 }
 
