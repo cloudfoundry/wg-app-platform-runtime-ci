@@ -99,6 +99,14 @@ resources:
     branch: release
     private_key: ((github-appruntimeplatform-bot/private-key))
 
+- name: winc-release
+  type: git
+  icon: source-branch
+  source:
+    uri: git@github.com:cloudfoundry/winc-release.git
+    branch: develop
+    private_key: ((github-appruntimeplatform-bot/private-key))
+
 - name: hwc-develop-branch-mergeback
   type: git
   icon: source-branch
@@ -229,9 +237,10 @@ jobs:
         params:
           FUNCTIONS: ci/winc-release/helpers/build-binaries.ps1
           MAPPING: |
-            Build-Groot=src/code.cloudfoundry.org/groot-windows
-            Build-Winc-Network=src/code.cloudfoundry.org/winc/cmd/winc-network
-            Build-Winc=src/code.cloudfoundry.org/winc/cmd/winc
+            Build-Groot=winc-release/src/code.cloudfoundry.org/groot-windows
+            Build-Winc-Network=winc-release/src/code.cloudfoundry.org/winc/cmd/winc-network
+            Build-Winc-Network=winc-release/src/code.cloudfoundry.org/winc/cmd/winc-network
+            Build-Winc=winc-release/src/code.cloudfoundry.org/winc/cmd/winc
       - task: #@ "{}-windows".format(package.name)
         file: ci/shared/tasks/run-bin-test/windows.yml
         privileged: #@ helpers.privileged(package)
