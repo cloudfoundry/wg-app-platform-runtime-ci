@@ -197,6 +197,7 @@ jobs:
       get: repo
       trigger: true
     - get: image
+    - get: winc-release
     - get: package-release
       resource: golang-release-latest
     - get: windows-worker-lock
@@ -234,13 +235,15 @@ jobs:
           BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
       - task: build-binaries
         file: ci/shared/tasks/build-binaries/windows.yml
+        input_mapping:
+          repo: winc-release
         params:
           FUNCTIONS: ci/winc-release/helpers/build-binaries.ps1
           MAPPING: |
-            Build-Groot=winc-release/src/code.cloudfoundry.org/groot-windows
-            Build-Winc-Network=winc-release/src/code.cloudfoundry.org/winc/cmd/winc-network
-            Build-Winc-Network=winc-release/src/code.cloudfoundry.org/winc/cmd/winc-network
-            Build-Winc=winc-release/src/code.cloudfoundry.org/winc/cmd/winc
+            Build-Groot=src/code.cloudfoundry.org/groot-windows
+            Build-Winc-Network=src/code.cloudfoundry.org/winc/cmd/winc-network
+            Build-Winc=src/code.cloudfoundry.org/winc/cmd/winc
+            Build-Diff-Exporter=src/code.cloudfoundry.org/diff-exporter
       - task: #@ "{}-windows".format(package.name)
         file: ci/shared/tasks/run-bin-test/windows.yml
         privileged: #@ helpers.privileged(package)
@@ -249,6 +252,8 @@ jobs:
             DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
             DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
             PRIVATE_DOCKER_IMAGE_URL=docker://cloudfoundry/garden-private-image-test:groot
+            IMAGE_NAME=cloudfoundry/windows2016fs
+            IMAGE_TAG=latest
       ensure:
         task: stop-windows-worker
         image: image
