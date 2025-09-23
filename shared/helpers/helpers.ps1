@@ -150,6 +150,7 @@ Function Expand-Verifications {
   {
     Write-Host "Verifying: $entry"
     Invoke-Expression "$entry"
+    Write-Host "Finished Verifying: $entry"
   }
   Debug "Expand-Verifications Ending"
 }
