@@ -776,61 +776,76 @@ jobs:
       - get: repo
       - get: image
       - get: autoconf
+        attempts: 3
         params:
           fetch_tags: true
         trigger: true
       - get: automake
+        attempts: 3
         params:
           fetch_tags: true
         trigger: true
       - get: busybox
+        attempts: 3
         params:
           fetch_tags: true
         trigger: true
       - get: gperf
+        attempts: 3
         params:
           fetch_tags: true
         trigger: true
       - get: iptables
+        attempts: 3
         params:
           fetch_tags: true
         trigger: true
       - get: libmnl
+        attempts: 3
         params:
           fetch_tags: true
         trigger: true
       - get: libnftnl
+        attempts: 3
         params:
           fetch_tags: true
         trigger: true
       - get: libseccomp
+        attempts: 3
         params:
           globs:
           - libseccomp-*.tar.gz
         trigger: true
       - get: libtool
+        attempts: 3
         params:
           fetch_tags: true
         trigger: true
       - get: musl
+        attempts: 3
         params:
           fetch_tags: true
         trigger: true
       - get: pkg-config
+        attempts: 3
         params:
           fetch_tags: true
         trigger: true
       - get: tar
+        attempts: 3
         params:
           fetch_tags: true
         trigger: true
       - get: tini
+        attempts: 3
         trigger: true
       - get: util-linux
+        attempts: 3
         params:
           fetch_tags: true
         trigger: true
       - get: zlib
+        attempts: 3
         params:
           globs: [ zlib-*.tar.gz ]
         trigger: true
