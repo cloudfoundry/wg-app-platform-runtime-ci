@@ -255,6 +255,8 @@ jobs:
           globs:
           - staticcheck_windows_amd64.tar.gz
         trigger: true
+      - get: go-version #! this way we rebuild staticcheck with the latest go version
+        trigger: true
       - get: mingw
         params:
           globs:
