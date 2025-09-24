@@ -302,7 +302,7 @@ jobs:
       input_mapping:
         blob: staticcheck
       params:
-        BOSH_BLOB_PATH: staticcheck/staticcheck-*-windows-amd64.tar.gz
+        BOSH_BLOB_PATH: staticcheck/staticcheck-*-windows-amd64.exe
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
