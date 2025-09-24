@@ -362,8 +362,7 @@ jobs:
       params:
         GO_MODS: |
           src/code.cloudfoundry.org/diff-exporter/go.mod
-          src/code.cloudfoundry.org/certsplitter
-          src/code.cloudfoundry.org/cert-injector
+          src/code.cloudfoundry.org/cert-injector/go.mod
           src/code.cloudfoundry.org/nstar/go.mod
           src/code.cloudfoundry.org/groot-windows/go.mod
           src/code.cloudfoundry.org/winc/go.mod
