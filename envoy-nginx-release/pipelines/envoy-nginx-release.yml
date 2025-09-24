@@ -362,6 +362,7 @@ jobs:
         trigger: true
   - do:
     - task: nginx-bump-bosh-blob
+      attempts: 3
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
