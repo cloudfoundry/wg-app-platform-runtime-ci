@@ -22,6 +22,9 @@ function cf_system_domain(){
     local system_domain
     if [[ "$(is_shepherd_v1_deployment)" == "yes" ]]; then
         system_domain=$(bosh int <(bosh_manifest) --path /instance_groups/name=blobstore?/jobs/name=blobstore/properties/system_domain)
+        if [[ "${system_domain:=null}" == "null" ]]; then
+          system_domain=$(bosh int <(bosh_manifest) --path /instance_groups/name=nfs_server?/jobs/name=blobstore/properties/system_domain)
+        fi
         echo "$system_domain"
         return
     fi
