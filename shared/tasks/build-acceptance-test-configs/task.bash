@@ -240,7 +240,7 @@ function wats() {
   "comma_delim_asgs_enabled": ${WITH_COMMA_DELIMITED_ASG_DESTINATIONS},
   "skip_ssl_validation": true,
   "timeout_scale": 1,
-  "unallocated_ip_for_security_group": "10.0.0.5",
+  "unallocated_ip_for_security_group": "10.0.244.255",
   "use_http": false,
   "use_windows_context_path": true,
   "use_windows_test_task": true,
