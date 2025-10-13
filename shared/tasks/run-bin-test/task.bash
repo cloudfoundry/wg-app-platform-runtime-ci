@@ -62,6 +62,7 @@ function run(){
 
     path=${PATH}
     pushd "repo/$DIR"  > /dev/null
+    export GOFLAGS="-gcflags=all=-lang=go1.24"
     if [[ -f ./bin/test.bash ]]; then
         debug "Running ./bin/test.bash for repo/$DIR"
         run_test_cmd ./bin/test.bash $(expand_flags) "$@"
