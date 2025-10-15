@@ -51,13 +51,13 @@ instance_groups:
           registration_interval: 20s
           port: 8081
           uris:
-          - unencrypted.sys.pcf.tasonvsphere.com
+          - unencrypted.bbl-routing-env.arp.cloudfoundry.org
         - name: https-endpoint
           registration_interval: 20s
           tls_port: 8082
           server_cert_domain_san: nats.service.cf.internal # using the nats cert so I dont have to generate certs myself
           uris:
-          - encrypted.sys.pcf.tasonvsphere.com
+          - encrypted.bbl-routing-env.arp.cloudfoundry.org
   - name: bosh-dns-aliases
     properties:
       aliases:
