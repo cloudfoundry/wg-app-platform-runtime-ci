@@ -35,6 +35,7 @@ opsfiles:
 - enable-backup-restore.yml
 - disable-bbr-non-routing.yml
 - add-tcp-router-backend-tls-certs.yml
+- share-bosh-links.yml
 opsfiles_enable_tcp_routing_tls:
 - enable-tcp-router-tls.yml
 - enable-route-emitter-tls-tcp-routes.yml

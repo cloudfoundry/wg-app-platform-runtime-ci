@@ -1,0 +1,118 @@
+name: old-route-registrar
+
+releases:
+- name: routing
+  version:  ((ROUTING_VERSION))
+- name: bpm
+  version: latest
+- name: bosh-dns-aliases
+  version: latest
+
+stemcells:
+- alias: default
+  os: ubuntu-jammy
+  version: latest
+
+instance_groups:
+
+- name: old-route-registrar
+  instances: 1
+  vm_type: medium
+  networks:
+  - name: default
+  azs: 
+  - z1
+  - z2
+  stemcell: default
+  jobs:
+  - name: bpm
+    release: bpm
+  - name: testapp
+    release: routing
+    properties:
+      tls_app:
+        cert: ((/bosh-bbl-routing-env/cf/cc_tls.certificate))
+        private_key: ((/bosh-bbl-routing-env/cf/cc_tls.private_key))
+  - name: route_registrar
+    release: routing
+    consumes:
+      routing-api: {from: routing-api, deployment: cf}
+    properties:
+      nats:
+        host: "nats.service.cf.internal"
+        machines: 
+        - "nats.service.cf.internal"
+        port: 4224
+        user: "nats"
+        password: ((/bosh-bbl-routing-env/cf/nats_password))
+        tls:
+          client_cert: ((/bosh-bbl-routing-env/cf/nats_client_cert.certificate))
+          client_key: ((/bosh-bbl-routing-env/cf/nats_client_cert.private_key))
+          enabled: true
+          ca_cert: ((/bosh-bbl-routing-env/cf/nats_client_cert.ca))
+      route_registrar:
+        routing_api:
+          client_cert: ((/bosh-bbl-routing-env/cf/routing_api_tls_client.certificate))
+          client_private_key: ((/bosh-bbl-routing-env/cf/routing_api_tls_client.private_key))
+          server_ca_cert: ((/bosh-bbl-routing-env/cf/routing_api_ca.ca))
+          client_id: routing_api_client
+          client_secret: ((/bosh-bbl-routing-env/cf/uaa_clients_routing_api_client_secret))
+          ca_certs:
+            - ((/bosh-bbl-routing-env/cf/routing_api_ca.certificate))
+            - ((/bosh-bbl-routing-env/cf/uaa_ca.certificate))
+        routes:
+        - name: http-endpoint
+          registration_interval: 20s
+          port: 8081
+          uris:
+          - unencrypted.bbl-routing-env.arp.cloudfoundry.org
+        - name: https-endpoint
+          registration_interval: 20s
+          tls_port: 8082
+          server_cert_domain_san: cloud-controller-ng.service.cf.internal # using the cc cert so I dont have to generate certs myself
+          uris:
+          - encrypted.bbl-routing-env.arp.cloudfoundry.org
+        - name: tcp-endpoint
+          registration_interval: 20s
+          type: tcp
+          external_port: 1033
+          port: 8083
+          router_group: default-tcp
+  - name: bosh-dns-aliases
+    properties:
+      aliases:
+      - domain: nats.service.cf.internal
+        targets:
+        - deployment: cf
+          domain: bosh
+          instance_group: nats
+          network: default
+          query: '*'
+      - domain: _.nats.service.cf.internal
+        targets:
+        - deployment: cf
+          domain: bosh
+          instance_group: nats
+          network: default
+          query: _
+      - domain: routing-api.service.cf.internal
+        targets:
+        - deployment: cf
+          domain: bosh
+          instance_group: api
+          network: default
+          query: '*'
+      - domain: uaa.service.cf.internal
+        targets:
+        - query: '*'
+          instance_group: uaa
+          deployment: cf
+          network: default
+          domain: bosh
+    release: bosh-dns-aliases
+
+update:
+  canaries: 1
+  max_in_flight: 3
+  canary_watch_time: 1000-240000
+  update_watch_time: 1000-240000

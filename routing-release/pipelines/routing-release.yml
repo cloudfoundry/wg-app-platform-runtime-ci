@@ -15,6 +15,7 @@ groups:
   - run-drats
   - run-rats
   - run-cfsmoke
+  - run-backwards-compatibility-route-registrar-test
   - export-release
   - run-cipher-suite
   - ship-what
@@ -95,6 +96,14 @@ resources:
     - NOTICE
     - README.md
     - docs/
+
+- name: old-routing-release
+  type: git
+  icon: source-branch
+  source:
+    branch: v0.301.0-used-for-testing
+    uri: git@github.com:cloudfoundry/routing-release.git
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 #! repo-synced is a write-only resource to prevent readme
 #! changes from triggering pipeline runs. See the description of "ignore_path"
@@ -785,6 +794,7 @@ jobs:
       COPY_ACTIONS: |
         {ci/routing-release/opsfiles/disable-bbr-non-routing.yml,combined-assets}
         {ci/routing-release/opsfiles/add-tcp-router-backend-tls-certs.yml,combined-assets}
+        {ci/routing-release/opsfiles/share-bosh-links.yml,combined-assets}
         {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
         {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
         {ci/shared/opsfiles/add-smoke-tests.yml,combined-assets}
@@ -973,6 +983,7 @@ jobs:
       COPY_ACTIONS: |
         {ci/routing-release/opsfiles/disable-bbr-non-routing.yml,combined-assets}
         {ci/routing-release/opsfiles/add-tcp-router-backend-tls-certs.yml,combined-assets}
+        {ci/routing-release/opsfiles/share-bosh-links.yml,combined-assets}
         {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
         {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
         {ci/shared/opsfiles/add-smoke-tests.yml,combined-assets}
@@ -1104,6 +1115,69 @@ jobs:
       DEPLOYMENT_NAME: cf
       ERRAND_NAME: smoke-tests
 
+- name: run-backwards-compatibility-route-registrar-test
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: old-routing-release
+  - task: save-version-to-file
+    image: image
+    config:
+      platform: linux
+      outputs:
+      - name: version
+      run:
+       path: /bin/sh
+       args:
+          - -exc
+          - |
+            mkdir -p version
+            touch version/number
+            echo "0.301.$(date +%s)" > version/number
+  - task: build-old-routing-release
+    image: image
+    file: ci/shared/tasks/bosh-create-release/linux.yml
+    input_mapping:
+      repo: old-routing-release
+  - task: bosh-upload-old-routing-release
+    image: image
+    file: ci/shared/tasks/bosh-upload-release/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-routing-env
+  - task: bosh-deploy-old-route-registrar
+    image: image
+    file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-routing-env
+      MANIFEST: release-01/routing-release/manifests/old-route-registrar.yml
+      DEPLOYMENT_NAME: old-route-registrar
+      ENVS: |
+        ROUTING_VERSION=$(bosh rs --json | jq -r '.Tables[0].Rows[] | select(.name == "routing").version' |  grep "0.301.1" | sort -r | head -n 1)
+  - task: run-backwards-compatibility-test
+    image: image
+    config:
+      platform: linux
+      inputs:
+      - name: old-routing-release
+      run:
+       path: /bin/sh
+       args:
+          - -exc
+          - |
+            cd old-routing-release/src/code.cloudfoundry.org/testapp
+            DOMAIN=bbl-routing-env.arp.cloudfoundry.org ginkgo .
 - name: export-release
   serial: true
   serial_groups: [acceptance]
