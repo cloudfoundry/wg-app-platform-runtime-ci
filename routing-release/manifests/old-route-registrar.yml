@@ -30,6 +30,10 @@ instance_groups:
     name: bpm
     provides: {}
     release: bpm
+  - consumes: {}
+    name: testapp
+    provides: {}
+    release: routing
   - name: route_registrar
     release: routing
     properties:
