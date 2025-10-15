@@ -2,7 +2,7 @@ name: old-route-registrar
 
 releases:
 - name: routing
-  version: 0.301.999
+  version:  ((ROUTING_VERSION))
 - name: bpm
   version: latest
 - name: bosh-dns-aliases
