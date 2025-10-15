@@ -1,6 +1,5 @@
 name: old-route-registrar
 
-
 releases:
 - name: routing
   version: 0.301.999
@@ -59,7 +58,7 @@ instance_groups:
         - name: https-endpoint
           registration_interval: 20s
           tls_port: 8082
-          server_cert_domain_san: nats.service.cf.internal # using the nats cert so I dont have to generate certs myself
+          server_cert_domain_san: nats_client # using the nats cert so I dont have to generate certs myself
           uris:
           - encrypted.bbl-routing-env.arp.cloudfoundry.org
   - name: bosh-dns-aliases
