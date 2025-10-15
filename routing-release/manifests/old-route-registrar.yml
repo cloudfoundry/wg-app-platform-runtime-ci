@@ -1,0 +1,91 @@
+name: old-route-registrar
+
+
+releases:
+- name: routing
+  version: 99.99.99
+- name: bpm
+  version: latest
+- name: bosh-dns-aliases
+  version: latest
+
+stemcells:
+- alias: default
+  os: ubuntu-jammy
+  version: latest
+
+instance_groups:
+
+- name: old-route-registrar
+  instances: 1
+  vm_type: medium
+  networks:
+  - name: default
+  azs: 
+  - z1
+  - z2
+  stemcell: default
+  jobs:
+  - consumes: {}
+    name: bpm
+    provides: {}
+    release: bpm
+  - name: route_registrar
+    release: routing
+    properties:
+      nats:
+        host: "nats.service.cf.internal"
+        machines: 
+        - "nats.service.cf.internal"
+        port: 4224
+        user: "nats"
+        password: ((/bosh-bbl-routing-env/cf/nats_password))
+        tls:
+          client_cert: ((/bosh-bbl-routing-env/cf/nats_client_cert.certificate))
+          client_key: ((/bosh-bbl-routing-env/cf/nats_client_cert.private_key))
+          enabled: true
+          ca_cert: ((/bosh-bbl-routing-env/cf/nats_client_cert.ca))
+      route_registrar:
+        routes:
+        - name: http-endpoint
+          registration_interval: 20s
+          port: 8081
+          uris:
+          - unencrypted.sys.pcf.tasonvsphere.com
+        - name: https-endpoint
+          registration_interval: 20s
+          tls_port: 8082
+          server_cert_domain_san: nats.service.cf.internal # using the nats cert so I dont have to generate certs myself
+          uris:
+          - encrypted.sys.pcf.tasonvsphere.com
+  - name: bosh-dns-aliases
+    properties:
+      aliases:
+      - domain: nats.service.cf.internal
+        targets:
+        - deployment: cf
+          domain: bosh
+          instance_group: nats
+          network: default
+          query: '*'
+      - domain: _.nats.service.cf.internal
+        targets:
+        - deployment: cf
+          domain: bosh
+          instance_group: nats
+          network: default
+          query: _
+      - domain: log-cache.service.cf.internal
+        targets:
+        - deployment: cf
+          domain: bosh
+          instance_group: log-cache
+          network: default
+          query: '*'
+    release: bosh-dns-aliases
+
+update:
+  canaries: 1
+  max_in_flight: 3
+  canary_watch_time: 1000-240000
+  update_watch_time: 1000-240000
