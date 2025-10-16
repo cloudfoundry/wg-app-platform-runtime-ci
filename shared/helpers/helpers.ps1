@@ -33,6 +33,7 @@ function Verify-GoVersionMatchBoshRelease {
     Push-Location $dir
     $go_version = $(((go version).Split(" ")[2]).Replace("go",""))
     $golang_release_dir = Join-Path $(New-TemporaryDirectory) golang-release
+    mkdir -Path $golang_release_dir -Force -ErrorAction SilentlyContinue
     $package= $(Get-ChildItem "./packages/" -Filter "golang-*windows" -Directory)
     $package_path= $package.FullName
     $package_name = $package.Name
@@ -99,7 +100,8 @@ function New-TemporaryDirectory {
     Set-TemporaryDirectory 
     $parent = [System.IO.Path]::GetTempPath()
     [string] $name = [System.Guid]::NewGuid()
-    New-Item -ItemType Directory -Path (Join-Path $parent $name) -Force -ErrorAction SilentlyContinue
+    $dir = $(Join-Path $parent $name)
+    mkdir -Path "$dir" -Force -ErrorAction SilentlyContinue
 }
 
 Function Test-CommandExists
