@@ -97,11 +97,12 @@ function Set-TemporaryDirectory {
 }
 
 function New-TemporaryDirectory {
-    Set-TemporaryDirectory 
+    Set-TemporaryDirectory  | Out-Null
     $parent = [System.IO.Path]::GetTempPath()
     [string] $name = [System.Guid]::NewGuid()
     $dir = $(Join-Path $parent $name)
-    mkdir -Path "$dir" -Force -ErrorAction SilentlyContinue
+    mkdir -Path "$dir" -Force -ErrorAction SilentlyContinue | Out-Null
+    $dir
 }
 
 Function Test-CommandExists
