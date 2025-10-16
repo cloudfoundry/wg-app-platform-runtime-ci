@@ -92,6 +92,7 @@ function Clean-GoCache{
 function Set-TemporaryDirectory {
     $env:TEMP="/var/vcap/data/tmp"
     $env:TMP="/var/vcap/data/tmp"
+    mkdir -p "$env:TMP"
 }
 
 function New-TemporaryDirectory {
