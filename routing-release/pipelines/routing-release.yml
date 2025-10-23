@@ -1178,6 +1178,14 @@ jobs:
           - |
             cd old-routing-release/src/code.cloudfoundry.org/testapp
             DOMAIN=bbl-routing-env.arp.cloudfoundry.org ginkgo .
+  - try: &delete-old-route-registrar
+      do:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-routing-env
+            DEPLOYMENT_NAME: old-route-registrar
 - name: export-release
   serial: true
   serial_groups: [acceptance]
@@ -1428,6 +1436,7 @@ jobs:
         trigger: true
   - try: *delete-cf-deployment
   - try: *delete-cipher-deployment
+  - try: *delete-old-route-registrar
   - task: stop-bbl-envs
     image: image
     file: ci/shared/tasks/stop-gcp-instance/linux.yml
@@ -1454,6 +1463,7 @@ jobs:
       - get: image
   - try: *delete-cf-deployment
   - try: *delete-cipher-deployment
+  - try: *delete-old-route-registrar
   - task: stop-bbl-envs
     image: image
     file: ci/shared/tasks/stop-gcp-instance/linux.yml
