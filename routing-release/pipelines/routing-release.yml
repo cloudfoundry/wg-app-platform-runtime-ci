@@ -1161,7 +1161,7 @@ jobs:
     file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
     params:
       BBL_STATE_DIR: bbl-routing-env
-      MANIFEST: release-01/routing-release/manifests/old-route-registrar.yml
+      MANIFEST: ci/routing-release/manifests/old-route-registrar.yml
       DEPLOYMENT_NAME: old-route-registrar
       ENVS: |
         ROUTING_VERSION=$(bosh rs --json | jq -r '.Tables[0].Rows[] | select(.name == "routing").version' |  grep "0.301.1" | sort -r | head -n 1)
