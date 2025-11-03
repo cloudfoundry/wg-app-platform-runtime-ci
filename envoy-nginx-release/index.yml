@@ -13,7 +13,6 @@ opsfiles:
   - windows2019-cell.yml
   - use-online-windows2019fs.yml
   - use-latest-windows2019-stemcell.yml
-  - enable-nginx-routing-integrity-windows2019.yml
   - scale-down-windows2019.yml
   - decrease-rep-evacuation-timeout.yml
   - use-2-azs-for-router.yml

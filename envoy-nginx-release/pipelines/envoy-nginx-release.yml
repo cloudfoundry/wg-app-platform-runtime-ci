@@ -560,7 +560,6 @@ jobs:
         {input-01/operations/windows2019-cell.yml,combined-assets}
         {input-01/operations/use-online-windows2019fs.yml,combined-assets}
         {input-01/operations/use-latest-windows2019-stemcell.yml,combined-assets}
-        {input-01/operations/experimental/enable-nginx-routing-integrity-windows2019.yml,combined-assets}
         {ci/envoy-nginx-release/opsfiles/*.yml,combined-assets}
         {ci/shared/opsfiles//scale-to-HA.yml,combined-assets}
         {ci/shared/opsfiles/compiled-windows-windows-runtime-workaround.yml,combined-assets}
