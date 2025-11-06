@@ -161,7 +161,7 @@ RUN \
 #    lychee
 RUN \
   if [ "${TARGETARCH}" = "amd64" ]; then lychee_arch="x86_64"; else lychee_arch="aarch64"; fi; \
-  url="$(curl -s https://api.github.com/repos/lycheeverse/lychee/releases | jq -r --arg lychee_arch "$lychee_arch" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($lychee_arch)) and (.name | contains("gnu")) ).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/lycheeverse/lychee/releases | jq -r --arg lychee_arch "$lychee_arch" '.[] | select(.prerelease != true) | .[0].assets[] | select((.name | contains("linux")) and (.name | contains($lychee_arch)) and (.name | contains("gnu")) ).browser_download_url')" && \
   echo "${url}" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/lychee /usr/local/bin/lychee
