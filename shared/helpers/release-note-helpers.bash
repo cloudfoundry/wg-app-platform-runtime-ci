@@ -1,3 +1,20 @@
+
+# standardized print function for a json structure.
+# json must have 'title' key and 'values' array.
+function print_json_for_release_note() {
+  local JSON="${1}"
+  local title="$(echo "${JSON}" | jq -r .title)"
+  local length="$(echo "${JSON}" | jq -r '.values | length' )"
+
+  if [ "$length" != "0" ]; then
+    echo "## ${title}"
+    while read -r i; do
+      echo "${i}"
+    done <<< "$(echo "${JSON}" | jq .values[] -cr)"
+    echo
+  fi
+}
+
 function get_blob_info_across_refs_json() {
   START_REF="${1}" # example: "v0.0.7"
   END_REF="${2}" # ex: "v0.0.8"
@@ -61,22 +78,32 @@ function get_non_bot_commits() {
   START_REF="${1}"
   END_REF="${2}"
   OPTIONAL_SUBMODULE_NAME="${3:-}"
+  local json="$(get_non_bot_commits_json $START_REF $END_REF $OPTIONAL_SUBMODULE_NAME)"
+  print_json_for_release_note "${json}"
+}
+
+
+function get_non_bot_commits_json() {
+  START_REF="${1}"
+  END_REF="${2}"
+  OPTIONAL_SUBMODULE_NAME="${3:-}"
+  if [[ $OPTIONAL_SUBMODULE_NAME != "" ]]; then
+    JSON='{"values":[], "title": "Changes for '${OPTIONAL_SUBMODULE_NAME}'"}'
+  else
+    JSON='{"values":[], "title": "Changes"}'
+  fi
+
   commits="$(git log "${START_REF}...${END_REF}" --format="* %s - Author: %an - SHA: %H")"
   if [[ $commits != "" ]]; then
-      if [[ $OPTIONAL_SUBMODULE_NAME != "" ]]; then
-        echo "## Changes for '${OPTIONAL_SUBMODULE_NAME}'"
-      else
-        echo "## Changes"
-      fi
-
       while read -r c; do
         if [[ "$c" == *"Upgrade golang"* ]]; then
-          echo "${c}"
+          JSON="$(jq --arg commit "$c" '.values += [$commit]' <<< "$JSON")"
         elif [[ "$c" != *"App Platform Runtime Working Group CI Bot"* ]]; then
-          echo "${c}"
+          JSON="$(jq --arg commit "$c" '.values += [$commit]' <<< "$JSON")"
         fi
       done <<< "$(echo "${commits}")"
   fi
+  echo "${JSON}" | jq -c .
 }
 
 function get_go_mod_diff_json() {
