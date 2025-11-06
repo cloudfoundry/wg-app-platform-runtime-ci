@@ -1,4 +1,3 @@
-
 # standardized print function for a json structure.
 # json must have 'title' key and 'values' array.
 function print_json_for_release_note() {
@@ -40,6 +39,29 @@ function get_blob_info_across_refs_json() {
   echo "${JSON}"
 }
 
+function get_blob_change_json() {
+  START_REF="${1}" # example: "v0.0.7"
+  END_REF="${2}" # ex: "v0.0.8"
+  BLOB_LOCATION="${3}" # ex: "config/blobs.yml"
+  blob_changes_json=$(get_blob_info_across_refs_json "${START_REF}" "${END_REF}" "${BLOB_LOCATION}")
+  JSON='{"values":[], "title": "Blob Updates"}'
+  index=0
+  while read -r b; do
+    if [[ $b == "" ]]; then # when there are no blobs
+      continue
+    fi
+    new_name="$(echo "${b}" | jq -r .name)"
+    old_name="$(echo "${blob_changes_json}" | jq -r .old_blobs["${index}"].name)"
+
+    if [ "$old_name" != "$new_name" ]; then
+        change="* Bumped blob '${old_name}' to '${new_name}'"
+        JSON="$(jq --arg c "$change" '.values += [$c]' <<< "$JSON")"
+    fi
+    index=$((index+1))
+  done <<< "$(echo "${blob_changes_json}" | jq -cr .new_blobs[])"
+  echo "${JSON}" | jq -c .
+}
+
 
 # $ display_blob_change_info v0.300.0 v0.341.0 config/blobs.yml
 # ## Blob Changes
@@ -49,25 +71,8 @@ function display_blob_change_info() {
   START_REF="${1}" # example: "v0.0.7"
   END_REF="${2}" # ex: "v0.0.8"
   BLOB_LOCATION="${3}" # ex: "config/blobs.yml"
-
-  blob_changes_json=$(get_blob_info_across_refs_json "${START_REF}" "${END_REF}" "${BLOB_LOCATION}")
-  index=0
-  while read -r b; do
-    if [[ $b == "" ]]; then # when there are no blobs
-      continue
-    fi
-    if [[ $index == 0 ]]; then
-      echo "## Blob Updates"
-      count="not-1"
-    fi
-    new_name="$(echo "${b}" | jq -r .name)"
-    old_name="$(echo "${blob_changes_json}" | jq -r .old_blobs["${index}"].name)"
-
-    if [ "$old_name" != "$new_name" ]; then
-      echo "* Bumped blob '${old_name}' to '${new_name}'"
-    fi
-    index=$((index+1))
-  done <<< "$(echo "${blob_changes_json}" | jq -cr .new_blobs[])"
+  local json="$(get_blob_change_json $START_REF $END_REF $BLOB_LOCATION)"
+  print_json_for_release_note "${json}"
 }
 
 # $ get_non_bot_commits v0.340.0 v0.341.0
