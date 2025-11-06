@@ -12,4 +12,4 @@ opsfiles:
   disable-tcp-router-tls.yml: Disables tcp-router from supporting TLS on TCP routes
   enable-tcp-router-tls.yml: Enables tcp-router to handle TLS on TCP routes
   add-tcp-router-backend-tls-certs.yml: Adds TLS cert configs to tcp-router
-
+  share-bosh-links: Enables sharing for the routing_api bosh link
