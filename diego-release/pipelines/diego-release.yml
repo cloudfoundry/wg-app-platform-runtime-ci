@@ -97,6 +97,17 @@ resources:
     - README.md
     - docs/
 
+- name: repo-with-docs
+  type: git
+  icon: source-branch
+  source:
+    branch: develop
+    uri: git@github.com:cloudfoundry/diego-release.git
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    ignore_paths:
+    - .github/
+    - .gitignore
+
 #! repo-synced is a write-only resource to prevent readme
 #! changes from triggering pipeline runs. See the description of "ignore_path"
 #! here for more info: https://github.com/concourse/git-resource
@@ -626,7 +637,7 @@ jobs:
       - get: image
       - get: weekly
         trigger: true
-      - get: repo
+      - get: repo-with-docs
         trigger: false
 #@ for repo in data.values.internal_repos:
       - get: #@ "{}-repo".format(repo.name)
