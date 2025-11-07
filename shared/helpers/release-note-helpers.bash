@@ -26,16 +26,19 @@ function display_blob_change_info() {
   print_json_for_release_note "${json}"
 }
 
-# $ get_non_bot_commits v0.340.0 v0.341.0
+# $ display_non_bot_commits v0.340.0 v0.341.0
 # ## Changes
 # * Update routing-api's bbr metadata to be overridable with a bosh property - Author: Geoff Franks - SHA: 0c093995d1e6c6f9174772020d9d7e80d5ef020d
 # * cleanup logging format property - Author: kart2bc - SHA: 8649855084b57c3a24260473f4baa1473aff0125
-function get_non_bot_commits() {
+function display_non_bot_commits() {
   START_REF="${1}"
   END_REF="${2}"
   OPTIONAL_SUBMODULE_NAME="${3:-}"
   local json="$(get_non_bot_commits_json $START_REF $END_REF $OPTIONAL_SUBMODULE_NAME)"
   print_json_for_release_note "${json}"
+}
+function get_non_bot_commits() {
+  display_non_bot_commits "$@"
 }
 
 # $ display_go_mod_diff v0.340.0 v0.341.0
@@ -103,7 +106,7 @@ function get_blob_change_json() {
   echo "${JSON}" | jq -c .
 }
 
-# this is a helper function for get_non_bot_commits
+# this is a helper function for display_non_bot_commits
 function get_non_bot_commits_json() {
   START_REF="${1}"
   END_REF="${2}"
