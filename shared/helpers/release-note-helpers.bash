@@ -14,6 +14,46 @@ function print_json_for_release_note() {
   fi
 }
 
+# $ display_blob_change_info v0.300.0 v0.341.0 config/blobs.yml
+# ## Blob Changes
+# * Bumped blob 'haproxy' from '2.8.9' to '2.8.15'
+# * Bumped blob 'jq' from '1.7.1' to '1.8.0'
+function display_blob_change_info() {
+  START_REF="${1}" # example: "v0.0.7"
+  END_REF="${2}" # ex: "v0.0.8"
+  BLOB_LOCATION="${3}" # ex: "config/blobs.yml"
+  local json="$(get_blob_change_json $START_REF $END_REF $BLOB_LOCATION)"
+  print_json_for_release_note "${json}"
+}
+
+# $ get_non_bot_commits v0.340.0 v0.341.0
+# ## Changes
+# * Update routing-api's bbr metadata to be overridable with a bosh property - Author: Geoff Franks - SHA: 0c093995d1e6c6f9174772020d9d7e80d5ef020d
+# * cleanup logging format property - Author: kart2bc - SHA: 8649855084b57c3a24260473f4baa1473aff0125
+function get_non_bot_commits() {
+  START_REF="${1}"
+  END_REF="${2}"
+  OPTIONAL_SUBMODULE_NAME="${3:-}"
+  local json="$(get_non_bot_commits_json $START_REF $END_REF $OPTIONAL_SUBMODULE_NAME)"
+  print_json_for_release_note "${json}"
+}
+
+# $ display_go_mod_diff v0.340.0 v0.341.0
+# ## Go Packages Updates
+# * Bumped go.mod package 'code.cloudfoundry.org/bbs' from 'v0.0.0-20250731191341-d1ca59879d2a' to 'v0.0.0-20251015153747-a834f02e33fd'
+# * Bumped go.mod package 'code.cloudfoundry.org/cfhttp/v2' from 'v2.59.0' to 'v2.60.0'
+# * Bumped go.mod package 'code.cloudfoundry.org/clock' from 'v1.51.0' to 'v1.52.0'
+function display_go_mod_diff() {
+  START_REF="${1}" # example: "v0.0.7"
+  END_REF="${2}" # ex: "v0.0.8"
+  GO_MOD_LOCATION="${3}"
+  OPTIONAL_SUBMODULE_NAME="${4:-}"
+
+  go_mod_changes_json=$(get_go_mod_diff_json "${START_REF}" "${END_REF}" "${GO_MOD_LOCATION}" "${OPTIONAL_SUBMODULE_NAME}")
+  print_json_for_release_note "${go_mod_changes_json}"
+}
+
+# this is a helper function for display_blob_change_info.
 function get_blob_info_across_refs_json() {
   START_REF="${1}" # example: "v0.0.7"
   END_REF="${2}" # ex: "v0.0.8"
@@ -39,6 +79,7 @@ function get_blob_info_across_refs_json() {
   echo "${JSON}"
 }
 
+# this is a helper function for display_blob_change_info.
 function get_blob_change_json() {
   START_REF="${1}" # example: "v0.0.7"
   END_REF="${2}" # ex: "v0.0.8"
@@ -62,32 +103,7 @@ function get_blob_change_json() {
   echo "${JSON}" | jq -c .
 }
 
-
-# $ display_blob_change_info v0.300.0 v0.341.0 config/blobs.yml
-# ## Blob Changes
-# * Bumped blob 'haproxy' from '2.8.9' to '2.8.15'
-# * Bumped blob 'jq' from '1.7.1' to '1.8.0'
-function display_blob_change_info() {
-  START_REF="${1}" # example: "v0.0.7"
-  END_REF="${2}" # ex: "v0.0.8"
-  BLOB_LOCATION="${3}" # ex: "config/blobs.yml"
-  local json="$(get_blob_change_json $START_REF $END_REF $BLOB_LOCATION)"
-  print_json_for_release_note "${json}"
-}
-
-# $ get_non_bot_commits v0.340.0 v0.341.0
-# ## Changes
-# * Update routing-api's bbr metadata to be overridable with a bosh property - Author: Geoff Franks - SHA: 0c093995d1e6c6f9174772020d9d7e80d5ef020d
-# * cleanup logging format property - Author: kart2bc - SHA: 8649855084b57c3a24260473f4baa1473aff0125
-function get_non_bot_commits() {
-  START_REF="${1}"
-  END_REF="${2}"
-  OPTIONAL_SUBMODULE_NAME="${3:-}"
-  local json="$(get_non_bot_commits_json $START_REF $END_REF $OPTIONAL_SUBMODULE_NAME)"
-  print_json_for_release_note "${json}"
-}
-
-
+# this is a helper function for get_non_bot_commits
 function get_non_bot_commits_json() {
   START_REF="${1}"
   END_REF="${2}"
@@ -111,6 +127,7 @@ function get_non_bot_commits_json() {
   echo "${JSON}" | jq -c .
 }
 
+# this is a helper function for display_go_mod_diff
 function get_go_mod_diff_json() {
   START_REF="${1}"
   END_REF="${2}"
@@ -195,16 +212,6 @@ function get_go_mod_diff_json() {
   done <<< "$(echo "${DIFF_JSON}" | jq -cr '.packages | sort_by(.name) | .[]')"
 
   echo "${JSON}"
-}
-
-function display_go_mod_diff() {
-  START_REF="${1}" # example: "v0.0.7"
-  END_REF="${2}" # ex: "v0.0.8"
-  GO_MOD_LOCATION="${3}"
-  OPTIONAL_SUBMODULE_NAME="${4:-}"
-
-  go_mod_changes_json=$(get_go_mod_diff_json "${START_REF}" "${END_REF}" "${GO_MOD_LOCATION}" "${OPTIONAL_SUBMODULE_NAME}")
-  print_json_for_release_note "${go_mod_changes_json}"
 }
 
 function get_bosh_job_spec_diff(){
