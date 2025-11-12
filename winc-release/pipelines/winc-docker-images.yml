@@ -122,7 +122,7 @@ jobs:
       FLY_USER: ci-user
       FLY_PASSWORD: ((concourse-bot-ci-user))
       FLY_URL: https://ci.funtime.lol
-      FLY_WORKER_TAG: windows
+      FLY_WORKER_REGEX: windows
     ensure:
       put: windows-worker-lock
       inputs: detect
@@ -172,7 +172,7 @@ jobs:
       file: ci/shared/tasks/fly-prune-worker/linux.yml
       params:
         FLY_PASSWORD: ((concourse-bot-ci-user))
-        FLY_WORKER_TAG: windows
+        FLY_WORKER_REGEX: windows
       ensure:
         put: windows-worker-lock
         inputs: detect
@@ -222,7 +222,7 @@ jobs:
       file: ci/shared/tasks/fly-prune-worker/linux.yml
       params:
         FLY_PASSWORD: ((concourse-bot-ci-user))
-        FLY_WORKER_TAG: windows
+        FLY_WORKER_REGEX: windows
       ensure:
         put: windows-worker-lock
         inputs: detect
@@ -272,7 +272,7 @@ jobs:
       file: ci/shared/tasks/fly-prune-worker/linux.yml
       params:
         FLY_PASSWORD: ((concourse-bot-ci-user))
-        FLY_WORKER_TAG: windows
+        FLY_WORKER_REGEX: windows
       ensure:
         put: windows-worker-lock
         inputs: detect
