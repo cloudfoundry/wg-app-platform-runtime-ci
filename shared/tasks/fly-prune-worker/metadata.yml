@@ -1,0 +1,10 @@
+---
+readme: |
+  This task will land and prune workers from concourse if it can
+oses:
+  - linux
+params:
+  FLY_URL: URL of the concourse API
+  FLY_USER: Username to log into concourse with
+  FLY_PASSWORD: Password to log into concourse with
+  FLY_WORKER_REGEX: Regex to use to find workers to attempt landing/pruning

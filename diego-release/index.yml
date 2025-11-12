@@ -12,6 +12,15 @@ inigo_db_flavors:
   value: mysql
 
 internal_repos:
+- name: "bbs"
+- name: "buildpackapplifecycle"
+- name: "cacheddownloader"
+- name: "executor"
+- name: "locket"
+- name: "rep"
+- name: routing-info
+
+modules_to_test:
 - name: "auction"
 - name: "auctioneer"
   configure_db: true
