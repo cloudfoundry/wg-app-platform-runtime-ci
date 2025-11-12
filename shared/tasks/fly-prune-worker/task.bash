@@ -14,9 +14,13 @@ function run(){
     local task_tmp_dir="${1:?provide temp dir for task}"
     shift 1
 
-    fly -t ci login -c "${FLY_URL}" -u "${FLY_USER}" -p "${FLY_PASSWORD}"
-    for worker in $(fly -t ci workers | grep -E "${FLY_WORKER_REGEX}" | cut -d " " -f1); do
-        fly -t ci prune-worker -w "${worker}"
+    curl -kL -o "${task_tmp_dir}/fly" "${FLY_URL}/api/v1/cli?arch=amd64&platform=linux"
+    FLY_BIN="${task_tmp_dir/fly}"
+    chmod 755  "${FLY_BIN}"
+
+    "${FLY_BIN}" -t ci login -c "${FLY_URL}" -u "${FLY_USER}" -p "${FLY_PASSWORD}"
+    for worker in $("${FLY_BIN}" -t ci workers | grep -E "${FLY_WORKER_REGEX}" | cut -d " " -f1); do
+        "${FLY_BIN}" -t ci prune-worker -w "${worker}"
     done
 }
 
