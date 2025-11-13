@@ -1188,6 +1188,7 @@ jobs:
         {input-01/operations/scale-database-cluster.yml,combined-assets}
         {input-01/operations/windows2019-cell.yml,combined-assets}
         {input-01/operations/use-online-windows2019fs.yml,combined-assets}
+        {input-01/operations/disable-dynamic-asgs.yml,combined-assets}
         {input-01/operations/add-persistent-isolation-segment-diego-cell.yml,combined-assets}
         {input-01/operations/add-persistent-isolation-segment-router.yml,combined-assets}
         {input-02/grace-opsfile.yml,combined-assets}
