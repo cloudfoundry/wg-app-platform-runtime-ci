@@ -216,7 +216,7 @@ jobs:
           file: ci/shared/tasks/fly-prune-worker/linux.yml
           params:
             FLY_PASSWORD: ((concourse-bot-ci-user))
-            FLY_WORKER_REGEX: windows
+            FLY_WORKER_REGEX: " windows +none"
           ensure:
             put: windows-worker-lock
             inputs: detect
@@ -300,7 +300,7 @@ jobs:
           file: ci/shared/tasks/fly-prune-worker/linux.yml
           params:
             FLY_PASSWORD: ((concourse-bot-ci-user))
-            FLY_WORKER_REGEX: windows
+            FLY_WORKER_REGEX: " windows +none"
           ensure:
             put: windows-worker-lock
             inputs: detect
