@@ -803,6 +803,13 @@ jobs:
       DEPLOYMENT: diego-worker-windows 
       INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+    ensure:
+      task: prune-worker
+      image: image
+      file: ci/shared/tasks/fly-prune-worker/linux.yml
+      params:
+        FLY_PASSWORD: ((concourse-bot-ci-user))
+        FLY_WORKER_REGEX: diego-windows
 
 #@ for db in data.values.inigo_db_flavors:
 - name: #@ "inigo-{}-linux".format(db.value)
@@ -1056,6 +1063,13 @@ jobs:
       DEPLOYMENT: diego-worker-windows
       INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+    ensure:
+      task: prune-worker
+      image: image
+      file: ci/shared/tasks/fly-prune-worker/linux.yml
+      params:
+        FLY_PASSWORD: ((concourse-bot-ci-user))
+        FLY_WORKER_REGEX: diego-windows
 - name: lint-repo
   serial: true
   plan:
