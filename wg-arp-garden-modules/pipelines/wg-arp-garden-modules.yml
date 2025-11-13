@@ -263,10 +263,17 @@ jobs:
             INSTANCE_GROUP: windows-worker
             BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
           ensure:
-            put: windows-worker-lock
-            inputs: detect
+            task: prune-worker
+            image: image
+            file: ci/shared/tasks/fly-prune-worker/linux.yml
             params:
-              release: windows-worker-lock
+              FLY_PASSWORD: ((concourse-bot-ci-user))
+              FLY_WORKER_REGEX: windows
+            ensure:
+              put: windows-worker-lock
+              inputs: detect
+              params:
+                release: windows-worker-lock
 #@ end
 #@ end
 #@ for package in helpers.packages_with_configure_db(data.values.internal_repos):

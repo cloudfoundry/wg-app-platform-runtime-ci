@@ -119,15 +119,18 @@ jobs:
       DEPLOYMENT: windows-worker
       INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
-      FLY_USER: ci-user
-      FLY_PASSWORD: ((concourse-bot-ci-user))
-      FLY_URL: https://ci.funtime.lol
-      FLY_WORKER_REGEX: windows
-    ensure:
-      put: windows-worker-lock
-      inputs: detect
-      params:
-        release: windows-worker-lock
+      ensure:
+        task: prune-worker
+        image: image
+        file: ci/shared/tasks/fly-prune-worker/linux.yml
+        params:
+          FLY_PASSWORD: ((concourse-bot-ci-user))
+          FLY_WORKER_REGEX: windows
+        ensure:
+          put: windows-worker-lock
+          inputs: detect
+          params:
+            release: windows-worker-lock
 
 - name: groot-windows-test-regularfile
   serial: true
