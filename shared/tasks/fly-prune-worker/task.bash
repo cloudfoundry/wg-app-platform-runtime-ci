@@ -20,6 +20,7 @@ function run(){
 
     "${FLY_BIN}" -t ci login -c "${FLY_URL}" -u "${FLY_USER}" -p "${FLY_PASSWORD}"
     for worker in $("${FLY_BIN}" -t ci workers | grep -E "${FLY_WORKER_REGEX}" | cut -d " " -f1); do
+        "${FLY_BIN}" -t ci land-worker -w "${worker}"
         "${FLY_BIN}" -t ci prune-worker -w "${worker}"
     done
 }
