@@ -14,8 +14,8 @@ function run(){
     local task_tmp_dir="${1:?provide temp dir for task}"
     shift 1
 
-    curl -kL -o "${task_tmp_dir}/fly" "${FLY_URL}/api/v1/cli?arch=amd64&platform=linux"
-    FLY_BIN="${task_tmp_dir/fly}"
+    FLY_BIN="${task_tmp_dir}/fly"
+    curl -kL -o "${FLY_BIN}" "${FLY_URL}/api/v1/cli?arch=amd64&platform=linux"
     chmod 755  "${FLY_BIN}"
 
     "${FLY_BIN}" -t ci login -c "${FLY_URL}" -u "${FLY_USER}" -p "${FLY_PASSWORD}"
