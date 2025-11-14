@@ -327,7 +327,7 @@ resources:
     json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
 - name: diego-release-env-lock
-  type: pool
+  type: fork-pool
   icon: cloud-lock
   source:
     branch: main
