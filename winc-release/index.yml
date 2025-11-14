@@ -15,7 +15,6 @@ opsfiles:
 - use-compiled-releases-windows.yml
 - scale-to-one-az.yml
 - windows2019-cell.yml
-- disable-dynamic-asgs.yml
 - use-online-windows2019fs.yml
 - use-latest-windows2019-stemcell.yml
 - scale-down-windows2019.yml
