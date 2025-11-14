@@ -225,7 +225,7 @@ function wats() {
   "include_route_services": false,
   "include_routing": false,
   "include_routing_isolation_segments": false,
-  "include_security_groups": true,
+  "include_security_groups": false,
   "dynamic_asgs_enabled": ${WITH_DYNAMIC_ASG},
   "include_service_discovery": false,
   "include_service_instance_sharing": false,

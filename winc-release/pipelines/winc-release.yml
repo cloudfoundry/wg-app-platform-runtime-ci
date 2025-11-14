@@ -771,7 +771,6 @@ jobs:
       BBL_STATE_DIR: bbl-winc-env
       CONFIGS: wats
       WITH_ISOSEG: true
-      WITH_DYNAMIC_ASG: false
   - task: wats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     attempts: 2
