@@ -9,6 +9,7 @@ export TASK_NAME="$(basename "$THIS_FILE_DIR")"
 source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
 source "$THIS_FILE_DIR/../../../shared/helpers/git-helpers.bash"
 source "$THIS_FILE_DIR/../../../shared/helpers/bosh-helpers.bash"
+source "$THIS_FILE_DIR/../../../shared/helpers/release-note-helpers.bash"
 unset THIS_FILE_DIR
 
 function run(){
@@ -47,6 +48,15 @@ function run(){
     fi
   fi
 
+  generate_release_note_script="scripts/generate-release-notes-helper"
+  if [ -e "$generate_release_note_script" ]; then
+    source "${generate_release_note_script}"
+    local repo_head_version=$(git rev-parse HEAD)
+    code_changes="$(generate_release_notes "${old_version}...${repo_head_version}")"
+  else
+    code_changes="- FIXME: enter release notes here"
+  fi
+
   local built_with_go=""
   if [[ -n "${go_version}" ]]; then
     built_with_go="## ✨  Built with go ${go_version}"
@@ -74,10 +84,7 @@ function run(){
 
 **Release Date**: $(date  +"%B %d, %Y")
 
-## Changes
-
-- FIXME: enter release notes here
-
+${code_changes}
 ${spec_diff}
 ${built_with_go}
 
