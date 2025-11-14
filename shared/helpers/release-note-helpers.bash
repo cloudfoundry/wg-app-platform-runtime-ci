@@ -37,6 +37,7 @@ function display_non_bot_commits() {
   local json="$(get_non_bot_commits_json $START_REF $END_REF $OPTIONAL_SUBMODULE_NAME)"
   print_json_for_release_note "${json}"
 }
+
 function get_non_bot_commits() {
   display_non_bot_commits "$@"
 }
