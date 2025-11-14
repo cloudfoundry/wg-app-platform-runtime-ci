@@ -62,6 +62,7 @@ opsfiles:
 - scale-database-cluster.yml
 - windows2019-cell.yml
 - use-online-windows2019fs.yml
+- disable-dynamic-asgs.yml
 - add-lb-ca-cert.yml
 - add-persistent-isolation-segment-diego-cell.yml
 - add-persistent-isolation-segment-router.yml
