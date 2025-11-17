@@ -295,18 +295,18 @@ jobs:
           DEPLOYMENT: windows-worker
           INSTANCE_GROUP: windows-worker
           BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+        ensure:
+          task: prune-worker
+          image: image
+          file: ci/shared/tasks/fly-prune-worker/linux.yml
+          params:
+            FLY_PASSWORD: ((concourse-bot-ci-user))
+            FLY_WORKER_REGEX: " windows +none"
           ensure:
-            task: prune-worker
-            image: image
-            file: ci/shared/tasks/fly-prune-worker/linux.yml
+            put: windows-worker-lock
+            inputs: detect
             params:
-              FLY_PASSWORD: ((concourse-bot-ci-user))
-              FLY_WORKER_REGEX: " windows +none"
-            ensure:
-              put: windows-worker-lock
-              inputs: detect
-              params:
-                release: windows-worker-lock
+              release: windows-worker-lock
 #@ end
 #@ end
 
