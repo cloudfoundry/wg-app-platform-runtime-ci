@@ -72,6 +72,7 @@ function cats() {
     "include_internet_dependent": true,
     "include_routing_isolation_segments": ${WITH_ISOSEG},
     "include_isolation_segments": ${WITH_ISOSEG},
+    "dynamic_asgs_enabled": ${WITH_DYNAMIC_ASG},
     "include_route_services": true,
     "include_routing": true,
     "include_security_groups": true,
