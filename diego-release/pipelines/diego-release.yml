@@ -1188,7 +1188,6 @@ jobs:
         {input-01/operations/scale-database-cluster.yml,combined-assets}
         {input-01/operations/windows2019-cell.yml,combined-assets}
         {input-01/operations/use-online-windows2019fs.yml,combined-assets}
-        {input-01/operations/disable-dynamic-asgs.yml,combined-assets}
         {input-01/operations/add-persistent-isolation-segment-diego-cell.yml,combined-assets}
         {input-01/operations/add-persistent-isolation-segment-router.yml,combined-assets}
         {input-02/grace-opsfile.yml,combined-assets}
@@ -1375,6 +1374,7 @@ jobs:
       trigger: true
       passed: [ prepare-env ]
     - get: ci
+    - get: cf-deployment
     - get: repo
       passed: [prepare-env]
       trigger: true
@@ -1382,6 +1382,53 @@ jobs:
       passed: [prepare-env]
       trigger: true
     - get: cf-deployment-concourse-tasks
+  - in_parallel:
+      steps:
+      - task: prepare-cf-deployment-env
+        attempts: 10
+        image: image
+        file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-diego-env
+      - task: copy-grace-opsfile
+        image: grace-image
+        file: ci/diego-release/tasks/copy-grace-opsfile/linux.yml
+  - task: combine-ops-files
+    file: ci/shared/tasks/combine-assets/linux.yml
+    image: image
+    input_mapping:
+      input-01: cf-deployment
+      input-02: copied-grace-opsfile
+    output_mapping:
+      combined-assets: combined-opsfiles
+    params:
+      COPY_ACTIONS: |
+        {input-01/operations/use-compiled-releases.yml,combined-assets}
+        {input-01/operations/experimental/use-compiled-releases-windows.yml,combined-assets}
+        {input-01/operations/scale-database-cluster.yml,combined-assets}
+        {input-01/operations/windows2019-cell.yml,combined-assets}
+        {input-01/operations/use-online-windows2019fs.yml,combined-assets}
+        {input-01/operations/add-persistent-isolation-segment-diego-cell.yml,combined-assets}
+        {input-01/operations/add-persistent-isolation-segment-router.yml,combined-assets}
+        {input-01/operations/disable-dynamic-asgs.yml,combined-assets}
+        {input-02/grace-opsfile.yml,combined-assets}
+        {ci/shared/opsfiles/scale-to-HA.yml,combined-assets}
+        {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
+        {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
+        {ci/diego-release/opsfiles/*,combined-assets}
+  - task: deploy-cf-deployment
+    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    input_mapping:
+      ops-files: combined-opsfiles
+      vars-files: prepared-env
+      bbl-state: env
+    params:
+      BBL_STATE_DIR: bbl-diego-env
+      SYSTEM_DOMAIN: bbl-diego-env.arp.cloudfoundry.org
+      DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
+      FAIL_ON_DOWNTIME: "false"
+      VARS_FILES: vars.yml
+      OPS_FILES: #@ "\n".join(data.values.opsfiles + ["disable-dynamic-asgs.yml"])
   - task: vizzini
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
@@ -1408,6 +1455,11 @@ jobs:
       trigger: true
     - get: cf-deployment-concourse-tasks
     - get: cf-deployment
+      passed:
+        - run-cats
+        - run-wats
+        - export-release
+        - run-bosh-restart
     - get: image
   - task: create-uptimer-config
     image: image
