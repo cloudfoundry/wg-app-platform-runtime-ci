@@ -821,7 +821,7 @@ jobs:
       CONFIGS: cats
       WITH_VOLUME_SERVICES: true
       WITH_ISOSEG: false
-      WITH_DYNAMIC_ASG: false
+      WITH_DYNAMIC_ASG: true
       BBL_STATE_DIR: bbl-smb-volume-env
   - task: cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
