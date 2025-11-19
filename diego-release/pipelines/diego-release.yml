@@ -1488,11 +1488,7 @@ jobs:
         - get: manual-release-trigger
           trigger: true
           passed:
-            - run-cats
-            - run-wats
-            - export-release
             - run-vizzini
-            - run-bosh-restart
         - get: ci
         - get: repo
           passed:
