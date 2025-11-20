@@ -1376,7 +1376,12 @@ jobs:
     - get: ci
     - get: cf-deployment
     - get: repo
-      passed: [prepare-env]
+      passed:
+        - run-cats
+        - run-wats
+        - export-release
+        - run-bosh-restart
+        - prepare-env
       trigger: true
     - get: env
       passed: [prepare-env]
@@ -1455,11 +1460,6 @@ jobs:
       trigger: true
     - get: cf-deployment-concourse-tasks
     - get: cf-deployment
-      passed:
-        - run-cats
-        - run-wats
-        - export-release
-        - run-bosh-restart
     - get: image
   - task: create-uptimer-config
     image: image
