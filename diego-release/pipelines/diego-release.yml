@@ -1292,7 +1292,7 @@ jobs:
     params:
       CONFIGS: cats
       WITH_ISOSEG: true
-      WITH_DYNAMIC_ASG: false
+      WITH_DYNAMIC_ASG: true
       BBL_STATE_DIR: bbl-diego-env
   - task: cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
@@ -1328,7 +1328,7 @@ jobs:
     params:
       CONFIGS: wats
       WITH_ISOSEG: true
-      WITH_DYNAMIC_ASG: false
+      WITH_DYNAMIC_ASG: true
       BBL_STATE_DIR: bbl-diego-env
   - task: wats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
@@ -1367,13 +1367,15 @@ jobs:
 
 - name: run-vizzini
   serial: true
-  serial_groups: [acceptance]
   plan:
   - in_parallel:
     - get: manual-release-trigger
+      passed:
+        - prepare-env
       trigger: true
-      passed: [ prepare-env ]
     - get: ci
+    - get: grace-image
+    - get: image
     - get: cf-deployment
     - get: repo
       passed:
@@ -1381,7 +1383,6 @@ jobs:
         - run-wats
         - export-release
         - run-bosh-restart
-        - prepare-env
       trigger: true
     - get: env
       passed: [prepare-env]
