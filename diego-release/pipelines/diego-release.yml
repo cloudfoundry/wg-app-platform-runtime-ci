@@ -1493,11 +1493,7 @@ jobs:
         - get: ci
         - get: repo
           passed:
-            - run-cats
-            - run-wats
-            - export-release
             - run-vizzini
-            - run-bosh-restart
           trigger: true
         - get: image
         - get: release-branch
@@ -1507,11 +1503,7 @@ jobs:
         - get: version
         - get: env
           passed:
-            - run-cats
-            - run-wats
-            - export-release
             - run-vizzini
-            - run-bosh-restart
           trigger: true
 
     - task: check-safe-to-release-repo
