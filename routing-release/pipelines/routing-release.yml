@@ -1274,6 +1274,7 @@ jobs:
             - run-cfsmoke
             - run-cipher-suite
             - export-release
+            - run-backwards-compatibility-route-registrar-test
         - get: ci
         - get: repo
           passed:
