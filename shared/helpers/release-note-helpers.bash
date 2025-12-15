@@ -123,6 +123,8 @@ function get_non_bot_commits_json() {
       while read -r c; do
         if [[ "$c" == *"Upgrade golang"* ]]; then
           JSON="$(jq --arg commit "$c" '.values += [$commit]' <<< "$JSON")"
+        elif [[ "$c" == *"Upgrade"* && "$c" == *"-healthchecker"* ]]; then
+          JSON="$(jq --arg commit "$c" '.values += [$commit]' <<< "$JSON")"
         elif [[ "$c" != *"App Platform Runtime Working Group CI Bot"* ]]; then
           JSON="$(jq --arg commit "$c" '.values += [$commit]' <<< "$JSON")"
         fi
