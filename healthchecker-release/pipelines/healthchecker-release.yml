@@ -209,15 +209,6 @@ resources:
     repository: healthchecker-release
     owner: cloudfoundry
 
-- name: draft-github-release 
-  type: github-release
-  icon: github
-  source:
-    access_token: ((github-appruntimeplatform-bot/access-token))
-    drafts: true
-    repository: healthchecker-release
-    owner: cloudfoundry
-
 - name: shared-templates
   type: git
   icon: source-branch
@@ -620,7 +611,7 @@ jobs:
 
     - in_parallel:
         steps:
-        - put: draft-github-release
+        - put: github-release
           params:
             name: version/number
             tag: version/number

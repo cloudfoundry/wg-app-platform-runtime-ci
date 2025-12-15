@@ -224,15 +224,6 @@ resources:
     repository: envoy-nginx-release
     owner: cloudfoundry
 
-- name: draft-github-release
-  type: github-release
-  icon: github
-  source:
-    access_token: ((github-appruntimeplatform-bot/access-token))
-    drafts: true
-    repository: envoy-nginx-release
-    owner: cloudfoundry
-
 - name: version
   type: semver
   icon: counter
@@ -802,7 +793,7 @@ jobs:
 
     - in_parallel:
         steps:
-        - put: draft-github-release
+        - put: github-release
           params:
             name: version/number
             tag: version/number

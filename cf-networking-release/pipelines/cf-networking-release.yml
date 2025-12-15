@@ -293,24 +293,6 @@ resources:
     repository: silk-release
     owner: cloudfoundry
 
-- name: cf-networking-draft-github-release 
-  type: github-release
-  icon: github
-  source:
-    access_token: ((github-appruntimeplatform-bot/access-token))
-    drafts: true
-    repository: cf-networking-release
-    owner: cloudfoundry
-
-- name: silk-draft-github-release 
-  type: github-release
-  icon: github
-  source:
-    access_token: ((github-appruntimeplatform-bot/access-token))
-    drafts: true
-    repository: silk-release
-    owner: cloudfoundry
-
 - name: shared-templates
   type: git
   icon: source-branch
@@ -1312,7 +1294,7 @@ jobs:
             params:
               repository: cf-networking-merged-branch
               merge: true
-          - put: cf-networking-draft-github-release
+          - put: cf-networking-github-release
             params:
               name: version/number
               tag: version/number
@@ -1351,7 +1333,7 @@ jobs:
             params:
               repository: silk-merged-branch
               merge: true
-          - put: silk-draft-github-release
+          - put: silk-github-release
             params:
               name: version/number
               tag: version/number
