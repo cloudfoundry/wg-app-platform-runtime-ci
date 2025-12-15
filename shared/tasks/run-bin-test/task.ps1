@@ -31,6 +31,9 @@ function Run
         ./bin/test.ps1 $(Expand-Flags)
     } else {
         Debug "Missing ./bin/test.ps1. Running ginkgo by default for repo/$env:DIR"
+        $f = "$(Expand-Flags)"
+        echo $f
+cat "$env:TEMP/$env:TASK_NAME.log"
         Invoke-Expression "go run github.com/onsi/ginkgo/v2/ginkgo $(Expand-Flags)"
         if ($LASTEXITCODE -ne 0){
             throw "failed"
