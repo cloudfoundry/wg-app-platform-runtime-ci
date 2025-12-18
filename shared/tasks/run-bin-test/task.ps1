@@ -10,6 +10,9 @@ $env:TASK_NAME="$(Get-Random)"
 
 function Run
 {
+
+    go install honnef.co/go/tools/cmd/staticcheck@latest
+
     $env:TEMP="/var/vcap/data/tmp"
     $env:TMP="/var/vcap/data/tmp"
     . Expand-Functions
