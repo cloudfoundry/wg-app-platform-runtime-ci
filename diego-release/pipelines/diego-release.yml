@@ -1362,7 +1362,10 @@ jobs:
   - in_parallel:
     - get: manual-release-trigger
       passed:
-        - prepare-env
+        - run-cats
+        - run-wats
+        - export-release
+        - run-bosh-restart
       trigger: true
     - get: ci
     - get: grace-image
