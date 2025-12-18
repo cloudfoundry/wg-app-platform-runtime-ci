@@ -1417,9 +1417,10 @@ jobs:
         {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
         {ci/diego-release/opsfiles/*,combined-assets}
   - task: deploy-cf-deployment
-    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
     input_mapping:
       ops-files: combined-opsfiles
+      release: repo
       vars-files: prepared-env
       bbl-state: env
     params:
