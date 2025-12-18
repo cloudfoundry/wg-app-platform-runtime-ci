@@ -533,6 +533,22 @@ resources:
     owner: madler
     repository: zlib
 
+- name: runc
+  type: github-release
+  icon: github
+  source:
+    access_token: ((github-appruntimeplatform-bot/access-token))
+    owner: opencontainers
+    repository: runc
+
+- name: containerd
+  type: github-release
+  icon: github
+  source:
+    access_token: ((github-appruntimeplatform-bot/access-token))
+    owner: containerd
+    repository: containerd
+
 #! Define-Jobs
 jobs:
 - name: manual-release-trigger
@@ -767,293 +783,366 @@ jobs:
       - get: ci
       - get: repo
       - get: image
+  - try:
+      do:
       - get: autoconf
         attempts: 3
         params:
           fetch_tags: true
         trigger: true
+      - task: bump-bosh-blob-autoconf
+        image: image
+        file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+        input_mapping:
+          blob: autoconf
+        params:
+          BOSH_BLOB_PATH: autoconf/autoconf-*.tar.gz
+          AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+          AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+      - put: repo
+        params:
+         rebase: true
+         repository: bumped-repo
+      on_failure: *ci-notification
+  - try:
+      do:
       - get: automake
         attempts: 3
         params:
           fetch_tags: true
         trigger: true
+      - task: bump-bosh-blob-automake
+        image: image
+        file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+        input_mapping:
+          blob: automake
+        params:
+          BOSH_BLOB_PATH: automake/automake-*.tar.gz
+          AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+          AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+      - put: repo
+        params:
+         rebase: true
+         repository: bumped-repo
+      on_failure: *ci-notification
+  - try:
+      do: 
       - get: busybox
         attempts: 3
         params:
           fetch_tags: true
         trigger: true
+      - task: bump-bosh-blob-busybox
+        image: image
+        file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+        input_mapping:
+          blob: busybox
+        params:
+          BOSH_BLOB_PATH: busybox/busybox-*.tar.gz
+          AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+          AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+      - put: repo
+        params:
+         rebase: true
+         repository: bumped-repo
+      on_failure: *ci-notification
+  - try:
+      do:
       - get: gperf
         attempts: 3
         params:
           fetch_tags: true
         trigger: true
+      - task: bump-bosh-blob-gperf
+        image: image
+        file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+        input_mapping:
+          blob: gperf
+        params:
+          BOSH_BLOB_PATH: gperf/gperf-*.tar.gz
+          AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+          AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+      - put: repo
+        params:
+         rebase: true
+         repository: bumped-repo
+      on_failure: *ci-notification
+  - try:
+      do: 
       - get: iptables
         attempts: 3
         params:
           fetch_tags: true
         trigger: true
+      - task: bump-bosh-blob-iptables
+        image: image
+        file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+        input_mapping:
+          blob: iptables
+        params:
+          BOSH_BLOB_PATH: iptables/iptables-*.tar.xz
+          AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+          AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+      - put: repo
+        params:
+         rebase: true
+         repository: bumped-repo
+      on_failure: *ci-notification
+  - try:
+      do:
       - get: libmnl
         attempts: 3
         params:
           fetch_tags: true
         trigger: true
+      - task: bump-bosh-blob-libmnl
+        image: image
+        file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+        input_mapping:
+          blob: libmnl
+        params:
+          BOSH_BLOB_PATH: iptables/libmnl-*.tar.bz2
+          AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+          AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+      - put: repo
+        params:
+         rebase: true
+         repository: bumped-repo
+      on_failure: *ci-notification
+  - try:
+      do:
       - get: libnftnl
         attempts: 3
         params:
           fetch_tags: true
         trigger: true
+      - task: bump-bosh-blob-libnftnl
+        image: image
+        file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+        input_mapping:
+          blob: libnftnl
+        params:
+          BOSH_BLOB_PATH: iptables/libnftnl-*.tar.xz
+          AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+          AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+      - put: repo
+        params:
+         rebase: true
+         repository: bumped-repo
+      on_failure: *ci-notification
+  - try:
+      do:
       - get: libseccomp
         attempts: 3
         params:
           globs:
           - libseccomp-*.tar.gz
         trigger: true
+      - task: bump-bosh-blob-libseccomp
+        image: image
+        file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+        input_mapping:
+          blob: libseccomp
+        params:
+          BOSH_BLOB_PATH: libseccomp/libseccomp-*.tar.gz
+          AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+          AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+      - put: repo
+        params:
+         rebase: true
+         repository: bumped-repo
+      on_failure: *ci-notification
+  - try:
+      do:
       - get: libtool
         attempts: 3
         params:
           fetch_tags: true
         trigger: true
+      - task: bump-bosh-blob-libtool
+        image: image
+        file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+        input_mapping:
+          blob: libtool
+        params:
+          BOSH_BLOB_PATH: libtool/libtool-*.tar.gz
+          AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+          AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+      - put: repo
+        params:
+         rebase: true
+         repository: bumped-repo
+      on_failure: *ci-notification
+  - try:
+      do:
       - get: musl
         attempts: 3
         params:
           fetch_tags: true
         trigger: true
+      - task: bump-bosh-blob-musl
+        image: image
+        file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+        input_mapping:
+          blob: musl
+        params:
+          BOSH_BLOB_PATH: musl/musl-*.tar.gz
+          AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+          AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+      - put: repo
+        params:
+         rebase: true
+         repository: bumped-repo
+      on_failure: *ci-notification
+  - try:
+      do:
       - get: pkg-config
         attempts: 3
         params:
           fetch_tags: true
         trigger: true
+      - task: bump-bosh-blob-pkg-config
+        image: image
+        file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+        input_mapping:
+          blob: pkg-config
+        params:
+          BOSH_BLOB_PATH: pkg-config/pkg-config-*.tar.gz
+          AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+          AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+      - put: repo
+        params:
+         rebase: true
+         repository: bumped-repo
+      on_failure: *ci-notification
+  - try:
+      do:
       - get: tar
         attempts: 3
         params:
           fetch_tags: true
         trigger: true
+      - task: bump-bosh-blob-tar
+        image: image
+        file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+        input_mapping:
+          blob: tar
+        params:
+          BOSH_BLOB_PATH: tar/tar-*.tar.xz
+          AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+          AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+      - put: repo
+        params:
+         rebase: true
+         repository: bumped-repo
+      on_failure: *ci-notification
+  - try:
+      do:
       - get: tini
         attempts: 3
         trigger: true
+      - task: bump-bosh-blob-tini
+        image: image
+        file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+        input_mapping:
+          blob: tini
+        params:
+          BOSH_BLOB_PATH: tini/tini-*.tar.gz
+          AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+          AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+      - put: repo
+        params:
+         rebase: true
+         repository: bumped-repo
+      on_failure: *ci-notification
+  - try:
+      do:
       - get: util-linux
         attempts: 3
         params:
           fetch_tags: true
         trigger: true
+      - task: bump-bosh-blob-util-linux
+        image: image
+        file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+        input_mapping:
+          blob: util-linux
+        params:
+          BOSH_BLOB_PATH: util-linux/util-linux-*.tar.gz
+          AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+          AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+      - put: repo
+        params:
+         rebase: true
+         repository: bumped-repo
+      on_failure: *ci-notification
+  - try:
+      do:
       - get: zlib
         attempts: 3
         params:
           globs: [ zlib-*.tar.gz ]
         trigger: true
-
-  - do:
-    - task: bump-bosh-blob-autoconf
-      image: image
-      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-      input_mapping:
-        blob: autoconf
-      params:
-        BOSH_BLOB_PATH: autoconf/autoconf-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
-    - put: repo
-      params:
-       rebase: true
-       repository: bumped-repo
-  - do:
-    - task: bump-bosh-blob-automake
-      image: image
-      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-      input_mapping:
-        blob: automake
-      params:
-        BOSH_BLOB_PATH: automake/automake-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
-    - put: repo
-      params:
-       rebase: true
-       repository: bumped-repo
-  - do:
-    - task: bump-bosh-blob-busybox
-      image: image
-      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-      input_mapping:
-        blob: busybox
-      params:
-        BOSH_BLOB_PATH: busybox/busybox-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
-    - put: repo
-      params:
-       rebase: true
-       repository: bumped-repo
-
-  - do:
-    - task: bump-bosh-blob-gperf
-      image: image
-      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-      input_mapping:
-        blob: gperf
-      params:
-        BOSH_BLOB_PATH: gperf/gperf-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
-    - put: repo
-      params:
-       rebase: true
-       repository: bumped-repo
-  - do:
-    - task: bump-bosh-blob-iptables
-      image: image
-      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-      input_mapping:
-        blob: iptables
-      params:
-        BOSH_BLOB_PATH: iptables/iptables-*.tar.xz
-        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
-    - put: repo
-      params:
-       rebase: true
-       repository: bumped-repo
-  - do:
-    - task: bump-bosh-blob-libmnl
-      image: image
-      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-      input_mapping:
-        blob: libmnl
-      params:
-        BOSH_BLOB_PATH: iptables/libmnl-*.tar.bz2
-        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
-    - put: repo
-      params:
-       rebase: true
-       repository: bumped-repo
-  - do:
-    - task: bump-bosh-blob-libnftnl
-      image: image
-      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-      input_mapping:
-        blob: libnftnl
-      params:
-        BOSH_BLOB_PATH: iptables/libnftnl-*.tar.xz
-        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
-    - put: repo
-      params:
-       rebase: true
-       repository: bumped-repo
-  - do:
-    - task: bump-bosh-blob-libseccomp
-      image: image
-      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-      input_mapping:
-        blob: libseccomp
-      params:
-        BOSH_BLOB_PATH: libseccomp/libseccomp-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
-    - put: repo
-      params:
-       rebase: true
-       repository: bumped-repo
-  - do:
-    - task: bump-bosh-blob-libtool
-      image: image
-      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-      input_mapping:
-        blob: libtool
-      params:
-        BOSH_BLOB_PATH: libtool/libtool-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
-    - put: repo
-      params:
-       rebase: true
-       repository: bumped-repo
-  - do:
-    - task: bump-bosh-blob-musl
-      image: image
-      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-      input_mapping:
-        blob: musl
-      params:
-        BOSH_BLOB_PATH: musl/musl-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
-    - put: repo
-      params:
-       rebase: true
-       repository: bumped-repo
-  - do:
-    - task: bump-bosh-blob-pkg-config
-      image: image
-      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-      input_mapping:
-        blob: pkg-config
-      params:
-        BOSH_BLOB_PATH: pkg-config/pkg-config-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
-    - put: repo
-      params:
-       rebase: true
-       repository: bumped-repo
-
-  - do:
-    - task: bump-bosh-blob-tar
-      image: image
-      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-      input_mapping:
-        blob: tar
-      params:
-        BOSH_BLOB_PATH: tar/tar-*.tar.xz
-        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
-    - put: repo
-      params:
-       rebase: true
-       repository: bumped-repo
-  - do:
-    - task: bump-bosh-blob-tini
-      image: image
-      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-      input_mapping:
-        blob: tini
-      params:
-        BOSH_BLOB_PATH: tini/tini-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
-    - put: repo
-      params:
-       rebase: true
-       repository: bumped-repo
-  - do:
-    - task: bump-bosh-blob-util-linux
-      image: image
-      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-      input_mapping:
-        blob: util-linux
-      params:
-        BOSH_BLOB_PATH: util-linux/util-linux-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
-    - put: repo
-      params:
-       rebase: true
-       repository: bumped-repo
-  - do:
-    - task: bump-bosh-blob-zlib
-      image: image
-      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-      input_mapping:
-        blob: zlib
-      params:
-        BOSH_BLOB_PATH: zlib/zlib-*.tar.gz
-        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
-    - put: repo
-      params:
-       rebase: true
-       repository: bumped-repo
+      - task: bump-bosh-blob-zlib
+        image: image
+        file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+        input_mapping:
+          blob: zlib
+        params:
+          BOSH_BLOB_PATH: zlib/zlib-*.tar.gz
+          AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+          AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+      - put: repo
+        params:
+         rebase: true
+         repository: bumped-repo
+      on_failure: *ci-notification
+  - try:
+      do:
+      - get: containerd
+        trigger: true
+        attempts: 3
+        params:
+          fetch_tags: true
+          globs:
+            - '*amd64*'
+      - task: bump-bosh-blob-containerd
+        image: image
+        file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+        input_mapping:
+          blob: containerd
+        params:
+          BOSH_BLOB_PATH: containerd/containerd-*linux-amd64.tar.gz
+          AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+          AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+      - put: repo
+        params:
+         rebase: true
+         repository: bumped-repo
+      on_failure: *ci-notification
+  - try:
+      do:
+      - get: runc
+        trigger: true
+        attempts: 3
+        params:
+          fetch_tags: true
+          globs:
+            - '*amd64*'
+      - task: bump-bosh-blob-runc
+        image: image
+        file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+        input_mapping:
+          blob: runc
+        params:
+          BOSH_BLOB_PATH: runc/runc.arm64
+          AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+          AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+      - put: repo
+        params:
+         rebase: true
+         repository: bumped-repo
+      on_failure: *ci-notification
 
 - name: sync-dot-github-dir
   serial: true
@@ -1494,8 +1583,6 @@ jobs:
     file: determined-image-tag/tag
   - task: build-binaries-with-musl
     file: ci/shared/tasks/build-binaries/linux.yml
-    input_mapping:
-      input-01: built-musl
     params:
       DEFAULT_PARAMS: "ci/garden-runc-release/default-params/build-binaries/linux.yml"
       ENVS: WITH_MUSL=true
