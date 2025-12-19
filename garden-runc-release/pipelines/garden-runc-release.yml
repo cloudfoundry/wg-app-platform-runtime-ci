@@ -448,6 +448,7 @@ resources:
 - name: iptables
   type: git
   icon: tag-outline
+  check_every: 1h
   source:
     branch: master
     uri: https://git.netfilter.org/iptables
@@ -456,6 +457,7 @@ resources:
 - name: libmnl
   type: git
   icon: tag-outline
+  check_every: 1h
   source:
     branch: master
     uri: https://git.netfilter.org/libmnl
@@ -464,6 +466,7 @@ resources:
 - name: libnftnl
   type: git
   icon: tag-outline
+  check_every: 1h
   source:
     branch: master
     uri: https://git.netfilter.org/libnftnl
