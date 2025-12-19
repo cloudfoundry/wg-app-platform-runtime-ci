@@ -536,14 +536,6 @@ resources:
     owner: madler
     repository: zlib
 
-- name: runc
-  type: github-release
-  icon: github
-  source:
-    access_token: ((github-appruntimeplatform-bot/access-token))
-    owner: opencontainers
-    repository: runc
-
 - name: containerd
   type: github-release
   icon: github
@@ -1116,29 +1108,6 @@ jobs:
           blob: containerd
         params:
           BOSH_BLOB_PATH: containerd/containerd-*linux-amd64.tar.gz
-          AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
-          AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
-      - put: repo
-        params:
-         rebase: true
-         repository: bumped-repo
-      on_failure: *ci-notification
-  - try:
-      do:
-      - get: runc
-        trigger: true
-        attempts: 3
-        params:
-          fetch_tags: true
-          globs:
-            - '*amd64*'
-      - task: bump-bosh-blob-runc
-        image: image
-        file: ci/shared/tasks/bump-bosh-blobs/linux.yml
-        input_mapping:
-          blob: runc
-        params:
-          BOSH_BLOB_PATH: runc/runc.arm64
           AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
           AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
       - put: repo
