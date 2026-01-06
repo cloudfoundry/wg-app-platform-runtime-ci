@@ -11,5 +11,6 @@ params:
     build_init=src/guardian/cmd/init
     build_dadoo=src/guardian/cmd/dadoo
     build_idmapper=src/idmapper
+    build_containerd=.
   FUNCTIONS: ci/garden-runc-release/helpers/build-binaries.bash
 
