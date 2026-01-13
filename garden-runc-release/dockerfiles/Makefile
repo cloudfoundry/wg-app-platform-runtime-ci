@@ -3,7 +3,7 @@ ARCH := $(shell uname -p)
 all: check-env clean garden-rootfs.tar garden-fuse.tar
 
 garden-rootfs.tar: check-env
-	docker build --build-arg BUSYBOX_VERSION=1.27.2 --build-arg BUSYBOX_IMAGE=busybox -t garden-rootfs ./garden-rootfs/
+	docker build --build-arg BUSYBOX_VERSION=1.37.0 --build-arg BUSYBOX_IMAGE=busybox -t garden-rootfs ./garden-rootfs/
 	docker run --name garden-rootfs garden-rootfs
 	mkdir -p $(LOCATION)
 	docker export -o $(LOCATION)/garden-rootfs.tar garden-rootfs  

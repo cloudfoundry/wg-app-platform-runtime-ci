@@ -1,4 +1,4 @@
-ARG BUSYBOX_VERSION="1.27.2"
+ARG BUSYBOX_VERSION="1.37.0"
 
 FROM  gcc AS usemem-builder
 COPY usemem.c ./
