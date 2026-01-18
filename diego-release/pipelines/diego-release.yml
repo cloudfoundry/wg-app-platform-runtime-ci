@@ -376,6 +376,14 @@ resources:
     repository: winpty
     order_by: time
 
+- name: libpcap
+  type: git
+  icon: tag-outline
+  source:
+    branch: master
+    uri: https://github.com/the-tcpdump-group/libpcap
+    tag_filter: libpcap-*
+
 #! Define-Jobs
 jobs:
 - name: manual-release-trigger
@@ -491,7 +499,9 @@ jobs:
       - get: winpty
         params:
           globs:
-          - winpty-*-msvc2015.zip 
+          - winpty-*-msvc2015.zip
+        trigger: true
+      - get: libpcap
         trigger: true
   - do:
     - task: bump-bosh-blob-jq
@@ -529,6 +539,20 @@ jobs:
         blob: winpty
       params:
         BOSH_BLOB_PATH: winpty/winpty-*.tgz
+        AWS_ACCESS_KEY_ID: ((aws-s3-diego-release-blobs/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-diego-release-blobs/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-libpcap
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: libpcap
+      params:
+        BOSH_BLOB_PATH: libpcap/libpcap-*.tar.xz
         AWS_ACCESS_KEY_ID: ((aws-s3-diego-release-blobs/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-diego-release-blobs/secret-access-key))
     - put: repo
