@@ -26,6 +26,7 @@ function run() {
   sync_package route_emitter code.cloudfoundry.org          -app  code.cloudfoundry.org/route-emitter/cmd/route-emitter &
   sync_package route_emitter_windows code.cloudfoundry.org  -app  code.cloudfoundry.org/route-emitter/cmd/route-emitter &
   sync_package ssh_proxy code.cloudfoundry.org              -app  code.cloudfoundry.org/diego-ssh/cmd/ssh-proxy &
+  sync_package cf-pcap code.cloudfoundry.org                -app  code.cloudfoundry.org/cf-pcap &
   sync_package certsplitter code.cloudfoundry.org           -app  code.cloudfoundry.org/certsplitter/cmd/certsplitter &
 
   sync_package docker_app_lifecycle code.cloudfoundry.org   -app  code.cloudfoundry.org/dockerapplifecycle/builder \
