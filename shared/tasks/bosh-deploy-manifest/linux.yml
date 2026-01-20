@@ -23,7 +23,6 @@ params:
   EVAL_CMD:
   MANIFEST:
   OPS_FILES:
-  VAR_FILES:
   VARS_FILES:
   DIR: .
 
