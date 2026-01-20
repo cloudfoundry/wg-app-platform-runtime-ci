@@ -129,7 +129,7 @@ function bosh_extract_vars_from_env_files(){
             local key
             key="$(echo "${entry}" | cut -d "=" -f1 | cut -d " " -f2)"
             eval "$entry"
-            arguments="${arguments} --var=${key}=${!key}"
+            arguments="${arguments} --var=\"${key}=${!key}\""
         done < "${file}"
     done
     echo "${arguments}"
