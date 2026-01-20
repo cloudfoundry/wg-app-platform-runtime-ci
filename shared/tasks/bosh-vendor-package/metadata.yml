@@ -6,6 +6,7 @@ oses:
 params:
   PACKAGE_NAME: Name of the bosh package to be updated e.g. healthchecker / golang-1-linux / golang-*-linux.
   PACKAGE_PREFIX: Prefix value for the bosh package. For routing-healthchecker this would be set to "routing".
+  PRIVATE_PACKAGE_RELEASE: (Defaults to false). Set to true when package-release needs to also be configured for private.yml
   GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY: Environment secret
   AWS_SECRET_ACCESS_KEY: Environment secret
   AWS_ACCESS_KEY_ID: Environment secret
