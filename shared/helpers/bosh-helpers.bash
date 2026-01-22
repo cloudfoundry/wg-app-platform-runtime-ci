@@ -13,6 +13,39 @@ function bosh_target(){
         export OM_SKIP_SSL_VALIDATION OM_TARGET OM_USERNAME OM_PASSWORD
         eval "$(om bosh-env)"
 
+        # Wait for SOCKS proxy to be ready if om bosh-env created an SSH tunnel
+        # This prevents race condition where BOSH_ALL_PROXY is set but tunnel isn't ready yet
+        if [[ -n "${BOSH_ALL_PROXY:-}" ]] && [[ "${BOSH_ALL_PROXY}" =~ socks5://localhost:([0-9]+) ]]; then
+            SOCKS_PORT="${BASH_REMATCH[1]}"
+            SOCKS_WAIT_TIMEOUT="${SOCKS_WAIT_TIMEOUT:-60}"
+
+            # Check if at least one port checking tool is available
+            if ! command -v ss >/dev/null 2>&1 && ! command -v netstat >/dev/null 2>&1; then
+                echo >&2 "WARNING: Neither 'ss' nor 'netstat' is available. Cannot verify SOCKS proxy readiness."
+                echo >&2 "Proceeding without port verification. Tunnel may not be ready yet."
+            else
+                echo >&2 "Waiting for SOCKS proxy on port ${SOCKS_PORT} to be ready (timeout: ${SOCKS_WAIT_TIMEOUT}s)..."
+
+                for attempt in $(seq 1 "${SOCKS_WAIT_TIMEOUT}"); do
+                    if ss -tlnp 2>/dev/null | grep -q ":${SOCKS_PORT} " || \
+                       netstat -tlnp 2>/dev/null | grep -q ":${SOCKS_PORT} "; then
+                        echo >&2 "SOCKS proxy ready on port ${SOCKS_PORT} (attempt ${attempt}/${SOCKS_WAIT_TIMEOUT})"
+                        break
+                    fi
+
+                    if [[ $attempt -eq "${SOCKS_WAIT_TIMEOUT}" ]]; then
+                        echo >&2 "ERROR: SOCKS proxy port ${SOCKS_PORT} not ready after ${SOCKS_WAIT_TIMEOUT} seconds"
+                        echo >&2 "BOSH_ALL_PROXY: ${BOSH_ALL_PROXY}"
+                        echo >&2 "SSH processes:"
+                        pgrep -a ssh | grep -E "ssh.*-D|sshpass" || echo >&2 "  No SSH tunnel processes found"
+                        exit 1
+                    fi
+
+                    sleep 1
+                done
+            fi
+        fi
+
         jumpbox_user=$(yq '.http_proxy_username' "$(env_metadata)")
         jumpbox_host=$(yq '.http_proxy|sub(":80$","")' "$(env_metadata)")
         jumpbox_private_key=$(mktemp -t "${env_name}_XXXXXXXXXX.key")
