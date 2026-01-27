@@ -380,9 +380,9 @@ resources:
   type: git
   icon: tag-outline
   source:
-    branch: master
+    branch: libpcap-1.10
     uri: https://github.com/the-tcpdump-group/libpcap
-    tag_filter: libpcap-*
+    tag_regex: ^libpcap-[0-9]+\.[0-9]+\.[0-9]+$
 
 #! Define-Jobs
 jobs:
