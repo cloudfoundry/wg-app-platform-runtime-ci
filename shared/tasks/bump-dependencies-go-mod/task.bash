@@ -100,9 +100,15 @@ function run() {
     popd > /dev/null
   done
 
-  if [[ -f "../ci/${repo_name}/linters/sync-package-specs.bash" ]]; then
-    "../ci/${repo_name}/linters/sync-package-specs.bash" ${PWD}
-  fi
+if [[ -f "../ci/${repo_name}/linters/sync-package-specs.bash" ]]; then
+  pushd .. > /dev/null
+  "./ci/${repo_name}/linters/sync-package-specs.bash" "${PWD}/repo"
+  popd > /dev/null
+elif [[ -f "../ci-config/${repo_name}/linters/sync-package-specs.bash" ]]; then
+  pushd .. > /dev/null
+  "./ci-config/${repo_name}/linters/sync-package-specs.bash" "${PWD}/repo"
+  popd > /dev/null
+fi
 
   if [[ $(git status --porcelain) ]]; then
     git add -A .
