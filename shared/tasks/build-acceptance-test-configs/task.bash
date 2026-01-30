@@ -88,7 +88,7 @@ function cats() {
     "include_v3": true,
     "include_volume_services": ${WITH_VOLUME_SERVICES},
     "include_zipkin": true,
-    "isolation_segment_name": "persistent_isolation_segment",
+    "isolation_segment_name": "${ISOSEG_NAME}",
     "isolation_segment_domain": "iso-seg.${CF_SYSTEM_DOMAIN}",
     "isolation_segment_tcp_domain": "tcp.${CF_SYSTEM_DOMAIN}",
     "skip_ssl_validation": true,

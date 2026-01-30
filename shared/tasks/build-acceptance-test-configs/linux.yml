@@ -17,6 +17,8 @@ params:
   WITH_DYNAMIC_ASG: false
   WITH_COMMA_DELIMITED_ASG_DESTINATIONS: false
   WITH_VOLUME_SERVICES: false
+  ISOSEG_NAME: persistent_isolation_segment
+
 
 run:
   path: ci/shared/tasks/build-acceptance-test-configs/task.bash
