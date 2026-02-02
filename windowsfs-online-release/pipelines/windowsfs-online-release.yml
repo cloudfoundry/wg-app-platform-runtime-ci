@@ -500,6 +500,7 @@ jobs:
       passed: [prepare-env]
     - get: cf-deployment-concourse-tasks
   - task: export-release
+    attempts: 10
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
     params:
