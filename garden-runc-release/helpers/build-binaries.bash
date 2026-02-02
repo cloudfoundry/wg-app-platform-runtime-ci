@@ -334,13 +334,19 @@ function build_containerd() {
     target="$target/containerd"
     mkdir -p "${target}"
 
+    local tmpDir=$(mktemp -d -p /tmp "build-containerd-XXXX")
+
+    rsync -aq "$source/" "$tmpDir"
     pushd "$source" || exit
-    BUILDTAGS=no_btrfs make ./bin/containerd
-    BUILDTAGS=no_btrfs make ./bin/containerd-shim-runc-v2
-    BUILDTAGS=no_btrfs make ./bin/ctr
-    mv -f bin/* "${target}"
+    bosh sync-blobs
+    local containerd_tarball="$(ls ./blobs/containerd/containerd-*.tar.gz)"
+    tar xzf "$containerd_tarball" --strip-components=1
+    mv -f ctr "${target}/ctr"
+    mv -f containerd "${target}/containerd"
+    mv -f containerd-shim-runc-v2 "${target}/containerd-shim-runc-v2"
 
     popd || exit
+    rm -rf "$tmpDir"
 
     cat > "${target}/run.bash" << EOF
 export CONTAINERD_BINARY="\$PWD/${built_dir}/containerd/containerd"

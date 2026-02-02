@@ -53,7 +53,9 @@ resource_types:
 - name: slack-notification
   type: docker-image
   source:
-    repository: cfcommunity/slack-notification-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cfcommunity/slack-notification-resource
+    username: _json_key
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: fork-pool
@@ -162,6 +164,14 @@ resources:
   source:
     branch: main
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+
+- name: go-version
+  type: git
+  icon: source-branch
+  source:
+    branch: main
+    uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
+    paths: [go-version.json]
 
 - name: silk-readme
   type: git
@@ -283,24 +293,6 @@ resources:
     repository: silk-release
     owner: cloudfoundry
 
-- name: cf-networking-draft-github-release 
-  type: github-release
-  icon: github
-  source:
-    access_token: ((github-appruntimeplatform-bot/access-token))
-    drafts: true
-    repository: cf-networking-release
-    owner: cloudfoundry
-
-- name: silk-draft-github-release 
-  type: github-release
-  icon: github
-  source:
-    access_token: ((github-appruntimeplatform-bot/access-token))
-    drafts: true
-    repository: silk-release
-    owner: cloudfoundry
-
 - name: shared-templates
   type: git
   icon: source-branch
@@ -333,10 +325,10 @@ resources:
   type: registry-image
   icon: docker
   source:                                        
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     tag: 'latest'
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
 
 
 #! Define-Jobs
@@ -411,6 +403,8 @@ jobs:
     - get: cf-networking-repo
     - get: silk-repo
     - get: image
+    - get: go-version
+      trigger: true
     - get: golang-release-latest
       trigger: true
 
@@ -673,7 +667,7 @@ jobs:
       attempts: 3
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -688,7 +682,7 @@ jobs:
       privileged: #@ helpers.privileged(package)
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
       attempts: 3
       params:
@@ -800,6 +794,7 @@ jobs:
             BBL_STATE_DIR: bbl-cfnetworking-env
             DEPLOYMENT_NAME: cf
   - task: prepare-cf-deployment-env
+    attempts: 10
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
     input_mapping:
@@ -993,7 +988,7 @@ jobs:
     file: ci/shared/tasks/run-bin-test/linux.yml
     vars:
       image_repository: cloudfoundry/tas-runtime-build
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
     attempts: 2
     input_mapping:
@@ -1050,7 +1045,7 @@ jobs:
     file: ci/shared/tasks/run-bin-test/linux.yml
     vars:
       image_repository: cloudfoundry/tas-runtime-build
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
     attempts: 10
     input_mapping:
@@ -1299,7 +1294,7 @@ jobs:
             params:
               repository: cf-networking-merged-branch
               merge: true
-          - put: cf-networking-draft-github-release
+          - put: cf-networking-github-release
             params:
               name: version/number
               tag: version/number
@@ -1338,7 +1333,7 @@ jobs:
             params:
               repository: silk-merged-branch
               merge: true
-          - put: silk-draft-github-release
+          - put: silk-github-release
             params:
               name: version/number
               tag: version/number

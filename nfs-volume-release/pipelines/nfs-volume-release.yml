@@ -48,7 +48,9 @@ resource_types:
 - name: slack-notification
   type: docker-image
   source:
-    repository: cfcommunity/slack-notification-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cfcommunity/slack-notification-resource
+    username: _json_key
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: fork-pool
@@ -233,15 +235,6 @@ resources:
     repository: nfs-volume-release
     owner: cloudfoundry
 
-- name: draft-github-release 
-  type: github-release
-  icon: github
-  source:
-    access_token: ((github-appruntimeplatform-bot/access-token))
-    drafts: true
-    repository: nfs-volume-release
-    owner: cloudfoundry
-
 - name: version
   type: semver
   icon: counter
@@ -265,9 +258,9 @@ resources:
   type: registry-image
   icon: docker
   source:                                        
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 #! bosh blobs
@@ -685,7 +678,7 @@ jobs:
       privileged: #@ helpers.privileged(repo)
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(repo.name)
@@ -778,6 +771,7 @@ jobs:
             BBL_STATE_DIR: bbl-nfs-volume-env
             DEPLOYMENT_NAME: cf
   - task: prepare-cf-deployment-env
+    attempts: 10
     image: image
     params:
       BBL_STATE_DIR: bbl-nfs-volume-env
@@ -912,7 +906,7 @@ jobs:
       CONFIGS: cats
       WITH_VOLUME_SERVICES: true
       WITH_ISOSEG: false
-      WITH_DYNAMIC_ASG: false
+      WITH_DYNAMIC_ASG: true
       BBL_STATE_DIR: bbl-nfs-volume-env
   - task: cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
@@ -970,7 +964,7 @@ jobs:
         attempts: 2
         vars:
           image_repository: cloudfoundry/tas-runtime-build
-          image_password: ((gcp-wg-arp-service-account/config-json))
+          image_password: ((gcp-arp-artifact-registry-service-account-token))
           image_tag: ((.:image_tag))
         params:
           ENVS: |
@@ -997,7 +991,7 @@ jobs:
         attempts: 2
         vars:
           image_repository: cloudfoundry/tas-runtime-build
-          image_password: ((gcp-wg-arp-service-account/config-json))
+          image_password: ((gcp-arp-artifact-registry-service-account-token))
           image_tag: ((.:image_tag))
         params:
           ENVS: |
@@ -1186,7 +1180,7 @@ jobs:
 
     - in_parallel:
         steps:
-        - put: draft-github-release
+        - put: github-release
           params:
             name: version/number
             tag: version/number

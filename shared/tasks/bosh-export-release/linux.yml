@@ -7,8 +7,10 @@ inputs:
   - name: env
 
 params:
+  DIR: .
   BBL_STATE_DIR:
   OS:  ubuntu
+  DEPLOYMENT_NAME_CONTAINS: cf
 
 run:
   path: ci/shared/tasks/bosh-export-release/task.bash

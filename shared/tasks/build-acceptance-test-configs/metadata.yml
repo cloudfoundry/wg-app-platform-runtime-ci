@@ -9,6 +9,7 @@ params:
   CONFIGS: Multiline config file to be created. e.g. |
     cats
     rats
+  DIR: (Defaults to .). Change DIR before bosh_target
   ENVS: |
     This parameter defines a list of environment variables will be loaded at runtime, as opposed to
     container-creation time. The purpose here is to allow users to extend the list of environment
@@ -18,3 +19,4 @@ params:
   WITH_DYNAMIC_ASG: (defaults to false) It will turn on/off dynamic asgs tests
   WITH_COMMA_DELIMITED_ASG_DESTINATIONS: (defaults to false) Turns on/off tests of comma delimited ASG destinations
   WITH_VOLUME_SERVICES: (defaults to false). Enables/Disables the volume services test suites in CATs
+  ISOSEG_NAME: name of the isolation segment to use when testing (if WITH_ISOSEG is enabled)

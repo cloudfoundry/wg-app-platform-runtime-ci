@@ -3,6 +3,8 @@ platform: linux
 
 inputs:
 - name: ci
+- name: go-version-json
+  optional: true
 - name: repo
   optional: true
 - name: package-release

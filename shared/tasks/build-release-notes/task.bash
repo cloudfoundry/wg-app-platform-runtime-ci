@@ -9,6 +9,7 @@ export TASK_NAME="$(basename "$THIS_FILE_DIR")"
 source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
 source "$THIS_FILE_DIR/../../../shared/helpers/git-helpers.bash"
 source "$THIS_FILE_DIR/../../../shared/helpers/bosh-helpers.bash"
+source "$THIS_FILE_DIR/../../../shared/helpers/release-note-helpers.bash"
 unset THIS_FILE_DIR
 
 function run(){
@@ -19,7 +20,11 @@ function run(){
   local new_version
   new_version="$(cat version/number)"
   local old_version
-  old_version="$(cat previous-github-release/tag)"
+  if [[ -d "previous-github-release" ]]; then
+    old_version="$(cat previous-github-release/tag)"
+  else
+    old_version="$(git --git-dir repo/.git rev-list --max-parents=0 HEAD)"
+  fi
 
   # Compensate for previous github tag having a `v` prefix
   local new_tag_version="${new_version}"
@@ -43,6 +48,15 @@ function run(){
     fi
   fi
 
+  generate_release_note_script="scripts/generate-release-notes-helper"
+  if [ -e "$generate_release_note_script" ]; then
+    source "${generate_release_note_script}"
+    local repo_head_version=$(git rev-parse HEAD)
+    code_changes="$(generate_release_notes "${old_version}...${repo_head_version}")"
+  else
+    code_changes="- FIXME: enter release notes here"
+  fi
+
   local built_with_go=""
   if [[ -n "${go_version}" ]]; then
     built_with_go="## ✨  Built with go ${go_version}"
@@ -50,7 +64,11 @@ function run(){
 
   repo_name="$(git_get_remote_name)"
   spec_diff=$(get_bosh_job_spec_diff)
-  bosh_io_resources="$(get_bosh_io_resources "${BOSH_IO_ORG}" "${repo_name}" "${new_version}")"
+  local bosh_io_resources
+
+  if [[ ${BOSH_IO_ORG:-skip} != "skip" ]]; then
+    bosh_io_resources="$(get_bosh_io_resources "${BOSH_IO_ORG}" "${repo_name}" "${new_version}")"
+  fi
   popd > /dev/null
 
   local extra_metadata
@@ -66,16 +84,13 @@ function run(){
 
 **Release Date**: $(date  +"%B %d, %Y")
 
-## Changes
-
-- FIXME: enter release notes here
-
+${code_changes}
 ${spec_diff}
 ${built_with_go}
 
 **Full Changelog**: ${GITHUB_ORG_URL}/${repo_name}/compare/${old_version}...${new_tag_version}
 
-${bosh_io_resources}
+${bosh_io_resources:-}
 ${extra_metadata:-}
 EOF
 

@@ -77,9 +77,9 @@ resources:
   type: registry-image
   icon: docker
   source:                                        
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: 'latest'
 
 - name: golang-release-latest
@@ -186,7 +186,7 @@ jobs:
       privileged: #@ helpers.privileged(package)
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
 #@ if helpers.on_windows(package):
     - do:
@@ -212,10 +212,17 @@ jobs:
           INSTANCE_GROUP: windows-worker
           BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
         ensure:
-          put: windows-worker-lock
-          inputs: detect
+          task: prune-worker
+          image: image
+          file: ci/shared/tasks/fly-prune-worker/linux.yml
           params:
-            release: windows-worker-lock
+            FLY_PASSWORD: ((concourse-bot-ci-user))
+            FLY_WORKER_REGEX: " windows +none"
+          ensure:
+            put: windows-worker-lock
+            inputs: detect
+            params:
+              release: windows-worker-lock
 #@ end
 #@ end
 
@@ -258,7 +265,7 @@ jobs:
       privileged: #@ helpers.privileged(package)
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DB: #@ db.value
@@ -289,10 +296,17 @@ jobs:
           INSTANCE_GROUP: windows-worker
           BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
         ensure:
-          put: windows-worker-lock
-          inputs: detect
+          task: prune-worker
+          image: image
+          file: ci/shared/tasks/fly-prune-worker/linux.yml
           params:
-            release: windows-worker-lock
+            FLY_PASSWORD: ((concourse-bot-ci-user))
+            FLY_WORKER_REGEX: " windows +none"
+          ensure:
+            put: windows-worker-lock
+            inputs: detect
+            params:
+              release: windows-worker-lock
 #@ end
 #@ end
 

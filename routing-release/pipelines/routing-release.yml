@@ -15,6 +15,7 @@ groups:
   - run-drats
   - run-rats
   - run-cfsmoke
+  - run-backwards-compatibility-route-registrar-test
   - export-release
   - run-cipher-suite
   - ship-what
@@ -54,7 +55,9 @@ resource_types:
 - name: slack-notification
   type: docker-image
   source:
-    repository: cfcommunity/slack-notification-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cfcommunity/slack-notification-resource
+    username: _json_key
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: fork-pool
@@ -93,6 +96,14 @@ resources:
     - NOTICE
     - README.md
     - docs/
+
+- name: old-routing-release
+  type: git
+  icon: source-branch
+  source:
+    branch: v0.301.0-used-for-testing
+    uri: git@github.com:cloudfoundry/routing-release.git
+    private_key: ((github-appruntimeplatform-bot/private-key))
 
 #! repo-synced is a write-only resource to prevent readme
 #! changes from triggering pipeline runs. See the description of "ignore_path"
@@ -299,15 +310,6 @@ resources:
     repository: routing-release
     owner: cloudfoundry
 
-- name: draft-github-release 
-  type: github-release
-  icon: github
-  source:
-    access_token: ((github-appruntimeplatform-bot/access-token))
-    drafts: true
-    repository: routing-release
-    owner: cloudfoundry
-
 - name: version
   type: semver
   icon: counter
@@ -350,9 +352,9 @@ resources:
   type: registry-image
   icon: docker
   source:                                        
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: 'latest'
 
 - name: jq
@@ -650,19 +652,19 @@ jobs:
     file: ci/shared/tasks/build-binaries/linux.yml
     vars:
       image_repository: cloudfoundry/tas-runtime-mysql-5.7 #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag_mysql_5_7))
     params:
       DEFAULT_PARAMS: "ci/routing-release/default-params/build-binaries/linux.yml"
-#@ for package in helpers.packages_with_configure_db(data.values.internal_repos):
-  - in_parallel:
+#@ for package in helpers.packages_with_configure_db(data.values.tests_that_require_db):
+  - do:
 #@ for db in data.values.db_flavors:
     - task: #@ "{}-{}".format(package.name,db.image)
       file: ci/shared/tasks/run-bin-test/linux.yml
-      attempts: 3
+      attempts: 10
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -671,13 +673,13 @@ jobs:
 #@ end
 #@ end
   - in_parallel:
-#@ for package in helpers.packages_without_configure_db(data.values.internal_repos):
+#@ for package in helpers.packages_without_configure_db(data.values.tests_that_require_db):
     - task: #@ package.name
       file: ci/shared/tasks/run-bin-test/linux.yml
       attempts: 3
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -769,6 +771,7 @@ jobs:
             BBL_STATE_DIR: bbl-routing-env
             DEPLOYMENT_NAME: cf
   - task: prepare-cf-deployment-env
+    attempts: 10
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
     params:
@@ -782,6 +785,7 @@ jobs:
       COPY_ACTIONS: |
         {ci/routing-release/opsfiles/disable-bbr-non-routing.yml,combined-assets}
         {ci/routing-release/opsfiles/add-tcp-router-backend-tls-certs.yml,combined-assets}
+        {ci/routing-release/opsfiles/share-bosh-links.yml,combined-assets}
         {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
         {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
         {ci/shared/opsfiles/add-smoke-tests.yml,combined-assets}
@@ -970,6 +974,7 @@ jobs:
       COPY_ACTIONS: |
         {ci/routing-release/opsfiles/disable-bbr-non-routing.yml,combined-assets}
         {ci/routing-release/opsfiles/add-tcp-router-backend-tls-certs.yml,combined-assets}
+        {ci/routing-release/opsfiles/share-bosh-links.yml,combined-assets}
         {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
         {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
         {ci/shared/opsfiles/add-smoke-tests.yml,combined-assets}
@@ -1001,7 +1006,7 @@ jobs:
       DEFAULT_PARAMS: "ci/routing-release/default-params/build-binaries/linux.yml"
     vars:
       image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
   - task: update-cf-with-tls-support-on-tcp-router-and-mtls-only
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
@@ -1018,7 +1023,6 @@ jobs:
       OPS_FILES: #@ "\n".join(data.values.opsfiles + data.values.opsfiles_enable_tcp_routing_tls)
   - task: run-rats
     file: ci/shared/tasks/run-bin-test/linux.yml
-    image: image
     input_mapping:
       input-01: built-acceptance-test-configs
     params:
@@ -1027,7 +1031,7 @@ jobs:
       FUNCTIONS: "ci/routing-release/helpers/configure-binaries.bash"
     vars:
       image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
   - task: update-cf-with-no-tls-tcp-route-support
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
@@ -1044,7 +1048,6 @@ jobs:
       OPS_FILES: #@ "\n".join(data.values.opsfiles + data.values.opsfiles_disable_tcp_routing_tls)
   - task: run-rats
     file: ci/shared/tasks/run-bin-test/linux.yml
-    image: image
     input_mapping:
       input-01: built-acceptance-test-configs
     params:
@@ -1053,7 +1056,7 @@ jobs:
       FUNCTIONS: "ci/routing-release/helpers/configure-binaries.bash"
     vars:
       image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
   - task: reset-to-original-cf-deployment-settings
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
@@ -1095,6 +1098,7 @@ jobs:
       WITH_ISOSEG: true
       BBL_STATE_DIR: bbl-routing-env
   - task: cfsmoke
+    attempts: 3
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
       bbl-state: env
@@ -1103,6 +1107,77 @@ jobs:
       DEPLOYMENT_NAME: cf
       ERRAND_NAME: smoke-tests
 
+- name: run-backwards-compatibility-route-registrar-test
+  serial: true
+  serial_groups: [acceptance]
+  plan:
+  - in_parallel:
+    - get: manual-release-trigger
+      trigger: true
+      passed: [ prepare-env ]
+    - get: ci
+    - get: repo
+      passed: [prepare-env]
+      trigger: true
+    - get: image
+    - get: env
+      passed: [prepare-env]
+      trigger: true
+    - get: old-routing-release
+  - task: save-version-to-file
+    image: image
+    config:
+      platform: linux
+      outputs:
+      - name: version
+      run:
+       path: /bin/sh
+       args:
+          - -exc
+          - |
+            mkdir -p version
+            touch version/number
+            echo "0.301.$(date +%s)" > version/number
+  - task: build-old-routing-release
+    image: image
+    file: ci/shared/tasks/bosh-create-release/linux.yml
+    input_mapping:
+      repo: old-routing-release
+  - task: bosh-upload-old-routing-release
+    image: image
+    file: ci/shared/tasks/bosh-upload-release/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-routing-env
+  - task: bosh-deploy-old-route-registrar
+    image: image
+    file: ci/shared/tasks/bosh-deploy-manifest/linux.yml
+    params:
+      BBL_STATE_DIR: bbl-routing-env
+      MANIFEST: ci/routing-release/manifests/old-route-registrar.yml
+      DEPLOYMENT_NAME: old-route-registrar
+      ENVS: |
+        ROUTING_VERSION=$(bosh rs --json | jq -r '.Tables[0].Rows[] | select(.name == "routing").version' |  grep "0.301.1" | sort -r | head -n 1)
+  - task: run-backwards-compatibility-test
+    image: image
+    config:
+      platform: linux
+      inputs:
+      - name: old-routing-release
+      run:
+       path: /bin/sh
+       args:
+          - -exc
+          - |
+            cd old-routing-release/src/code.cloudfoundry.org/testapp
+            DOMAIN=bbl-routing-env.arp.cloudfoundry.org ginkgo .
+  - try: &delete-old-route-registrar
+      do:
+        - task: bosh-deld
+          image: image
+          file: ci/shared/tasks/bosh-deld/linux.yml
+          params:
+            BBL_STATE_DIR: bbl-routing-env
+            DEPLOYMENT_NAME: old-route-registrar
 - name: export-release
   serial: true
   serial_groups: [acceptance]
@@ -1190,6 +1265,7 @@ jobs:
             - run-cfsmoke
             - run-cipher-suite
             - export-release
+            - run-backwards-compatibility-route-registrar-test
         - get: ci
         - get: repo
           passed:
@@ -1283,7 +1359,7 @@ jobs:
 
     - in_parallel:
         steps:
-        - put: draft-github-release
+        - put: github-release
           params:
             name: version/number
             tag: version/number
@@ -1353,6 +1429,7 @@ jobs:
         trigger: true
   - try: *delete-cf-deployment
   - try: *delete-cipher-deployment
+  - try: *delete-old-route-registrar
   - task: stop-bbl-envs
     image: image
     file: ci/shared/tasks/stop-gcp-instance/linux.yml
@@ -1379,6 +1456,7 @@ jobs:
       - get: image
   - try: *delete-cf-deployment
   - try: *delete-cipher-deployment
+  - try: *delete-old-route-registrar
   - task: stop-bbl-envs
     image: image
     file: ci/shared/tasks/stop-gcp-instance/linux.yml

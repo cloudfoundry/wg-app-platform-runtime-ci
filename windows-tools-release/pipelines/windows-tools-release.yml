@@ -17,14 +17,17 @@ resource_types:
 - name: command-runner
   type: docker-image
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
+
 - name: slack-notification
   type: docker-image
   source:
-    repository: cfcommunity/slack-notification-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cfcommunity/slack-notification-resource
+    username: _json_key
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 #! Define-Resources
@@ -85,15 +88,6 @@ resources:
     repository: windows-tools-release
     owner: cloudfoundry
 
-- name: draft-github-release
-  type: github-release
-  icon: github
-  source:
-    access_token: ((github-appruntimeplatform-bot/access-token))
-    drafts: true
-    repository: windows-tools-release
-    owner: cloudfoundry
-
 - name: version
   type: semver
   icon: counter
@@ -115,9 +109,9 @@ resources:
   type: registry-image
   icon: docker
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: 'latest'
 
 - name: yq
@@ -224,6 +218,10 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
       AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
 
+  - task: bump-golang-package-name-in-job-templates
+    image: image
+    file: ci/windows-tools-release/tasks/bump-golang-package-name-in-job-templates/linux.yml
+
   - put: repo
     params:
       rebase: true
@@ -247,6 +245,8 @@ jobs:
         params:
           globs:
           - staticcheck_windows_amd64.tar.gz
+        trigger: true
+      - get: go-version #! this way we rebuild staticcheck with the latest go version
         trigger: true
       - get: mingw
         params:
@@ -295,7 +295,7 @@ jobs:
       input_mapping:
         blob: staticcheck
       params:
-        BOSH_BLOB_PATH: staticcheck/staticcheck-*-windows-amd64.tar.gz
+        BOSH_BLOB_PATH: staticcheck/staticcheck-*-windows-amd64.exe
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
@@ -499,7 +499,7 @@ jobs:
 
     - in_parallel:
         steps:
-        - put: draft-github-release
+        - put: github-release
           params:
             name: version/number
             tag: version/number

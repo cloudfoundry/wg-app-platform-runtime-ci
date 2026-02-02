@@ -5,4 +5,6 @@ oses:
   - linux
 params:
   IMAGE: Name of the image that matches image name in the go_vesion.json file
+  GO_MAJOR_MINOR_VERSION:  major.minor version for golang to be used, e.g. 1.24
+
 

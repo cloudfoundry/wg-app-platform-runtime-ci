@@ -1,0 +1,14 @@
+---
+platform: linux
+
+inputs:
+  - name: ci
+
+params:
+  FLY_URL: https://ci.funtime.lol
+  FLY_USER: ci-user
+  FLY_PASSWORD:
+  FLY_WORKER_REGEX:
+
+run:
+  path: ci/shared/tasks/fly-prune-worker/task.bash

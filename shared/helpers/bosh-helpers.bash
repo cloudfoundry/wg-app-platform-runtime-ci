@@ -1,6 +1,57 @@
 function bosh_target(){
     BBL_STATE_DIR=${BBL_STATE_DIR:=""}
-    if [[ "$(is_env_cf_deployment)" == "yes" ]]; then
+    if [[ "$(is_shepherd_v1_deployment)" == "yes" ]]; then
+        env_name="shepherd_v1"
+        https_proxy=$(yq '"http://\(.http_proxy_username):\(.http_proxy_password)@\(.http_proxy)"' "$(env_metadata)")
+        # log the change to the https_proxy environment variable, but hide the password credential
+        echo >&2 "export https_proxy=$(yq '"http://\(.http_proxy_username):########@\(.http_proxy)"' "$(env_metadata)")"
+        export https_proxy
+        OM_SKIP_SSL_VALIDATION=1
+        OM_TARGET=$(yq '.["ops manager"]["url"]' "$(env_metadata)")
+        OM_USERNAME=$(yq '.["ops manager"]["username"]' "$(env_metadata)")
+        OM_PASSWORD=$(yq '.["ops manager"]["password"]' "$(env_metadata)")
+        export OM_SKIP_SSL_VALIDATION OM_TARGET OM_USERNAME OM_PASSWORD
+        eval "$(om bosh-env)"
+
+        # Wait for SOCKS proxy to be ready if om bosh-env created an SSH tunnel
+        # This prevents race condition where BOSH_ALL_PROXY is set but tunnel isn't ready yet
+        if [[ -n "${BOSH_ALL_PROXY:-}" ]] && [[ "${BOSH_ALL_PROXY}" =~ socks5://localhost:([0-9]+) ]]; then
+            SOCKS_PORT="${BASH_REMATCH[1]}"
+            SOCKS_WAIT_TIMEOUT="${SOCKS_WAIT_TIMEOUT:-60}"
+
+            # Check if at least one port checking tool is available
+            if ! command -v ss >/dev/null 2>&1 && ! command -v netstat >/dev/null 2>&1; then
+                echo >&2 "WARNING: Neither 'ss' nor 'netstat' is available. Cannot verify SOCKS proxy readiness."
+                echo >&2 "Proceeding without port verification. Tunnel may not be ready yet."
+            else
+                echo >&2 "Waiting for SOCKS proxy on port ${SOCKS_PORT} to be ready (timeout: ${SOCKS_WAIT_TIMEOUT}s)..."
+
+                for attempt in $(seq 1 "${SOCKS_WAIT_TIMEOUT}"); do
+                    if ss -tlnp 2>/dev/null | grep -q ":${SOCKS_PORT} " || \
+                       netstat -tlnp 2>/dev/null | grep -q ":${SOCKS_PORT} "; then
+                        echo >&2 "SOCKS proxy ready on port ${SOCKS_PORT} (attempt ${attempt}/${SOCKS_WAIT_TIMEOUT})"
+                        break
+                    fi
+
+                    if [[ $attempt -eq "${SOCKS_WAIT_TIMEOUT}" ]]; then
+                        echo >&2 "ERROR: SOCKS proxy port ${SOCKS_PORT} not ready after ${SOCKS_WAIT_TIMEOUT} seconds"
+                        echo >&2 "BOSH_ALL_PROXY: ${BOSH_ALL_PROXY}"
+                        echo >&2 "SSH processes:"
+                        pgrep -a ssh | grep -E "ssh.*-D|sshpass" || echo >&2 "  No SSH tunnel processes found"
+                        exit 1
+                    fi
+
+                    sleep 1
+                done
+            fi
+        fi
+
+        jumpbox_user=$(yq '.http_proxy_username' "$(env_metadata)")
+        jumpbox_host=$(yq '.http_proxy|sub(":80$","")' "$(env_metadata)")
+        jumpbox_private_key=$(mktemp -t "${env_name}_XXXXXXXXXX.key")
+        trap 'rm -f "$jumpbox_private_key"' EXIT
+        yq '.["ops manager"]["private key"]' "$(env_metadata)" >"${jumpbox_private_key}"
+    elif [[ "$(is_env_cf_deployment)" == "yes" ]]; then
         if [[ -n "${BBL_STATE_DIR}" ]]; then
             export BBL_STATE_DIRECTORY="env/${BBL_STATE_DIR}"
             eval "$(bbl print-env)"
@@ -14,18 +65,19 @@ function bosh_target(){
         fi
         export ENVIRONMENT_NAME
     else
+        OM_SKIP_SSL_VALIDATION=true
         OM_USERNAME="$(jq -r .ops_manager.username "$(env_metadata)")"
         OM_PASSWORD="$(jq -r .ops_manager.password "$(env_metadata)")"
         OM_TARGET="$(jq -r .ops_manager.url "$(env_metadata)")"
         OM_PRIVATE_KEY="$(jq -r .ops_manager_private_key "$(env_metadata)")"
         OM_PUBLIC_IP="$(jq -r .ops_manager_public_ip "$(env_metadata)")"
         ENVIRONMENT_NAME="$(jq -r .name "$(env_metadata)")"
-        export OM_USERNAME OM_PASSWORD OM_TARGET OM_PRIVATE_KEY OM_PUBLIC_IP ENVIRONMENT_NAME 
+        export OM_USERNAME OM_PASSWORD OM_TARGET OM_PRIVATE_KEY OM_PUBLIC_IP ENVIRONMENT_NAME OM_SKIP_SSL_VALIDATION
         echo "${OM_PRIVATE_KEY}" > "/tmp/${ENVIRONMENT_NAME}.key"
         chmod 600 "/tmp/${ENVIRONMENT_NAME}.key"
         BOSH_ALL_PROXY="ssh+socks5://ubuntu@${OM_PUBLIC_IP}:22?private-key=/tmp/${ENVIRONMENT_NAME}.key"
         CREDHUB_PROXY="ssh+socks5://ubuntu@${OM_PUBLIC_IP}:22?private-key=/tmp/${ENVIRONMENT_NAME}.key"
-        GCP_SERVICE_ACCOUNT_KEY_JSON="$(om curl -sp /api/v0/staged/director/manifest | jq -r .manifest.cloud_provider.properties.google.json_key -r)"
+        GCP_SERVICE_ACCOUNT_KEY_JSON="$(om curl -s -p /api/v0/staged/director/manifest | jq -r .manifest.cloud_provider.properties.google.json_key -r)"
         export BOSH_ALL_PROXY CREDHUB_PROXY GCP_SERVICE_ACCOUNT_KEY_JSON
         eval "$(om bosh-env)"
     fi
@@ -56,7 +108,7 @@ function bosh_is_cf_deployed() {
 
 function bosh_cf_deployment_name(){
     local name
-    name=$(bosh ds --column=name --json | jq -r '.Tables[].Rows[] | select (.name |contains("cf")).name')
+    name=$(bosh ds --column=name --json | jq -r '.Tables[].Rows[] | select (.name |startswith("cf")).name')
     # we may not have an active deployment
     if [[ "${name:=null}" == "null" ]]; then
         name="cf"
@@ -72,15 +124,28 @@ function bosh_extract_manifest_defaults_from_cf(){
 export CF_AZ=$(bosh int "${manifest}" --path /instance_groups/0/azs/0)
 export CF_NETWORK=$(bosh int "${manifest}" --path /instance_groups/0/networks/0/name)
 export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)"
-    else
+
+    elif [[ "$(is_env_shepherd_v2)" == "yes"  ]]; then
         echo  "export CF_STEMCELL_OS=$(bosh int "${manifest}" --path /stemcells/0/os)
 export CF_AZ=$(bosh int "${manifest}" --path /instance_groups/0/azs/0)
-export CF_NETWORK=$(bosh int "${cloud_config}" --path /networks/1/name)
-export CF_NETWORK_CIDR=$(bosh int "${cloud_config}" --path /networks/1/subnets/0/range)
+export CF_NETWORK=$(bosh int "${manifest}" --path /instance_groups/0/networks/0/name)
+export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)"
+
+    elif [[ "$(bosh_number_of_networks "${cloud_config}")" == "3" ]]; then
+        echo  "export CF_STEMCELL_OS=$(bosh int "${manifest}" --path /stemcells/0/os)
+export CF_AZ=$(bosh int "${manifest}" --path /instance_groups/0/azs/0)
+export CF_NETWORK=pas-network
+export CF_NETWORK_CIDR=$(bosh int "${cloud_config}" --path /networks | yq '.[] | select(.name == "pas-network") | .subnets[0].range')
 export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)
-export CF_LARGE_VM_TYPE=e2-standard-8
-export CF_NETWORK_SERVICES=$(bosh int "${cloud_config}" --path /networks/2/name)
-export CF_NETWORK_SERVICES_CIDR=$(bosh int "${cloud_config}" --path /networks/2/subnets/0/range)"
+export CF_NETWORK_SERVICES=services-network
+export CF_NETWORK_SERVICES_CIDR=$(bosh int "${cloud_config}" --path /networks | yq '.[] | select(.name == "services-network") | .subnets[0].range')"
+
+    elif [[ "$(is_shepherd_v1_deployment)" == "yes" ]]; then
+        echo  "export CF_STEMCELL_OS=$(bosh int "${manifest}" --path /stemcells/0/os)
+export CF_AZ=$(bosh int "${manifest}" --path /instance_groups/0/azs/0)
+export CF_NETWORK=$(bosh int "${cloud_config}" --path /networks/0/name)
+export CF_NETWORK_CIDR=$(bosh int "${cloud_config}" --path /networks/0/subnets/0/range)
+export CF_VM_TYPE=$(bosh int "${manifest}" --path /instance_groups/0/vm_type)"
     fi
 }
 
@@ -97,10 +162,15 @@ function bosh_extract_vars_from_env_files(){
             local key
             key="$(echo "${entry}" | cut -d "=" -f1 | cut -d " " -f2)"
             eval "$entry"
-            arguments="${arguments} --var=${key}=${!key}"
+            arguments="${arguments} --var=\"${key}=${!key}\""
         done < "${file}"
     done
     echo "${arguments}"
+}
+
+function bosh_number_of_networks() {
+    local cloud_config="${1:?Provide a cloud-config}"
+    bosh int "${cloud_config}" --path /networks | yq ' . | length'
 }
 
 #Copied from https://github.com/cloudfoundry/cf-deployment-concourse-tasks/blob/9d60cd05a75ae674706201fd083ae46617147373/shared-functions#L351-L369
@@ -179,4 +249,16 @@ function wait_for_bosh_lock() {
         bosh tasks
         sleep 60
     done
+}
+
+function credhub_admin_client_secret() {
+    local value=$(bosh_get_password_from_credhub "credhub_admin")
+    local regex="^[a-zA-Z0-9]+$"
+
+    if [[ "$value" =~ $regex ]]; then
+        echo $value
+    else
+        echo $value | jq -r .password
+    fi
+
 }

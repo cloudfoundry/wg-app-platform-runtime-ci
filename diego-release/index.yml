@@ -7,7 +7,20 @@ db_flavors:
 - image: mysql-8.0
   value: mysql
 
+inigo_db_flavors:
+- image: mysql-8.0
+  value: mysql
+
 internal_repos:
+- name: "bbs"
+- name: "buildpackapplifecycle"
+- name: "cacheddownloader"
+- name: "executor"
+- name: "locket"
+- name: "rep"
+- name: routing-info
+
+modules_to_test:
 - name: "auction"
   branch: main
 - name: "auctioneer"
@@ -69,7 +82,6 @@ opsfiles:
 - scale-database-cluster.yml
 - windows2019-cell.yml
 - use-online-windows2019fs.yml
-- disable-dynamic-asgs.yml
 - add-lb-ca-cert.yml
 - add-persistent-isolation-segment-diego-cell.yml
 - add-persistent-isolation-segment-router.yml

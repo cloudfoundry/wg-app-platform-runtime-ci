@@ -13,6 +13,10 @@ outputs:
 
 params:
   BUMP_ACTION:
+  GCP_BLOBSTORE_SERVICE_ACCOUNT_KEY:
+  AWS_SECRET_ACCESS_KEY:
+  AWS_ACCESS_KEY_ID:
+  AWS_ASSUME_ROLE_ARN:
 
 run:
   path: ci/shared/tasks/bump-repo-version-file/task.bash

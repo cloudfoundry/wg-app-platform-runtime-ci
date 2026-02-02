@@ -33,6 +33,7 @@ function Verify-GoVersionMatchBoshRelease {
     Push-Location $dir
     $go_version = $(((go version).Split(" ")[2]).Replace("go",""))
     $golang_release_dir = Join-Path $(New-TemporaryDirectory) golang-release
+    mkdir -Path $golang_release_dir -Force -ErrorAction SilentlyContinue
     $package= $(Get-ChildItem "./packages/" -Filter "golang-*windows" -Directory)
     $package_path= $package.FullName
     $package_name = $package.Name
@@ -92,13 +93,16 @@ function Clean-GoCache{
 function Set-TemporaryDirectory {
     $env:TEMP="/var/vcap/data/tmp"
     $env:TMP="/var/vcap/data/tmp"
+    mkdir -Path "$env:TMP" -Force -ErrorAction SilentlyContinue
 }
 
 function New-TemporaryDirectory {
-    Set-TemporaryDirectory 
+    Set-TemporaryDirectory  | Out-Null
     $parent = [System.IO.Path]::GetTempPath()
     [string] $name = [System.Guid]::NewGuid()
-    New-Item -ItemType Directory -Path (Join-Path $parent $name)
+    $dir = $(Join-Path $parent $name)
+    mkdir -Path "$dir" -Force -ErrorAction SilentlyContinue | Out-Null
+    $dir
 }
 
 Function Test-CommandExists
@@ -150,6 +154,7 @@ Function Expand-Verifications {
   {
     Write-Host "Verifying: $entry"
     Invoke-Expression "$entry"
+    Write-Host "Finished Verifying: $entry"
   }
   Debug "Expand-Verifications Ending"
 }

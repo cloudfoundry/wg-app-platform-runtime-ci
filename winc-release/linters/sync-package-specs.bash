@@ -20,7 +20,6 @@ function run() {
   GOOS=windows sync_package groot groot-windows -app  code.cloudfoundry.org/groot-windows
   GOOS=windows sync_package diff-exporter diff-exporter -app  code.cloudfoundry.org/diff-exporter
   GOOS=windows sync_package cert-injector cert-injector -app  code.cloudfoundry.org/cert-injector
-  GOOS=windows sync_package certsplitter-fs certsplitter -app  code.cloudfoundry.org/certsplitter/cmd/certsplitter
 
   wait
 

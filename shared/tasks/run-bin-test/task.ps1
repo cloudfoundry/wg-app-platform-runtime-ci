@@ -10,6 +10,7 @@ $env:TASK_NAME="$(Get-Random)"
 
 function Run
 {
+
     $env:TEMP="/var/vcap/data/tmp"
     $env:TMP="/var/vcap/data/tmp"
     . Expand-Functions
@@ -28,6 +29,9 @@ function Run
     Push-Location "repo/$env:DIR"
     if (Test-Path "./bin/test.ps1") {
         Debug "Runing ./bin/test.ps1 for repo/$env:DIR"
+        $f = "$(Expand-Flags)"
+        echo $f
+cat "$env:TEMP/$env:TASK_NAME.log"
         ./bin/test.ps1 $(Expand-Flags)
     } else {
         Debug "Missing ./bin/test.ps1. Running ginkgo by default for repo/$env:DIR"

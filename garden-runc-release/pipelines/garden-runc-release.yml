@@ -50,24 +50,27 @@ groups:
 #! Define-ResourceGroups
 resource_types:
 - name: gcs
-  type: registry-image
+  type: docker-image
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/frodenas/gcs-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/frodenas/gcs-resource
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
+    tag: latest
 
 - name: command-runner
   type: docker-image
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundrydevelopers/command-runner-resource
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: slack-notification
   type: docker-image
   source:
-    repository: cfcommunity/slack-notification-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cfcommunity/slack-notification-resource
+    username: _json_key
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: fork-pool
@@ -309,15 +312,6 @@ resources:
     repository: garden-runc-release
     owner: cloudfoundry
 
-- name: draft-github-release
-  type: github-release
-  icon: github
-  source:
-    access_token: ((github-appruntimeplatform-bot/access-token))
-    drafts: true
-    repository: garden-runc-release
-    owner: cloudfoundry
-
 - name: shared-templates
   type: git
   icon: source-branch
@@ -381,27 +375,27 @@ resources:
   type: registry-image
   icon: docker
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: garden-runc-release-rootfs
   type: registry-image
   icon: docker
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/garden-rootfs
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/garden-rootfs
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: garden-runc-release-fuse-rootfs
   type: registry-image
   icon: docker
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/garden-fuse
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/garden-fuse
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: artifacts-bucket-gdn
@@ -440,7 +434,7 @@ resources:
   type: git
   icon: tag-outline
   source:
-    branch: 1_36_stable
+    branch: 1_37_stable
     uri: https://git.busybox.net/busybox
 
 - name: gperf
@@ -454,6 +448,7 @@ resources:
 - name: iptables
   type: git
   icon: tag-outline
+  check_every: 1h
   source:
     branch: master
     uri: https://git.netfilter.org/iptables
@@ -462,6 +457,7 @@ resources:
 - name: libmnl
   type: git
   icon: tag-outline
+  check_every: 1h
   source:
     branch: master
     uri: https://git.netfilter.org/libmnl
@@ -470,6 +466,7 @@ resources:
 - name: libnftnl
   type: git
   icon: tag-outline
+  check_every: 1h
   source:
     branch: master
     uri: https://git.netfilter.org/libnftnl
@@ -538,6 +535,14 @@ resources:
     access_token: ((github-appruntimeplatform-bot/access-token))
     owner: madler
     repository: zlib
+
+- name: containerd
+  type: github-release
+  icon: github
+  source:
+    access_token: ((github-appruntimeplatform-bot/access-token))
+    owner: containerd
+    repository: containerd
 
 #! Define-Jobs
 jobs:
@@ -773,67 +778,34 @@ jobs:
       - get: ci
       - get: repo
       - get: image
-      - get: autoconf
-        params:
-          fetch_tags: true
-        trigger: true
-      - get: automake
-        params:
-          fetch_tags: true
-        trigger: true
-      - get: busybox
-        params:
-          fetch_tags: true
-        trigger: true
-      - get: gperf
-        params:
-          fetch_tags: true
-        trigger: true
-      - get: iptables
-        params:
-          fetch_tags: true
-        trigger: true
-      - get: libmnl
-        params:
-          fetch_tags: true
-        trigger: true
-      - get: libnftnl
-        params:
-          fetch_tags: true
-        trigger: true
-      - get: libseccomp
-        params:
-          globs:
-          - libseccomp-*.tar.gz
-        trigger: true
-      - get: libtool
-        params:
-          fetch_tags: true
-        trigger: true
-      - get: musl
-        params:
-          fetch_tags: true
-        trigger: true
-      - get: pkg-config
-        params:
-          fetch_tags: true
-        trigger: true
-      - get: tar
-        params:
-          fetch_tags: true
-        trigger: true
-      - get: tini
-        trigger: true
-      - get: util-linux
-        params:
-          fetch_tags: true
-        trigger: true
-      - get: zlib
-        params:
-          globs: [ zlib-*.tar.gz ]
-        trigger: true
-
   - do:
+    - get: containerd
+      trigger: true
+      attempts: 3
+      params:
+        fetch_tags: true
+        globs:
+          - '*amd64*'
+    - task: bump-bosh-blob-containerd
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: containerd
+      params:
+        BOSH_BLOB_PATH: containerd/containerd-*-linux-amd64.tar.gz
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+    on_failure: *ci-notification
+  - do:
+    - get: autoconf
+      attempts: 3
+      params:
+        fetch_tags: true
+      trigger: true
     - task: bump-bosh-blob-autoconf
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
@@ -847,7 +819,13 @@ jobs:
       params:
        rebase: true
        repository: bumped-repo
+    on_failure: *ci-notification
   - do:
+    - get: automake
+      attempts: 3
+      params:
+        fetch_tags: true
+      trigger: true
     - task: bump-bosh-blob-automake
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
@@ -861,7 +839,13 @@ jobs:
       params:
        rebase: true
        repository: bumped-repo
+    on_failure: *ci-notification
   - do:
+    - get: busybox
+      attempts: 3
+      params:
+        fetch_tags: true
+      trigger: true
     - task: bump-bosh-blob-busybox
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
@@ -875,8 +859,13 @@ jobs:
       params:
        rebase: true
        repository: bumped-repo
-
+    on_failure: *ci-notification
   - do:
+    - get: gperf
+      attempts: 3
+      params:
+        fetch_tags: true
+      trigger: true
     - task: bump-bosh-blob-gperf
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
@@ -890,7 +879,13 @@ jobs:
       params:
        rebase: true
        repository: bumped-repo
+    on_failure: *ci-notification
   - do:
+    - get: iptables
+      attempts: 3
+      params:
+        fetch_tags: true
+      trigger: true
     - task: bump-bosh-blob-iptables
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
@@ -904,7 +899,13 @@ jobs:
       params:
        rebase: true
        repository: bumped-repo
+    on_failure: *ci-notification
   - do:
+    - get: libmnl
+      attempts: 3
+      params:
+        fetch_tags: true
+      trigger: true
     - task: bump-bosh-blob-libmnl
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
@@ -918,7 +919,13 @@ jobs:
       params:
        rebase: true
        repository: bumped-repo
+    on_failure: *ci-notification
   - do:
+    - get: libnftnl
+      attempts: 3
+      params:
+        fetch_tags: true
+      trigger: true
     - task: bump-bosh-blob-libnftnl
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
@@ -932,7 +939,14 @@ jobs:
       params:
        rebase: true
        repository: bumped-repo
+    on_failure: *ci-notification
   - do:
+    - get: libseccomp
+      attempts: 3
+      params:
+        globs:
+        - libseccomp-*.tar.gz
+      trigger: true
     - task: bump-bosh-blob-libseccomp
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
@@ -946,7 +960,13 @@ jobs:
       params:
        rebase: true
        repository: bumped-repo
+    on_failure: *ci-notification
   - do:
+    - get: libtool
+      attempts: 3
+      params:
+        fetch_tags: true
+      trigger: true
     - task: bump-bosh-blob-libtool
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
@@ -960,7 +980,13 @@ jobs:
       params:
        rebase: true
        repository: bumped-repo
+    on_failure: *ci-notification
   - do:
+    - get: musl
+      attempts: 3
+      params:
+        fetch_tags: true
+      trigger: true
     - task: bump-bosh-blob-musl
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
@@ -974,7 +1000,13 @@ jobs:
       params:
        rebase: true
        repository: bumped-repo
+    on_failure: *ci-notification
   - do:
+    - get: pkg-config
+      attempts: 3
+      params:
+        fetch_tags: true
+      trigger: true
     - task: bump-bosh-blob-pkg-config
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
@@ -988,8 +1020,13 @@ jobs:
       params:
        rebase: true
        repository: bumped-repo
-
+    on_failure: *ci-notification
   - do:
+    - get: tar
+      attempts: 3
+      params:
+        fetch_tags: true
+      trigger: true
     - task: bump-bosh-blob-tar
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
@@ -1003,7 +1040,11 @@ jobs:
       params:
        rebase: true
        repository: bumped-repo
+    on_failure: *ci-notification
   - do:
+    - get: tini
+      attempts: 3
+      trigger: true
     - task: bump-bosh-blob-tini
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
@@ -1017,7 +1058,13 @@ jobs:
       params:
        rebase: true
        repository: bumped-repo
+    on_failure: *ci-notification
   - do:
+    - get: util-linux
+      attempts: 3
+      params:
+        fetch_tags: true
+      trigger: true
     - task: bump-bosh-blob-util-linux
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
@@ -1031,7 +1078,13 @@ jobs:
       params:
        rebase: true
        repository: bumped-repo
+    on_failure: *ci-notification
   - do:
+    - get: zlib
+      attempts: 3
+      params:
+        globs: [ zlib-*.tar.gz ]
+      trigger: true
     - task: bump-bosh-blob-zlib
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
@@ -1045,6 +1098,7 @@ jobs:
       params:
        rebase: true
        repository: bumped-repo
+    on_failure: *ci-notification
 
 - name: sync-dot-github-dir
   serial: true
@@ -1163,18 +1217,27 @@ jobs:
         DEFAULT_PARAMS: "ci/garden-runc-release/default-params/build-binaries/linux.yml"
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
   - put: windows-worker-lock
     params:
       acquire: true
-  - task: start-windows-worker
-    image: image
-    file: ci/shared/tasks/bosh-start/linux.yml
-    params:
-      DEPLOYMENT: windows-worker
-      INSTANCE_GROUP: windows-worker
-      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+  - in_parallel:
+    - task: start-windows-worker
+      image: image
+      file: ci/shared/tasks/bosh-start/linux.yml
+      params:
+        DEPLOYMENT: windows-worker
+        INSTANCE_GROUP: windows-worker
+        BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+    - task: start-cgroups-v2-worker
+      image: image
+      file: ci/shared/tasks/bosh-start/linux.yml
+      params:
+        DEPLOYMENT: diego-worker-cgroupsv2
+        INSTANCE_GROUP: worker
+        BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+
   - in_parallel:
 #@ for repo in data.values.internal_repos:
     - task: #@ "{}".format(repo.name)
@@ -1182,7 +1245,7 @@ jobs:
       file: ci/shared/tasks/run-bin-test/linux.yml
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
       input_mapping:
         input-01: garden-runc-release-rootfs
@@ -1200,7 +1263,7 @@ jobs:
       file: ci/shared/tasks/run-bin-test/linux.yml
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
       input_mapping:
         input-01: garden-runc-release-rootfs
@@ -1221,18 +1284,33 @@ jobs:
 #@ end
 #@ end
   ensure:
-    task: stop-windows-worker
-    image: image
-    file: ci/shared/tasks/bosh-stop/linux.yml
-    params:
-      DEPLOYMENT: windows-worker
-      INSTANCE_GROUP: windows-worker
-      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
-    ensure:
-      put: windows-worker-lock
-      inputs: detect
+    in_parallel:
+    - task: stop-windows-worker
+      image: image
+      file: ci/shared/tasks/bosh-stop/linux.yml
       params:
-        release: windows-worker-lock
+        DEPLOYMENT: windows-worker
+        INSTANCE_GROUP: windows-worker
+        BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+      ensure:
+        task: prune-worker
+        image: image
+        file: ci/shared/tasks/fly-prune-worker/linux.yml
+        params:
+          FLY_PASSWORD: ((concourse-bot-ci-user))
+          FLY_WORKER_REGEX: " windows +none"
+        ensure:
+          put: windows-worker-lock
+          inputs: detect
+          params:
+            release: windows-worker-lock
+    - task: stop-cgroups-v2-worker
+      image: image
+      file: ci/shared/tasks/bosh-stop/linux.yml
+      params:
+        DEPLOYMENT: diego-worker-cgroupsv2
+        INSTANCE_GROUP: worker
+        BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
 
 - name: lint-repo
   serial: true
@@ -1311,6 +1389,7 @@ jobs:
     - get: garden-runc-release-env-lock
       passed: [ claim-env ]
   - task: prepare-cf-deployment-env
+    attempts: 10
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
     params:
@@ -1460,14 +1539,12 @@ jobs:
     file: determined-image-tag/tag
   - task: build-binaries-with-musl
     file: ci/shared/tasks/build-binaries/linux.yml
-    input_mapping:
-      input-01: built-musl
     params:
       DEFAULT_PARAMS: "ci/garden-runc-release/default-params/build-binaries/linux.yml"
       ENVS: WITH_MUSL=true
     vars:
       image_repository: cloudfoundry/tas-runtime-build
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
   - task: release-standalone-gdn
     file: ci/shared/tasks/run-bin-release-binaries/linux.yml
@@ -1498,7 +1575,7 @@ jobs:
         LIMITS_TEST_URI="docker://busybox"
     vars:
       image_repository: cloudfoundry/tas-runtime-build
-      image_password: ((gcp-wg-arp-service-account/config-json))
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
   - put: artifacts-bucket-gdn
     params:
@@ -1551,6 +1628,7 @@ jobs:
         DEPLOYMENT_GARDEN_CI_ARTIFACTS_RELEASE_DIR=$PWD/release-01
         DEPLOYMENT_WINC_RELEASE_DIR=$PWD/release-02
         DEPLOYMENT_WINDOWS_UTILITIES_RELEASE_DIR=$PWD/release-03
+        WINDOWS_STEMCELL_OS="$(bosh ss --json | jq -r ' .Tables[0].Rows[] | select(.os | contains("windows")) | .os')"
   - task: run-gatsw-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
@@ -1590,6 +1668,8 @@ jobs:
         WITH_BPM=false
         WITH_CONTAINERD_MODE=false
         WITH_CPU_THROTTLING=true
+        DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
+        DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
       BBL_STATE_DIR: bbl-garden-env
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
@@ -1678,6 +1758,8 @@ jobs:
         WITH_BPM=false
         WITH_CONTAINERD_MODE=true
         WITH_CPU_THROTTLING=false
+        DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
+        DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
       BBL_STATE_DIR: bbl-garden-env
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
@@ -1735,6 +1817,8 @@ jobs:
         WITH_CONTAINERD_MODE=true
         WITH_CPU_THROTTLING=false
         CF_STEMCELL_OS=ubuntu-noble
+        DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
+        DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
       BBL_STATE_DIR: bbl-garden-env
   - task: run-gats-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
@@ -1914,7 +1998,7 @@ jobs:
 
     - in_parallel:
         steps:
-        - put: draft-github-release
+        - put: github-release
           params:
             name: version/number
             tag: version/number
@@ -2022,6 +2106,14 @@ jobs:
         file: ci/shared/tasks/bosh-deld/linux.yml
         params:
           BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gats-with-containerd-cgroupsv2
+  - try:
+      do:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
           DEPLOYMENT_NAME: gats-with-cpu-throttling
   - task: stop-bbl-envs
     image: image
@@ -2084,6 +2176,14 @@ jobs:
         params:
           BBL_STATE_DIR: bbl-garden-env
           DEPLOYMENT_NAME: gats-with-containerd
+  - try:
+      do:
+      - task: bosh-deld
+        image: image
+        file: ci/shared/tasks/bosh-deld/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
+          DEPLOYMENT_NAME: gats-with-containerd-cgroupsv2
   - try:
       do:
       - task: bosh-deld

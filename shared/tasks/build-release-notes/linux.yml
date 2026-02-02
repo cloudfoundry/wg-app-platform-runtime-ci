@@ -4,8 +4,9 @@ platform: linux
 inputs:
   - name: ci
   - name: repo
-  - name: previous-github-release
   - name: version
+  - name: previous-github-release
+    optional: true
   - name: released-binaries
     optional: true
   - name: extra-metadata

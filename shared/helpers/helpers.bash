@@ -138,6 +138,20 @@ function debug(){
     echo "${@}" >> "/tmp/$TASK_NAME.log"
 }
 
+function get_linux_go_version_for_release_from_ref() {
+    local dir="${1:?Provide release directory path}"
+    local ref="${2:?Provide a ref}"
+
+    pushd "${dir}" > /dev/null
+    package_path=$(git ls-tree "${ref}" --name-only packages/ | grep "golang" | grep "linux" | head -n1)
+    if [ -n "$package_path" ]; then
+        package_name=$(basename "${package_path}")
+        spec_lock_value=$(git show "${ref}:${package_path}/spec.lock" | yq .fingerprint)
+        get_go_version_for_package "${spec_lock_value}" "${package_name}"
+    fi
+    popd > /dev/null
+}
+
 function get_go_version_for_package(){
     debug "running get_go_version_for_package with args $*"
     local spec_lock_value="${1:?Provide a spec lock value}"
@@ -272,6 +286,12 @@ function env_metadata() {
 }
 
 function is_env_cf_deployment() {
+    local has_nsx=$(yq '.nsx_use_policy_api' "$(env_metadata)")
+    if [[ "$has_nsx" != "null" ]]; then
+        echo  "no"
+        return
+    fi
+
     local has_opsman=$(jq 'any(.;.ops_manager)' "$(env_metadata)")
     if [[ "$has_opsman" == "true" ]]; then
         echo  "no"
@@ -280,3 +300,25 @@ function is_env_cf_deployment() {
     fi
 }
 export -f is_env_cf_deployment
+
+
+function is_shepherd_v1_deployment() {
+    local has_nsx=$(yq '.nsx_use_policy_api' "$(env_metadata)")
+    if [[ "$has_nsx" == "null" ]]; then
+        echo  "no"
+    else
+        echo "yes"
+    fi
+}
+export -f is_shepherd_v1_deployment
+
+function is_env_shepherd_v2() {
+    local has_v2=$(jq 'any(.;.v2)' "$(env_metadata)")
+    if [[ "$has_v2" == "true" ]]; then
+        echo  "yes"
+    else
+        echo "no"
+    fi
+}
+export -f is_env_shepherd_v2
+

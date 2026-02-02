@@ -10,7 +10,9 @@ source "$THIS_FILE_DIR/../../../shared/helpers/helpers.bash"
 source "$THIS_FILE_DIR/../../../shared/helpers/bosh-helpers.bash"
 unset THIS_FILE_DIR
 
+pushd $DIR > /dev/null
 bosh_target
+popd > /dev/null
 
 function test_api { until bosh env; do echo failed; sleep 1; done; }
 export -f test_api

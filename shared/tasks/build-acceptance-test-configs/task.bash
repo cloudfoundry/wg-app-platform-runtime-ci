@@ -18,8 +18,10 @@ function run(){
     expand_envs "${env_file}"
     . "${env_file}"
 
+    pushd $DIR > /dev/null
     bosh_target
     cf_target
+    popd
 
     for entry in ${CONFIGS}
     do
@@ -70,9 +72,10 @@ function cats() {
     "include_internet_dependent": true,
     "include_routing_isolation_segments": ${WITH_ISOSEG},
     "include_isolation_segments": ${WITH_ISOSEG},
+    "dynamic_asgs_enabled": ${WITH_DYNAMIC_ASG},
     "include_route_services": true,
     "include_routing": true,
-    "include_security_groups": ${WITH_DYNAMIC_ASG},
+    "include_security_groups": true,
     "include_services": true,
     "include_service_discovery": true,
     "include_service_instance_sharing": true,
@@ -85,7 +88,7 @@ function cats() {
     "include_v3": true,
     "include_volume_services": ${WITH_VOLUME_SERVICES},
     "include_zipkin": true,
-    "isolation_segment_name": "persistent_isolation_segment",
+    "isolation_segment_name": "${ISOSEG_NAME}",
     "isolation_segment_domain": "iso-seg.${CF_SYSTEM_DOMAIN}",
     "isolation_segment_tcp_domain": "tcp.${CF_SYSTEM_DOMAIN}",
     "skip_ssl_validation": true,
@@ -193,7 +196,8 @@ function cfsmoke() {
   "isolation_segment_name": "persistent_isolation_segment",
   "isolation_segment_domain": "iso-seg.${CF_SYSTEM_DOMAIN}",
   "enable_isolation_segment_tests": ${WITH_ISOSEG},
-  "skip_ssl_validation": true
+  "skip_ssl_validation": true,
+  "timeout_scale": 2
 }
 EOF
 }
@@ -209,19 +213,21 @@ function wats() {
   "apps_domain": "${CF_SYSTEM_DOMAIN}",
   "credhub_client": "credhub_admin_client",
   "credhub_mode": "assisted",
-  "credhub_secret": "$(bosh_get_password_from_credhub credhub_admin_client_secret)",
+  "credhub_secret": "$(credhub_admin_client_secret)",
   "include_apps": false,
   "include_container_networking": false,
   "include_detect": false,
   "include_docker": false,
   "include_http2_routing": false,
-  "include_internet_dependent": false,
+  "include_internet_dependent": true,
+  "include_internetless": false,
   "include_isolation_segments": false,
   "include_private_docker_registry": false,
   "include_route_services": false,
   "include_routing": false,
   "include_routing_isolation_segments": false,
-  "include_security_groups": false,
+  "include_security_groups": true,
+  "dynamic_asgs_enabled": ${WITH_DYNAMIC_ASG},
   "include_service_discovery": false,
   "include_service_instance_sharing": false,
   "include_services": false,
@@ -236,11 +242,11 @@ function wats() {
   "comma_delim_asgs_enabled": ${WITH_COMMA_DELIMITED_ASG_DESTINATIONS},
   "skip_ssl_validation": true,
   "timeout_scale": 1,
-  "unallocated_ip_for_security_group": "10.0.0.5",
+  "unallocated_ip_for_security_group": "10.0.244.255",
   "use_http": false,
   "use_windows_context_path": true,
   "use_windows_test_task": true,
-  "windows_stack": "windows"
+  "windows_stack": "${CF_WINDOWS_STACK:-windows}"
 }
 EOF
 }

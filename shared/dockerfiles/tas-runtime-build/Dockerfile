@@ -120,7 +120,7 @@ RUN \
 
 #    OM Cli
 RUN \
-  url="$(curl -s https://api.github.com/repos/pivotal-cf/om/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains("tar"))and (.name | contains($target_arch))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/pivotal-cf/om/releases | jq -r --arg target_arch "${TARGETARCH}" '[.[] | select(.prerelease != true)][0].assets[] | select((.name | contains("linux")) and (.name | contains("tar"))and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/om /usr/local/bin/om
 
@@ -161,7 +161,7 @@ RUN \
 #    lychee
 RUN \
   if [ "${TARGETARCH}" = "amd64" ]; then lychee_arch="x86_64"; else lychee_arch="aarch64"; fi; \
-  url="$(curl -s https://api.github.com/repos/lycheeverse/lychee/releases | jq -r --arg lychee_arch "$lychee_arch" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($lychee_arch)) and (.name | contains("gnu")) ).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/lycheeverse/lychee/releases | jq -r --arg lychee_arch "$lychee_arch" '[.[] | select(.prerelease != true)] | .[0].assets[] | select((.name | contains("linux")) and (.name | contains($lychee_arch)) and (.name | contains("gnu")) ).browser_download_url')" && \
   echo "${url}" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/lychee /usr/local/bin/lychee
@@ -190,6 +190,7 @@ RUN go install github.com/onsi/ginkgo/v2/ginkgo@latest
 RUN go install github.com/stephendotcarter/unpack@latest
 RUN go install github.com/vito/gosub@master
 RUN go install github.com/cloudfoundry/uptimer@latest
+RUN go install github.com/pivotal-cf/kiln@latest
 
 #    staticcheck
 RUN \

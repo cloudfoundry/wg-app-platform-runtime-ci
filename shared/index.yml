@@ -42,3 +42,7 @@ environments:
   - name: bbl-windowsfs-online-env
     bosh_lite: false
     pipeline_lock: windowsfs-online-release-env-lock
+
+supported_go_versions:
+  - name: 1.25
+  - name: 1.24

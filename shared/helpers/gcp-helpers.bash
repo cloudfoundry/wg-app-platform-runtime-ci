@@ -15,57 +15,61 @@ function login() {
     done
 }
 
-function check_for_unattached_disks_per_project() {
+function get_unattached_disks_per_project_json() {
     project="${1}"
-    disk_info_json=$(gcloud compute disks list --filter="users:null" --project "${project}" --format json )
-    disk_count=$(echo "${disk_info_json}" | jq '. | length')
-    echo "* project '${p}' has '${disk_count}' unattached disks" 
-    
-    if [[ "${disk_count}" != 0 ]]; then
-        while read -r disk_info; do
-            echo "------------------------"
-            disk_name=$(echo "${disk_info}" | jq -r .name)
-            last_attach=$(echo "${disk_info}" | jq -r .lastAttachTimestamp)
-            last_detach=$(echo "${disk_info}" | jq -r .lastDetachTimestamp)
-            zone=$(echo "${disk_info}" | jq -r .zone | cut  -d "/" -f9)
-            echo "Name: ${disk_name}"
-            echo "LastAttach: ${last_attach}"
-            echo "LastDetach: ${last_detach}"
-            echo "To remove: gcloud compute disks delete ${disk_name} --project ${p} --zone ${zone}"
-            echo "------------------------"
-        done <<< "$( echo "${disk_info_json}" | jq -cr '.[]')"
-    fi
+    gcloud compute disks list --filter="users:null" --project "${project}" --format json
 }
 
-function check_for_unattached_disks() {
+function list_unattached_disks_locally() {
     for p in "${projects[@]}";
     do
-        check_for_unattached_disks_per_project "${p}"
+        disk_info_json="$(get_unattached_disks_per_project_json "${p}")"
+        disk_count=$(echo "${disk_info_json}" | jq -r '. | length')
+        echo "* project '${p}' has '${disk_count}' unattached disks"
+        if [[ "${disk_count}" != 0 ]]; then
+            while read -r disk; do
+                echo "------------------------"
+                disk_name=$(echo "${disk}" | jq -r .name)
+                last_attach=$(echo "${disk}" | jq -r .lastAttachTimestamp)
+                last_detach=$(echo "${disk}" | jq -r .lastDetachTimestamp)
+                zone=$(echo "${disk}" | jq -r .zone | cut  -d "/" -f9)
+                echo "Name: ${disk_name}"
+                echo "LastAttach: ${last_attach}"
+                echo "LastDetach: ${last_detach}"
+                echo "To remove: gcloud compute disks delete ${disk_name} --project ${p} --zone ${zone}"
+                echo "------------------------"
+                echo ""
+            done <<< "$(echo "${disk_info_json}" | jq -cr '.[]')"
+        fi
+    done
+}
+
+function list_running_vms_locally() {
+    for p in "${projects[@]}";
+    do
+        vm_info_json=$(get_running_vms_per_project_json "${p}")
+        vm_count=$(echo "${vm_info_json}" | jq -r '.[] | length')
+        echo "* project '${p}' has '${vm_count}' running VMs"
+        echo "${vm_info_json}" | jq -r .vms[] | sort | uniq -c
         echo ""
     done
 }
 
-function list_running_vms() {
-    for p in "${projects[@]}";
-    do
-        list_running_vms_per_project "${p}"
-        echo ""
-    done
+function get_running_info_from_gcp_json() {
+    project="${1}"
+    gcloud compute instances list --filter "status:RUNNING" --project "${project}" --format json
 }
 
-function list_running_vms_per_project() {
+function get_running_vms_per_project_json() {
     project="${1}"
     JSON='{"vms":[]}'
-    vm_info_json="$(gcloud compute instances list --filter "status:RUNNING" --project "${project}" --format json )"
-    vm_count=$(echo "${vm_info_json}" | jq '. | length')
-    echo "* project '${p}' has '${vm_count}' running VMs" 
-
+    vm_info_json="$(get_running_info_from_gcp_json "${project}")"
     while read -r vm; do
         local name
         name=$(get_gcp_vm_identifier "${vm}")
         JSON="$(jq --arg name "$name" '.vms += [$name]' <<< "$JSON")"
     done <<< "$(echo "${vm_info_json}" | jq -cr '.[]')"
-    echo "${JSON}" | jq -r .vms[] | sort | uniq -c
+    echo "${JSON}"
 }
 
 
@@ -130,19 +134,30 @@ function is_okay_to_be_long_running() {
     echo "${found}"
 }
 
-function list_long_running_vms() {
+function list_long_running_vms_locally() {
     for p in "${projects[@]}";
     do
-        list_long_running_vms_per_project "${p}"
-        echo ""
+        vm_info_json="$(get_long_running_vms_per_project_json "${p}")"
+        vm_count=$(echo "${vm_info_json}" | jq -r '.[] | length')
+        echo "* project '${p}' has '${vm_count}' suspicious long running VMs"
+
+        if [[ "${vm_count}" != 0 ]]; then
+            while read -r vm; do
+                id=$(echo "${vm}" | jq -r .id)
+                name=$(echo "${vm}" | jq -r .name)
+                hours_running=$(echo "${vm}" | jq -r .hours_running)
+                echo "     ${id} - ${name} - ${hours_running} hours"
+                echo "        # gcloud compute instances stop ${name} --project ${p}"
+            done <<< "$(echo "${vm_info_json}"| jq -cr '.vms[]')"
+            echo ""
+        fi
     done
 }
 
-function list_long_running_vms_per_project() {
+function get_long_running_vms_per_project_json() {
     project="${1}"
-    vm_info_json=$(gcloud compute instances list --filter "status:RUNNING" --project "${project}" --format json)
-    vm_count=$(echo "${vm_info_json}" | jq '. | length')
-    echo "* suspicious long running VMs for project '${p}'"
+    vm_info_json=$(get_running_info_from_gcp_json "${project}")
+    JSON='{"vms":[]}'
 
     while read -r vm; do
         local name
@@ -150,18 +165,19 @@ function list_long_running_vms_per_project() {
         name=$(get_gcp_vm_name "${vm}")
         creation_time=$(echo "${vm}" | jq -r .lastStartTimestamp)
         hours_since="$(( ($(date +%s) - $(date -d "${creation_time}" +%s)) / (60*60) ))"
-        if [[ "${hours_since}" -ge 12 ]]; then
-            ok=$(is_okay_to_be_long_running ${id})
+        if [[ "${hours_since}" -ge 8 ]]; then
+            ok=$(is_okay_to_be_long_running "${id}")
             if [[ "${ok}" == false ]]; then
-                echo "     ${id} - ${name} - ${hours_since} hours"
+                JSON="$(jq --arg name $name --arg id $id --arg hours $hours_since '.vms += [{"name": $name, "id": $id, "hours_running": $hours}]' <<< "$JSON")"
             fi
         fi
-    done <<< "$(echo "${vm_info_json}" | jq -cr '.[]')"
+    done <<< "$(get_running_info_from_gcp_json "${project}" | jq -cr '.[]')"
+    echo "$JSON"
 }
 
-function check_gcp_status_locally() {
+function list_gcp_status_locally() {
     login
-    check_for_unattached_disks
-    list_running_vms
-    list_long_running_vms
+    list_unattached_disks_locally
+    list_running_vms_locally
+    list_long_running_vms_locally
 }

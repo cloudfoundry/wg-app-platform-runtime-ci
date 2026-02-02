@@ -33,7 +33,9 @@ resource_types:
 - name: slack-notification
   type: docker-image
   source:
-    repository: cfcommunity/slack-notification-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cfcommunity/slack-notification-resource
+    username: _json_key
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: fork-pool
@@ -126,9 +128,9 @@ resources:
   type: registry-image
   icon: docker
   source:                                        
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: 'latest'
 
 - name: slack-ci-channel
@@ -151,15 +153,6 @@ resources:
   icon: github
   source:
     access_token: ((github-appruntimeplatform-bot/access-token))
-    repository: windowsfs-online-release
-    owner: cloudfoundry
-
-- name: draft-github-release 
-  type: github-release
-  icon: github
-  source:
-    access_token: ((github-appruntimeplatform-bot/access-token))
-    drafts: true
     repository: windowsfs-online-release
     owner: cloudfoundry
 
@@ -507,6 +500,7 @@ jobs:
       passed: [prepare-env]
     - get: cf-deployment-concourse-tasks
   - task: export-release
+    attempts: 10
     file: ci/shared/tasks/bosh-export-release/linux.yml
     image: image
     params:
@@ -640,7 +634,7 @@ jobs:
 
     - in_parallel:
         steps:
-        - put: draft-github-release
+        - put: github-release
           params:
             name: version/number
             tag: version/number

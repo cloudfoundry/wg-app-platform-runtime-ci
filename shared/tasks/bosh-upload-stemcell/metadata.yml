@@ -5,4 +5,5 @@ oses:
   - linux
 params:
   BBL_STATE_DIR: name of bbl state dir (relative to the env resource)
+  DIR: (Defaults to .). Change working dir prior to bosh_target
   STEMCELL_URL: URL for stemcell

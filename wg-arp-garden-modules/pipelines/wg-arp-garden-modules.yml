@@ -79,9 +79,9 @@ resources:
   type: registry-image
   icon: docker
   source:                                        
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: 'latest'
 
 - name: golang-release-latest
@@ -97,6 +97,14 @@ resources:
   source:
     uri: git@github.com:cloudfoundry/hwc.git
     branch: release
+    private_key: ((github-appruntimeplatform-bot/private-key))
+
+- name: winc-release
+  type: git
+  icon: source-branch
+  source:
+    uri: git@github.com:cloudfoundry/winc-release.git
+    branch: develop
     private_key: ((github-appruntimeplatform-bot/private-key))
 
 - name: hwc-develop-branch-mergeback
@@ -189,6 +197,7 @@ jobs:
       get: repo
       trigger: true
     - get: image
+    - get: winc-release
     - get: package-release
       resource: golang-release-latest
     - get: windows-worker-lock
@@ -205,7 +214,7 @@ jobs:
       privileged: #@ helpers.privileged(package)
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
       params:
         ENVS: |
@@ -224,6 +233,17 @@ jobs:
           DEPLOYMENT: windows-worker
           INSTANCE_GROUP: windows-worker
           BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+      - task: build-binaries
+        file: ci/shared/tasks/build-binaries/windows.yml
+        input_mapping:
+          repo: winc-release
+        params:
+          FUNCTIONS: ci/winc-release/helpers/build-binaries.ps1
+          MAPPING: |
+            Build-Groot=src/code.cloudfoundry.org/groot-windows
+            Build-Winc-Network=src/code.cloudfoundry.org/winc/cmd/winc-network
+            Build-Winc=src/code.cloudfoundry.org/winc/cmd/winc
+            Build-Diff-Exporter=src/code.cloudfoundry.org/diff-exporter
       - task: #@ "{}-windows".format(package.name)
         file: ci/shared/tasks/run-bin-test/windows.yml
         privileged: #@ helpers.privileged(package)
@@ -232,19 +252,28 @@ jobs:
             DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
             DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
             PRIVATE_DOCKER_IMAGE_URL=docker://cloudfoundry/garden-private-image-test:groot
-      ensure:
-        task: stop-windows-worker
-        image: image
-        file: ci/shared/tasks/bosh-stop/linux.yml
-        params:
-          DEPLOYMENT: windows-worker
-          INSTANCE_GROUP: windows-worker
-          BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+            IMAGE_NAME=cloudfoundry/windows2016fs
+            IMAGE_TAG=latest
         ensure:
-          put: windows-worker-lock
-          inputs: detect
+          task: stop-windows-worker
+          image: image
+          file: ci/shared/tasks/bosh-stop/linux.yml
           params:
-            release: windows-worker-lock
+            DEPLOYMENT: windows-worker
+            INSTANCE_GROUP: windows-worker
+            BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+          ensure:
+            task: prune-worker
+            image: image
+            file: ci/shared/tasks/fly-prune-worker/linux.yml
+            params:
+              FLY_PASSWORD: ((concourse-bot-ci-user))
+              FLY_WORKER_REGEX: " windows +none"
+            ensure:
+              put: windows-worker-lock
+              inputs: detect
+              params:
+                release: windows-worker-lock
 #@ end
 #@ end
 #@ for package in helpers.packages_with_configure_db(data.values.internal_repos):
@@ -286,7 +315,7 @@ jobs:
       privileged: #@ helpers.privileged(package)
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
 #@ if hasattr(package, "params") and hasattr(package.params, "FLAGS"):
@@ -328,10 +357,17 @@ jobs:
           INSTANCE_GROUP: windows-worker
           BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
         ensure:
-          put: windows-worker-lock
-          inputs: detect
+          task: prune-worker
+          image: image
+          file: ci/shared/tasks/fly-prune-worker/linux.yml
           params:
-            release: windows-worker-lock
+            FLY_PASSWORD: ((concourse-bot-ci-user))
+            FLY_WORKER_REGEX: " windows +none"
+          ensure:
+            put: windows-worker-lock
+            inputs: detect
+            params:
+              release: windows-worker-lock
 #@ end
 #@ end
 - name: ship-it-hwc

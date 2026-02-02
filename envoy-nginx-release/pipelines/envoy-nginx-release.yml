@@ -45,7 +45,9 @@ resource_types:
 - name: slack-notification
   type: docker-image
   source:
-    repository: cfcommunity/slack-notification-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cfcommunity/slack-notification-resource
+    username: _json_key
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: fork-pool
@@ -222,15 +224,6 @@ resources:
     repository: envoy-nginx-release
     owner: cloudfoundry
 
-- name: draft-github-release
-  type: github-release
-  icon: github
-  source:
-    access_token: ((github-appruntimeplatform-bot/access-token))
-    drafts: true
-    repository: envoy-nginx-release
-    owner: cloudfoundry
-
 - name: version
   type: semver
   icon: counter
@@ -264,9 +257,9 @@ resources:
   type: registry-image
   icon: docker
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: 'latest'
 
 - name: nginx
@@ -360,6 +353,7 @@ jobs:
         trigger: true
   - do:
     - task: nginx-bump-bosh-blob
+      attempts: 3
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
@@ -451,10 +445,17 @@ jobs:
       INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
     ensure:
-      put: windows-worker-lock
-      inputs: detect
+      task: prune-worker
+      image: image
+      file: ci/shared/tasks/fly-prune-worker/linux.yml
       params:
-        release: windows-worker-lock
+        FLY_PASSWORD: ((concourse-bot-ci-user))
+        FLY_WORKER_REGEX: " windows +none"
+      ensure:
+        put: windows-worker-lock
+        inputs: detect
+        params:
+          release: windows-worker-lock
 
 - name: lint-repo
   serial: true
@@ -540,6 +541,7 @@ jobs:
             BBL_STATE_DIR: bbl-envoy-nginx-env
             DEPLOYMENT_NAME: cf
   - task: prepare-cf-deployment-env
+    attempts: 10
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
     params:
@@ -556,7 +558,6 @@ jobs:
         {input-01/operations/windows2019-cell.yml,combined-assets}
         {input-01/operations/use-online-windows2019fs.yml,combined-assets}
         {input-01/operations/use-latest-windows2019-stemcell.yml,combined-assets}
-        {input-01/operations/experimental/enable-nginx-routing-integrity-windows2019.yml,combined-assets}
         {ci/envoy-nginx-release/opsfiles/*.yml,combined-assets}
         {ci/shared/opsfiles//scale-to-HA.yml,combined-assets}
         {ci/shared/opsfiles/compiled-windows-windows-runtime-workaround.yml,combined-assets}
@@ -792,7 +793,7 @@ jobs:
 
     - in_parallel:
         steps:
-        - put: draft-github-release
+        - put: github-release
           params:
             name: version/number
             tag: version/number

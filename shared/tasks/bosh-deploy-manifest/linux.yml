@@ -20,8 +20,11 @@ params:
   BBL_STATE_DIR:
   DEPLOYMENT_NAME:
   ENVS:
+  EVAL_CMD:
   MANIFEST:
   OPS_FILES:
+  VARS_FILES:
+  DIR: .
 
 run:
   path: ci/shared/tasks/bosh-deploy-manifest/task.bash

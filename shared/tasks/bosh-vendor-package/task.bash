@@ -15,8 +15,16 @@ function run() {
   git_configure_author
   git_configure_safe_directory
 
-  pushd repo > /dev/null
+
   local private_yml="./config/private.yml"
+
+  if [[ "${PRIVATE_PACKAGE_RELEASE:-false}" == "true" ]]; then
+  pushd package-release > /dev/null
+  bosh_configure_private_yml $private_yml
+  popd > /dev/null
+  fi
+
+  pushd repo > /dev/null
   bosh_configure_private_yml $private_yml
 
   vendored_package_name=$PACKAGE_NAME

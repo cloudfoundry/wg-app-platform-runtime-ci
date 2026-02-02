@@ -47,22 +47,24 @@ resource_types:
 - name: bosh-deployment
   type: docker-image
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/bosh-deployment-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/bosh-deployment-resource
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
 
 - name: cf-cli-resource
   type: registry-image
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/nulldriver/cf-cli-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/nulldriver/cf-cli-resource
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: slack-notification
   type: docker-image
   source:
-    repository: cfcommunity/slack-notification-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cfcommunity/slack-notification-resource
+    username: _json_key
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: fork-pool
@@ -169,46 +171,6 @@ resources:
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
     paths: [go-version.json]
 
-- name: updated-go-mod-diff-exporter
-  type: git
-  icon: source-branch
-  source:
-    branch: main
-    uri: git@github.com:cloudfoundry/diff-exporter.git
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
-- name: updated-go-mod-groot-windows
-  type: git
-  icon: source-branch
-  source:
-    branch: main
-    uri: git@github.com:cloudfoundry/groot-windows.git
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
-- name: updated-go-mod-winc
-  type: git
-  icon: source-branch
-  source:
-    branch: main
-    uri: git@github.com:cloudfoundry/winc.git
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
-- name: updated-go-mod-certsplitter
-  type: git
-  icon: source-branch
-  source:
-    branch: main
-    uri: git@github.com:cloudfoundry/certsplitter.git
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
-- name: updated-go-mod-cert-injector
-  type: git
-  icon: source-branch
-  source:
-    branch: main
-    uri: git@github.com:cloudfoundry/cert-injector.git
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
 - name: garden-ci-artifacts-release
   type: git
   icon: source-branch
@@ -290,26 +252,15 @@ resources:
     repository: winc-release
     owner: cloudfoundry
 
-- name: draft-github-release
-  type: github-release
-  icon: github
-  source:
-    access_token: ((github-appruntimeplatform-bot/access-token))
-    drafts: true
-    repository: winc-release
-    owner: cloudfoundry
-
 - name: version
   type: semver
   icon: counter
   source:
-    access_key_id: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
-    secret_access_key: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
-    assume_role_arn: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))
-    bucket: winc-release
-    initial_version: 0.0.0
-    key: version
-    region_name: us-east-1
+    driver: gcs
+    bucket: ci-release-versions
+    key: winc-release/version
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
+    initial_version: 2.40.0
 
 - name: winc-release-env-lock
   type: fork-pool
@@ -334,9 +285,9 @@ resources:
   type: registry-image
   icon: docker
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: 'latest'
 
 - name: linux-stemcell
@@ -393,84 +344,19 @@ jobs:
       - get: ci
       - get: repo
       - get: image
-      - get: updated-go-mod-cert-injector
-      - get: updated-go-mod-certsplitter
-      - get: updated-go-mod-diff-exporter
-      - get: updated-go-mod-groot-windows
-      - get: updated-go-mod-winc
       - get: weekly
         trigger: true
   - do:
-    - task: cert-injector-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-cert-injector
-      params:
-        GO_MODS: go.mod
-        GOOS: windows
-    - put: updated-go-mod-cert-injector
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: certsplitter-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-certsplitter
-      params:
-        GO_MODS: go.mod
-        GOOS: windows
-    - put: updated-go-mod-certsplitter
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: diff-exporter-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-diff-exporter
-      params:
-        GO_MODS: go.mod
-        GOOS: windows
-    - put: updated-go-mod-diff-exporter
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: groot-windows-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-groot-windows
-      params:
-        GO_MODS: go.mod
-        GOOS: windows
-    - put: updated-go-mod-groot-windows
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: winc-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-winc
-      params:
-        GO_MODS: go.mod
-        GOOS: windows
-    - put: updated-go-mod-winc
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: winc-release-bump-dependencies-go-mod
+    - task: bump-dependencies-go-mod
       file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
       image: image
       params:
-        GO_MODS: src/code.cloudfoundry.org/nstar/go.mod
+        GO_MODS: |
+          src/code.cloudfoundry.org/diff-exporter/go.mod
+          src/code.cloudfoundry.org/cert-injector/go.mod
+          src/code.cloudfoundry.org/nstar/go.mod
+          src/code.cloudfoundry.org/groot-windows/go.mod
+          src/code.cloudfoundry.org/winc/go.mod
         GOOS: windows
     - put: repo
       params:
@@ -658,10 +544,17 @@ jobs:
       INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
     ensure:
-      put: windows-worker-lock
-      inputs: detect
+      task: prune-worker
+      image: image
+      file: ci/shared/tasks/fly-prune-worker/linux.yml
       params:
-        release: windows-worker-lock
+        FLY_PASSWORD: ((concourse-bot-ci-user))
+        FLY_WORKER_REGEX: " windows +none"
+      ensure:
+        put: windows-worker-lock
+        inputs: detect
+        params:
+          release: windows-worker-lock
 
 - name: lint-repo
   serial: true
@@ -750,6 +643,7 @@ jobs:
             BBL_STATE_DIR: bbl-winc-env
             DEPLOYMENT_NAME: cf
   - task: prepare-cf-deployment-env
+    attempts: 10
     image: image
     file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
     params:
@@ -767,7 +661,6 @@ jobs:
         {input-01/operations/scale-to-one-az.yml,combined-assets}
         {input-01/operations/use-online-windows2019fs.yml,combined-assets}
         {input-01/operations/use-latest-windows2019-stemcell.yml,combined-assets}
-        {input-01/operations/experimental/enable-nginx-routing-integrity-windows2019.yml,combined-assets}
         {ci/winc-release/opsfiles/scale-down-windows2019.yml,combined-assets}
         {ci/winc-release/opsfiles/enable-rdp-2019.yml,combined-assets}
         {ci/winc-release/opsfiles/decrease-rep-evacuation-timeout.yml,combined-assets}
@@ -869,7 +762,7 @@ jobs:
       BBL_STATE_DIR: bbl-winc-env
       CONFIGS: wats
       WITH_ISOSEG: true
-      WITH_DYNAMIC_ASG: false
+      WITH_DYNAMIC_ASG: true
   - task: wats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     attempts: 2
@@ -925,6 +818,7 @@ jobs:
         DEPLOYMENT_GARDEN_CI_ARTIFACTS_RELEASE_DIR=$PWD/release-01
         DEPLOYMENT_WINC_RELEASE_DIR=$PWD/repo
         DEPLOYMENT_WINDOWS_UTILITIES_RELEASE_DIR=$PWD/release-03
+        WINDOWS_STEMCELL_OS="$(bosh ss --json | jq -r ' .Tables[0].Rows[] | select(.os | contains("windows")) | .os')"
   - task: run-gatsw-errand
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
@@ -1117,7 +1011,7 @@ jobs:
 
     - in_parallel:
         steps:
-        - put: draft-github-release
+        - put: github-release
           params:
             name: version/number
             tag: version/number
