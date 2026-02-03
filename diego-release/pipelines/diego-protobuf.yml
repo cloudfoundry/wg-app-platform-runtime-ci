@@ -237,16 +237,6 @@ resources:
     days:
       - Tuesday
 
-- name: env-weekly
-  type: time
-  icon: clock
-  source:
-    interval: '168h'
-    start: 01:00
-    stop: 01:59
-    days:
-      - Wednesday
-
 - name: cleanup-timer
   type: time
   icon: clock
@@ -262,11 +252,6 @@ resources:
   type: time
   source:
     interval: '1m'
-
-- name: slack-ci-channel
-  type: slack-notification
-  source:
-    url: ((slack-ci-channel/webhook))
 
 - name: env
   type: git
@@ -381,7 +366,7 @@ jobs:
       - get: repo
       - get: image
       - get: weekly
-        trigger: true
+        trigger: false
   - task: diego-release-bump-dependencies-go-mod
     image: image
     file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
@@ -403,11 +388,11 @@ jobs:
       steps:
       - get: ci
       - get: go-version
-        trigger: true
+        trigger: false
       - get: image
       - get: repo
       - get: golang-release-latest
-        trigger: true
+        trigger: false
   - task: bump-golang-package-name-linux
     image: image
     file: ci/shared/tasks/bump-golang-package-name/linux.yml
@@ -465,16 +450,16 @@ jobs:
         params:
           globs:
           - jq-linux-amd64 
-        trigger: true
+        trigger: false
       - get: tar
-        trigger: true
+        trigger: false
       - get: winpty
         params:
           globs:
           - winpty-*-msvc2015.zip
-        trigger: true
+        trigger: false
       - get: libpcap
-        trigger: true
+        trigger: false
   - do:
     - task: bump-bosh-blob-jq
       image: image
@@ -541,7 +526,7 @@ jobs:
       - get: repo
       - get: image
       - get: envoy-release
-        trigger: true
+        trigger: false
   - file: ci/diego-release/tasks/create-envoy-blob/linux.yml
     task: create-envoy-blob
     image: image
@@ -566,7 +551,7 @@ jobs:
       - get: diego-release-envoy-bump
         passed:
         - bump-dependencies-envoy
-        trigger: true
+        trigger: false
   - task: create-pr
     file: ci/shared/tasks/create-pr/linux.yml
     image: image
@@ -588,7 +573,7 @@ jobs:
       - get: #@ "{}-repo".format(repo.name)
 #@ end
       - get: shared-templates
-        trigger: true
+        trigger: false
   - do:
     - task: sync-dot-github-dir-diego-release
       file: ci/shared/tasks/sync-dot-github-dir/linux.yml
@@ -622,7 +607,7 @@ jobs:
       - get: ci
       - get: image
       - get: weekly
-        trigger: true
+        trigger: false
       - get: repo
         trigger: false
 #@ for repo in data.values.internal_repos:
@@ -1261,7 +1246,7 @@ jobs:
       CONFIGS: cats
       WITH_ISOSEG: true
       WITH_DYNAMIC_ASG: true
-      BBL_STATE_DIR: bbl-diego-env
+      BBL_STATE_DIR: bbl-diego-protobuf-env
   - task: cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     attempts: 2
@@ -1297,7 +1282,7 @@ jobs:
       CONFIGS: wats
       WITH_ISOSEG: true
       WITH_DYNAMIC_ASG: true
-      BBL_STATE_DIR: bbl-diego-env
+      BBL_STATE_DIR: bbl-diego-protobuf-env
   - task: wats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     attempts: 2

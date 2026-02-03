@@ -24,8 +24,6 @@ internal_repos:
   branch: protobuf-with-plugin
 - name: "rep"
   branch: protobuf-with-plugin
-- name: "routing-api"
-  branch: protobuf-with-plugin
 - name: "routing-info"
   branch: protobuf-with-plugin
 

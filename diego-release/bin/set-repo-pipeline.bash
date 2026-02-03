@@ -13,7 +13,7 @@ main() {
     -f "$REPO/index.yml" \
     -f "$REPO/../shared/helpers/ytt-helpers.star"
 
-  fly_pipeline diego-docker-images -f "${pipeline_dir}/diego-docker-images.yml"
+  #fly_pipeline diego-docker-images -f "${pipeline_dir}/diego-docker-images.yml"
 }
 
 main
