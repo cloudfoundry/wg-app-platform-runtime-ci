@@ -9,7 +9,6 @@ groups:
   - template-tests
   - unit-and-integration-tests
   - inigo-mysql-linux
-  - inigo-postgres-linux
   - inigo-mysql-windows
   - lint-repo
   - claim-env
@@ -55,15 +54,17 @@ resource_types:
 - name: github-pr
   type: registry-image
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/tasruntime/github-pr-instances-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/tasruntime/github-pr-instances-resource
     tag: latest
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
 
 - name: slack-notification
   type: docker-image
   source:
-    repository: cfcommunity/slack-notification-resource
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cfcommunity/slack-notification-resource
+    username: _json_key
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: fork-pool
@@ -90,13 +91,11 @@ resources:
     ignore_paths:
     - .github/
     - .gitignore
-    - .final_builds/
     - CODEOWNERS
     - LICENSE
     - NOTICE
     - README.md
     - docs/
-    - releases/
 
 - name: release-branch 
   type: git
@@ -238,6 +237,16 @@ resources:
     days:
       - Tuesday
 
+- name: env-weekly
+  type: time
+  icon: clock
+  source:
+    interval: '168h'
+    start: 01:00
+    stop: 01:59
+    days:
+      - Wednesday
+
 - name: cleanup-timer
   type: time
   icon: clock
@@ -254,6 +263,11 @@ resources:
   source:
     interval: '1m'
 
+- name: slack-ci-channel
+  type: slack-notification
+  source:
+    url: ((slack-ci-channel/webhook))
+
 - name: env
   type: git
   icon: sheep
@@ -269,15 +283,6 @@ resources:
   icon: github
   source:
     access_token: ((github-appruntimeplatform-bot/access-token))
-    repository: diego-release
-    owner: cloudfoundry
-
-- name: draft-github-release 
-  type: github-release
-  icon: github
-  source:
-    access_token: ((github-appruntimeplatform-bot/access-token))
-    drafts: true
     repository: diego-release
     owner: cloudfoundry
 
@@ -304,28 +309,28 @@ resources:
   type: registry-image
   icon: docker
   source:                                        
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/tas-runtime-build
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: grace-image
   type: registry-image
   icon: docker
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/grace
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/grace
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
 - name: diego-inigo-ci-rootfs
   type: docker-image
   icon: docker
   source:
-    repository: us-central1-docker.pkg.dev/cf-diego-pivotal/tas-runtime-dockerhub-mirror/cloudfoundry/diego-inigo-ci-rootfs
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/diego-inigo-ci-rootfs
     tag: latest
     username: _json_key
-    password: ((gcp-wg-arp-service-account/config-json))
+    password: ((gcp-arp-artifact-registry-service-account-token))
 
 - name: jq
   type: github-release
@@ -348,6 +353,14 @@ resources:
     owner: rprichard
     repository: winpty
     order_by: time
+
+- name: libpcap
+  type: git
+  icon: tag-outline
+  source:
+    branch: libpcap-1.10
+    uri: https://github.com/the-tcpdump-group/libpcap
+    tag_regex: ^libpcap-[0-9]+\.[0-9]+\.[0-9]+$
 
 #! Define-Jobs
 jobs:
@@ -458,7 +471,9 @@ jobs:
       - get: winpty
         params:
           globs:
-          - winpty-*-msvc2015.zip 
+          - winpty-*-msvc2015.zip
+        trigger: true
+      - get: libpcap
         trigger: true
   - do:
     - task: bump-bosh-blob-jq
@@ -496,6 +511,20 @@ jobs:
         blob: winpty
       params:
         BOSH_BLOB_PATH: winpty/winpty-*.tgz
+        AWS_ACCESS_KEY_ID: ((aws-s3-diego-release-blobs/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-diego-release-blobs/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+  - do:
+    - task: bump-bosh-blob-libpcap
+      image: image
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: libpcap
+      params:
+        BOSH_BLOB_PATH: libpcap/libpcap-*.tar.xz
         AWS_ACCESS_KEY_ID: ((aws-s3-diego-release-blobs/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-diego-release-blobs/secret-access-key))
     - put: repo
@@ -683,7 +712,7 @@ jobs:
         DEFAULT_PARAMS: "ci/diego-release/default-params/build-binaries/linux.yml"
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
     - task: build-binaries-for-windows
       tags: [ diego-protobuf-windows ]
@@ -693,7 +722,7 @@ jobs:
       params:
         DEFAULT_PARAMS: "ci/diego-release/default-params/build-binaries/windows.yml"
   - in_parallel:
-#@ for package in helpers.packages_with_configure_db(data.values.internal_repos):
+#@ for package in helpers.packages_with_configure_db(data.values.modules_to_test):
 #@ for db in data.values.db_flavors:
     - task: #@ "{}-{}-linux".format(package.name,db.image)
       file: ci/shared/tasks/run-bin-test/linux.yml
@@ -703,7 +732,7 @@ jobs:
         built-binaries: linux-built-binaries
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -725,7 +754,7 @@ jobs:
 #@ end
 #@ end
   - in_parallel:
-#@ for package in helpers.packages_without_configure_db(data.values.internal_repos):
+#@ for package in helpers.packages_without_configure_db(data.values.modules_to_test):
     - task: #@ "{}-linux".format(package.name)
       file: ci/shared/tasks/run-bin-test/linux.yml
       privileged: #@ helpers.privileged(package)
@@ -734,7 +763,7 @@ jobs:
         built-binaries: linux-built-binaries
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
@@ -759,7 +788,7 @@ jobs:
       INSTANCE_GROUP: windows-worker
       BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
 
-#@ for db in data.values.db_flavors:
+#@ for db in data.values.inigo_db_flavors:
 - name: #@ "inigo-{}-linux".format(db.value)
   serial: true
   plan:
@@ -801,7 +830,7 @@ jobs:
         DEFAULT_PARAMS: "ci/diego-release/default-params/build-binaries/linux.yml"
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
     - task: build-binaries-for-garden-runc-release-linux
       file: ci/shared/tasks/build-binaries/linux.yml
@@ -813,7 +842,7 @@ jobs:
         DEFAULT_PARAMS: "ci/garden-runc-release/default-params/build-binaries/linux.yml"
       vars:
         image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
   - task: combine-built-binaries
     file: ci/shared/tasks/combine-assets/linux.yml
@@ -847,7 +876,7 @@ jobs:
         input-03: diego-inigo-ci-rootfs
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
-        image_password: ((gcp-wg-arp-service-account/config-json))
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DIR: src/code.cloudfoundry.org/inigo
@@ -1046,13 +1075,13 @@ jobs:
         - unit-and-integration-tests
         - lint-repo
         - inigo-mysql-linux
-        - inigo-postgres-linux
         - inigo-mysql-windows
     - get: image
     - get: env
     - get: diego-protobuf-env-lock
-      params:
-        claim: diego-protobuf-env-lock
+  - put: diego-protobuf-env-lock
+    params:
+      claim: diego-protobuf-env-lock
   - task: start-bbl-envs
     image: image
     file: ci/shared/tasks/start-gcp-instance/linux.yml
@@ -1104,6 +1133,7 @@ jobs:
   - in_parallel:
       steps:
       - task: prepare-cf-deployment-env
+        attempts: 10
         image: image
         file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
         params:
@@ -1125,9 +1155,7 @@ jobs:
         {input-01/operations/experimental/use-compiled-releases-windows.yml,combined-assets}
         {input-01/operations/scale-database-cluster.yml,combined-assets}
         {input-01/operations/windows2019-cell.yml,combined-assets}
-        {input-01/operations/experimental/enable-nginx-routing-integrity-windows2019.yml,combined-assets}
         {input-01/operations/use-online-windows2019fs.yml,combined-assets}
-        {input-01/operations/disable-dynamic-asgs.yml,combined-assets}
         {input-01/operations/add-persistent-isolation-segment-diego-cell.yml,combined-assets}
         {input-01/operations/add-persistent-isolation-segment-router.yml,combined-assets}
         {input-02/grace-opsfile.yml,combined-assets}
@@ -1232,11 +1260,11 @@ jobs:
     params:
       CONFIGS: cats
       WITH_ISOSEG: true
-      WITH_DYNAMIC_ASG: false
-      BBL_STATE_DIR: bbl-diego-protobuf-env
+      WITH_DYNAMIC_ASG: true
+      BBL_STATE_DIR: bbl-diego-env
   - task: cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
-    attempts: 3
+    attempts: 2
     input_mapping:
       integration-config: built-acceptance-test-configs
     params:
@@ -1268,11 +1296,11 @@ jobs:
     params:
       CONFIGS: wats
       WITH_ISOSEG: true
-      WITH_DYNAMIC_ASG: false
-      BBL_STATE_DIR: bbl-diego-protobuf-env
+      WITH_DYNAMIC_ASG: true
+      BBL_STATE_DIR: bbl-diego-env
   - task: wats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
-    attempts: 3
+    attempts: 2
     input_mapping:
       integration-config: built-acceptance-test-configs
     params:
@@ -1307,20 +1335,78 @@ jobs:
 
 - name: run-vizzini
   serial: true
-  serial_groups: [acceptance]
   plan:
   - in_parallel:
     - get: manual-release-trigger
+      passed:
+        - run-cats
+        - run-wats
+        - export-release
+        - run-bosh-restart
       trigger: true
-      passed: [ prepare-env ]
     - get: ci
+    - get: grace-image
+    - get: image
+    - get: cf-deployment
     - get: repo
-      passed: [prepare-env]
-      trigger: false
+      passed:
+        - run-cats
+        - run-wats
+        - export-release
+        - run-bosh-restart
+      trigger: true
     - get: env
       passed: [prepare-env]
       trigger: false
     - get: cf-deployment-concourse-tasks
+  - in_parallel:
+      steps:
+      - task: prepare-cf-deployment-env
+        attempts: 10
+        image: image
+        file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-diego-protobuf-env
+      - task: copy-grace-opsfile
+        image: grace-image
+        file: ci/diego-release/tasks/copy-grace-opsfile/linux.yml
+  - task: combine-ops-files
+    file: ci/shared/tasks/combine-assets/linux.yml
+    image: image
+    input_mapping:
+      input-01: cf-deployment
+      input-02: copied-grace-opsfile
+    output_mapping:
+      combined-assets: combined-opsfiles
+    params:
+      COPY_ACTIONS: |
+        {input-01/operations/use-compiled-releases.yml,combined-assets}
+        {input-01/operations/experimental/use-compiled-releases-windows.yml,combined-assets}
+        {input-01/operations/scale-database-cluster.yml,combined-assets}
+        {input-01/operations/windows2019-cell.yml,combined-assets}
+        {input-01/operations/use-online-windows2019fs.yml,combined-assets}
+        {input-01/operations/add-persistent-isolation-segment-diego-cell.yml,combined-assets}
+        {input-01/operations/add-persistent-isolation-segment-router.yml,combined-assets}
+        {input-01/operations/disable-dynamic-asgs.yml,combined-assets}
+        {input-02/grace-opsfile.yml,combined-assets}
+        {ci/shared/opsfiles/scale-to-HA.yml,combined-assets}
+        {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
+        {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
+        {ci/diego-release/opsfiles/*,combined-assets}
+  - task: deploy-cf-deployment
+    file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
+    input_mapping:
+      ops-files: combined-opsfiles
+      release: repo
+      vars-files: prepared-env
+      bbl-state: env
+    params:
+      BBL_STATE_DIR: bbl-diego-protobuf-env
+      SYSTEM_DOMAIN: bbl-diego-protobuf-env.arp.cloudfoundry.org
+      DEPLOY_WITH_UPTIME_MEASUREMENTS: "false"
+      FAIL_ON_DOWNTIME: "false"
+      VARS_FILES: vars.yml
+      OPS_FILES: #@ "\n".join(data.values.opsfiles + ["disable-dynamic-asgs.yml"])
   - task: vizzini
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
@@ -1371,19 +1457,11 @@ jobs:
         - get: manual-release-trigger
           trigger: true
           passed:
-            - run-cats
-            - run-wats
-            - export-release
             - run-vizzini
-            - run-bosh-restart
         - get: ci
         - get: repo
           passed:
-            - run-cats
-            - run-wats
-            - export-release
             - run-vizzini
-            - run-bosh-restart
           trigger: false
         - get: image
         - get: release-branch
@@ -1393,11 +1471,7 @@ jobs:
         - get: version
         - get: env
           passed:
-            - run-cats
-            - run-wats
-            - export-release
             - run-vizzini
-            - run-bosh-restart
           trigger: false
 
     - task: check-safe-to-release-repo
@@ -1467,7 +1541,7 @@ jobs:
 
     - in_parallel:
         steps:
-        - put: draft-github-release
+        - put: github-release
           params:
             name: version/number
             tag: version/number
