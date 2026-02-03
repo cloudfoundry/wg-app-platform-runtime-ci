@@ -13,69 +13,58 @@ inigo_db_flavors:
 
 internal_repos:
 - name: "bbs"
+  branch: protobuf-with-plugin
 - name: "buildpackapplifecycle"
+  branch: main
 - name: "cacheddownloader"
+  branch: main
 - name: "executor"
+  branch: protobuf-with-plugin
 - name: "locket"
+  branch: protobuf-with-plugin
 - name: "rep"
-- name: routing-info
+  branch: protobuf-with-plugin
+- name: "routing-api"
+  branch: protobuf-with-plugin
+- name: "routing-info"
+  branch: protobuf-with-plugin
 
 modules_to_test:
 - name: "auction"
-  branch: main
 - name: "auctioneer"
   configure_db: true
-  branch: protobuf-with-plugin
 - name: "bbs"
   configure_db: true
-  branch: protobuf-with-plugin
 - name: "buildpackapplifecycle"
   on_windows: true
-  branch: main
 - name: "cacheddownloader"
   on_windows: true
-  branch: main
 - name: "cfdot"
   configure_db: true
-  branch: protobuf-with-plugin
 - name: "diego-ssh"
   on_windows: true
-  branch: protobuf-with-plugin
 - name: "dockerapplifecycle"
-  branch: main
 - name: "ecrhelper"
-  branch: main
 - name: "executor"
   on_windows: true
-  branch: protobuf-with-plugin
 - name: "fileserver"
-  branch: main
 - name: "healthcheck"
   on_windows: true
-  branch: main
 - name: "localdriver"
-  branch: main
 - name: "locket"
   configure_db: true
-  branch: protobuf-with-plugin
 - name: "operationq"
   on_windows: true
-  branch: main
 - name: "rep"
   configure_db: true
   on_windows: true
-  branch: protobuf-with-plugin
 - name: "route-emitter"
   configure_db: true
   on_windows: true
-  branch: protobuf-with-plugin
-- name: routing-info
-  branch: protobuf-with-plugin
+- name: "routing-info"
 - name: "volman"
-  branch: main
 - name: "workpool"
   on_windows: true
-  branch: main
 opsfiles:
 - use-compiled-releases.yml
 - use-compiled-releases-windows.yml
