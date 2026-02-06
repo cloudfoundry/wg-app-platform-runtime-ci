@@ -68,6 +68,8 @@ resources:
     - NOTICE
     - README.md
     - docs/
+    - releases/
+    - .final_builds/
 
 - name: release-branch 
   type: git

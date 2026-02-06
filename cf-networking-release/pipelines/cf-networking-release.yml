@@ -87,6 +87,8 @@ resources:
     - NOTICE
     - README.md
     - docs/
+    - releases/
+    - .final_builds/
 
 - name: silk-repo
   type: git
@@ -103,6 +105,8 @@ resources:
     - NOTICE
     - README.md
     - docs/
+    - releases/
+    - .final_builds/
 
 - name: cf-networking-release-branch
   type: git

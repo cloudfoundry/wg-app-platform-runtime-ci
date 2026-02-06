@@ -95,6 +95,8 @@ resources:
     - NOTICE
     - README.md
     - docs/
+    - releases/
+    - .final_builds/
 
 #! repo-synced is a write-only resource to prevent readme
 #! changes from triggering pipeline runs. See the description of "ignore_path"
