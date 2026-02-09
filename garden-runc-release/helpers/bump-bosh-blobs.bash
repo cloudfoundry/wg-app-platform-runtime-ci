@@ -62,10 +62,6 @@ function run() {
         rm -rf "${extract_dir}"
         popd > /dev/null
 
-        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
-            echo "$tgz_name already exists, skippping"
-            return
-        fi
 
         local blob_name="$(basename blobs/${bosh_blob_path})"
         local dir_name="$(dirname ${bosh_blob_path})"
