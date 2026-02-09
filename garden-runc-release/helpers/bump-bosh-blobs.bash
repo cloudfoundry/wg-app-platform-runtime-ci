@@ -56,7 +56,10 @@ function run() {
         local blob_version=$(echo ${version} | sed s/_/./g)
         local tgz_name="busybox-${blob_version}.tar.gz"
         wget "https://git.busybox.net/busybox/snapshot/busybox-${version}.tar.bz2"
-        bunzip2 -c -d "busybox-${version}.tar.bz2" | gzip -v9 > ${tgz_name}
+        local extract_dir=$(mktemp -d)
+        tar xjf "busybox-${version}.tar.bz2" -C "${extract_dir}" --strip-components=1
+        tar czf "${tgz_name}" -C "${extract_dir}" .
+        rm -rf "${extract_dir}"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
