@@ -94,7 +94,7 @@ RUN \
 #    crane
 RUN \
   if [ "${TARGETARCH}" = "amd64" ]; then crane_arch="x86_64"; else crane_arch="arm64"; fi; \
-  url="$(curl -s https://api.github.com/repos/google/go-containerregistry/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("Linux")) and (.name | contains($target_arch)) and (.name | contains("tar.gz"))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/google/go-containerregistry/releases | jq -r --arg target_arch "${crane_arch}" '.[0].assets[] | select((.name | contains("Linux")) and (.name | contains($target_arch)) and (.name | contains("tar.gz"))).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/crane /usr/local/bin/crane
 
