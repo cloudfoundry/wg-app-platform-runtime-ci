@@ -13,7 +13,6 @@ RUN \
     bsdextrautils \
     build-essential \
     ca-certificates \
-    crane \
     curl \
     dnsutils \
     dnsmasq \
@@ -92,6 +91,11 @@ RUN \
   echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list; \
   apt-get update && apt-get install --assume-yes --no-install-recommends gh
 
+#    crane
+RUN \
+  url="$(curl -s https://api.github.com/repos/google/go-containerregistry/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("Linux")) and (.name | contains($target_arch)) and (.name | contains("tar.gz"))).browser_download_url')" && \
+  curl -L "${url}" | tar -xz -C /tmp/ && \
+  install /tmp/crane /usr/local/bin/crane
 
 # Downloaded Utilities
 #    cf cli
