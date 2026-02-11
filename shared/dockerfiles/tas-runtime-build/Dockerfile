@@ -13,6 +13,7 @@ RUN \
     bsdextrautils \
     build-essential \
     ca-certificates \
+    crane \
     curl \
     dnsutils \
     dnsmasq \

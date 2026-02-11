@@ -61,10 +61,7 @@ function run() {
         # container rootfs by Garden/Groot without any compilation step.
         # Extracting it from the official Docker Hub busybox image.
         local container_name="busybox-export-$$"
-        docker pull "busybox:${blob_version}"
-        docker create --name "${container_name}" "busybox:${blob_version}"
-        docker export "${container_name}" | gzip -v9 > "${tgz_name}"
-        docker rm -f "${container_name}"
+        crane export "busybox:${blob_version}" - | gzip -v9 > "${tgz_name}"
         popd > /dev/null
 
 
