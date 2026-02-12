@@ -19,9 +19,10 @@ function run() {
     if [[ "$bosh_blob_path" == 'autoconf/autoconf-*.tar.gz' ]]; then
         echo "Bumping autoconf blob"
         pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
-        local tgz_name="autoconf-${version}.tar.gz"
-        wget "https://ftp.gnu.org/gnu/autoconf/autoconf-${version}.tar.gz" -O "${tgz_name}"
+        local autoconf_tgz_name=$(curl -s https://ftp.gnu.org/gnu/autoconf/ | \
+            grep -oE 'autoconf-[0-9]+\.[0-9]+\.tar\.gz' | \
+            sort -V | tail -1)
+        wget "https://ftp.gnu.org/gnu/autoconf/${autoconf_tgz_name}" -O "${autoconf_tgz_name}"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
