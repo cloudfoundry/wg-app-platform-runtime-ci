@@ -45,4 +45,3 @@ environments:
 
 supported_go_versions:
   - name: 1.25
-  - name: 1.24
