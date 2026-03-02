@@ -40,6 +40,7 @@ RUN \
     kmod \
     libffi-dev \
     libgdbm-dev \
+    libgmp-dev \
     libncurses5-dev \
     libreadline-dev \
     libssl-dev \
