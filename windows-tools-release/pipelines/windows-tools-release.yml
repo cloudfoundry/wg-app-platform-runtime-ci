@@ -138,6 +138,14 @@ resources:
     repository: mingw-builds-binaries
     access_token: ((github-appruntimeplatform-bot/access-token))
 
+- name: mingw-i686
+  type: github-release
+  icon: github
+  source:
+    owner: niXman
+    repository: mingw-builds-binaries
+    access_token: ((github-appruntimeplatform-bot/access-token))
+
 - name: bosh-cli
   type: github-release
   icon: github
@@ -252,6 +260,10 @@ jobs:
         params:
           globs:
           - x86_64-*-release-posix-seh-ucrt-*.7z
+        trigger: true
+      - get: mingw-i686
+        params:
+          globs:
           - i686-*-release-win32-dwarf-ucrt-*.7z
         trigger: true
       - get: bosh-cli
@@ -323,7 +335,7 @@ jobs:
       image: image
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
-        blob: mingw
+        blob: mingw-i686
       params:
         BOSH_BLOB_PATH: mingw/i686-*-release-win32-dwarf-ucrt-*-*.7z
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
