@@ -33,6 +33,7 @@ RUN \
     libfontconfig1-dev \
     libfreetype6 \
     libjpeg-dev \
+    libpcap-dev \
     libpng-dev \
     libpython3-dev \
     libreadline-dev\
