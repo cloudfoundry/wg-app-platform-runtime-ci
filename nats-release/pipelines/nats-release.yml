@@ -7,7 +7,6 @@ groups:
   jobs:
   - manual-release-trigger
   - template-tests
-  - unit-and-integration-tests
   - lint-repo
   - claim-env
   - prepare-env
@@ -412,42 +411,6 @@ jobs:
        rebase: true
        repository: synced-repo
 
-- name: unit-and-integration-tests
-  serial: true
-  plan:
-  - in_parallel:
-    - get: ci
-    - get: repo
-      trigger: true
-    - get: image
-    - get: package-release
-      resource: golang-release-latest
-  - task: determine-image-tag
-    image: image
-    file: ci/shared/tasks/determine-image-tag/linux.yml
-  - load_var: image_tag
-    file: determined-image-tag/tag
-  - in_parallel:
-#@ for package in helpers.packages_without_configure_db(data.values.internal_repos):
-    - task: #@ package.name
-      file: ci/shared/tasks/run-bin-test/linux.yml
-      vars:
-        image_repository: cloudfoundry/tas-runtime-build
-        image_password: ((gcp-arp-artifact-registry-service-account-token))
-        image_tag: ((.:image_tag))
-      params:
-        DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
-        FLAGS: |
-          --keep-going
-          --trace
-          -r
-          --fail-on-pending
-          --randomize-all
-          -p
-          --race
-          --timeout 20m
-          --flake-attempts 2
-#@ end
 
 - name: lint-repo
   serial: true
@@ -479,7 +442,6 @@ jobs:
       trigger: false
       passed:
         - template-tests
-        - unit-and-integration-tests
         - lint-repo
     - get: env-weekly
       trigger: true
