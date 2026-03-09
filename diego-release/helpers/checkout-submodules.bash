@@ -8,4 +8,4 @@ bosh sync-blobs
 
 mkdir -p /tmp/libpcap
 pcap_tgz=$(ls -1 blobs/libpcap/*.xz | head -1)
-tar -xf blobs/ -C /tmp/libpcap
+tar -xf "${pcap_tgz}" -C /tmp/libpcap
