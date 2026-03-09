@@ -4,8 +4,7 @@
 # This isn't really related to checking out submodules, but it is a repo-specific hook that we already call in
 # the shared task, so we can unpack the pcap blob here.
 
-bosh sync blobs
-
+bosh sync-blobs
 
 mkdir -p /tmp/libpcap
 pcap_tgz=$(ls -1 blobs/libpcap/*.xz | head -1)
