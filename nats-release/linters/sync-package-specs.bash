@@ -15,10 +15,8 @@ function run() {
 
     pushd "${repo_path}" > /dev/null
 
-    BUILD_FLAGS="--tags gnatsd" sync_package gnatsd        -app github.com/nats-io/gnatsd/... &
     sync_package nats-smoke       -app code.cloudfoundry.org/nats-smoke/... &
     sync_package nats-tls-healthcheck -app code.cloudfoundry.org/nats-tls-healthcheck/... &
-    sync_package nats-v2-migrate -app code.cloudfoundry.org/nats-v2-migrate/... &
 
     wait
 
