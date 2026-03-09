@@ -415,6 +415,7 @@ jobs:
     file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
     params:
       GO_MODS: src/code.cloudfoundry.org/go.mod
+      CGO_LDFLAGS: "-I/tmp/libpcap -L /tmp/libpcap"
       EXTRA_GO_TAGS: |
         tools
         modules
