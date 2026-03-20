@@ -932,11 +932,6 @@ jobs:
           --race
           --flake-attempts=3
         ENVS: |
-          INIGO_ECR_AWS_ACCESS_KEY_ID=((aws-ecr-diego-docker-app/access-key-id))
-          INIGO_ECR_AWS_SECRET_ACCESS_KEY=((aws-ecr-diego-docker-app/secret-access-key))
-          INIGO_ECR_IMAGE_REF=((aws-ecr-diego-docker-app/ref))
-          INIGO_ECR_IMAGE_ROOTFS_PATH=((aws-ecr-diego-docker-app/uri))
-          INIGO_ECR_IMAGE_URI=((aws-ecr-diego-docker-app/uri))
           ROUTING_RELEASE_PATH=$PWD/input-01
           GARDEN_RUNC_RELEASE_PATH=$PWD/input-02
           DIEGO_RELEASE_PATH=$PWD/repo
