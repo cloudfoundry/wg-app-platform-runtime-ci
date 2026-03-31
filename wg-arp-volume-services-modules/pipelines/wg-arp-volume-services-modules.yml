@@ -265,6 +265,7 @@ jobs:
       repository: repo
       tag: #@ "{}-version/number".format(package.name)
       tag_prefix: v
+      only_tag: true
   - put: #@ "{}-github-release".format(package.name)
     params:
       name: #@ "{}-version/number".format(package.name)
