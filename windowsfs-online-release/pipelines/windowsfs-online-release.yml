@@ -102,7 +102,7 @@ resources:
     pool: windowsfs-online-release-env-lock 
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: windowsfs-online-release-env-lock 
+    paths: [ windowsfs-online-release-env-lock ]
 
 - name: cf-deployment
   type: git

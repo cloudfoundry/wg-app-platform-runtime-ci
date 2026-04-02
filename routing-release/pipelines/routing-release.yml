@@ -348,7 +348,7 @@ resources:
     pool: routing-release-env-lock 
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: routing-release-env-lock 
+    paths: [ routing-release-env-lock ]
 
 - name: image
   type: registry-image

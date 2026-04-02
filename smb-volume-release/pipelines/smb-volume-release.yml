@@ -254,7 +254,7 @@ resources:
     pool: smb-volume-release-env-lock 
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: smb-volume-release-env-lock 
+    paths: [ smb-volume-release-env-lock ]
 
 - name: image
   type: registry-image

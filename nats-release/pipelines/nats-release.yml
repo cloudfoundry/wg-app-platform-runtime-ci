@@ -242,7 +242,7 @@ resources:
     pool: nats-release-env-lock 
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: nats-release-env-lock
+    paths: [ nats-release-env-lock ]
 
 - name: image
   type: registry-image

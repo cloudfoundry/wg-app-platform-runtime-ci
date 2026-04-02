@@ -327,7 +327,7 @@ resources:
     pool: diego-release-env-lock 
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: diego-release-env-lock
+    paths: [ diego-release-env-lock ]
 
 - name: image
   type: registry-image

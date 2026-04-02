@@ -371,7 +371,7 @@ resources:
     pool: garden-runc-release-env-lock
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: garden-runc-release-env-lock
+    paths: [ garden-runc-release-env-lock ]
 
 - name: image
   type: registry-image

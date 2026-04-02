@@ -237,7 +237,7 @@ resources:
     pool: healthchecker-release-env-lock 
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: healthchecker-release-env-lock 
+    paths: [ healthchecker-release-env-lock ]
 
 - name: image
   type: registry-image

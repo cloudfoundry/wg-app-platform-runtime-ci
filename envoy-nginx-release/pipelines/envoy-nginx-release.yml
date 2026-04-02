@@ -253,7 +253,7 @@ resources:
     pool: envoy-nginx-release-env-lock
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: envoy-nginx-release-env-lock
+    paths: [ envoy-nginx-release-env-lock ]
 
 - name: image
   type: registry-image
