@@ -409,6 +409,7 @@ jobs:
         params:
           globs:
           - x86_64-*-release-posix-seh-ucrt-*.7z
+          include_source_tarball: true
         trigger: true
       - get: seven-zip
         params:
