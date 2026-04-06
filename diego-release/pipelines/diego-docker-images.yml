@@ -1,3 +1,8 @@
+#! @AI-Generated
+#! Generated in whole or in part by Cursor with a mix of different LLM models (Auto select mode)
+#! Description:
+#! 2026-04-06: ytt + index-driven GO_MAJOR_MINOR_VERSION for grace print-go-version-tag
+#@ load("@ytt:data", "data")
 ---
 jobs:
 
@@ -81,11 +86,11 @@ jobs:
       DOCKERHUB_USERNAME: ((dockerhub-appruntimeplatform-username))
       DOCKERHUB_PASSWORD: ((dockerhub-appruntimeplatform-password))
 
-  # - task: validate-label-urls
-  #   file: ci/shared/tasks/lint-docker-image/linux.yml
-  #   image: image
-  #   input_mapping:
-  #     docker-image: diego-docker-app
+  #! - task: validate-label-urls
+  #!   file: ci/shared/tasks/lint-docker-image/linux.yml
+  #!   image: image
+  #!   input_mapping:
+  #!     docker-image: diego-docker-app
 
 - name: grace
   serial: true
@@ -103,6 +108,7 @@ jobs:
     file: ci/shared/tasks/build-golang-version-tags/linux.yml
     params:
       IMAGE: tas-runtime-build
+      GO_MAJOR_MINOR_VERSION: #@ data.values.go_version
     output_mapping:
       tag_file: tag
   - task: release-binaries
