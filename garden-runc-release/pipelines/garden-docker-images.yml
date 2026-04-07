@@ -30,6 +30,7 @@ jobs:
         type: registry-image
         source:
           repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/concourse/oci-build-task
+          tag: "0.14.11"
           username: _json_key
           password: ((gcp-arp-artifact-registry-service-account-token))
   - put: garden-rootfs
@@ -71,6 +72,7 @@ jobs:
         type: registry-image
         source:
           repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/concourse/oci-build-task
+          tag: "0.14.11"
           username: _json_key
           password: ((gcp-arp-artifact-registry-service-account-token))
   - put: garden-fuse
