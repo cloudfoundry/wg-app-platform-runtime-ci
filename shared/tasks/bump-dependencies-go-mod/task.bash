@@ -62,6 +62,7 @@ function run() {
 
   pushd repo > /dev/null
   local repo_name=$(git_get_remote_name)
+  local repo_root="$PWD"
 
   git_fetch_latest_submodules
   if [[ -f "../ci/${repo_name}/helpers/checkout-submodules.bash" ]]; then
@@ -91,6 +92,15 @@ function run() {
     do
       bump "${go_build_tag}"
     done
+
+    if [[ -f "${repo_root}/coverity.yaml" ]]; then
+      local current_go_version=$(go mod edit -json | jq -r .Go)
+      if [[ -n "${current_go_version}" && "${current_go_version}" != "null" ]]; then
+        echo "Updating goVersion in coverity.yaml to ${current_go_version}"
+        yq -i ".goVersion = \"${current_go_version}\"" "${repo_root}/coverity.yaml"
+        git add "${repo_root}/coverity.yaml"
+      fi
+    fi
 
     if [[ $(git status --porcelain) ]]; then
       git add -A .
