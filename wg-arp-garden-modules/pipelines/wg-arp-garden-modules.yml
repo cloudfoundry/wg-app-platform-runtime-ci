@@ -254,26 +254,26 @@ jobs:
             PRIVATE_DOCKER_IMAGE_URL=docker://cloudfoundry/garden-private-image-test:groot
             IMAGE_NAME=cloudfoundry/windows2016fs
             IMAGE_TAG=latest
+      ensure:
+        task: stop-windows-worker
+        image: image
+        file: ci/shared/tasks/bosh-stop/linux.yml
+        params:
+          DEPLOYMENT: windows-worker
+          INSTANCE_GROUP: windows-worker
+          BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
         ensure:
-          task: stop-windows-worker
+          task: prune-worker
           image: image
-          file: ci/shared/tasks/bosh-stop/linux.yml
+          file: ci/shared/tasks/fly-prune-worker/linux.yml
           params:
-            DEPLOYMENT: windows-worker
-            INSTANCE_GROUP: windows-worker
-            BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+            FLY_PASSWORD: ((concourse-bot-ci-user))
+            FLY_WORKER_REGEX: " windows +none"
           ensure:
-            task: prune-worker
-            image: image
-            file: ci/shared/tasks/fly-prune-worker/linux.yml
+            put: windows-worker-lock
+            inputs: detect
             params:
-              FLY_PASSWORD: ((concourse-bot-ci-user))
-              FLY_WORKER_REGEX: " windows +none"
-            ensure:
-              put: windows-worker-lock
-              inputs: detect
-              params:
-                release: windows-worker-lock
+              release: windows-worker-lock
 #@ end
 #@ end
 #@ for package in helpers.packages_with_configure_db(data.values.internal_repos):
