@@ -1,3 +1,7 @@
+# @AI-Generated
+# Generated in whole or in part by Cursor with a mix of different LLM models (Auto select mode)
+# Description:
+# 2026-04-16: Update BBL download version to v9.0.36
 FROM ubuntu:jammy
 
 ARG TARGETARCH
@@ -115,7 +119,7 @@ RUN \
 
 #    bosh bootloader (BBL)
 RUN \
-  url="$(curl -s https://api.github.com/repos/cloudfoundry/bosh-bootloader/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
+  url="$(curl -s https://api.github.com/repos/cloudfoundry/bosh-bootloader/releases/tags/v9.0.36 | jq -r --arg target_arch "${TARGETARCH}" '.assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" -o /tmp/bbl && \
   install /tmp/bbl /usr/local/bin/bbl
 
