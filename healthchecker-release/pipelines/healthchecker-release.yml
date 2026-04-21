@@ -474,7 +474,7 @@ jobs:
     image: image
     params:
       BBL_STATE_DIR: bbl-hlthchk-env
-      STEMCELL_URL: https://bosh.io/d/stemcells/bosh-warden-boshlite-ubuntu-jammy-go_agent
+      STEMCELL_URL: https://storage.googleapis.com/bosh-core-stemcells/1.1123/bosh-stemcell-1.1123-warden-boshlite-ubuntu-jammy-go_agent.tgz
   - task: upload-bpm
     file: ci/shared/tasks/bosh-upload-release/linux.yml
     image: image
