@@ -1,0 +1,14 @@
+- type: replace
+  path: /instance_groups/name=log-api/jobs/name=route_registrar/properties/route_registrar/routes/name=doppler/uris
+  value:
+  - doppler.((system_domain))
+
+- type: replace
+  path: /instance_groups/name=log-api/jobs/name=route_registrar/properties/route_registrar/routes/name=rlp-gateway/uris
+  value:
+  - log-stream.((system_domain))
+
+- type: replace
+  path: /instance_groups/name=log-cache/jobs/name=route_registrar/properties/route_registrar/routes/name=log-cache-reverse-proxy/uris
+  value:
+  - log-cache.((system_domain))

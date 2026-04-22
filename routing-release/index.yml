@@ -26,6 +26,7 @@ tests_that_require_db:
   acceptance: true
 
 opsfiles:
+- remove-logging-wildcard-routes.yml
 - add-lb-ca-cert.yml
 - scale-for-cats.yml
 - add-smoke-tests.yml

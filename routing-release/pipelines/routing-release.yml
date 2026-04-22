@@ -785,6 +785,7 @@ jobs:
       input-01: cf-deployment
     params:
       COPY_ACTIONS: |
+        {ci/routing-release/opsfiles/remove-logging-wildcard-routes.yml,combined-assets}
         {ci/routing-release/opsfiles/disable-bbr-non-routing.yml,combined-assets}
         {ci/routing-release/opsfiles/add-tcp-router-backend-tls-certs.yml,combined-assets}
         {ci/routing-release/opsfiles/share-bosh-links.yml,combined-assets}
@@ -974,6 +975,7 @@ jobs:
       input-01: cf-deployment
     params:
       COPY_ACTIONS: |
+        {ci/routing-release/opsfiles/remove-logging-wildcard-routes.yml,combined-assets}
         {ci/routing-release/opsfiles/disable-bbr-non-routing.yml,combined-assets}
         {ci/routing-release/opsfiles/add-tcp-router-backend-tls-certs.yml,combined-assets}
         {ci/routing-release/opsfiles/share-bosh-links.yml,combined-assets}
