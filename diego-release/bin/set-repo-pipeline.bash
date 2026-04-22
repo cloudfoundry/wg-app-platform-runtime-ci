@@ -1,4 +1,8 @@
 #!/bin/bash
+# @AI-Generated
+# Generated in whole or in part by Cursor with a mix of different LLM models (Auto select mode)
+# Description:
+# 2026-04-06: Render diego-docker-images with ytt + diego-release/index.yml
 
 set -euo pipefail
 
@@ -13,7 +17,9 @@ main() {
     -f "$REPO/index.yml" \
     -f "$REPO/../shared/helpers/ytt-helpers.star"
 
-  #fly_pipeline diego-docker-images -f "${pipeline_dir}/diego-docker-images.yml"
+  #Don't set these while doing protobuf
+  #fly_pipeline diego-docker-images -f "${pipeline_dir}/diego-docker-images.yml" \
+  #  -f "$REPO/index.yml"
 }
 
 main

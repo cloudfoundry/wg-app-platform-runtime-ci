@@ -68,6 +68,8 @@ resources:
     - NOTICE
     - README.md
     - docs/
+    - releases/
+    - .final_builds/
 
 - name: release-branch 
   type: git
@@ -100,7 +102,7 @@ resources:
     pool: windows2019fs-release-env-lock 
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: windows2019fs-release-env-lock 
+    paths: [ windows2019fs-release-env-lock ]
 
 - name: cf-deployment
   type: git

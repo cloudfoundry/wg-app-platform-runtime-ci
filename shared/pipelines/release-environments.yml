@@ -58,7 +58,7 @@ resources:
     repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
     password: ((gcp-arp-artifact-registry-service-account-token))
-    tag: 'latest'
+    tag: 1.26.5
 
 groups:
 - name: bbl-environments
@@ -188,5 +188,4 @@ jobs:
       params:
         SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
         BBL_STATE_DIR: #@ env.name
-        SUSPEND: true
 #@ end

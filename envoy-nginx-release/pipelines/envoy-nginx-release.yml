@@ -79,6 +79,8 @@ resources:
     - NOTICE
     - README.md
     - docs/
+    - releases/
+    - .final_builds/
 
 #! repo-synced is a write-only resource to prevent readme
 #! changes from triggering pipeline runs. See the description of "ignore_path"
@@ -251,7 +253,7 @@ resources:
     pool: envoy-nginx-release-env-lock
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: envoy-nginx-release-env-lock
+    paths: [ envoy-nginx-release-env-lock ]
 
 - name: image
   type: registry-image
@@ -267,7 +269,7 @@ resources:
   icon: tag-outline
   source:
     uri: https://github.com/nginx/nginx
-    tag_filter: release-*
+    tag_filter: release-1.29.*
 
 #! Define-Jobs
 jobs:

@@ -96,6 +96,8 @@ resources:
     - NOTICE
     - README.md
     - docs/
+    - releases/
+    - .final_builds/
 
 - name: old-routing-release
   type: git
@@ -346,7 +348,7 @@ resources:
     pool: routing-release-env-lock 
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: routing-release-env-lock 
+    paths: [ routing-release-env-lock ]
 
 - name: image
   type: registry-image
@@ -783,6 +785,7 @@ jobs:
       input-01: cf-deployment
     params:
       COPY_ACTIONS: |
+        {ci/routing-release/opsfiles/remove-logging-wildcard-routes.yml,combined-assets}
         {ci/routing-release/opsfiles/disable-bbr-non-routing.yml,combined-assets}
         {ci/routing-release/opsfiles/add-tcp-router-backend-tls-certs.yml,combined-assets}
         {ci/routing-release/opsfiles/share-bosh-links.yml,combined-assets}
@@ -972,6 +975,7 @@ jobs:
       input-01: cf-deployment
     params:
       COPY_ACTIONS: |
+        {ci/routing-release/opsfiles/remove-logging-wildcard-routes.yml,combined-assets}
         {ci/routing-release/opsfiles/disable-bbr-non-routing.yml,combined-assets}
         {ci/routing-release/opsfiles/add-tcp-router-backend-tls-certs.yml,combined-assets}
         {ci/routing-release/opsfiles/share-bosh-links.yml,combined-assets}
@@ -1098,7 +1102,7 @@ jobs:
       WITH_ISOSEG: true
       BBL_STATE_DIR: bbl-routing-env
   - task: cfsmoke
-    attempts: 3
+    attempts: 5
     file: cf-deployment-concourse-tasks/run-errand/task.yml
     input_mapping:
       bbl-state: env

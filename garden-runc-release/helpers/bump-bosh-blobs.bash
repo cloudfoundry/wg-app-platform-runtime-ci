@@ -55,14 +55,15 @@ function run() {
         local version=$(git describe --tags --abbrev=0 | tr -d 'v')
         local blob_version=$(echo ${version} | sed s/_/./g)
         local tgz_name="busybox-${blob_version}.tar.gz"
-        wget "https://git.busybox.net/busybox/snapshot/busybox-${version}.tar.bz2"
-        bunzip2 -c -d "busybox-${version}.tar.bz2" | gzip -v9 > ${tgz_name}
+
+        # The busybox blob must be a rootfs tarball (containing /bin/busybox,
+        # /bin/cat, /bin/sh, etc.), not source code. It is used directly as a
+        # container rootfs by Garden/Groot without any compilation step.
+        # Extracting it from the official Docker Hub busybox image.
+        local container_name="busybox-export-$$"
+        crane export "busybox:${blob_version}" - | gzip -v9 > "${tgz_name}"
         popd > /dev/null
 
-        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
-            echo "$tgz_name already exists, skippping"
-            return
-        fi
 
         local blob_name="$(basename blobs/${bosh_blob_path})"
         local dir_name="$(dirname ${bosh_blob_path})"

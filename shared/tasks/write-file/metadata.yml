@@ -9,4 +9,5 @@ params:
   CONTENT: |
     Multiline Content for the file
   INTERPOLATED_VALUE: If a value needs to be injected from concourse, but can't be parsed in CONTENT.
+  INTERPOLATED_VALUE_2: If a value needs to be injected from concourse, but can't be parsed in CONTENT.
   EVAL: (Default to false). Determine whether to eval the CONTENT or not

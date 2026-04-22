@@ -95,6 +95,8 @@ resources:
     - NOTICE
     - README.md
     - docs/
+    - releases/
+    - .final_builds/
 
 #! repo-synced is a write-only resource to prevent readme
 #! changes from triggering pipeline runs. See the description of "ignore_path"
@@ -235,7 +237,7 @@ resources:
     pool: healthchecker-release-env-lock 
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: healthchecker-release-env-lock 
+    paths: [ healthchecker-release-env-lock ]
 
 - name: image
   type: registry-image
@@ -472,7 +474,7 @@ jobs:
     image: image
     params:
       BBL_STATE_DIR: bbl-hlthchk-env
-      STEMCELL_URL: https://bosh.io/d/stemcells/bosh-warden-boshlite-ubuntu-jammy-go_agent
+      STEMCELL_URL: https://storage.googleapis.com/bosh-core-stemcells/1.1123/bosh-stemcell-1.1123-warden-boshlite-ubuntu-jammy-go_agent.tgz
   - task: upload-bpm
     file: ci/shared/tasks/bosh-upload-release/linux.yml
     image: image
@@ -518,10 +520,6 @@ jobs:
       BBL_STATE_DIR: bbl-hlthchk-env
 
 - name: ship-what
-  on_success:
-    put: slack-ci-channel
-    params:
-      text: ":concourse-succeeded: $BUILD_PIPELINE_NAME ship-what just ran. Maybe you should cut a release? $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME"
   plan:
     - in_parallel:
         steps:
@@ -565,6 +563,7 @@ jobs:
         - get: ci
         - get: repo
           passed: [ ship-what ]
+          trigger: true
         - get: image
         - get: release-branch
           params:

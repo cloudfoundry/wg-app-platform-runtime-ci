@@ -96,6 +96,8 @@ resources:
     - NOTICE
     - README.md
     - docs/
+    - releases/
+    - .final_builds/
 
 - name: repo-with-docs
   type: git
@@ -325,7 +327,7 @@ resources:
     pool: diego-release-env-lock 
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: diego-release-env-lock
+    paths: [ diego-release-env-lock ]
 
 - name: image
   type: registry-image
@@ -413,6 +415,7 @@ jobs:
     file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
     params:
       GO_MODS: src/code.cloudfoundry.org/go.mod
+      CGO_LDFLAGS: "-I/tmp/libpcap -L /tmp/libpcap"
       EXTRA_GO_TAGS: |
         tools
         modules

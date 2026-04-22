@@ -1,6 +1,10 @@
 #@data/values
 ---
 #@overlay/match missing_ok=True
+
+#! Go major.minor for diego-docker-images grace job (must exist on go.dev dl JSON)
+go_version: "1.26"
+
 db_flavors:
 - image: postgres
   value: postgres

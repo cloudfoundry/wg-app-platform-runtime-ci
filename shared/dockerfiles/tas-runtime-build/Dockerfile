@@ -33,6 +33,7 @@ RUN \
     libfontconfig1-dev \
     libfreetype6 \
     libjpeg-dev \
+    libpcap-dev \
     libpng-dev \
     libpython3-dev \
     libreadline-dev\
@@ -91,6 +92,12 @@ RUN \
   echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list; \
   apt-get update && apt-get install --assume-yes --no-install-recommends gh
 
+#    crane
+RUN \
+  if [ "${TARGETARCH}" = "amd64" ]; then crane_arch="x86_64"; else crane_arch="arm64"; fi; \
+  url="$(curl -s https://api.github.com/repos/google/go-containerregistry/releases | jq -r --arg target_arch "${crane_arch}" '.[0].assets[] | select((.name | contains("Linux")) and (.name | contains($target_arch)) and (.name | contains("tar.gz"))).browser_download_url')" && \
+  curl -L "${url}" | tar -xz -C /tmp/ && \
+  install /tmp/crane /usr/local/bin/crane
 
 # Downloaded Utilities
 #    cf cli

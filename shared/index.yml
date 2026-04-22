@@ -3,7 +3,7 @@
 #@overlay/match missing_ok=True
 environments:
   - name: bbl-nats-env
-    bosh_lite: true
+    bosh_lite: false
     pipeline_lock: nats-release-env-lock
   - name: bbl-hlthchk-env
     bosh_lite: true
@@ -23,7 +23,7 @@ environments:
     pipeline_lock: cf-networking-release-env-lock
   - name: bbl-garden-env
     bosh_lite: false
-    pipeline_lock: garden-env-lock
+    pipeline_lock: garden-runc-release-env-lock
   - name: bbl-nfs-volume-env
     bosh_lite: false
     pipeline_lock: nfs-volume-release-env-lock
@@ -45,4 +45,4 @@ environments:
 
 supported_go_versions:
   - name: 1.25
-  - name: 1.24
+  - name: 1.26
