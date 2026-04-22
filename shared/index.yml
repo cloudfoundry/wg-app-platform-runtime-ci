@@ -3,7 +3,7 @@
 #@overlay/match missing_ok=True
 environments:
   - name: bbl-nats-env
-    bosh_lite: true
+    bosh_lite: false
     pipeline_lock: nats-release-env-lock
   - name: bbl-hlthchk-env
     bosh_lite: true
