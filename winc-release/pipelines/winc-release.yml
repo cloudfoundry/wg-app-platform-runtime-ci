@@ -419,6 +419,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-mingw
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: mingw
@@ -434,6 +435,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-7zip
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: seven-zip

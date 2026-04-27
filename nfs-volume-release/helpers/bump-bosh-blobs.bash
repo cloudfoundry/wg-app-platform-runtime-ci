@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# @AI-Generated
+# Generated in whole or in part by Cursor with a mix of different LLM models (Auto select mode)
+# Description:
+# 2026-04-27: OpenLDAP tarball fetch uses retry_http_download_until_success.
+
 set -eux
 set -o pipefail
 
@@ -154,7 +159,7 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | sed 's/OPENLDAP_REL_ENG_//g' | sed 's/_/./g')
         local tgz_name="openldap-${version}.tar.gz"
-        wget  -O "${tgz_name}" "https://www.openldap.org/software/download/OpenLDAP/openldap-release/openldap-${version}.tgz"
+        retry_http_download_until_success "https://www.openldap.org/software/download/OpenLDAP/openldap-release/openldap-${version}.tgz" "${tgz_name}" 900 30 "nfs openldap"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then

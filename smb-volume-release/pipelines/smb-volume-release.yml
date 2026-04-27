@@ -436,6 +436,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-autoconf
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: autoconf
@@ -450,6 +451,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-automake
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: automake
@@ -464,6 +466,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-cifs-utils
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: cifs-utils
@@ -478,6 +481,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-keyutils
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: keyutils
@@ -492,6 +496,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-libtool
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: libtool
@@ -506,6 +511,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-pkg-config
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: pkg-config
@@ -520,6 +526,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-talloc
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: talloc

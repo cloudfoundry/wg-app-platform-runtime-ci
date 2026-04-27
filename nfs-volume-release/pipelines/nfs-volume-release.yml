@@ -465,6 +465,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-berkeleydb
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: berkeleydb
@@ -479,6 +480,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-libevent
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: libevent
@@ -493,6 +495,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-libtirpc
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: libtirpc
@@ -507,6 +510,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-nfs-utils
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: nfs-utils
@@ -521,6 +525,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-rpcbind
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: rpcbind
@@ -535,6 +540,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-rpcsvc-proto
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: rpcsvc-proto
@@ -549,6 +555,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-sqlite
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: sqlite
@@ -563,6 +570,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-util-linux
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: util-linux
@@ -577,6 +585,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-openldap
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: openldap
@@ -591,6 +600,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-openssl
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: openssl

@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# @AI-Generated
+# Generated in whole or in part by Cursor with a mix of different LLM models (Auto select mode)
+# Description:
+# 2026-04-27: libpcap tarball fetch uses retry_http_download_until_success.
+
 set -eux
 set -o pipefail
 
@@ -75,7 +80,7 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d 'libpcap-')
         local tgz_name="libpcap-${version}.tar.xz"
-        wget -O "${tgz_name}" "https://www.tcpdump.org/release/libpcap-${version}.tar.xz"
+        retry_http_download_until_success "https://www.tcpdump.org/release/libpcap-${version}.tar.xz" "${tgz_name}" 900 30 "diego libpcap"
         popd > /dev/null
 
         if [[ -f $(find ./blobs -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then

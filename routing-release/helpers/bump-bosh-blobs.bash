@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# @AI-Generated
+# Generated in whole or in part by Cursor with a mix of different LLM models (Auto select mode)
+# Description:
+# 2026-04-27: HAProxy tarball fetch uses retry_http_download_until_success (tag vs publish on www.haproxy.org).
+
 set -eux
 set -o pipefail
 
@@ -40,7 +45,9 @@ function run() {
         local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]-')
         local tgz_name="haproxy-${version}.tar.gz"
         local major_minor_version="$(echo ${version} | cut -d'.' -f1,2)"
-        wget -O "${tgz_name}" "https://www.haproxy.org/download/${major_minor_version}/src/haproxy-${version}.tar.gz"
+        retry_http_download_until_success \
+            "https://www.haproxy.org/download/${major_minor_version}/src/haproxy-${version}.tar.gz" \
+            "${tgz_name}" 900 30 "haproxy.org tarball"
 
         popd > /dev/null
 

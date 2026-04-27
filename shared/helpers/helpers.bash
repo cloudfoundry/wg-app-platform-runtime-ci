@@ -1,3 +1,8 @@
+# @AI-Generated
+# Generated in whole or in part by Cursor with a mix of different LLM models (Auto select mode)
+# Description:
+# 2026-04-27: retry_http_download_until_success for bounded HTTP(S) retries (bump-bosh-blobs).
+
 function verify_go(){
     local dir="${1:-$PWD}"
     pushd "${dir}" >/dev/null
@@ -276,6 +281,36 @@ function retry_command() {
     done
 }
 export -f retry_command
+
+# Retries curl until success or max_duration_seconds elapses (e.g. git tag exists before upstream publishes tarball).
+# Args: url, output_path, [max_duration_seconds default 900], [retry_interval_seconds default 30], [log_label]
+function retry_http_download_until_success() {
+    local url="${1:?Provide download URL}"
+    local output_path="${2:?Provide output file path}"
+    local max_duration_seconds="${3:-900}"
+    local retry_interval_seconds="${4:-30}"
+    local label="${5:-download}"
+    local start_ts
+    start_ts=$(date +%s)
+    local attempt=0
+    while true; do
+        attempt=$((attempt + 1))
+        rm -f "${output_path}"
+        if curl --silent --show-error --fail --location --output "${output_path}" "${url}"; then
+            break
+        fi
+        local now_ts elapsed
+        now_ts=$(date +%s)
+        elapsed=$((now_ts - start_ts))
+        if (( elapsed >= max_duration_seconds )); then
+            echo "${label}: download failed after ${attempt} attempt(s) over ${elapsed}s (limit ${max_duration_seconds}s): ${url}" >&2
+            exit 1
+        fi
+        echo "${label}: download attempt ${attempt} failed (${elapsed}s elapsed); retrying in ${retry_interval_seconds}s: ${url}" >&2
+        sleep "${retry_interval_seconds}"
+    done
+}
+export -f retry_http_download_until_success
 
 function env_metadata() {
     if [[ -n "${BBL_STATE_DIR}" ]]; then

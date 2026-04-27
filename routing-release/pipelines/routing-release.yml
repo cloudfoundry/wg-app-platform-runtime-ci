@@ -509,6 +509,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-jq
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: jq
@@ -522,6 +523,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-haproxy
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: haproxy

@@ -276,6 +276,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-yq
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: yq
@@ -291,6 +292,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-staticcheck
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: staticcheck
@@ -306,6 +308,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-mingw-x64
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: mingw
@@ -321,6 +324,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-mingw-i686
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: mingw
@@ -336,6 +340,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-bosh-cli
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: bosh-cli
@@ -351,6 +356,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-git-cli
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: git-cli
@@ -366,6 +372,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-vcredist-ucrt
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: vcredist-ucrt
@@ -381,6 +388,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-cmake
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: cmake
@@ -396,6 +404,7 @@ jobs:
   - do:
     - task: bump-bosh-blob-ginkgo
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: ginkgo

@@ -4,6 +4,7 @@
 # Generated in whole or in part by Cursor with a mix of different LLM models (Auto select mode)
 # Description:
 # 2026-04-07: Retry nginx.org zip download up to 15m (tag vs publish race).
+# 2026-04-27: Use shared retry_http_download_until_success from helpers.bash.
 
 set -eux
 set -o pipefail
@@ -35,28 +36,9 @@ function run() {
 
         # The Concourse nginx git resource tracks release-* tags on github.com/nginx/nginx, but we
         # fetch the Windows zip from nginx.org. The tag and the published download are not always in
-        # sync; the zip can return 404 until nginx.org publishes it, so we retry for a bounded time.
+        # sync; the zip can return 404 until nginx.org publishes it (retry_http_download_until_success).
         local download_url="https://nginx.org/download/nginx-${version}.zip"
-        local max_duration_seconds=900
-        local retry_interval_seconds=30
-        local start_ts
-        start_ts=$(date +%s)
-        local attempt=0
-        while true; do
-            attempt=$((attempt + 1))
-            if curl --silent --fail --output nginx.zip "${download_url}"; then
-                break
-            fi
-            local now_ts elapsed
-            now_ts=$(date +%s)
-            elapsed=$((now_ts - start_ts))
-            if (( elapsed >= max_duration_seconds )); then
-                echo "Download failed after ${attempt} attempt(s) over ${elapsed}s (limit ${max_duration_seconds}s): ${download_url}" >&2
-                exit 1
-            fi
-            echo "nginx download attempt ${attempt} failed (${elapsed}s elapsed); nginx.org may not have published the zip yet. Retrying in ${retry_interval_seconds}s: ${download_url}" >&2
-            sleep "${retry_interval_seconds}"
-        done
+        retry_http_download_until_success "${download_url}" "nginx.zip" 900 30 "nginx.org zip"
         unzip -j nginx.zip nginx-*/nginx.exe
         zip "${zip_name}" nginx.exe
 

@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# @AI-Generated
+# Generated in whole or in part by Cursor with a mix of different LLM models (Auto select mode)
+# Description:
+# 2026-04-27: External tarball fetches use retry_http_download_until_success.
+
 set -eux
 set -o pipefail
 
@@ -21,7 +26,7 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
         local tgz_name="autoconf-${version}.tar.gz"
-        wget "https://ftp.gnu.org/gnu/autoconf/autoconf-${version}.tar.gz" -O "${tgz_name}"
+        retry_http_download_until_success "https://ftp.gnu.org/gnu/autoconf/autoconf-${version}.tar.gz" "${tgz_name}" 900 30 "smb autoconf"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
@@ -38,7 +43,7 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d 'v')
         local tgz_name="automake-${version}.tar.gz"
-        wget "https://ftp.gnu.org/gnu/automake/automake-${version}.tar.gz" -O "${tgz_name}"
+        retry_http_download_until_success "https://ftp.gnu.org/gnu/automake/automake-${version}.tar.gz" "${tgz_name}" 900 30 "smb automake"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
@@ -55,7 +60,7 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d 'cifs-utils-')
         local tgz_name="cifs-utils-${version}.tar.bz2"
-        wget "https://download.samba.org/pub/linux-cifs/cifs-utils/cifs-utils-${version}.tar.bz2" -O "${tgz_name}"
+        retry_http_download_until_success "https://download.samba.org/pub/linux-cifs/cifs-utils/cifs-utils-${version}.tar.bz2" "${tgz_name}" 900 30 "smb cifs-utils"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
@@ -72,7 +77,7 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d 'v')
         local tgz_name="keyutils-${version}.tar.gz"
-        wget "https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/keyutils.git/snapshot/keyutils-${version}.tar.gz" -O "${tgz_name}"
+        retry_http_download_until_success "https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/keyutils.git/snapshot/keyutils-${version}.tar.gz" "${tgz_name}" 900 30 "smb keyutils"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
@@ -89,7 +94,7 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]')
         local tgz_name="libtool-${version}.tar.gz"
-        wget  -O "${tgz_name}" "https://ftp.wayne.edu/gnu/libtool/libtool-${version}.tar.gz"
+        retry_http_download_until_success "https://ftp.wayne.edu/gnu/libtool/libtool-${version}.tar.gz" "${tgz_name}" 900 30 "smb libtool"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
@@ -106,7 +111,7 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]-')
         local tgz_name="pkg-config-${version}.tar.gz"
-        wget  -O "${tgz_name}" "https://pkgconfig.freedesktop.org/releases/pkg-config-${version}.tar.gz"
+        retry_http_download_until_success "https://pkgconfig.freedesktop.org/releases/pkg-config-${version}.tar.gz" "${tgz_name}" 900 30 "smb pkg-config"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
@@ -123,7 +128,7 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]-')
         local tgz_name="talloc-${version}.tar.gz"
-        wget  -O "${tgz_name}" "https://download.samba.org/pub/talloc/talloc-${version}.tar.gz"
+        retry_http_download_until_success "https://download.samba.org/pub/talloc/talloc-${version}.tar.gz" "${tgz_name}" 900 30 "smb talloc"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then

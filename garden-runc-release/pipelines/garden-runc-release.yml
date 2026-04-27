@@ -790,6 +790,7 @@ jobs:
           - '*amd64*'
     - task: bump-bosh-blob-containerd
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: containerd
@@ -810,6 +811,7 @@ jobs:
       trigger: true
     - task: bump-bosh-blob-autoconf
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: autoconf
@@ -830,6 +832,7 @@ jobs:
       trigger: true
     - task: bump-bosh-blob-automake
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: automake
@@ -850,6 +853,7 @@ jobs:
       trigger: true
     - task: bump-bosh-blob-busybox
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: busybox
@@ -870,6 +874,7 @@ jobs:
       trigger: true
     - task: bump-bosh-blob-gperf
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: gperf
@@ -890,6 +895,7 @@ jobs:
       trigger: true
     - task: bump-bosh-blob-iptables
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: iptables
@@ -910,6 +916,7 @@ jobs:
       trigger: true
     - task: bump-bosh-blob-libmnl
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: libmnl
@@ -930,6 +937,7 @@ jobs:
       trigger: true
     - task: bump-bosh-blob-libnftnl
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: libnftnl
@@ -951,6 +959,7 @@ jobs:
       trigger: true
     - task: bump-bosh-blob-libseccomp
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: libseccomp
@@ -971,6 +980,7 @@ jobs:
       trigger: true
     - task: bump-bosh-blob-libtool
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: libtool
@@ -991,6 +1001,7 @@ jobs:
       trigger: true
     - task: bump-bosh-blob-musl
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: musl
@@ -1011,6 +1022,7 @@ jobs:
       trigger: true
     - task: bump-bosh-blob-pkg-config
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: pkg-config
@@ -1031,6 +1043,7 @@ jobs:
       trigger: true
     - task: bump-bosh-blob-tar
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: tar
@@ -1049,6 +1062,7 @@ jobs:
       trigger: true
     - task: bump-bosh-blob-tini
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: tini
@@ -1069,6 +1083,7 @@ jobs:
       trigger: true
     - task: bump-bosh-blob-util-linux
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: util-linux
@@ -1089,6 +1104,7 @@ jobs:
       trigger: true
     - task: bump-bosh-blob-zlib
       image: image
+      attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
         blob: zlib
