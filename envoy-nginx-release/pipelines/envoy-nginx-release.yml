@@ -269,7 +269,7 @@ resources:
   icon: tag-outline
   source:
     uri: https://github.com/nginx/nginx
-    tag_filter: release-1.29.*
+    tag_filter: release-*
 
 #! Define-Jobs
 jobs:
