@@ -4,6 +4,7 @@
 # Generated in whole or in part by Cursor with a mix of different LLM models (Auto select mode)
 # Description:
 # 2026-04-27: OpenLDAP tarball fetch uses retry_http_download_until_success.
+# 2026-04-27: Repackage BerkeleyDB source tarball to fix missing release assets.
 
 set -eux
 set -o pipefail
@@ -26,6 +27,12 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(cat version | tr -d 'v')
         local tgz_name="db-${version}.tar.gz"
+
+        curl -sL -f -o "libdb-v${version}.tar.gz" "https://github.com/berkeleydb/libdb/archive/refs/tags/v${version}.tar.gz"
+        tar xzf "libdb-v${version}.tar.gz"
+        mv "libdb-${version}" "db-${version}"
+        tar czf "${tgz_name}" "db-${version}"
+
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
