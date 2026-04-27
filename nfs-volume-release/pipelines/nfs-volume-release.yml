@@ -346,6 +346,7 @@ resources:
     access_token: ((github-appruntimeplatform-bot/access-token))
     repository: openssl
     owner: openssl
+    tag_filter: "openssl-3.*"
 
 #! Define-Jobs
 jobs:
