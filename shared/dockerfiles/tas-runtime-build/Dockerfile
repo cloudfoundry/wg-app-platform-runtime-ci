@@ -100,25 +100,31 @@ echo "Rate limit resets at: $(date -d @$rate_reset 2>/dev/null || echo $rate_res
 
 # Check if request succeeded
 if [[ "$http_code" == "200" ]]; then
-  # Clean control characters and other problematic chars from JSON and validate
-  # Remove control chars (000-037) and high-bit chars (200-377)
-  tr -d '\000-\037\200-\377' < "$response_file" | tr -d '\r' > "${response_file}.clean"
-  echo "DEBUG: Attempting to validate cleaned JSON..." >&2
-  if jq empty "${response_file}.clean" 2>/dev/null; then
-    echo "DEBUG: JSON validation passed, returning cleaned response" >&2
-    cat "${response_file}.clean"  # Return cleaned JSON response to stdout
+  # Perform more targeted JSON cleaning 
+  echo "DEBUG: Processing GitHub API response..." >&2
+  
+  # Instead of aggressive character removal, let's try a different approach
+  # Use sed to escape control characters that JSON requires to be escaped
+  sed 's/\t/\\t/g; s/\r/\\r/g; s/\n/\\n/g; s/\f/\\f/g; s/\b/\\b/g' "$response_file" > "${response_file}.escaped"
+  
+  echo "DEBUG: Attempting to validate processed JSON..." >&2
+  if jq empty "${response_file}.escaped" 2>/dev/null; then
+    echo "DEBUG: JSON validation passed, returning processed response" >&2
+    cat "${response_file}.escaped"  # Return processed JSON response to stdout
   else
-    echo "ERROR: GitHub API returned invalid JSON even after aggressive cleaning" >&2
+    echo "ERROR: GitHub API returned invalid JSON even after processing" >&2
     echo "Original response size: $(wc -c < "$response_file") chars" >&2
-    echo "Cleaned response size: $(wc -c < "${response_file}.clean") chars" >&2
-    echo "First 200 chars of cleaned response:" >&2 
-    head -c 200 "${response_file}.clean" >&2
+    echo "Processed response size: $(wc -c < "${response_file}.escaped") chars" >&2
+    echo "First 500 chars of original response (hex dump):" >&2 
+    head -c 500 "$response_file" | hexdump -C >&2
+    echo "First 500 chars of processed response:" >&2 
+    head -c 500 "${response_file}.escaped" >&2
     echo "JQ error output:" >&2
-    jq empty "${response_file}.clean" 2>&1 >&2 || true
-    rm -f "$response_file" "$headers_file" "${response_file}.clean"
+    jq empty "${response_file}.escaped" 2>&1 >&2 || true
+    rm -f "$response_file" "$headers_file" "${response_file}.escaped"
     exit 1
   fi
-  rm -f "${response_file}.clean"
+  rm -f "${response_file}.escaped"
 else
   echo "ERROR: GitHub API call failed with HTTP $http_code" >&2
   echo "Response headers:" >&2
