@@ -1,3 +1,7 @@
+# @AI-Generated
+# Generated in whole or in part by Cursor with a mix of different LLM models (Auto select mode)
+# Description:
+# 2026-04-28: Add GitHub API error handling and rate limit tracking helper function
 FROM ubuntu:jammy
 
 ARG TARGETARCH
@@ -72,6 +76,48 @@ RUN \
 
 RUN pip install ansible
 
+# Helper script for GitHub API calls with error handling and rate limit tracking
+RUN cat <<'EOF' > /usr/local/bin/github_api_call
+#!/bin/bash
+url="$1"
+description="$2"
+
+echo "Making GitHub API call: $description"
+
+# Capture both response and headers
+response_file=$(mktemp)
+headers_file=$(mktemp)
+
+# Make request with headers and response separation
+http_code=$(curl -s -w "%{http_code}" -D "$headers_file" "$url" -o "$response_file")
+
+# Extract rate limit info from headers
+rate_remaining=$(grep -i "x-ratelimit-remaining" "$headers_file" | cut -d: -f2 | tr -d ' \r\n' || echo "unknown")
+rate_reset=$(grep -i "x-ratelimit-reset" "$headers_file" | cut -d: -f2 | tr -d ' \r\n' || echo "unknown")
+
+echo "Rate limit remaining: $rate_remaining"
+echo "Rate limit resets at: $(date -d @$rate_reset 2>/dev/null || echo $rate_reset)"
+
+# Check if request succeeded
+if [[ "$http_code" == "200" ]]; then
+  cat "$response_file"  # Return successful response
+else
+  echo "ERROR: GitHub API call failed with HTTP $http_code"
+  echo "Response headers:"
+  cat "$headers_file"
+  echo "Response body:"
+  cat "$response_file"
+
+  # Clean up and exit
+  rm -f "$response_file" "$headers_file"
+  exit 1
+fi
+
+# Clean up temp files
+rm -f "$response_file" "$headers_file"
+EOF
+RUN chmod +x /usr/local/bin/github_api_call
+
 # APT/DEB/GPG Config for extra APT repos + pkgs
 #    Terraform CLI
 RUN \
@@ -95,7 +141,8 @@ RUN \
 #    crane
 RUN \
   if [ "${TARGETARCH}" = "amd64" ]; then crane_arch="x86_64"; else crane_arch="arm64"; fi; \
-  url="$(curl -s https://api.github.com/repos/google/go-containerregistry/releases | jq -r --arg target_arch "${crane_arch}" '.[0].assets[] | select((.name | contains("Linux")) and (.name | contains($target_arch)) and (.name | contains("tar.gz"))).browser_download_url')" && \
+  releases_json=$(github_api_call "https://api.github.com/repos/google/go-containerregistry/releases" "go-containerregistry releases") && \
+  url="$(echo "$releases_json" | jq -r --arg target_arch "${crane_arch}" '.[0].assets[] | select((.name | contains("Linux")) and (.name | contains($target_arch)) and (.name | contains("tar.gz"))).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/crane /usr/local/bin/crane
 
@@ -103,19 +150,22 @@ RUN \
 #    cf cli
 RUN \
   if [ "${TARGETARCH}" = "amd64" ]; then cf_arch="linux64"; else cf_arch="linuxarm64"; fi; \
-  cf_cli_version="$(curl -s https://api.github.com/repos/cloudfoundry/cli/releases | jq -r '.[0].name' | sed 's/v//g')" && \
+  releases_json=$(github_api_call "https://api.github.com/repos/cloudfoundry/cli/releases" "cloudfoundry cli releases") && \
+  cf_cli_version="$(echo "$releases_json" | jq -r '.[0].name' | sed 's/v//g')" && \
   url="https://packages.cloudfoundry.org/stable?release=${cf_arch}-binary&version=${cf_cli_version}&source=github-rel" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/cf8 /usr/local/bin/cf8 && ln -sf /usr/local/bin/cf8 /usr/local/bin/cf
 #    bosh cli
 RUN \
-  url="$(curl -s https://api.github.com/repos/cloudfoundry/bosh-cli/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
+  releases_json=$(github_api_call "https://api.github.com/repos/cloudfoundry/bosh-cli/releases" "bosh-cli releases") && \
+  url="$(echo "$releases_json" | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" -o /tmp/bosh && \
   install /tmp/bosh /usr/local/bin/bosh
 
 #    bosh bootloader (BBL)
 RUN \
-  url="$(curl -s https://api.github.com/repos/cloudfoundry/bosh-bootloader/releases | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
+  releases_json=$(github_api_call "https://api.github.com/repos/cloudfoundry/bosh-bootloader/releases" "bosh-bootloader releases") && \
+  url="$(echo "$releases_json" | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" -o /tmp/bbl && \
   install /tmp/bbl /usr/local/bin/bbl
 
