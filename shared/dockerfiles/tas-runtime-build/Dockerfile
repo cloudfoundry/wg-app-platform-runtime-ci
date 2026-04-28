@@ -82,7 +82,7 @@ RUN cat <<'EOF' > /usr/local/bin/github_api_call
 url="$1"
 description="$2"
 
-echo "Making GitHub API call: $description"
+echo "Making GitHub API call: $description" >&2
 
 # Capture both response and headers
 response_file=$(mktemp)
@@ -95,19 +95,19 @@ http_code=$(curl -s -w "%{http_code}" -D "$headers_file" "$url" -o "$response_fi
 rate_remaining=$(grep -i "x-ratelimit-remaining" "$headers_file" | cut -d: -f2 | tr -d ' \r\n' || echo "unknown")
 rate_reset=$(grep -i "x-ratelimit-reset" "$headers_file" | cut -d: -f2 | tr -d ' \r\n' || echo "unknown")
 
-echo "Rate limit remaining: $rate_remaining"
-echo "Rate limit resets at: $(date -d @$rate_reset 2>/dev/null || echo $rate_reset)"
+echo "Rate limit remaining: $rate_remaining" >&2
+echo "Rate limit resets at: $(date -d @$rate_reset 2>/dev/null || echo $rate_reset)" >&2
 
 # Check if request succeeded
 if [[ "$http_code" == "200" ]]; then
-  cat "$response_file"  # Return successful response
+  cat "$response_file"  # Return successful response to stdout
 else
-  echo "ERROR: GitHub API call failed with HTTP $http_code"
-  echo "Response headers:"
-  cat "$headers_file"
-  echo "Response body:"
-  cat "$response_file"
-
+  echo "ERROR: GitHub API call failed with HTTP $http_code" >&2
+  echo "Response headers:" >&2
+  cat "$headers_file" >&2
+  echo "Response body:" >&2
+  cat "$response_file" >&2
+  
   # Clean up and exit
   rm -f "$response_file" "$headers_file"
   exit 1
