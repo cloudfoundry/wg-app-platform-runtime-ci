@@ -100,16 +100,18 @@ echo "Rate limit resets at: $(date -d @$rate_reset 2>/dev/null || echo $rate_res
 
 # Check if request succeeded
 if [[ "$http_code" == "200" ]]; then
-  # Validate JSON before returning it
-  if jq empty "$response_file" 2>/dev/null; then
-    cat "$response_file"  # Return successful response to stdout
+  # Clean any control characters from JSON and validate
+  tr -d '\000-\037' < "$response_file" > "${response_file}.clean"
+  if jq empty "${response_file}.clean" 2>/dev/null; then
+    cat "${response_file}.clean"  # Return cleaned JSON response to stdout
   else
-    echo "ERROR: GitHub API returned invalid JSON" >&2
+    echo "ERROR: GitHub API returned invalid JSON even after cleaning" >&2
     echo "Response body (first 500 chars):" >&2 
-    head -c 500 "$response_file" >&2
-    rm -f "$response_file" "$headers_file"
+    head -c 500 "${response_file}.clean" >&2
+    rm -f "$response_file" "$headers_file" "${response_file}.clean"
     exit 1
   fi
+  rm -f "${response_file}.clean"
 else
   echo "ERROR: GitHub API call failed with HTTP $http_code" >&2
   echo "Response headers:" >&2
