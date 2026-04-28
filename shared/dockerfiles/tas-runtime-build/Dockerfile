@@ -156,8 +156,8 @@ RUN \
 #    crane
 RUN \
   if [ "${TARGETARCH}" = "amd64" ]; then crane_arch="x86_64"; else crane_arch="arm64"; fi; \
-  releases_json=$(github_api_call "https://api.github.com/repos/google/go-containerregistry/releases" "go-containerregistry releases") && \
-  url="$(echo "$releases_json" | jq -r --arg target_arch "${crane_arch}" '.[0].assets[] | select((.name | contains("Linux")) and (.name | contains($target_arch)) and (.name | contains("tar.gz"))).browser_download_url')" && \
+  releases_json=$(github_api_call "https://api.github.com/repos/google/go-containerregistry/releases/latest" "go-containerregistry latest release") && \
+  url="$(printf '%s' "$releases_json" | jq -r --arg target_arch "${crane_arch}" '.assets[] | select((.name | contains("Linux")) and (.name | contains($target_arch)) and (.name | contains("tar.gz"))).browser_download_url')" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/crane /usr/local/bin/crane
 
@@ -165,22 +165,22 @@ RUN \
 #    cf cli
 RUN \
   if [ "${TARGETARCH}" = "amd64" ]; then cf_arch="linux64"; else cf_arch="linuxarm64"; fi; \
-  releases_json=$(github_api_call "https://api.github.com/repos/cloudfoundry/cli/releases" "cloudfoundry cli releases") && \
-  cf_cli_version="$(echo "$releases_json" | jq -r '.[0].name' | sed 's/v//g')" && \
+  releases_json=$(github_api_call "https://api.github.com/repos/cloudfoundry/cli/releases/latest" "cloudfoundry cli latest release") && \
+  cf_cli_version="$(printf '%s' "$releases_json" | jq -r '.name' | sed 's/v//g')" && \
   url="https://packages.cloudfoundry.org/stable?release=${cf_arch}-binary&version=${cf_cli_version}&source=github-rel" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/cf8 /usr/local/bin/cf8 && ln -sf /usr/local/bin/cf8 /usr/local/bin/cf
 #    bosh cli
 RUN \
-  releases_json=$(github_api_call "https://api.github.com/repos/cloudfoundry/bosh-cli/releases" "bosh-cli releases") && \
-  url="$(echo "$releases_json" | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
+  releases_json=$(github_api_call "https://api.github.com/repos/cloudfoundry/bosh-cli/releases/latest" "bosh-cli latest release") && \
+  url="$(printf '%s' "$releases_json" | jq -r --arg target_arch "${TARGETARCH}" '.assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" -o /tmp/bosh && \
   install /tmp/bosh /usr/local/bin/bosh
 
 #    bosh bootloader (BBL)
 RUN \
-  releases_json=$(github_api_call "https://api.github.com/repos/cloudfoundry/bosh-bootloader/releases" "bosh-bootloader releases") && \
-  url="$(echo "$releases_json" | jq -r --arg target_arch "${TARGETARCH}" '.[0].assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
+  releases_json=$(github_api_call "https://api.github.com/repos/cloudfoundry/bosh-bootloader/releases/latest" "bosh-bootloader latest release") && \
+  url="$(printf '%s' "$releases_json" | jq -r --arg target_arch "${TARGETARCH}" '.assets[] | select((.name | contains("linux")) and (.name | contains($target_arch))).browser_download_url')" && \
   curl -L "${url}" -o /tmp/bbl && \
   install /tmp/bbl /usr/local/bin/bbl
 
