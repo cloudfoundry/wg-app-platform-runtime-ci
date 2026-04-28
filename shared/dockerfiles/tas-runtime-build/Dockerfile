@@ -100,14 +100,21 @@ echo "Rate limit resets at: $(date -d @$rate_reset 2>/dev/null || echo $rate_res
 
 # Check if request succeeded
 if [[ "$http_code" == "200" ]]; then
-  # Clean any control characters from JSON and validate
-  tr -d '\000-\037' < "$response_file" > "${response_file}.clean"
+  # Clean control characters and other problematic chars from JSON and validate
+  # Remove control chars (000-037) and high-bit chars (200-377)
+  tr -d '\000-\037\200-\377' < "$response_file" | tr -d '\r' > "${response_file}.clean"
+  echo "DEBUG: Attempting to validate cleaned JSON..." >&2
   if jq empty "${response_file}.clean" 2>/dev/null; then
+    echo "DEBUG: JSON validation passed, returning cleaned response" >&2
     cat "${response_file}.clean"  # Return cleaned JSON response to stdout
   else
-    echo "ERROR: GitHub API returned invalid JSON even after cleaning" >&2
-    echo "Response body (first 500 chars):" >&2 
-    head -c 500 "${response_file}.clean" >&2
+    echo "ERROR: GitHub API returned invalid JSON even after aggressive cleaning" >&2
+    echo "Original response size: $(wc -c < "$response_file") chars" >&2
+    echo "Cleaned response size: $(wc -c < "${response_file}.clean") chars" >&2
+    echo "First 200 chars of cleaned response:" >&2 
+    head -c 200 "${response_file}.clean" >&2
+    echo "JQ error output:" >&2
+    jq empty "${response_file}.clean" 2>&1 >&2 || true
     rm -f "$response_file" "$headers_file" "${response_file}.clean"
     exit 1
   fi
