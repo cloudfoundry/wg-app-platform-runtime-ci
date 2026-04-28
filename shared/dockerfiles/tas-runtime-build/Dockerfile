@@ -236,7 +236,7 @@ RUN \
   url="$(curl -s https://api.github.com/repos/lycheeverse/lychee/releases | jq -r --arg lychee_arch "$lychee_arch" '[.[] | select(.prerelease != true)] | .[0].assets[] | select((.name | contains("linux")) and (.name | contains($lychee_arch)) and (.name | contains("gnu")) and (.name | contains(".sha256") | not)).browser_download_url')" && \
   echo "${url}" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
-  install /tmp/lychee /usr/local/bin/lychee
+  install /tmp/lychee-${lychee_arch}-unknown-linux-gnu/lychee /usr/local/bin/lychee
 
 # install govc
 RUN \
