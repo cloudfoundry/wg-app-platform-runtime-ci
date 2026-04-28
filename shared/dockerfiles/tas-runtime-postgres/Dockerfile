@@ -8,6 +8,15 @@ FROM ${BUILD_URI} AS build
 LABEL org.cloudfoundry.tas-runtime-postgres.dockerfile.url="https://github.com/cloudfoundry/wg-app-platform-runtime-ci/blob/main/shared/dockerfiles/tas-runtime-postgres/Dockerfile"
 LABEL org.cloudfoundry.tas-runtime-postgres.notes.md="Build upon tas-runtime-build with postgres"
 
+# Fix ARM64 mirror issues - use MIT mirror instead of broken ports.ubuntu.com
+ARG TARGETARCH
+RUN if [ "${TARGETARCH}" = "arm64" ]; then \
+    echo "deb http://mirrors.mit.edu/ubuntu-ports/ jammy main restricted universe multiverse" > /etc/apt/sources.list && \
+    echo "deb http://mirrors.mit.edu/ubuntu-ports/ jammy-updates main restricted universe multiverse" >> /etc/apt/sources.list && \
+    echo "deb http://mirrors.mit.edu/ubuntu-ports/ jammy-security main restricted universe multiverse" >> /etc/apt/sources.list && \
+    echo "deb http://mirrors.mit.edu/ubuntu-ports/ jammy-backports main restricted universe multiverse" >> /etc/apt/sources.list; \
+fi
+
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
   g++ \
