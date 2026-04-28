@@ -101,10 +101,7 @@ echo "Rate limit resets at: $(date -d @$rate_reset 2>/dev/null || echo $rate_res
 # Check if request succeeded
 if [[ "$http_code" == "200" ]]; then
   # GitHub API response should be valid JSON, just validate and return it
-  echo "DEBUG: Validating GitHub API JSON response..." >&2
-  
   if jq empty "$response_file" 2>/dev/null; then
-    echo "DEBUG: JSON validation passed, returning response" >&2
     cat "$response_file"  # Return JSON response to stdout
   else
     echo "ERROR: GitHub API returned invalid JSON" >&2
