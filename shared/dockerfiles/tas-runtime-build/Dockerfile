@@ -92,15 +92,24 @@ headers_file=$(mktemp)
 http_code=$(curl -s -w "%{http_code}" -D "$headers_file" "$url" -o "$response_file")
 
 # Extract rate limit info from headers
-rate_remaining=$(grep -i "x-ratelimit-remaining" "$headers_file" | cut -d: -f2 | tr -d ' \r\n' || echo "unknown")
-rate_reset=$(grep -i "x-ratelimit-reset" "$headers_file" | cut -d: -f2 | tr -d ' \r\n' || echo "unknown")
+rate_remaining=$(grep -i "x-ratelimit-remaining:" "$headers_file" | head -1 | cut -d: -f2 | tr -d ' \r\n' || echo "unknown")
+rate_reset=$(grep -i "x-ratelimit-reset:" "$headers_file" | head -1 | cut -d: -f2 | tr -d ' \r\n' || echo "unknown")
 
 echo "Rate limit remaining: $rate_remaining" >&2
 echo "Rate limit resets at: $(date -d @$rate_reset 2>/dev/null || echo $rate_reset)" >&2
 
 # Check if request succeeded
 if [[ "$http_code" == "200" ]]; then
-  cat "$response_file"  # Return successful response to stdout
+  # Validate JSON before returning it
+  if jq empty "$response_file" 2>/dev/null; then
+    cat "$response_file"  # Return successful response to stdout
+  else
+    echo "ERROR: GitHub API returned invalid JSON" >&2
+    echo "Response body (first 500 chars):" >&2 
+    head -c 500 "$response_file" >&2
+    rm -f "$response_file" "$headers_file"
+    exit 1
+  fi
 else
   echo "ERROR: GitHub API call failed with HTTP $http_code" >&2
   echo "Response headers:" >&2
