@@ -228,9 +228,12 @@ RUN \
 
 
 #    lychee
+# Pin to v0.23.0 due to GLIBC compatibility with Ubuntu Jammy (22.04).
+# Ubuntu Jammy ships with GLIBC 2.35, but lychee v0.24.0+ requires GLIBC 2.38/2.39.
+# Can unpin when we upgrade base image to Ubuntu Noble (24.04) or later.
 RUN \
   if [ "${TARGETARCH}" = "amd64" ]; then lychee_arch="x86_64"; else lychee_arch="aarch64"; fi; \
-  url="$(curl -s https://api.github.com/repos/lycheeverse/lychee/releases | jq -r --arg lychee_arch "$lychee_arch" '[.[] | select(.prerelease != true)] | .[0].assets[] | select((.name | contains("linux")) and (.name | contains($lychee_arch)) and (.name | contains("gnu")) and (.name | contains(".sha256") | not)).browser_download_url')" && \
+  url="https://github.com/lycheeverse/lychee/releases/download/lychee-v0.23.0/lychee-${lychee_arch}-unknown-linux-gnu.tar.gz" && \
   echo "${url}" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
   install /tmp/lychee-${lychee_arch}-unknown-linux-gnu/lychee /usr/local/bin/lychee
