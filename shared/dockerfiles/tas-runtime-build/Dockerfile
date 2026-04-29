@@ -236,7 +236,7 @@ RUN \
   url="https://github.com/lycheeverse/lychee/releases/download/lychee-v0.23.0/lychee-${lychee_arch}-unknown-linux-gnu.tar.gz" && \
   echo "${url}" && \
   curl -L "${url}" | tar -xz -C /tmp/ && \
-  install /tmp/lychee-${lychee_arch}-unknown-linux-gnu/lychee /usr/local/bin/lychee
+  install /tmp/lychee /usr/local/bin/lychee
 
 # install govc
 RUN \
