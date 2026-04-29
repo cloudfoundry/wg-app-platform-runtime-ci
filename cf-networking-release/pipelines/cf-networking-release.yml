@@ -90,6 +90,17 @@ resources:
     - releases/
     - .final_builds/
 
+- name: cf-networking-repo-docs
+  type: git
+  icon: source-branch
+  source:
+    branch:  "develop"
+    uri: git@github.com:cloudfoundry/cf-networking-release.git
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    paths:
+    - docs/
+
+
 - name: silk-repo
   type: git
   icon: source-branch
@@ -107,6 +118,17 @@ resources:
     - docs/
     - releases/
     - .final_builds/
+
+- name: silk-repo-docs
+  type: git
+  icon: source-branch
+  source:
+    branch:  "develop"
+    uri: git@github.com:cloudfoundry/silk-release.git
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    paths:
+    - docs/
+
 
 - name: cf-networking-release-branch
   type: git
@@ -561,7 +583,7 @@ jobs:
       steps:
       - get: ci
       - get: image
-      - get:  cf-networking-repo
+      - get:  cf-networking-repo-docs
       - get: weekly
         trigger: true
       - get: cf-networking-readme
@@ -571,7 +593,7 @@ jobs:
       file: ci/shared/tasks/sync-readme/linux.yml
       image: image
       input_mapping:
-        repo:  cf-networking-repo
+        repo:  cf-networking-repo-docs
     - put: cf-networking-repo-synced
       params:
        rebase: true
@@ -584,7 +606,7 @@ jobs:
       steps:
       - get: ci
       - get: image
-      - get:  silk-repo
+      - get:  silk-repo-docs
       - get: weekly
         trigger: true
       - get: silk-readme
@@ -594,7 +616,7 @@ jobs:
       file: ci/shared/tasks/sync-readme/linux.yml
       image: image
       input_mapping:
-        repo:  silk-repo
+        repo:  silk-repo-docs
     - put: silk-repo-synced
       params:
        rebase: true
