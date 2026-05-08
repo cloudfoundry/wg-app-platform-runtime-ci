@@ -1,3 +1,7 @@
+#! @AI-Generated
+#! Generated in whole or in part by Cursor with a mix of different LLM models (Auto select mode)
+#! Description:
+#! 2026-05-08: Add MySQL 8.4 resources and build job (TNZ-99882)
 #@ load("@ytt:data", "data")
 #@ load("ytt-helpers.star", "helpers")
 
@@ -82,6 +86,16 @@ resources:
     key: #@ "tas-runtime-mysql-5.7/version-{}".format(go_version.name)
     json_key: ((gcp-wg-arp-oss-service-account/config-json))
     initial_version: #@ "{}.0".format(go_version.name)
+
+- name: #@ "mysql-8.4-image-version-{}".format(go_version.name)
+  type: semver
+  icon: counter
+  source:
+    driver: gcs
+    bucket: ci-image-versions
+    key: #@ "tas-runtime-mysql-8.4/version-{}".format(go_version.name)
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
+    initial_version: #@ "{}.0".format(go_version.name)
 #@ end
 
 - name: ruby-installer-git
@@ -152,6 +166,29 @@ resources:
 #! See: https://github.com/docker-library/mysql/commit/b6c1f3997a86ad4de7ceb6b8c9b0d9f6ee15ac84
   version:
     ref: 6b2fc013b75cab7984073abdae136e39256c9935
+- name: mysql-8.4-dockerfile
+  type: git
+  icon: source-branch
+  source:
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci.git
+    branch: mysql-8.4
+    paths:
+    - shared/dockerfiles/tas-runtime-mysql-8.4/*
+- name: mysql-8.4-image
+  type: registry-image
+  icon: docker
+  source:
+    username: ((dockerhub-appruntimeplatform-username))
+    password: ((dockerhub-appruntimeplatform-password))
+    repository: cloudfoundry/tas-runtime-mysql-8.4
+- name: mysql-8.4-docker-repo
+  type: git
+  icon: source-branch
+  source:
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:docker-library/mysql.git
+    branch: master
 - name: mysql-5.7-dockerfile
   type: git
   icon: source-branch
@@ -487,6 +524,112 @@ jobs:
   - put: #@ "mysql-8.0-image-version-{}".format(go_version.name)
     params:
       file: #@ "mysql-8.0-image-version-{}/version".format(go_version.name)
+- name: #@ "build-mysql-8.4-image-{}".format(go_version.name)
+  plan:
+  - in_parallel:
+    - get: mysql-8.4-dockerfile
+      trigger: true
+    - get: #@ "build-image-version-{}".format(go_version.name)
+      trigger: true
+      passed:
+      - #@ "build-build-image-{}".format(go_version.name)
+    - get: go-version
+      passed:
+      - #@ "build-build-image-{}".format(go_version.name)
+    - get: ci
+      passed:
+      - #@ "build-build-image-{}".format(go_version.name)
+    - get: #@ "mysql-8.4-image-version-{}".format(go_version.name)
+      params:
+        bump: patch
+    - get: mysql-8.4-docker-repo
+      trigger: true
+    - get: build-image
+  - in_parallel:
+    - task: collect-docker-files
+      file: ci/shared/tasks/combine-assets/linux.yml
+      image: build-image
+      input_mapping:
+        input-01: mysql-8.4-dockerfile
+        input-02: mysql-8.4-docker-repo
+      output_mapping:
+        combined-assets: dockerfile-out
+      params:
+        COPY_ACTIONS: |
+          {input-01/shared/dockerfiles/tas-runtime-mysql-8.4/*,combined-assets}
+          {input-02/8.4/docker-entrypoint.sh,combined-assets/mysql-entrypoint.sh}
+    - task: print-go-version-tag
+      image: build-image
+      file: ci/shared/tasks/build-golang-version-tags/linux.yml
+      params:
+        GO_MAJOR_MINOR_VERSION: #@ "{}".format(go_version.name)
+    - task: write-build-args
+      image: build-image
+      params:
+        MYSQL_MAJOR_VERSION: "8.4"
+      config:
+        platform: linux
+        params:
+          MYSQL_MAJOR_VERSION: null
+        inputs:
+        - name: #@ "build-image-version-{}".format(go_version.name)
+        - name: mysql-8.4-docker-repo
+        outputs:
+        - name: dockerfile-build-args
+        run:
+          path: /bin/bash
+          args:
+          - -c
+          - |
+            set -eux
+            mkdir -p dockerfile-build-args
+
+            export build_uri="cloudfoundry/tas-runtime-build:$(cat build-image-version-*/version)"
+            export mysql_major_version="${MYSQL_MAJOR_VERSION:-}"
+            export mysql_version=$(jq -r ".[\"${MYSQL_MAJOR_VERSION}\"].version" mysql-8.4-docker-repo/versions.json)
+
+            cat <<EOF > dockerfile-build-args/build_args
+            BUILD_URI=$build_uri
+            MYSQL_MAJOR_VERSION=$mysql_major_version
+            MYSQL_VERSION=$mysql_version
+            EOF
+
+            cat dockerfile-build-args/build_args
+  - task: build-mysql-8.4-image
+    privileged: true
+    config:
+      platform: linux
+      run:
+        path: build
+      params:
+        BUILD_ARGS_FILE: dockerfile-build-args/build_args
+        CONTEXT: dockerfile-out
+        OUTPUT_OCI: true
+        #! no arm64 packages for mysql-community could be found, so not multi-arch building this either
+        IMAGE_PLATFORM: linux/amd64
+      inputs:
+        - name: dockerfile-out
+        - name: dockerfile-build-args
+      outputs:
+        - name: image
+      image_resource:
+        type: registry-image
+        source:
+          repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/concourse/oci-build-task
+          username: _json_key
+          password: ((gcp-arp-artifact-registry-service-account-token))
+  - load_var: mysql84-image-version
+    file: #@ "mysql-8.4-image-version-{}/version".format(go_version.name)
+    format: raw
+  - put: mysql-8.4-image
+    params:
+      image: image/image
+      version: ((.:mysql84-image-version))
+      additional_tags: tag/tag
+      bump_aliases: true
+  - put: #@ "mysql-8.4-image-version-{}".format(go_version.name)
+    params:
+      file: #@ "mysql-8.4-image-version-{}/version".format(go_version.name)
 - name: #@ "build-mysql-5.7-image-{}".format(go_version.name)
   plan:
   - in_parallel:
