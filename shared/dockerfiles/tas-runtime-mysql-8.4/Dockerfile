@@ -2,6 +2,7 @@
 # Generated in whole or in part by Cursor with a mix of different LLM models (Auto select mode)
 # Description:
 # 2026-05-08: Add MySQL 8.4 Dockerfile for CI image build (TNZ-99882)
+# 2026-05-08: Fix apt component name - mysql-8.4 doesn't exist, use mysql-8.4-lts (TNZ-99882)
 
 # Dockerfile name: mysql-8.4
 # should be located at cloudfoundry/tas-runtime-mysql-8.4
@@ -37,7 +38,7 @@ RUN set -eux; \
 	rm -rf "$GNUPGHOME"
 
 RUN export DISTRUBTION_CODENAME=$(cat /etc/lsb-release  | grep DISTRIB_CODENAME | cut -f 2 -d =); \
-    echo "deb [ signed-by=/etc/apt/keyrings/mysql.gpg ] http://repo.mysql.com/apt/ubuntu/ ${DISTRUBTION_CODENAME} mysql-${MYSQL_MAJOR_VERSION}" > /etc/apt/sources.list.d/mysql.list
+    echo "deb [ signed-by=/etc/apt/keyrings/mysql.gpg ] http://repo.mysql.com/apt/ubuntu/ ${DISTRUBTION_CODENAME} mysql-8.4-lts" > /etc/apt/sources.list.d/mysql.list
 
 # the "/var/lib/mysql" stuff here is because the mysql-server postinst doesn't have an explicit way to disable the mysql_install_db codepath besides having a database already "configured" (ie, stuff in /var/lib/mysql/mysql)
 # also, we set debconf keys to make APT a little quieter
