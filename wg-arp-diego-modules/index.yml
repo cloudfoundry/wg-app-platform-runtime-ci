@@ -8,6 +8,8 @@ db_flavors:
   value: postgres
 - image: mysql-8.0
   value: mysql
+- image: mysql-8.4
+  value: mysql
 - image: mysql-5.7
   value: mysql
 
