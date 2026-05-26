@@ -16,8 +16,6 @@ db_flavors:
 inigo_db_flavors:
 - image: mysql-8.0
   value: mysql
-- image: mysql-8.4
-  value: mysql
 
 internal_repos:
 - name: "bbs"
