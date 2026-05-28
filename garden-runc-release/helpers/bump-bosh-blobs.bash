@@ -4,6 +4,7 @@
 # Generated in whole or in part by Cursor with a mix of different LLM models (Auto select mode)
 # Description:
 # 2026-04-27: External tarball fetches use retry_http_download_until_success.
+# 2026-05-28: Strip 'v' prefix from containerd version when building blob filename.
 
 set -eux
 set -o pipefail
@@ -280,7 +281,7 @@ function run() {
     elif [[ "$bosh_blob_path" == "containerd/containerd-*-linux-amd64.tar.gz" ]]; then
         echo "Bumping containerd blob"
         pushd "${blob}" > /dev/null
-        local version=$(cat version)
+        local version=$(cat version | tr -d 'v')
         local tgz_name="containerd-${version}-linux-amd64.tar.gz"
         popd > /dev/null
 
