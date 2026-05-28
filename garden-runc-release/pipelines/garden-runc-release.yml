@@ -547,7 +547,7 @@ resources:
     access_token: ((github-appruntimeplatform-bot/access-token))
     owner: containerd
     repository: containerd
-    tag_filter: "v2\\.2\\.\\d+"
+    tag_filter: "v2\\.2\\.3" #! pin to the last known working version
 
 #! Define-Jobs
 jobs:
