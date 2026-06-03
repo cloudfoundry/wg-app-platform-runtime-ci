@@ -1,6 +1,3 @@
 {
-    "default": "1.26",
-    "releases": {
-        "routing": "1.25"
-    }
+    "default": "1.26"
 }
