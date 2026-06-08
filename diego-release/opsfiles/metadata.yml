@@ -7,3 +7,4 @@ opsfiles:
   set-rep-max-idle-conns.yml: <TODO> figure out what test needs this opsfile
   turn-on-debug-mode.yml: Turn on debug mode for all diego's components
   resize-grootfs-store.yml: <TODO> figure out what test needs this opsfile
+  use-noble-dns-for-isolated-cell.yml: Uses Noble DNS for isolated cell configuration
