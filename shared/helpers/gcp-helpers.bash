@@ -120,6 +120,7 @@ function is_okay_to_be_long_running() {
         "concourse"
         "vanern-2020-12-04t22-44z"
         "diego-worker-cgroupsv2-worker"
+        "caspian"
     )
     local found
     found=false
