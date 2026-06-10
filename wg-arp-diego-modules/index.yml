@@ -26,6 +26,9 @@ internal_repos:
   repo: cloudfoundry/cfhttp
 - name: debugserver
   repo: cloudfoundry/debugserver
+- name: diego-db-helpers
+  repo: cloudfoundry/diego-db-helpers
+  configure_db: true
 - name: diego-logging-client
   repo: cloudfoundry/diego-logging-client
 - name: dockerdriver
