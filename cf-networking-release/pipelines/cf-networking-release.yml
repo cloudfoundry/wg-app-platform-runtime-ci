@@ -1450,7 +1450,7 @@ jobs:
         path: sh
         args:
         - -exc
-        - sleep 4h
+        - sleep 6h
 
 - name: cleanup-env
   serial: true
