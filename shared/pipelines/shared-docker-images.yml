@@ -772,12 +772,6 @@ jobs:
         REGISTRY_MIRROR: gcp-arp-south-us-central1-docker.pkg.dev/wg-arp-cf-ci
         IMAGE_PREFIX: cloudfoundry/tas-runtime-mysql-9.7
         BUILD_NUMBER_FILE: tag/tag
-      image_resource:
-        type: registry-image
-        source:
-          repository: gcp-arp-south-us-central1-docker.pkg.dev/wg-arp-cf-ci/ci/c2c-ci-base
-          username: _json_key
-          password: ((gcp-arp-artifact-registry-service-account-token))
   - load_var: mysql97-image-version
     file: #@ "mysql-9.7-image-version-{}/version".format(go_version.name)
     format: raw
