@@ -44,5 +44,4 @@ environments:
     pipeline_lock: windowsfs-online-release-env-lock
 
 supported_go_versions:
-  - name: 1.25
   - name: 1.26
