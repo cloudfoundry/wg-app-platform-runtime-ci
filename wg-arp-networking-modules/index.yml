@@ -12,6 +12,8 @@ db_flavors:
   value: mysql
 - image: mysql-5.7
   value: mysql
+- image: mysql-9.7
+  value: mysql
 
 #! <MUST> repo/component/package to test in your repo/release
 internal_repos:

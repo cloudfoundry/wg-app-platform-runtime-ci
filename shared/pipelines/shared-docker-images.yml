@@ -205,7 +205,7 @@ resources:
   source:
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci.git
-    branch: mysql-9.7
+    branch: main
     paths:
     - shared/dockerfiles/tas-runtime-mysql-9.7/*
 - name: mysql-9.7-image
