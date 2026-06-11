@@ -10,4 +10,5 @@ opsfiles:
   tas-runtime-postgres: Build upon tas-runtime-build with postgres
   tas-runtime-mysql-8.0: Build upon tas-runtime-build with mysql
   tas-runtime-mysql-8.4: Build upon tas-runtime-build with mysql 8.4
+  tas-runtime-mysql-9.7: Build upon tas-runtime-build with mysql 9.7
   tas-runtime-mysql-5.7: Build from debian image with 5.7-debian tag

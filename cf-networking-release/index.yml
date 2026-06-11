@@ -11,6 +11,8 @@ db_flavors:
   value: mysql
 - image: mysql-5.7
   value: mysql
+- image: mysql-9.7
+  value: mysql
 
 internal_repos:
 - name: "bosh-dns-adapter"
