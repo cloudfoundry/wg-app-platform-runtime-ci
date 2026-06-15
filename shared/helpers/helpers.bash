@@ -240,7 +240,7 @@ function configure_db() {
     testConnection="PGPASSWORD=$db_password psql -h localhost -U $db_user -c '\conninfo'"
   elif [ "${db}" = "mysql" ]  || [ "${db}" = "mysql-5.7" ] || [ "${db}" = "mysql8" ]; then
     launchDB="(MYSQL_USER='' MYSQL_ROOT_PASSWORD=$db_password /mysql-entrypoint.sh mysqld --max_allowed_packet=256M &> /var/log/mysql-boot.log) &"
-    testConnection="mysql -h localhost -u $db_user -D mysql -e 'SELECT 1;' --password='$db_password'"
+    testConnection="mysql -h localhost -u $db_user -D mysql -e '\s;' --password='$db_password'"
   else
     echo "DB variable not set. The script does not determine which database to use and would fail some tests with errors related to being unable to connect to the db. Bailing early."
     exit 1
