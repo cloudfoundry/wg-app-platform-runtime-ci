@@ -1,0 +1,10 @@
+#! Mitigation: use-jammy-stemcell.yml only patches dns_servers for diego-cell (regular), not isolated-diego-cell.
+#! add-persistent-isolation-segment-diego-cell.yml hardcodes dns_servers: [169.254.0.53] (systemd-resolved stub)
+#! for silk-cni on the isolated cell. On Ubuntu Jammy, 169.254.0.53 is not reachable from inside staging containers
+#! (i/o timeout), so external hostnames (e.g. buildpacks.cloudfoundry.org) cannot be resolved.
+#! This patch overrides dns_servers to 169.254.0.2 (BOSH DNS, which forwards external queries on Jammy)
+#! to match what regular diego cells use under use-jammy-stemcell.yml.
+#! Long-term fix: update use-jammy-stemcell.yml in cf-deployment to also patch isolated-diego-cell.
+- path: /instance_groups/name=isolated-diego-cell/jobs/name=silk-cni/properties/dns_servers/0
+  type: replace
+  value: 169.254.0.2

@@ -25,6 +25,7 @@ internal_repos:
 opsfiles:
 - add-lb-ca-cert.yml
 - scale-for-cats.yml
-- use-compiled-releases.yml
+- use-jammy-stemcell.yml
 - add-persistent-isolation-segment-diego-cell.yml
 - add-persistent-isolation-segment-router.yml
+- use-jammy-dns-for-isolated-cell.yml

@@ -1,0 +1,5 @@
+---
+readme:
+  This directory contains the opsfiles needed for garden-runc-release.
+opsfiles:
+  use-jammy-dns-for-isolated-cell.yml: Patches isolated-diego-cell silk-cni dns_servers from 169.254.0.53 to 169.254.0.2 so staging containers can resolve external hostnames on Ubuntu Jammy

@@ -272,10 +272,10 @@ resources:
   icon: clock
   source:
     interval: '168h'
-    start: 01:00
-    stop: 01:59
+    start: 1:00 AM
+    stop: 10:59 PM
     days:
-      - Thursday
+      - Monday
 
 - name: cleanup-timer
   type: time
@@ -1443,11 +1443,12 @@ jobs:
       input-01: cf-deployment
     params:
       COPY_ACTIONS: |
-        {input-01/operations/use-compiled-releases.yml,combined-assets}
+        {input-01/operations/use-jammy-stemcell.yml,combined-assets}
         {input-01/operations/add-persistent-isolation-segment-diego-cell.yml,combined-assets}
         {input-01/operations/add-persistent-isolation-segment-router.yml,combined-assets}
         {ci/shared/opsfiles/add-lb-ca-cert.yml,combined-assets}
         {ci/shared/opsfiles/scale-for-cats.yml,combined-assets}
+        {ci/garden-runc-release/opsfiles/*,combined-assets}
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
     input_mapping:
