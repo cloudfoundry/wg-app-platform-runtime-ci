@@ -110,7 +110,7 @@ function run() {
     elif [[ "$bosh_blob_path" == 'git/MinGit-*-64-bit.zip' ]]; then
         echo "Bumping MinGit blob"
         pushd "${blob}" > /dev/null
-        local version=$(cat version | tr -d 'v')
+        local version=$(cat version | tr -d 'v' | cut -d'.' -f1,2,3)
         local zip_name="MinGit-${version}-64-bit.zip"
         popd > /dev/null
 
