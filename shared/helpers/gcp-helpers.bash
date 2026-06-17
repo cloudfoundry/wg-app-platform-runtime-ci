@@ -65,6 +65,7 @@ function get_running_vms_per_project_json() {
     JSON='{"vms":[]}'
     vm_info_json="$(get_running_info_from_gcp_json "${project}")"
     while read -r vm; do
+        [[ -z "${vm}" ]] && continue
         local name
         name=$(get_gcp_vm_identifier "${vm}")
         JSON="$(jq --arg name "$name" '.vms += [$name]' <<< "$JSON")"
@@ -100,6 +101,10 @@ function get_gcp_vm_identifier() {
     if [[ "${name}" == "" ]]; then
         ## for bosh bbl vms: diego-worker-cgroupsv2-worker
         name=$(echo "${vm}" | jq -r '.tags.items | select(. != null) | .[] | select(test("diego-worker-cgroupsv2-worker"))')
+    fi
+    if [[ "${name}" == "" ]]; then
+        ## for other bosh bbl vms: bosh-bbl-env-<env>-<role> (e.g. diego-worker-postgres)
+        name=$(echo "${vm}" | jq -r '.tags.items | select(. != null) | .[] | select(test("bosh-bbl-env-.")) | select(test("concourse") | not)' | sed -nE 's/bosh-bbl-env-.*-[0-9]{4}-[0-9]{2}-[0-9]{2}t[0-9]{2}-[0-9]{2}z-(.+)/\1/p' | head -1)
     fi
     if [[ "${name}" == "" ]]; then
         ## for other vms
@@ -161,15 +166,23 @@ function get_long_running_vms_per_project_json() {
     JSON='{"vms":[]}'
 
     while read -r vm; do
+        [[ -z "${vm}" ]] && continue
         local name
         id=$(get_gcp_vm_identifier "${vm}")
         name=$(get_gcp_vm_name "${vm}")
-        creation_time=$(echo "${vm}" | jq -r .lastStartTimestamp)
+        creation_time=$(echo "${vm}" | jq -r '.lastStartTimestamp // .creationTimestamp')
+        if [[ -z "${creation_time}" ]] || [[ "${creation_time}" == "null" ]]; then
+            ok=$(is_okay_to_be_long_running "${id}")
+            if [[ "${ok}" == false ]]; then
+                JSON="$(jq --arg name "$name" --arg id "$id" --arg hours "unknown" '.vms += [{"name": $name, "id": $id, "hours_running": $hours}]' <<< "$JSON")"
+            fi
+            continue
+        fi
         hours_since="$(( ($(date +%s) - $(date -d "${creation_time}" +%s)) / (60*60) ))"
         if [[ "${hours_since}" -ge 8 ]]; then
             ok=$(is_okay_to_be_long_running "${id}")
             if [[ "${ok}" == false ]]; then
-                JSON="$(jq --arg name $name --arg id $id --arg hours $hours_since '.vms += [{"name": $name, "id": $id, "hours_running": $hours}]' <<< "$JSON")"
+                JSON="$(jq --arg name "$name" --arg id "$id" --arg hours "$hours_since" '.vms += [{"name": $name, "id": $id, "hours_running": $hours}]' <<< "$JSON")"
             fi
         fi
     done <<< "$(get_running_info_from_gcp_json "${project}" | jq -cr '.[]')"
