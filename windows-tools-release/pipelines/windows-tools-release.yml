@@ -159,7 +159,7 @@ resources:
   icon: link-variant
   source:
     version_key: "url"
-    check_command: "curl --location --silent --write-out %{url_effective} --request HEAD https://aka.ms/vs/17/release/vc_redist.x64.exe"
+    check_command: "curl --location --silent --output /dev/null --write-out '%{url_effective}' --head https://aka.ms/vs/17/release/vc_redist.x64.exe"
     in_command:    "curl --location --silent --fail --output $1/vcredist-ucrt.x64.exe https://aka.ms/vs/17/release/vc_redist.x64.exe"
 
 - name: cmake
@@ -262,7 +262,7 @@ jobs:
       - get: git-cli
         params:
           globs:
-          - Git-*-64-bit.exe
+          - MinGit-*-64-bit.zip
         trigger: true
       - get: vcredist-ucrt
         trigger: true
@@ -361,7 +361,7 @@ jobs:
       input_mapping:
         blob: git-cli
       params:
-        BOSH_BLOB_PATH: git/Git-*-64-bit.exe
+        BOSH_BLOB_PATH: git/MinGit-*-64-bit.zip
         AWS_ACCESS_KEY_ID: ((aws-s3-svc-gdn-win-bosh-s3/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-svc-gdn-win-bosh-s3/secret-access-key))
         AWS_ASSUME_ROLE_ARN: ((aws-s3-svc-gdn-win-bosh-s3/assume-role))

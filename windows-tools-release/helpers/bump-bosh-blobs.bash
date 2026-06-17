@@ -107,22 +107,22 @@ function run() {
         local dir_name="$(dirname ${bosh_blob_path})"
         bosh remove-blob "${dir_name}/${blob_name}"
         bosh add-blob "${blob}/${exe_name}" "${dir_name}/${exe_name}"
-    elif [[ "$bosh_blob_path" == 'git/Git-*-64-bit.exe' ]]; then
-        echo "Bumping git blob"
+    elif [[ "$bosh_blob_path" == 'git/MinGit-*-64-bit.zip' ]]; then
+        echo "Bumping MinGit blob"
         pushd "${blob}" > /dev/null
-        local version=$(cat version | tr -d 'v' | cut -d'.' -f1,2,3)
-        local exe_name="Git-${version}-64-bit.exe"
+        local version=$(cat version | tr -d 'v')
+        local zip_name="MinGit-${version}-64-bit.zip"
         popd > /dev/null
 
-        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$exe_name") ]]; then
-            echo "$exe_name already exists, skippping"
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$zip_name") ]]; then
+            echo "$zip_name already exists, skippping"
             return
         fi
 
         local blob_name="$(basename blobs/${bosh_blob_path})"
         local dir_name="$(dirname ${bosh_blob_path})"
         bosh remove-blob "${dir_name}/${blob_name}"
-        bosh add-blob "${blob}/${exe_name}" "${dir_name}/${exe_name}"
+        bosh add-blob "${blob}/${zip_name}" "${dir_name}/${zip_name}"
     elif [[ "$bosh_blob_path" == 'vc_redist/vc_redist-*.zip' ]]; then
         echo "Bumping vc_redist blob"
         pushd "${blob}" > /dev/null
