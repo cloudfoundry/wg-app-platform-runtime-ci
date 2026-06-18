@@ -23,3 +23,6 @@ internal_repos:
   configure_db: true
 - name: policy_client
   repo: cloudfoundry/policy_client
+- name: routing-api
+  repo: cloudfoundry/routing-api
+  configure_db: true
