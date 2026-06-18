@@ -21,7 +21,10 @@ function run() {
  
   pushd "repo/" > /dev/null
   local git_remote_name=$(git_get_remote_name)
-  rm -rf ".github"
+  rm -rf ".github/ISSUE_TEMPLATE"
+  rm -f ".github/PULL_REQUEST_TEMPLATE.md"
+  rm -f ".github/CONTRIBUTING.md"
+  rm -f ".github/TEMPLATE-README.md"
   mkdir -p ".github/ISSUE_TEMPLATE"
 
   if [[ -f "${CI_DIR}/${PARENT_TEMPLATE_DIR:-undefined}/github/issue-bug.yml" ]]; then
