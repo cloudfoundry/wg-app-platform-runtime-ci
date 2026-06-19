@@ -121,6 +121,13 @@ def on_branch(package):
     return "main"
 end
 
+def go_submodule_dirs(package):
+    if hasattr(package, "go_submodule_dirs"):
+        return package.go_submodule_dirs
+    end
+    return []
+end
+
 helpers = struct.make(
     packages_with_configure_db=packages_with_configure_db,
     packages_without_configure_db=packages_without_configure_db,
@@ -130,5 +137,6 @@ helpers = struct.make(
     on_windows=on_windows,
     privileged=privileged,
     on_branch=on_branch,
+    go_submodule_dirs=go_submodule_dirs,
 )
 
