@@ -56,6 +56,8 @@ internal_repos:
 - name: bbs
   repo: cloudfoundry/bbs
   configure_db: true
+  go_submodule_dirs:
+  - models
 - name: locket
   repo: cloudfoundry/locket
   configure_db: true

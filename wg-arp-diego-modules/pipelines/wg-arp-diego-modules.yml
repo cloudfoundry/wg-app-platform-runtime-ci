@@ -355,6 +355,14 @@ jobs:
       tag: #@ "{}-version/number".format(package.name)
       tag_prefix: v
       only_tag: true
+  #@ for subdir in helpers.go_submodule_dirs(package):
+  - put: #@ package.name
+    params:
+      repository: repo
+      tag: #@ "{}-version/number".format(package.name)
+      tag_prefix: #@ "{}/v".format(subdir)
+      only_tag: true
+  #@ end
   - put: #@ "{}-github-release".format(package.name)
     params:
       name: #@ "{}-version/number".format(package.name)
