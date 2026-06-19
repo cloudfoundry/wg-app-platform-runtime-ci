@@ -268,6 +268,10 @@ jobs:
         image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
       params:
         DB: #@ db.value
+        #@ if hasattr(db, "db_user"):
+        DB_USER: #@ db.db_user
+        DB_PASSWORD: #@ db.db_password
+        #@ end
 #@ end
 #@ if helpers.on_windows(package):
     - do:

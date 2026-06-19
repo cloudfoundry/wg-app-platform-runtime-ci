@@ -6,12 +6,20 @@
 db_flavors:
 - image: postgres
   value: postgres
+  db_user: diego
+  db_password: diego_pw
 - image: mysql-8.0
   value: mysql
+  db_user: root
+  db_password: password
 - image: mysql-8.4
   value: mysql
+  db_user: root
+  db_password: password
 - image: mysql-5.7
   value: mysql
+  db_user: root
+  db_password: password
 
 #! <MUST> repo/component/package to test in your repo/release
 internal_repos:
@@ -45,3 +53,9 @@ internal_repos:
   repo: cloudfoundry/bytefmt
 - name: lager
   repo: cloudfoundry/lager
+- name: bbs
+  repo: cloudfoundry/bbs
+  configure_db: true
+- name: locket
+  repo: cloudfoundry/locket
+  configure_db: true
