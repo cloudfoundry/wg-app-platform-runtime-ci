@@ -13,7 +13,7 @@ db_flavors:
 - image: mysql-9.7
   value: mysql
 
-tests_that_require_db:
+modules_to_test:
 - name: gorouter
   configure_db: true
 - name: cf-tcp-router
@@ -23,6 +23,7 @@ tests_that_require_db:
 - name: routing-api-cli
 - name: routing-acceptance-tests
   acceptance: true
+- name: cf-routing-test-helpers
 
 opsfiles:
 - remove-logging-wildcard-routes.yml

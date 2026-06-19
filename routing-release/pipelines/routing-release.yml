@@ -683,7 +683,7 @@ jobs:
       image_tag: ((.:image_tag_mysql_5_7))
     params:
       DEFAULT_PARAMS: "ci/routing-release/default-params/build-binaries/linux.yml"
-#@ for package in helpers.packages_with_configure_db(data.values.tests_that_require_db):
+#@ for package in helpers.packages_with_configure_db(data.values.modules_to_test):
   - do:
 #@ for db in data.values.db_flavors:
     - task: #@ "{}-{}".format(package.name,db.image)
@@ -700,7 +700,7 @@ jobs:
 #@ end
 #@ end
   - in_parallel:
-#@ for package in helpers.packages_without_configure_db(data.values.tests_that_require_db):
+#@ for package in helpers.packages_without_configure_db(data.values.modules_to_test):
     - task: #@ package.name
       file: ci/shared/tasks/run-bin-test/linux.yml
       attempts: 3
