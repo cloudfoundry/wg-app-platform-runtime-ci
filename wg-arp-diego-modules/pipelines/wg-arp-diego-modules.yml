@@ -329,7 +329,7 @@ jobs:
     image: image
     file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
     params:
-      GO_MODS: go.mod
+      GO_MODS: #@ " ".join(["go.mod"] + ["{}/go.mod".format(d) for d in helpers.go_submodule_dirs(package)])
   - put: #@ package.name
     params:
       rebase: true
