@@ -23,7 +23,6 @@ modules_to_test:
 - name: routing-api-cli
 - name: routing-acceptance-tests
   acceptance: true
-- name: cf-routing-test-helpers
 
 opsfiles:
 - remove-logging-wildcard-routes.yml
