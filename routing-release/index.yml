@@ -13,9 +13,6 @@ db_flavors:
 - image: mysql-9.7
   value: mysql
 
-internal_repos:
-- name: routing-api
-
 tests_that_require_db:
 - name: gorouter
   configure_db: true
@@ -23,8 +20,6 @@ tests_that_require_db:
   configure_db: true
 - name: multierror
 - name: route-registrar
-- name: routing-api
-  configure_db: true
 - name: routing-api-cli
 - name: routing-acceptance-tests
   acceptance: true
