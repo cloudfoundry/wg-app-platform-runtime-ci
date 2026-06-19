@@ -13,6 +13,8 @@ db_flavors:
 - image: mysql-9.7
   value: mysql
 
+internal_repos: []
+
 modules_to_test:
 - name: gorouter
   configure_db: true

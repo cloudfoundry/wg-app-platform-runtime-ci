@@ -606,10 +606,11 @@ jobs:
       - get: weekly
         trigger: true
       - get: repo
+        trigger: false
 #@ for repo in data.values.internal_repos:
       - get: #@ "{}-repo".format(repo.name)
-#@ end
         trigger: false
+#@ end
       - get: readme
         trigger: false
   - do:
