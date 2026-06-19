@@ -58,6 +58,8 @@ internal_repos:
   configure_db: true
   go_submodule_dirs:
   - models
+  - format
+  - encryption
 - name: locket
   repo: cloudfoundry/locket
   configure_db: true
