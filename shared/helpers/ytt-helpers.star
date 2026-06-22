@@ -128,6 +128,43 @@ def go_submodule_dirs(package):
     return []
 end
 
+def has_submodule_dirs(package):
+    return len(go_submodule_dirs(package)) > 0
+end
+
+def packages_with_submodule_dirs(packages = []):
+    result = []
+    for package in packages:
+        if has_submodule_dirs(package):
+            result.append(package)
+        end
+    end
+    return result
+end
+
+def subdir_index(subdirs, subdir):
+    idx = 0
+    for s in subdirs:
+        if s == subdir:
+            return idx
+        end
+        idx += 1
+    end
+    return -1
+end
+
+def submodule_job_names(packages = [], prefixes = [""]):
+    result = []
+    for package in packages:
+        for subdir in go_submodule_dirs(package):
+            for prefix in prefixes:
+                result.append("{}{}-{}".format(prefix, package.name, subdir))
+            end
+        end
+    end
+    return result
+end
+
 helpers = struct.make(
     packages_with_configure_db=packages_with_configure_db,
     packages_without_configure_db=packages_without_configure_db,
@@ -138,5 +175,9 @@ helpers = struct.make(
     privileged=privileged,
     on_branch=on_branch,
     go_submodule_dirs=go_submodule_dirs,
+    has_submodule_dirs=has_submodule_dirs,
+    packages_with_submodule_dirs=packages_with_submodule_dirs,
+    subdir_index=subdir_index,
+    submodule_job_names=submodule_job_names,
 )
 
