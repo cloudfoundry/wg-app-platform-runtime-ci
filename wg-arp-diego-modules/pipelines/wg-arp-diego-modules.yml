@@ -610,7 +610,7 @@ jobs:
       - resource: #@ package.name
         get: repo
         passed:
-        - #@ package.name
+        - #@ "ship-it-{}-{}".format(package.name, last_subdir)
         trigger: true
   - put: #@ package.name
     params:
