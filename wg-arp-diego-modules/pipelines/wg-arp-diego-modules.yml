@@ -31,10 +31,10 @@ resources:
 #@ if helpers.has_submodule_dirs(package):
     ignore_paths:
     - go.mod
+    - go.sum
     - vendor/
 #@ for subdir in helpers.go_submodule_dirs(package):
-    - #@ "{}/go.mod".format(subdir)
-    - #@ "{}/vendor/".format(subdir)
+    - #@ "{}/".format(subdir)
 #@ end
 #@ end
 
@@ -67,6 +67,26 @@ resources:
     key: #@ "diego-modules/{}/{}/version".format(package.name, subdir)
     json_key: ((gcp-wg-arp-oss-service-account/config-json))
     initial_version: #@ package.initial_version
+- name: #@ "{}-{}-src".format(package.name, subdir)
+  type: git
+  icon: source-branch
+  source:
+    branch: main
+    uri: #@ "git@github.com:{}".format(package.repo)
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    paths:
+    - #@ "{}/".format(subdir)
+    ignore_paths:
+    - #@ "{}/go.mod".format(subdir)
+    - #@ "{}/go.sum".format(subdir)
+    - #@ "{}/vendor/".format(subdir)
+- name: #@ "{}-{}-tags".format(package.name, subdir)
+  type: git
+  icon: tag-outline
+  source:
+    uri: #@ "git@github.com:{}".format(package.repo)
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    tag_filter: #@ "{}/v*".format(subdir)
 #@ end
 #@ end
 
@@ -350,12 +370,12 @@ jobs:
   plan:
   - in_parallel:
     - get: ci
-    - resource: #@ package.name
+    - resource: #@ "{}-{}-src".format(package.name, subdir)
       get: repo
       trigger: true
 #@ if idx > 0:
-      passed:
-      - #@ "ship-it-{}-{}".format(package.name, subdirs[idx - 1])
+    - get: #@ "{}-{}-tags".format(package.name, subdirs[idx - 1])
+      trigger: true
 #@ end
     - get: image
     - get: package-release
@@ -422,8 +442,8 @@ jobs:
     - resource: #@ package.name
       get: repo
       trigger: true
-      passed:
-      - #@ "ship-it-{}-{}".format(package.name, last_subdir)
+    - get: #@ "{}-{}-tags".format(package.name, last_subdir)
+      trigger: true
     - get: image
     - get: package-release
       resource: golang-release-latest
@@ -570,6 +590,7 @@ jobs:
 #@ for package in helpers.packages_with_submodule_dirs(data.values.internal_repos):
 #@ subdirs = helpers.go_submodule_dirs(package)
 #@ for subdir in subdirs:
+#@ subdir_idx = helpers.subdir_index(subdirs, subdir)
 - name: #@ "ship-it-{}-{}".format(package.name, subdir)
   serial: true
   plan:
@@ -577,11 +598,19 @@ jobs:
       steps:
       - get: ci
       - get: #@ "{}-{}-version".format(package.name, subdir)
+#@ if subdir_idx == 0:
+      - resource: #@ "{}-{}-src".format(package.name, subdir)
+        get: repo
+        passed:
+        - #@ "{}-{}".format(package.name, subdir)
+        trigger: true
+#@ else:
       - resource: #@ package.name
         get: repo
         passed:
         - #@ "{}-{}".format(package.name, subdir)
         trigger: true
+#@ end
   - put: #@ package.name
     params:
       repository: repo
@@ -607,7 +636,7 @@ jobs:
       - resource: #@ package.name
         get: repo
         passed:
-        - #@ "ship-it-{}-{}".format(package.name, last_subdir)
+        - #@ package.name
         trigger: true
   - put: #@ package.name
     params:
