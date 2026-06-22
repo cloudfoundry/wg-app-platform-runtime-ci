@@ -529,6 +529,7 @@ jobs:
 #@ end
 
 #@ for package in data.values.internal_repos:
+#@ if not helpers.has_submodule_dirs(package):
 - name: #@ "ship-it-{}".format(package.name)
   serial: true
   plan:
@@ -567,4 +568,65 @@ jobs:
     resource: #@ "{}-version".format(package.name)
     params: {file: next-version/number}
 #@ end
+#@ end
 
+#@ for package in helpers.packages_with_submodule_dirs(data.values.internal_repos):
+#@ subdirs = helpers.go_submodule_dirs(package)
+#@ for subdir in subdirs:
+- name: #@ "ship-it-{}-{}".format(package.name, subdir)
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: #@ "{}-{}-version".format(package.name, subdir)
+      - resource: #@ package.name
+        get: repo
+        passed:
+        - #@ "{}-{}".format(package.name, subdir)
+        trigger: true
+  - put: #@ package.name
+    params:
+      repository: repo
+      tag: #@ "{}-{}-version/number".format(package.name, subdir)
+      tag_prefix: #@ "{}/v".format(subdir)
+      only_tag: true
+  - get: next-version
+    resource: #@ "{}-{}-version".format(package.name, subdir)
+    params: {bump: minor}
+  - put: next-version
+    resource: #@ "{}-{}-version".format(package.name, subdir)
+    params: {file: next-version/number}
+#@ end
+
+#@ last_subdir = subdirs[len(subdirs) - 1]
+- name: #@ "ship-it-{}".format(package.name)
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: #@ "{}-version".format(package.name)
+      - resource: #@ package.name
+        get: repo
+        passed:
+        - #@ package.name
+        trigger: true
+  - put: #@ package.name
+    params:
+      repository: repo
+      tag: #@ "{}-version/number".format(package.name)
+      tag_prefix: v
+      only_tag: true
+  - put: #@ "{}-github-release".format(package.name)
+    params:
+      name: #@ "{}-version/number".format(package.name)
+      tag: #@ "{}-version/number".format(package.name)
+      tag_prefix: v
+  - get: next-version
+    resource: #@ "{}-version".format(package.name)
+    params: {bump: minor}
+  - put: next-version
+    resource: #@ "{}-version".format(package.name)
+    params: {file: next-version/number}
+#@ end
