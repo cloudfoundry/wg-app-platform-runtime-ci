@@ -57,6 +57,7 @@ internal_repos:
   repo: cloudfoundry/bbs
   configure_db: true
   initial_version: 1.6.0
+  module_base: code.cloudfoundry.org/bbs
   go_submodule_dirs:
   - format
   - encryption

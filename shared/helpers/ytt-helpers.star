@@ -128,6 +128,13 @@ def go_submodule_dirs(package):
     return []
 end
 
+def module_base(package):
+    if hasattr(package, "module_base"):
+        return package.module_base
+    end
+    return "github.com/{}".format(package.repo)
+end
+
 def has_submodule_dirs(package):
     return len(go_submodule_dirs(package)) > 0
 end
@@ -166,6 +173,7 @@ def submodule_job_names(packages = [], prefixes = [""]):
 end
 
 helpers = struct.make(
+    module_base=module_base,
     packages_with_configure_db=packages_with_configure_db,
     packages_without_configure_db=packages_without_configure_db,
     packages_with_a_git_repo=packages_with_a_git_repo,

@@ -370,7 +370,7 @@ jobs:
     output_mapping:
       bumped-repo: #@ output_name
     params:
-      MODULE_PATH: #@ "github.com/{}/{}".format(package.repo, prior)
+      MODULE_PATH: #@ "{}/{}".format(helpers.module_base(package), prior)
       SUBDIR: #@ subdir
 #@ bump_idx += 1
 #@ end
@@ -453,7 +453,7 @@ jobs:
     output_mapping:
       bumped-repo: #@ output_name
     params:
-      MODULE_PATH: #@ "github.com/{}/{}".format(package.repo, subdir)
+      MODULE_PATH: #@ "{}/{}".format(helpers.module_base(package), subdir)
       SUBDIR: .
 #@ bump_idx += 1
 #@ end
