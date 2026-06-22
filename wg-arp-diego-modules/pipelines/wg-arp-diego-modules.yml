@@ -45,6 +45,20 @@ resources:
     bucket: ci-release-versions
     key: #@ "diego-modules/{}/version".format(package.name)
     json_key: ((gcp-wg-arp-oss-service-account/config-json))
+#@ if hasattr(package, "initial_version"):
+    initial_version: #@ package.initial_version
+#@ end
+#@ for subdir in helpers.go_submodule_dirs(package):
+- name: #@ "{}-{}-version".format(package.name, subdir)
+  type: semver
+  icon: counter
+  source:
+    driver: gcs
+    bucket: ci-release-versions
+    key: #@ "diego-modules/{}/{}/version".format(package.name, subdir)
+    json_key: ((gcp-wg-arp-oss-service-account/config-json))
+    initial_version: #@ package.initial_version
+#@ end
 #@ end
 
 - name: ci
