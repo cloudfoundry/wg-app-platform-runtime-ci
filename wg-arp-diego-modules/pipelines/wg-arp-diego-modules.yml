@@ -4,7 +4,7 @@
 #! Define-Groups
 groups:
 - name: test
-  jobs: #@ helpers.packages_names_array(data.values.internal_repos,["", "ship-it-"])
+  jobs: #@ helpers.packages_names_array(data.values.internal_repos,["", "ship-it-"]) + helpers.submodule_job_names(data.values.internal_repos, ["", "ship-it-"])
 
 - name: periodics
   jobs: #@ helpers.packages_names_array(data.values.internal_repos,["bump-dependencies-","sync-dot-github-dir-","sync-readme-"])
