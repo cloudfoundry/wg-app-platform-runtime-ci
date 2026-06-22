@@ -18,8 +18,9 @@ function run() {
   git_configure_author
   git_configure_safe_directory
 
-  local ver
-  ver=$(cat version/number)
+  local ver module_subdir
+  module_subdir="$(basename "${MODULE_PATH}")"
+  ver="$(git -C repo tag --list "${module_subdir}/v*" --sort=-v:refname | head -1 | sed "s|${module_subdir}/v||")"
 
   pushd repo > /dev/null
 

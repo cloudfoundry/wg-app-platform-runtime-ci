@@ -4,7 +4,6 @@ platform: linux
 inputs:
   - name: ci
   - name: repo
-  - name: version
 
 outputs:
   - name: bumped-repo
