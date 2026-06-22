@@ -1,0 +1,17 @@
+---
+platform: linux
+
+inputs:
+  - name: ci
+  - name: repo
+  - name: version
+
+outputs:
+  - name: bumped-repo
+
+params:
+  MODULE_PATH:
+  SUBDIR:
+
+run:
+  path: ci/shared/tasks/bump-single-go-dep/task.bash

@@ -1,0 +1,9 @@
+---
+readme: |
+  Bumps a single Go module dependency to a specific version in a subdirectory's go.mod.
+  Used to pin inter-submodule dependencies after a sibling submodule is released.
+oses:
+  - linux
+params:
+  MODULE_PATH: Go module path to bump, e.g. github.com/cloudfoundry/bbs/format
+  SUBDIR: Subdirectory containing the go.mod to update, e.g. encryption
