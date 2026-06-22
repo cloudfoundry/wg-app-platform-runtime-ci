@@ -175,6 +175,7 @@ jobs:
 #@ end
 
 #@ for package in helpers.packages_without_configure_db(data.values.internal_repos):
+#@ if not helpers.has_submodule_dirs(package):
 - name: #@ package.name
   serial: true
   plan:
@@ -238,8 +239,10 @@ jobs:
               release: windows-worker-lock
 #@ end
 #@ end
+#@ end
 
 #@ for package in helpers.packages_with_configure_db(data.values.internal_repos):
+#@ if not helpers.has_submodule_dirs(package):
 - name: #@ package.name
   serial: true
   plan:
@@ -324,6 +327,181 @@ jobs:
             inputs: detect
             params:
               release: windows-worker-lock
+#@ end
+#@ end
+#@ end
+
+#@ for package in helpers.packages_with_submodule_dirs(data.values.internal_repos):
+#@ subdirs = helpers.go_submodule_dirs(package)
+#@ for subdir in subdirs:
+#@ idx = helpers.subdir_index(subdirs, subdir)
+#@ prior_subdirs = subdirs[:idx]
+- name: #@ "{}-{}".format(package.name, subdir)
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - resource: #@ package.name
+      get: repo
+      trigger: true
+#@ if idx > 0:
+      passed:
+      - #@ "ship-it-{}-{}".format(package.name, subdirs[idx - 1])
+#@ end
+    - get: image
+    - get: package-release
+      resource: golang-release-latest
+#@ for prior in prior_subdirs:
+    - get: #@ "{}-{}-version".format(package.name, prior)
+      passed:
+      - #@ "ship-it-{}-{}".format(package.name, prior)
+#@ end
+  - task: determine-image-tag
+    image: image
+    params:
+      PLUGIN: #@ package.name
+    file: ci/shared/tasks/determine-image-tag/linux.yml
+  - load_var: image_tag
+    file: determined-image-tag/tag
+#@ bump_idx = 0
+#@ for prior in prior_subdirs:
+#@ input_name = "repo" if bump_idx == 0 else "bumped-repo-{}".format(bump_idx - 1)
+#@ output_name = "bumped-repo-{}".format(bump_idx)
+  - task: #@ "bump-{}-dep-in-{}".format(prior, subdir)
+    file: ci/shared/tasks/bump-single-go-dep/linux.yml
+    image: image
+    input_mapping:
+      repo: #@ input_name
+      version: #@ "{}-{}-version".format(package.name, prior)
+    output_mapping:
+      bumped-repo: #@ output_name
+    params:
+      MODULE_PATH: #@ "github.com/{}/{}".format(package.repo, prior)
+      SUBDIR: #@ subdir
+#@ bump_idx += 1
+#@ end
+#@ if len(prior_subdirs) > 0:
+#@ final_bumped = "bumped-repo-{}".format(len(prior_subdirs) - 1)
+  - put: #@ package.name
+    params:
+      rebase: true
+      repository: #@ final_bumped
+  - task: #@ "{}-{}-linux".format(package.name, subdir)
+    file: ci/shared/tasks/run-bin-test/linux.yml
+    image: image
+    input_mapping:
+      repo: #@ final_bumped
+    vars:
+      image_repository: cloudfoundry/tas-runtime-build
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
+      image_tag: ((.:image_tag))
+    params:
+      DIR: #@ subdir
+#@ else:
+  - task: #@ "{}-{}-linux".format(package.name, subdir)
+    file: ci/shared/tasks/run-bin-test/linux.yml
+    image: image
+    vars:
+      image_repository: cloudfoundry/tas-runtime-build
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
+      image_tag: ((.:image_tag))
+    params:
+      DIR: #@ subdir
+#@ end
+#@ end
+
+#@ last_subdir = subdirs[len(subdirs) - 1]
+- name: #@ package.name
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - resource: #@ package.name
+      get: repo
+      trigger: true
+      passed:
+      - #@ "ship-it-{}-{}".format(package.name, last_subdir)
+    - get: image
+    - get: package-release
+      resource: golang-release-latest
+#@ for subdir in subdirs:
+    - get: #@ "{}-{}-version".format(package.name, subdir)
+      passed:
+      - #@ "ship-it-{}-{}".format(package.name, subdir)
+#@ end
+#@ if hasattr(package, "configure_db") and package.configure_db:
+#@ for db in data.values.db_flavors:
+    - do:
+      - task: #@ "determine-image-tag-{}".format(db.image)
+        image: image
+        file: ci/shared/tasks/determine-image-tag/linux.yml
+        output_mapping:
+          determined-image-tag: #@ "determined-image-tag-{}".format(db.image)
+        params:
+          IMAGE: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
+          PLUGIN: #@ package.name
+      - load_var: #@ "image_tag_{}".format(db.image.replace("-", "_").replace(".", "_"))
+        file: #@ "determined-image-tag-{}/tag".format(db.image)
+#@ end
+#@ else:
+  - task: determine-image-tag
+    image: image
+    params:
+      PLUGIN: #@ package.name
+    file: ci/shared/tasks/determine-image-tag/linux.yml
+  - load_var: image_tag
+    file: determined-image-tag/tag
+#@ end
+#@ bump_idx = 0
+#@ for subdir in subdirs:
+#@ input_name = "repo" if bump_idx == 0 else "bumped-repo-{}".format(bump_idx - 1)
+#@ output_name = "bumped-repo-{}".format(bump_idx)
+  - task: #@ "bump-{}-dep-in-root".format(subdir)
+    file: ci/shared/tasks/bump-single-go-dep/linux.yml
+    image: image
+    input_mapping:
+      repo: #@ input_name
+      version: #@ "{}-{}-version".format(package.name, subdir)
+    output_mapping:
+      bumped-repo: #@ output_name
+    params:
+      MODULE_PATH: #@ "github.com/{}/{}".format(package.repo, subdir)
+      SUBDIR: .
+#@ bump_idx += 1
+#@ end
+#@ final_bumped = "bumped-repo-{}".format(len(subdirs) - 1)
+  - put: #@ package.name
+    params:
+      rebase: true
+      repository: #@ final_bumped
+#@ if hasattr(package, "configure_db") and package.configure_db:
+  - in_parallel:
+#@ for db in data.values.db_flavors:
+    - task: #@ "{}-{}-linux".format(package.name, db.image)
+      file: ci/shared/tasks/run-bin-test/linux.yml
+      input_mapping:
+        repo: #@ final_bumped
+      vars:
+        image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
+        image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
+      params:
+        DB: #@ db.value
+#@ if hasattr(db, "db_user"):
+        DB_USER: #@ db.db_user
+        DB_PASSWORD: #@ db.db_password
+#@ end
+#@ end
+#@ else:
+  - task: #@ "{}-linux".format(package.name)
+    file: ci/shared/tasks/run-bin-test/linux.yml
+    image: image
+    input_mapping:
+      repo: #@ final_bumped
+    vars:
+      image_repository: cloudfoundry/tas-runtime-build
+      image_password: ((gcp-arp-artifact-registry-service-account-token))
+      image_tag: ((.:image_tag))
 #@ end
 #@ end
 
