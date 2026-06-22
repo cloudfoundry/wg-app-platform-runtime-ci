@@ -25,9 +25,18 @@ resources:
   type: git
   icon: source-branch
   source:
-    branch: main 
+    branch: main
     uri: #@ "git@github.com:{}".format(package.repo)
     private_key: ((github-appruntimeplatform-bot/private-key))
+#@ if helpers.has_submodule_dirs(package):
+    ignore_paths:
+    - go.mod
+    - vendor/
+#@ for subdir in helpers.go_submodule_dirs(package):
+    - #@ "{}/go.mod".format(subdir)
+    - #@ "{}/vendor/".format(subdir)
+#@ end
+#@ end
 
 - name: #@ "{}-github-release".format(package.name)
   type: github-release
