@@ -65,3 +65,5 @@ internal_repos:
 - name: locket
   repo: cloudfoundry/locket
   configure_db: true
+- name: routing-info
+  repo: cloudfoundry-incubator/routing-info
