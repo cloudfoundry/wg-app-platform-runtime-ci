@@ -370,9 +370,10 @@ jobs:
   plan:
   - in_parallel:
     - get: ci
-    - resource: #@ "{}-{}-src".format(package.name, subdir)
-      get: repo
+    - get: #@ "{}-{}-src".format(package.name, subdir)
       trigger: true
+    - resource: #@ package.name
+      get: repo
 #@ if idx > 0:
     - get: #@ "{}-{}-tags".format(package.name, subdirs[idx - 1])
       trigger: true
