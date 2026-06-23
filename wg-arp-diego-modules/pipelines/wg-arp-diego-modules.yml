@@ -88,6 +88,15 @@ resources:
     private_key: ((github-appruntimeplatform-bot/private-key))
     tag_filter: #@ "{}/v*".format(subdir)
 #@ end
+#@ if helpers.has_submodule_dirs(package):
+- name: #@ "{}-head".format(package.name)
+  type: git
+  icon: source-branch
+  source:
+    branch: main
+    uri: #@ "git@github.com:{}".format(package.repo)
+    private_key: ((github-appruntimeplatform-bot/private-key))
+#@ end
 #@ end
 
 - name: ci
@@ -367,12 +376,14 @@ jobs:
 #@ prior_subdirs = subdirs[:idx]
 - name: #@ "{}-{}".format(package.name, subdir)
   serial: true
+  serial_groups:
+  - #@ "{}-releases".format(package.name)
   plan:
   - in_parallel:
     - get: ci
     - get: #@ "{}-{}-src".format(package.name, subdir)
       trigger: true
-    - resource: #@ package.name
+    - resource: #@ "{}-head".format(package.name)
       get: repo
 #@ if idx > 0:
     - get: #@ "{}-{}-tags".format(package.name, subdirs[idx - 1])
@@ -410,11 +421,13 @@ jobs:
     params:
       rebase: true
       repository: #@ final_bumped
+  - get: post-push
+    resource: #@ "{}-head".format(package.name)
   - task: #@ "{}-{}-linux".format(package.name, subdir)
     file: ci/shared/tasks/run-bin-test/linux.yml
     image: image
     input_mapping:
-      repo: #@ final_bumped
+      repo: post-push
     vars:
       image_repository: cloudfoundry/tas-runtime-build
       image_password: ((gcp-arp-artifact-registry-service-account-token))
@@ -437,12 +450,15 @@ jobs:
 #@ last_subdir = subdirs[len(subdirs) - 1]
 - name: #@ package.name
   serial: true
+  serial_groups:
+  - #@ "{}-releases".format(package.name)
   plan:
   - in_parallel:
     - get: ci
-    - resource: #@ package.name
-      get: repo
+    - get: #@ package.name
       trigger: true
+    - resource: #@ "{}-head".format(package.name)
+      get: repo
     - get: #@ "{}-{}-tags".format(package.name, last_subdir)
       trigger: true
     - get: image
@@ -450,17 +466,17 @@ jobs:
       resource: golang-release-latest
 #@ if hasattr(package, "configure_db") and package.configure_db:
 #@ for db in data.values.db_flavors:
-    - do:
-      - task: #@ "determine-image-tag-{}".format(db.image)
-        image: image
-        file: ci/shared/tasks/determine-image-tag/linux.yml
-        output_mapping:
-          determined-image-tag: #@ "determined-image-tag-{}".format(db.image)
-        params:
-          IMAGE: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
-          PLUGIN: #@ package.name
-      - load_var: #@ "image_tag_{}".format(db.image.replace("-", "_").replace(".", "_"))
-        file: #@ "determined-image-tag-{}/tag".format(db.image)
+  - do:
+    - task: #@ "determine-image-tag-{}".format(db.image)
+      image: image
+      file: ci/shared/tasks/determine-image-tag/linux.yml
+      output_mapping:
+        determined-image-tag: #@ "determined-image-tag-{}".format(db.image)
+      params:
+        IMAGE: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
+        PLUGIN: #@ package.name
+    - load_var: #@ "image_tag_{}".format(db.image.replace("-", "_").replace(".", "_"))
+      file: #@ "determined-image-tag-{}/tag".format(db.image)
 #@ end
 #@ else:
   - task: determine-image-tag
@@ -492,13 +508,15 @@ jobs:
     params:
       rebase: true
       repository: #@ final_bumped
+  - get: post-push
+    resource: #@ "{}-head".format(package.name)
 #@ if hasattr(package, "configure_db") and package.configure_db:
   - in_parallel:
 #@ for db in data.values.db_flavors:
     - task: #@ "{}-{}-linux".format(package.name, db.image)
       file: ci/shared/tasks/run-bin-test/linux.yml
       input_mapping:
-        repo: #@ final_bumped
+        repo: post-push
       vars:
         image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
         image_password: ((gcp-arp-artifact-registry-service-account-token))
@@ -515,7 +533,7 @@ jobs:
     file: ci/shared/tasks/run-bin-test/linux.yml
     image: image
     input_mapping:
-      repo: #@ final_bumped
+      repo: post-push
     vars:
       image_repository: cloudfoundry/tas-runtime-build
       image_password: ((gcp-arp-artifact-registry-service-account-token))
@@ -594,24 +612,18 @@ jobs:
 #@ subdir_idx = helpers.subdir_index(subdirs, subdir)
 - name: #@ "ship-it-{}-{}".format(package.name, subdir)
   serial: true
+  serial_groups:
+  - #@ "{}-releases".format(package.name)
   plan:
   - in_parallel:
       steps:
       - get: ci
       - get: #@ "{}-{}-version".format(package.name, subdir)
-#@ if subdir_idx == 0:
-      - resource: #@ "{}-{}-src".format(package.name, subdir)
+      - resource: #@ "{}-head".format(package.name)
         get: repo
         passed:
         - #@ "{}-{}".format(package.name, subdir)
         trigger: true
-#@ else:
-      - resource: #@ package.name
-        get: repo
-        passed:
-        - #@ "{}-{}".format(package.name, subdir)
-        trigger: true
-#@ end
   - put: #@ package.name
     params:
       repository: repo
@@ -629,12 +641,14 @@ jobs:
 #@ last_subdir = subdirs[len(subdirs) - 1]
 - name: #@ "ship-it-{}".format(package.name)
   serial: true
+  serial_groups:
+  - #@ "{}-releases".format(package.name)
   plan:
   - in_parallel:
       steps:
       - get: ci
       - get: #@ "{}-version".format(package.name)
-      - resource: #@ package.name
+      - resource: #@ "{}-head".format(package.name)
         get: repo
         passed:
         - #@ package.name
