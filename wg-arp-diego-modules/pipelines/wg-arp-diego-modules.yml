@@ -96,6 +96,7 @@ resources:
     branch: main
     uri: #@ "git@github.com:{}".format(package.repo)
     private_key: ((github-appruntimeplatform-bot/private-key))
+    fetch_tags: true
 #@ end
 #@ end
 
