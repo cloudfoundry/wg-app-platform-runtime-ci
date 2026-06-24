@@ -32,7 +32,7 @@ function run() {
   sync_package docker_app_lifecycle code.cloudfoundry.org   -app  code.cloudfoundry.org/dockerapplifecycle/builder \
     -app code.cloudfoundry.org/dockerapplifecycle/launcher &
 
-  sync_package cnb_app_lifecycle cnbapplifecycle            -app  code.cloudfoundry.org/cnbapplifecycle/cmd/builder \
+  sync_package cnb_app_lifecycle code.cloudfoundry.org      -app  code.cloudfoundry.org/cnbapplifecycle/cmd/builder \
     -app code.cloudfoundry.org/cnbapplifecycle/cmd/launcher &
 
   sync_package buildpack_app_lifecycle code.cloudfoundry.org -app  code.cloudfoundry.org/buildpackapplifecycle/builder \
@@ -53,6 +53,7 @@ function run() {
   git diff --name-only packages/*/spec
 
   if [[ "$exit_on_error" == "true" ]]; then
+    git update-index --refresh || true
     git_error_when_diff
   fi
 

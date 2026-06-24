@@ -16,15 +16,11 @@ function run() {
 
   rm -rf /tmp/packages
   cat > /tmp/packages <<EOF
-code.cloudfoundry.org/bbs
 code.cloudfoundry.org/buildpackapplifecycle
 code.cloudfoundry.org/cacheddownloader
 code.cloudfoundry.org/credhub-cli
 code.cloudfoundry.org/executor
-code.cloudfoundry.org/locket
 code.cloudfoundry.org/rep
-code.cloudfoundry.org/routing-api
-code.cloudfoundry.org/routing-info
 code.cloudfoundry.org/vendor
 garden
 grootfs

@@ -260,7 +260,10 @@ ENV PATH=$PATH:/usr/local/go/bin:/root/go/bin
 RUN go install github.com/square/certstrap@latest
 RUN go install github.com/onsi/ginkgo/v2/ginkgo@latest
 RUN go install github.com/stephendotcarter/unpack@latest
-RUN go install github.com/geofffranks/gosub@master
+RUN git clone https://github.com/geofffranks/gosub /tmp/gosub-fix && \
+    git -C /tmp/gosub-fix checkout 164ae11 && \
+    (cd /tmp/gosub-fix && go build -o /root/go/bin/gosub .) && \
+    rm -rf /tmp/gosub-fix
 RUN go install github.com/cloudfoundry/uptimer@latest
 RUN go install github.com/pivotal-cf/kiln@latest
 

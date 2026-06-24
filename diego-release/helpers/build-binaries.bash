@@ -26,7 +26,7 @@ function build_proxy(){
     mkdir -p "${target}"
 
     local tmpDir=$(mktemp -d -p /tmp "build-proxy-XXXX")
-    rsync -aq "$source/" "$tmpDir"
+    rsync -aq --exclude='.git/index.lock' "$source/" "$tmpDir"
 
     pushd "$tmpDir" || exit
     bosh sync-blobs
