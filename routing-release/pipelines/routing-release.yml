@@ -684,20 +684,21 @@ jobs:
       image_tag: ((.:image_tag_mysql_5_7))
     params:
       DEFAULT_PARAMS: "ci/routing-release/default-params/build-binaries/linux.yml"
+  - in_parallel:
+      steps:
 #@ for package in helpers.packages_with_configure_db(data.values.modules_to_test):
-  - do:
 #@ for db in data.values.db_flavors:
-    - task: #@ "{}-{}".format(package.name,db.image)
-      file: ci/shared/tasks/run-bin-test/linux.yml
-      attempts: 10
-      vars:
-        image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
-        image_password: ((gcp-arp-artifact-registry-service-account-token))
-        image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
-      params:
-        DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
-        DB: #@ db.value
-        DEFAULT_PARAMS: "ci/routing-release/default-params/run-bin-test/linux.yml"
+      - task: #@ "{}-{}".format(package.name,db.image)
+        file: ci/shared/tasks/run-bin-test/linux.yml
+        attempts: 10
+        vars:
+          image_repository: #@ "cloudfoundry/tas-runtime-{}".format(db.image)
+          image_password: ((gcp-arp-artifact-registry-service-account-token))
+          image_tag: #@ "((.:image_tag_{}))".format(db.image.replace("-", "_").replace(".", "_"))
+        params:
+          DIR: #@ "src/code.cloudfoundry.org/{}".format(package.name)
+          DB: #@ db.value
+          DEFAULT_PARAMS: "ci/routing-release/default-params/run-bin-test/linux.yml"
 #@ end
 #@ end
   - in_parallel:
