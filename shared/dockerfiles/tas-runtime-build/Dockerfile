@@ -291,6 +291,9 @@ RUN curl -L "https://github.com/postmodern/ruby-install/archive/v${RUBY_INSTALLE
   make install
 
 ARG RUBY_VERSION
+# ldconfig.real (called by libc-bin's post-install trigger) segfaults under QEMU arm64 emulation.
+# Replace with a no-op; ldconfig just rebuilds the shared library cache which isn't needed here.
+RUN ln -sf /bin/true /sbin/ldconfig.real
 RUN ruby-install ruby "${RUBY_VERSION}" -- --disable-install-rdoc
 ENV PATH ${PATH}:/root/.gem/ruby/${RUBY_VERSION}/bin:/opt/rubies/ruby-${RUBY_VERSION}/lib/ruby/gems/${RUBY_VERSION}/bin:/opt/rubies/ruby-${RUBY_VERSION}/bin
 RUN \
