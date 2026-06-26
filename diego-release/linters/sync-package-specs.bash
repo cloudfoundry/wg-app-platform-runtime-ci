@@ -53,7 +53,6 @@ function run() {
   git diff --name-only packages/*/spec
 
   if [[ "$exit_on_error" == "true" ]]; then
-    git update-index --refresh || true
     git_error_when_diff
   fi
 

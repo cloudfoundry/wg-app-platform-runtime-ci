@@ -88,8 +88,16 @@ metrics_in_code() {
         exit 3
     fi
 
+    # Packages formerly tracked as submodules now live in vendor; include them explicitly
+    # so their metrics are still found without opening up all of vendor/code.cloudfoundry.org.
+    vendor_cf_search_dirs=()
+    for pkg in bbs locket routing-info; do
+        dir="./src/code.cloudfoundry.org/vendor/code.cloudfoundry.org/$pkg"
+        [ -d "$dir" ] && vendor_cf_search_dirs+=("$dir")
+    done
+
     IFS=$'\n'
-    result=$(grep -n --exclude={*_test.go,*fake*.go} --exclude-dir={gorouter,volman,guardian,grootfs,idmapper,vendor} -I -E -e "($search_term)\(" -r ./src/code.cloudfoundry.org)
+    result=$(grep -n --exclude={*_test.go,*fake*.go} --exclude-dir={gorouter,volman,guardian,grootfs,idmapper,vendor} -I -E -e "($search_term)\(" -r ./src/code.cloudfoundry.org "${vendor_cf_search_dirs[@]}")
     for line in $result; do
         file_location=$(echo -e "$line" | cut -d: -f1)
         client_call=$(echo -e "$line" | cut -d: -f3-)
