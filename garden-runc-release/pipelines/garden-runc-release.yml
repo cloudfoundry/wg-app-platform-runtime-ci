@@ -74,11 +74,6 @@ resource_types:
     password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
-- name: fork-pool
-  type: registry-image
-  source:
-    repository: ebroberson/pool-resource
-    tag: 0.0.4 #! TODO: unpin and use normal pool-resource when https://github.com/concourse/pool-resource/pull/82 is merged
 
 #! Define-Resources
 resources:
@@ -366,14 +361,13 @@ resources:
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
 - name: garden-runc-release-env-lock
-  type: fork-pool
+  type: pool
   icon: cloud-lock
   source:
     branch: main
     pool: garden-runc-release-env-lock
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-    paths: [ garden-runc-release-env-lock ]
 
 - name: image
   type: registry-image
