@@ -52,7 +52,8 @@ function run(){
   if [ -e "$generate_release_note_script" ]; then
     source "${generate_release_note_script}"
     local repo_head_version=$(git rev-parse HEAD)
-    code_changes="$(generate_release_notes "${old_version}...${repo_head_version}")"
+    code_changes="$(generate_release_notes "${old_version}...${repo_head_version}")" \
+      || code_changes="- FIXME: enter release notes here"
   else
     code_changes="- FIXME: enter release notes here"
   fi
