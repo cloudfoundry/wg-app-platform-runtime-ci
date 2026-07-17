@@ -52,48 +52,87 @@ function run(){
 
 function cats() {
     local file="${1?Provide config file}"
+
+    local with_apps="${WITH_APPS:-true}"
+    local with_container_networking="${WITH_CONTAINER_NETWORKING:-true}"
+    local with_detect="${WITH_DETECT:-true}"
+    local with_deployments="${WITH_DEPLOYMENTS:-true}"
+    local with_docker="${WITH_DOCKER:-true}"
+    local with_internet_dependent="${WITH_INTERNET_DEPENDENT:-true}"
+    local with_route_services="${WITH_ROUTE_SERVICES:-true}"
+    local with_routing="${WITH_ROUTING:-true}"
+    local with_security_groups="${WITH_SECURITY_GROUPS:-true}"
+    local with_services="${WITH_SERVICES:-true}"
+    local with_service_discovery="${WITH_SERVICE_DISCOVERY:-true}"
+    local with_service_instance_sharing="${WITH_SERVICE_INSTANCE_SHARING:-true}"
+    local with_ssh="${WITH_SSH:-true}"
+    local with_sso="${WITH_SSO:-true}"
+    local with_tasks="${WITH_TASKS:-true}"
+    local with_tcp_routing="${WITH_TCP_ROUTING:-true}"
+    local with_user_provided_services="${WITH_USER_PROVIDED_SERVICES:-true}"
+    local with_v3="${WITH_V3:-true}"
+    local with_zipkin="${WITH_ZIPKIN:-true}"
+    local with_routing_isoseg="${WITH_ROUTING_ISOSEG:-${WITH_ISOSEG}}"
+    local with_tcp_isoseg="${WITH_TCP_ISOSEG:-${WITH_ISOSEG}}"
+    local credhub_mode="${CREDHUB_MODE:-assisted}"
+    local credhub_client=""
+    local credhub_secret=""
+    if [[ "${credhub_mode}" == "assisted" ]]; then
+        credhub_client="credhub_admin_client"
+        credhub_secret="$(bosh_get_password_from_credhub credhub_admin_client_secret)"
+    fi
+    local isoseg_domain
+    if [[ -n "${ISOSEG_DOMAIN:-}" ]]; then
+        isoseg_domain="${ISOSEG_DOMAIN}"
+    elif [[ -n "${ISOSEG_DOMAIN_SUFFIX:-}" ]]; then
+        isoseg_domain="${ISOSEG_DOMAIN_SUFFIX}.${CF_SYSTEM_DOMAIN#sys.}"
+    else
+        isoseg_domain="iso-seg.${CF_SYSTEM_DOMAIN}"
+    fi
+
     echo "Creating ${file}"
-    cat << EOF > "${file}" 
+    cat << EOF > "${file}"
 {
     "admin_password": "${CF_ADMIN_PASSWORD}",
     "admin_user": "admin",
     "api": "api.${CF_SYSTEM_DOMAIN}",
-    "apps_domain": "${CF_SYSTEM_DOMAIN}",
+    "apps_domain": "${CF_APPS_DOMAIN}",
     "artifacts_directory": "logs",
-    "credhub_mode": "assisted",
-    "credhub_client": "credhub_admin_client",
-    "credhub_secret": "$(bosh_get_password_from_credhub credhub_admin_client_secret)",
-    "include_apps": true,
-    "include_container_networking": true,
-    "include_detect": true,
-    "include_deployments": true,
-    "include_docker": true,
-    "include_http2_routing": false,
-    "include_internet_dependent": true,
-    "include_routing_isolation_segments": ${WITH_ISOSEG},
+    "credhub_mode": "${credhub_mode}",
+    "credhub_client": "${credhub_client}",
+    "credhub_secret": "${credhub_secret}",
+    "include_apps": ${with_apps},
+    "include_container_networking": ${with_container_networking},
+    "include_detect": ${with_detect},
+    "include_deployments": ${with_deployments},
+    "include_docker": ${with_docker},
+    "include_http2_routing": ${WITH_HTTP2},
+    "include_internet_dependent": ${with_internet_dependent},
+    "include_routing_isolation_segments": ${with_routing_isoseg},
     "include_isolation_segments": ${WITH_ISOSEG},
     "dynamic_asgs_enabled": ${WITH_DYNAMIC_ASG},
-    "include_route_services": true,
-    "include_routing": true,
-    "include_security_groups": true,
-    "include_services": true,
-    "include_service_discovery": true,
-    "include_service_instance_sharing": true,
-    "include_ssh": true,
-    "include_sso": true,
-    "include_tasks": true,
-    "include_tcp_isolation_segments": ${WITH_ISOSEG},
-    "include_tcp_routing": true,
-    "include_user_provided_services": true,
-    "include_v3": true,
+    "include_route_services": ${with_route_services},
+    "include_routing": ${with_routing},
+    "include_security_groups": ${with_security_groups},
+    "include_services": ${with_services},
+    "include_service_discovery": ${with_service_discovery},
+    "include_service_instance_sharing": ${with_service_instance_sharing},
+    "include_ssh": ${with_ssh},
+    "include_sso": ${with_sso},
+    "include_tasks": ${with_tasks},
+    "include_tcp_isolation_segments": ${with_tcp_isoseg},
+    "include_tcp_routing": ${with_tcp_routing},
+    "include_user_provided_services": ${with_user_provided_services},
+    "include_v3": ${with_v3},
     "include_volume_services": ${WITH_VOLUME_SERVICES},
-    "include_zipkin": true,
+    "include_zipkin": ${with_zipkin},
     "isolation_segment_name": "${ISOSEG_NAME}",
-    "isolation_segment_domain": "iso-seg.${CF_SYSTEM_DOMAIN}",
-    "isolation_segment_tcp_domain": "tcp.${CF_SYSTEM_DOMAIN}",
+    "isolation_segment_domain": "${isoseg_domain}",
+    "isolation_segment_tcp_domain": "${CF_TCP_DOMAIN}",
+    "skip_dns_validation": ${SKIP_DNS_VALIDATION:-false},
     "skip_ssl_validation": true,
     "stacks": ["cflinuxfs4"],
-    "tcp_domain": "tcp.${CF_SYSTEM_DOMAIN}",
+    "tcp_domain": "${CF_TCP_DOMAIN}",
     "timeout_scale": 2,
     "use_http": true,
     "volume_service_name": "${VOLUME_SERVICE_SERVICE_NAME:-}",

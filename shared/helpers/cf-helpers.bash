@@ -11,10 +11,15 @@ function cf_target(){
     else
         CF_ENVIRONMENT_NAME=$(jq -r .name "$(env_metadata)")
     fi
-    CF_TCP_DOMAIN="tcp.${CF_SYSTEM_DOMAIN}"
+    local meta_tcp_domain
+    meta_tcp_domain=$(jq -r '.tcp_domain // empty' < "$(env_metadata)" 2>/dev/null || true)
+    CF_TCP_DOMAIN="${meta_tcp_domain:-tcp.${CF_SYSTEM_DOMAIN}}"
+    local meta_apps_domain
+    meta_apps_domain=$(jq -r '.apps_domain // empty' < "$(env_metadata)" 2>/dev/null || true)
+    CF_APPS_DOMAIN="${meta_apps_domain:-${CF_SYSTEM_DOMAIN}}"
     CF_MANIFEST_VERSION=$(cf_manifest_version)
     CF_MANIFEST_FILE="env/cf.yml"
-    export CF_SYSTEM_DOMAIN CF_ADMIN_PASSWORD CF_DEPLOYMENT CF_ENVIRONMENT_NAME CF_TCP_DOMAIN CF_MANIFEST_VERSION CF_MANIFEST_FILE
+    export CF_SYSTEM_DOMAIN CF_ADMIN_PASSWORD CF_DEPLOYMENT CF_ENVIRONMENT_NAME CF_TCP_DOMAIN CF_APPS_DOMAIN CF_MANIFEST_VERSION CF_MANIFEST_FILE
 }
 
 function cf_system_domain(){
