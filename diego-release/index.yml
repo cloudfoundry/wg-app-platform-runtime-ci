@@ -70,3 +70,4 @@ opsfiles:
 - turn-on-debug-mode.yml
 - resize-grootfs-store.yml
 - use-noble-dns-for-isolated-cell.yml
+- enable-disk-health-check-paths.yml

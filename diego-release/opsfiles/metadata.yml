@@ -4,6 +4,7 @@ readme:
 opsfiles:
   add-vizzini-errand.yml: Add vizzini errand with properties needed for running in this repo
   disable-isoseg-dynamic-asgs.yml: (For CATS) Disable dynamic asgs on isolation segments
+  enable-disk-health-check-paths.yml: Enable rep disk health checks on /var/vcap/data/tmp and /
   set-rep-max-idle-conns.yml: <TODO> figure out what test needs this opsfile
   turn-on-debug-mode.yml: Turn on debug mode for all diego's components
   resize-grootfs-store.yml: <TODO> figure out what test needs this opsfile
