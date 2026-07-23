@@ -1284,7 +1284,9 @@ jobs:
       APP_SYSLOG_AVAILABILITY_THRESHOLD: "50"
       USE_SINGLE_APP_INSTANCE: "false"
       VARS_FILES: vars.yml
-      OPS_FILES: #@ "\n".join(data.values.opsfiles)
+      #! *** This is a one-off ops file location until cf-d incorporates the diego-release where our fix is present
+      #! *** It doesn't harm anything to leave it here only, but can likely be cleaned up after Sept 1 2026
+      OPS_FILES: #@ "\n".join(data.values.opsfiles + ["enable-disk-health-check-paths.yml"])
   - task: open-asg-for-credhub
     file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
     input_mapping:

@@ -67,7 +67,7 @@ opsfiles:
 - add-vizzini-errand.yml
 - grace-opsfile.yml
 - set-rep-max-idle-conns.yml
+- set-winc-network-wait-timeout.yml
 - turn-on-debug-mode.yml
 - resize-grootfs-store.yml
 - use-noble-dns-for-isolated-cell.yml
-- enable-disk-health-check-paths.yml

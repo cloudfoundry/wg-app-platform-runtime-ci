@@ -1,0 +1,4 @@
+---
+- type: replace
+  path: /instance_groups/name=windows2019-cell/jobs/name=winc-network-hns-acls/properties/winc_network/wait_timeout_in_seconds
+  value: 10
