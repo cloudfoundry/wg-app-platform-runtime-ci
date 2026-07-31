@@ -17,10 +17,6 @@ function run() {
   rm -rf /tmp/packages
   cat > /tmp/packages <<EOF
 code.cloudfoundry.org/credhub-cli
-garden
-grootfs
-guardian
-idmapper
 EOF
 
 cat /tmp/packages | xargs -s 1048576 gosub sync --force-https=true

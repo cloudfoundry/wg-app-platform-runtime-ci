@@ -1030,8 +1030,8 @@ jobs:
       params:
         FUNCTIONS: ci/garden-runc-release/helpers/build-binaries.ps1
         MAPPING: |
-          Build-Winit=src/guardian/cmd/winit
-          Build-Gdn=src/guardian/cmd/gdn
+          Build-Winit=src/code.cloudfoundry.org
+          Build-Gdn=src/code.cloudfoundry.org
     - task: build-binaries-for-envoy-nginx-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
       tags: [ diego-windows ]
