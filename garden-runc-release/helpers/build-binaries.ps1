@@ -19,7 +19,7 @@ function Build-Winit
         New-Item -ItemType Directory -Force -Path "$Target"
 
         Push-Location "$Source"
-        go.exe build -o "$Target\run.exe" main.go
+        go.exe build -o "$Target\run.exe" code.cloudfoundry.org/guardian/cmd/winit
         if ($LastExitCode -ne 0) {
             exit 1
         }
@@ -49,7 +49,7 @@ function Build-Gdn
 
         Push-Location "$Source"
 
-        go.exe build -o "$Target\run.exe" -tags "hnsAcls" .
+        go.exe build -o "$Target\run.exe" -tags "hnsAcls windows" code.cloudfoundry.org/guardian/cmd/gdn
         if ($LastExitCode -ne 0) {
             exit 1
         }
