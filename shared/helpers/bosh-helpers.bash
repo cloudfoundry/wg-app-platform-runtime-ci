@@ -102,9 +102,8 @@ function bosh_is_cf_deployed() {
     name=$(bosh ds --column=name --json | jq -r '.Tables[].Rows[] | select (.name |contains("cf")).name')
     if [[ "${name:=null}" == "null" ]]; then
         echo no
-    else
-        echo yes
     fi
+    echo yes
 }
 
 function bosh_cf_deployment_name(){
