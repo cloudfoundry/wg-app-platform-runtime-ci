@@ -42,6 +42,10 @@ function cf_system_domain(){
     if [[ "${system_domain:=null}" == "null" ]] ; then
         system_domain=$(bosh int <(bosh_manifest) --path /instance_groups/name=blobstore?/jobs/name=blobstore/properties/system_domain)
     fi
+    # fall back for modern cf-deployment which uses cloud_controller on the api instance group
+    if [[ "${system_domain:=null}" == "null" ]] ; then
+        system_domain=$(bosh int <(bosh_manifest) --path /instance_groups/name=api?/jobs/name=cloud_controller?/properties/system_domain)
+    fi
     echo "$system_domain"
 }
 
