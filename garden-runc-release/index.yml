@@ -12,6 +12,14 @@ internal_repos:
   same_repo: true
 - name: dontpanic
   privileged: true
+- name: garden
+- name: guardian
+  privileged: true
+  on_windows: true
+- name: idmapper
+  privileged: true
+- name: grootfs
+  privileged: true
 
 #! <OPTIONAL> set to a list of opsfile if pipeline needs to update cf-deployment
 opsfiles:

@@ -351,6 +351,15 @@ resources:
     key: garden-runc-release/version
     json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
+- name: windows-worker-lock
+  type: pool
+  icon: cloud-lock
+  source:
+    branch: main
+    pool: windows-worker-lock
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
+
 - name: garden-runc-release-env-lock
   type: pool
   icon: cloud-lock
@@ -1226,6 +1235,12 @@ jobs:
     - get: image
     - get: package-release
       resource: golang-release-latest
+    - get: garden-runc-release-rootfs
+      params:
+        format: rootfs
+    - get: garden-runc-release-fuse-rootfs
+      params:
+        format: rootfs
   - task: determine-image-tag
     image: image
     file: ci/shared/tasks/determine-image-tag/linux.yml
@@ -1240,6 +1255,25 @@ jobs:
         image_repository: cloudfoundry/tas-runtime-build
         image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
+  - put: windows-worker-lock
+    params:
+      acquire: true
+  - in_parallel:
+    - task: start-windows-worker
+      image: image
+      file: ci/shared/tasks/bosh-start/linux.yml
+      params:
+        DEPLOYMENT: windows-worker
+        INSTANCE_GROUP: windows-worker
+        BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+    - task: start-cgroups-v2-worker
+      image: image
+      file: ci/shared/tasks/bosh-start/linux.yml
+      params:
+        DEPLOYMENT: diego-worker-cgroupsv2
+        INSTANCE_GROUP: worker
+        BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+
   - in_parallel:
 #@ for repo in data.values.internal_repos:
     - task: #@ "{}".format(repo.name)
@@ -1249,12 +1283,70 @@ jobs:
         image_repository: cloudfoundry/tas-runtime-build
         image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
+      input_mapping:
+        input-01: garden-runc-release-rootfs
+        input-02: garden-runc-release-fuse-rootfs
       params:
         ENVS: |
           DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
           DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
+          GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs
+          GARDEN_FUSE_TEST_ROOTFS=$PWD/input-02/rootfs
+        DIR: #@ "src/{}".format(repo.name)
+    - task: #@ "{}-cgroupsv2".format(repo.name)
+      tags: [ diego-cgroupsv2 ]
+      privileged: #@ helpers.privileged(repo)
+      file: ci/shared/tasks/run-bin-test/linux.yml
+      vars:
+        image_repository: cloudfoundry/tas-runtime-build
+        image_password: ((gcp-arp-artifact-registry-service-account-token))
+        image_tag: ((.:image_tag))
+      input_mapping:
+        input-01: garden-runc-release-rootfs
+        input-02: garden-runc-release-fuse-rootfs
+      params:
+        ENVS: |
+          DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
+          DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
+          GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs
+          GARDEN_FUSE_TEST_ROOTFS=$PWD/input-02/rootfs
+        DIR: #@ "src/{}".format(repo.name)
+#@ if helpers.on_windows(repo):
+    - task: #@ "{}-windows".format(repo.name)
+      file: ci/shared/tasks/run-bin-test/windows.yml
+      privileged: #@ helpers.privileged(repo)
+      params:
         DIR: #@ "src/{}".format(repo.name)
 #@ end
+#@ end
+  ensure:
+    in_parallel:
+    - task: stop-windows-worker
+      image: image
+      file: ci/shared/tasks/bosh-stop/linux.yml
+      params:
+        DEPLOYMENT: windows-worker
+        INSTANCE_GROUP: windows-worker
+        BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+      ensure:
+        task: prune-worker
+        image: image
+        file: ci/shared/tasks/fly-prune-worker/linux.yml
+        params:
+          FLY_PASSWORD: ((concourse-bot-ci-user))
+          FLY_WORKER_REGEX: " windows +none"
+        ensure:
+          put: windows-worker-lock
+          inputs: detect
+          params:
+            release: windows-worker-lock
+    - task: stop-cgroups-v2-worker
+      image: image
+      file: ci/shared/tasks/bosh-stop/linux.yml
+      params:
+        DEPLOYMENT: diego-worker-cgroupsv2
+        INSTANCE_GROUP: worker
+        BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
 
 - name: lint-repo
   serial: true
