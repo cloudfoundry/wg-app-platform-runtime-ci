@@ -691,8 +691,8 @@ jobs:
         dep-local-repo-replace-02: grootfs
       params:
         GO_MODS: |
-          src/code.cloudfoundry.org/greenskeeper/go.mod
-          src/code.cloudfoundry.org/thresholder/go.mod
+          src/greenskeeper/go.mod
+          src/thresholder/go.mod
     - put: repo
       params:
         rebase: true
@@ -1495,7 +1495,7 @@ jobs:
     file: ci/shared/tasks/run-bin-release-binaries/linux.yml
     image: image
     params:
-      DIR: src/code.cloudfoundry.org
+      DIR: src/guardian
       OS: |
         linux
       ARCH: |
