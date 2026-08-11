@@ -15,19 +15,45 @@ function run() {
 
   pushd "${repo_path}" > /dev/null
 
-  BUILD_FLAGS="--tags cgo,seccomp" sync_package runc guardian \
+  BUILD_FLAGS="--tags cgo,seccomp" sync_package runc \
     -app github.com/opencontainers/runc &
 
-  BUILD_FLAGS="--tags cloudfoundry" sync_package grootfs grootfs \
-    -app code.cloudfoundry.org/grootfs \
-    -app code.cloudfoundry.org/idmapper \
-    -app code.cloudfoundry.org/grootfs/store/filesystems/overlayxfs/tardis &
+  BUILD_FLAGS="--tags daemon" sync_package guardian \
+    -app code.cloudfoundry.org/guardian/cmd/gdn \
+    -app code.cloudfoundry.org/guardian/cmd/dadoo \
+    -app code.cloudfoundry.org/guardian/cmd/socket2me \
+    -app code.cloudfoundry.org/guardian/cmd/execas &
 
-  sync_package gats garden-integration-tests -app github.com/onsi/ginkgo/v2/ginkgo \
+  BUILD_FLAGS="--tags cloudfoundry" sync_package grootfs \
+    -app code.cloudfoundry.org/guardian/grootfs \
+    -app code.cloudfoundry.org/guardian/idmapper \
+    -app code.cloudfoundry.org/guardian/grootfs/store/filesystems/overlayxfs/tardis &
+
+  BUILD_FLAGS="--tags windows" sync_package guardian-windows \
+    -app code.cloudfoundry.org/guardian/cmd/gdn \
+    -app code.cloudfoundry.org/guardian/cmd/winit &
+
+  sync_package thresholder \
+    -app code.cloudfoundry.org/thresholder &
+
+  sync_package dontpanic \
+    -app code.cloudfoundry.org/dontpanic &
+
+  sync_package garden-idmapper \
+    -app code.cloudfoundry.org/guardian/idmapper/cmd/newuidmap \
+    -app code.cloudfoundry.org/guardian/idmapper/cmd/newgidmap \
+    -app code.cloudfoundry.org/guardian/idmapper/cmd/maximus &
+
+  sync_package greenskeeper \
+    -app code.cloudfoundry.org/greenskeeper/cmd/greenskeeper &
+
+  sync_package gats \
+    -app github.com/onsi/ginkgo/v2/ginkgo \
     -test code.cloudfoundry.org/garden-integration-tests/... \
     -app code.cloudfoundry.org/garden-integration-tests/plugins/consume-mem &
 
-  sync_package gpats garden-performance-acceptance-tests -app  github.com/onsi/ginkgo/v2/ginkgo \
+  sync_package gpats \
+    -app github.com/onsi/ginkgo/v2/ginkgo \
     -test code.cloudfoundry.org/garden-performance-acceptance-tests/... &
 
   wait
@@ -42,16 +68,13 @@ function run() {
 }
 
 function sync_package() {
-  bosh_pkg=${1}
-  src_dir=${2}
-
-  shift
+  local bosh_pkg=${1}
   shift
 
   (
   set -e
 
-  cd "src/${src_dir}"
+  cd "src/code.cloudfoundry.org"
 
   spec=../../packages/${bosh_pkg}/spec
 
@@ -59,10 +82,11 @@ function sync_package() {
     cat $spec | grep -v '# gosub'
 
     for package in $(gosub list "$@"); do
-      repo=$(echo ${2} | cut -f1-3 -d/)
       base_pkg="$(echo $package | cut -f2- -d /)"
-      if [ -d "../../src/${src_dir}/vendor/${package}" ]; then
-        package="${src_dir}/vendor/${package}"
+      if [ -d "../../src/code.cloudfoundry.org/vendor/${package}" ]; then
+        package="code.cloudfoundry.org/vendor/${package}"
+      elif [ -d "../../src/code.cloudfoundry.org/${base_pkg}" ]; then
+        package="code.cloudfoundry.org/${base_pkg}"
       else
         package="${base_pkg}"
       fi

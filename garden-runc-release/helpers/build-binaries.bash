@@ -149,7 +149,7 @@ function build_socket2me(){
     mkdir -p "${target}"
 
     pushd "$source" || exit
-    go build -o "${target}/run" .
+    go build -o "${target}/run" code.cloudfoundry.org/guardian/cmd/socket2me
     popd || exit
 
     cat > "${target}/run.bash" << EOF
@@ -167,7 +167,7 @@ function build_fake_runc_stderr(){
     mkdir -p "${target}"
 
     pushd "$source" || exit
-    go build -o "${target}/run" .
+    go build -o "${target}/run" code.cloudfoundry.org/guardian/gqt/cmd/fake_runc_stderr
     popd || exit
 
     cat > "${target}/run.bash" << EOF
@@ -185,8 +185,13 @@ function build_runc() {
     mkdir -p "${target}"
 
     pushd "$source" || exit
-    make BUILDTAGS='seccomp apparmor' static
-    mv runc "${target}"
+    CGO_ENABLED=1 go build \
+        -trimpath \
+        -buildmode=pie \
+        -tags "seccomp urfave_cli_no_docs netgo osusergo" \
+        -ldflags "-X main.gitCommit= -linkmode external -extldflags -static-pie" \
+        -o "${target}/runc" \
+        github.com/opencontainers/runc
     popd || exit
 
     cat > "${target}/run.bash" << EOF
@@ -198,23 +203,14 @@ function build_grootfs() {
     local source="${1?Provide source dir}"
     local target="${2?Provide target dir}"
 
-    if [[ "${WITH_MUSL:-no}" != "no" ]]; then
-        build_musl "$(echo ${source}|cut -d '/' -f1)" "${target}"
-        . "${target}/musl/run.bash"
-    fi
-
     local built_dir=$(basename "${target}")
     target="$target/grootfs"
     mkdir -p "${target}"
 
     pushd "$source" || exit
-    make clean
-    if [  "${WITH_MUSL:-no}" != "no" ]; then
-        CC="${MUSL_BINARY}" STATIC_BINARY=true make
-    else
-        make
-    fi
-    make prefix="${target}" install
+    go build -tags cloudfoundry -o "${target}/grootfs" code.cloudfoundry.org/guardian/grootfs
+    go build -tags cloudfoundry -o "${target}/tardis" code.cloudfoundry.org/guardian/grootfs/store/filesystems/overlayxfs/tardis
+    chmod u+s "${target}/tardis"
     popd || exit
 
     cat <<EOF > ${target}/grootfs-privileged.yml
@@ -295,7 +291,7 @@ function build_dadoo() {
     verify_go
 
     pushd "$source" || exit
-    go build -o "${target}/dadoo" .
+    go build -o "${target}/dadoo" code.cloudfoundry.org/guardian/cmd/dadoo
     popd || exit
 
     cat > "${target}/run.bash" << EOF
@@ -314,9 +310,9 @@ function build_idmapper() {
     verify_go
 
     pushd "$source" || exit
-    go build -o "${target}/newuidmap" ./cmd/newuidmap
-    go build -o "${target}/newgidmap" ./cmd/newgidmap
-    go build -o "${target}/maximus" ./cmd/maximus
+    go build -o "${target}/newuidmap" code.cloudfoundry.org/guardian/idmapper/cmd/newuidmap
+    go build -o "${target}/newgidmap" code.cloudfoundry.org/guardian/idmapper/cmd/newgidmap
+    go build -o "${target}/maximus" code.cloudfoundry.org/guardian/idmapper/cmd/maximus
     popd || exit
 
     cat > "${target}/run.bash" << EOF
