@@ -20,7 +20,14 @@ function build_tar(){
     ln -s ./blobs/tar ./tar
     ln -s ./blobs/musl ./musl
     echo "Executing tar packaging script"
-    BOSH_INSTALL_TARGET="${target}" bash packages/tar/packaging &> /dev/null
+    local packaging_log="$(mktemp -p /tmp "tar-packaging-XXXX.log")"
+    if ! BOSH_INSTALL_TARGET="${target}" bash packages/tar/packaging &> "${packaging_log}"; then
+        echo "tar packaging script failed:" >&2
+        cat "${packaging_log}" >&2
+        rm -f "${packaging_log}"
+        exit 1
+    fi
+    rm -f "${packaging_log}"
     mv "${target}/tar" "${target}/run"
     popd || exit
     rm -rf "$tmpDir"
@@ -44,9 +51,16 @@ function build_pkg_config(){
     rsync -aq "$source/" "$tmpDir"
     pushd "$tmpDir" || exit
     bosh sync-blobs
-    ln -s ./blobs/pkg-config ./pkg-config
+    ln -s ./blobs/pkgconf ./pkgconf
     echo "Executing pkg-config packaging script"
-    BOSH_INSTALL_TARGET="${target}" bash packages/pkg-config/packaging &> /dev/null
+    local packaging_log="$(mktemp -p /tmp "pkg-config-packaging-XXXX.log")"
+    if ! BOSH_INSTALL_TARGET="${target}" bash packages/pkgconf/packaging &> "${packaging_log}"; then
+        echo "pkg-config packaging script failed:" >&2
+        cat "${packaging_log}" >&2
+        rm -f "${packaging_log}"
+        exit 1
+    fi
+    rm -f "${packaging_log}"
     popd || exit
     rm -rf "$tmpDir"
 }
@@ -99,7 +113,14 @@ function build_iptables(){
     bosh sync-blobs
     ln -s ./blobs/iptables ./iptables
     echo "Executing iptables packaging script"
-    STATIC=true BOSH_INSTALL_TARGET="/var/vcap/packages/iptables" bash packages/iptables/packaging &> /dev/null
+    local packaging_log="$(mktemp -p /tmp "iptables-packaging-XXXX.log")"
+    if ! STATIC=true BOSH_INSTALL_TARGET="/var/vcap/packages/iptables" bash packages/iptables/packaging &> "${packaging_log}"; then
+        echo "iptables packaging script failed:" >&2
+        cat "${packaging_log}" >&2
+        rm -f "${packaging_log}"
+        exit 1
+    fi
+    rm -f "${packaging_log}"
     cp -aL "/var/vcap/packages/iptables/sbin/iptables" "${target}/iptables"
     cp -aL "/var/vcap/packages/iptables/sbin/iptables-restore" "${target}/iptables-restore"
     popd || exit
