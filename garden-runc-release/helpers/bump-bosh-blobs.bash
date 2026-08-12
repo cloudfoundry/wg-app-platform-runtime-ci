@@ -5,6 +5,7 @@
 # Description:
 # 2026-04-27: External tarball fetches use retry_http_download_until_success.
 # 2026-05-28: Strip 'v' prefix from containerd version when building blob filename.
+# 2026-08-12: Replace pkg-config with pkgconf (renamed upstream package), add inih, userspace-rcu, and xfs-progs.
 
 set -eux
 set -o pipefail
@@ -193,12 +194,47 @@ function run() {
         local dir_name="$(dirname ${bosh_blob_path})"
         bosh remove-blob "${dir_name}/${blob_name}"
         bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
-    elif [[ "$bosh_blob_path" == 'pkg-config/pkg-config-*.tar.gz' ]]; then
-        echo "Bumping pkg-config blob"
+    elif [[ "$bosh_blob_path" == 'pkgconf/pkgconf-*.tar.gz' ]]; then
+        echo "Bumping pkgconf blob"
         pushd "${blob}" > /dev/null
-        local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]-')
-        local tgz_name="pkg-config-${version}.tar.gz"
-        retry_http_download_until_success "https://pkgconfig.freedesktop.org/releases/pkg-config-${version}.tar.gz" "${tgz_name}" 900 30 "garden pkg-config"
+        local tag=$(git describe --tags --abbrev=0)
+        local version=$(echo "${tag}" | tr -d '[a-z]-')
+        local tgz_name="pkgconf-${version}.tar.gz"
+        retry_http_download_until_success "https://github.com/pkgconf/pkgconf/archive/refs/tags/${tag}.tar.gz" "${tgz_name}" 900 30 "garden pkgconf"
+        popd > /dev/null
+
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
+            echo "$tgz_name already exists, skippping"
+            return
+        fi
+
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname ${bosh_blob_path})"
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
+    elif [[ "$bosh_blob_path" == 'inih/inih-*.tar.gz' ]]; then
+        echo "Bumping inih blob"
+        pushd "${blob}" > /dev/null
+        local tag=$(git describe --tags --abbrev=0)
+        local tgz_name="inih-${tag}.tar.gz"
+        retry_http_download_until_success "https://github.com/benhoyt/inih/archive/refs/tags/${tag}.tar.gz" "${tgz_name}" 900 30 "garden inih"
+        popd > /dev/null
+
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
+            echo "$tgz_name already exists, skippping"
+            return
+        fi
+
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname ${bosh_blob_path})"
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
+    elif [[ "$bosh_blob_path" == 'userspace-rcu/userspace-rcu-*.tar.bz2' ]]; then
+        echo "Bumping userspace-rcu blob"
+        pushd "${blob}" > /dev/null
+        local version=$(git describe --tags --abbrev=0 | tr -d 'v')
+        local tgz_name="userspace-rcu-${version}.tar.bz2"
+        retry_http_download_until_success "https://lttng.org/files/urcu/userspace-rcu-${version}.tar.bz2" "${tgz_name}" 900 30 "garden userspace-rcu"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
@@ -267,6 +303,23 @@ function run() {
         pushd "${blob}" > /dev/null
         local version=$(cat version)
         local tgz_name="zlib-${version}.tar.gz"
+        popd > /dev/null
+
+        if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
+            echo "$tgz_name already exists, skippping"
+            return
+        fi
+
+        local blob_name="$(basename blobs/${bosh_blob_path})"
+        local dir_name="$(dirname ${bosh_blob_path})"
+        bosh remove-blob "${dir_name}/${blob_name}"
+        bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
+    elif [[ "$bosh_blob_path" == 'xfs-progs/xfsprogs-*.tar.gz' ]]; then
+        echo "Bumping xfs-progs blob"
+        pushd "${blob}" > /dev/null
+        local version=$(git describe --tags --abbrev=0 | tr -d 'v')
+        local tgz_name="xfsprogs-${version}.tar.gz"
+        retry_http_download_until_success "https://mirrors.edge.kernel.org/pub/linux/utils/fs/xfs/xfsprogs/xfsprogs-${version}.tar.gz" "${tgz_name}" 900 30 "garden xfs-progs"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then

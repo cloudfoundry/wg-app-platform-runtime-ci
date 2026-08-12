@@ -443,6 +443,14 @@ resources:
     uri: https://github.com/jwinarske/gperf
     tag_filter: v*
 
+- name: inih
+  type: git
+  icon: tag-outline
+  source:
+    branch: master
+    uri: https://github.com/benhoyt/inih.git
+    tag_filter: r*
+
 - name: iptables
   type: git
   icon: tag-outline
@@ -494,13 +502,13 @@ resources:
     uri: https://git.musl-libc.org/git/musl
     tag_filter: v*
 
-- name: pkg-config
+- name: pkgconf
   type: git
   icon: tag-outline
   source:
     branch: master
-    uri: https://gitlab.freedesktop.org/pkg-config/pkg-config.git
-    tag_filter: pkg-config-*
+    uri: https://github.com/pkgconf/pkgconf.git
+    tag_filter: pkgconf-*
 
 - name: tar
   type: git
@@ -518,6 +526,14 @@ resources:
     owner: krallin
     repository: tini
 
+- name: userspace-rcu
+  type: git
+  icon: tag-outline
+  source:
+    branch: master
+    uri: https://github.com/urcu/userspace-rcu.git
+    tag_filter: v*
+
 - name: util-linux
   type: git
   icon: tag-outline
@@ -525,6 +541,14 @@ resources:
     branch: stable/v2.39
     uri: https://github.com/util-linux/util-linux.git
     tag_regex: ^v([0-9]|[1-9][0-9]*)\.([0-9]|[1-9][0-9]*)\.([0-9]|[1-9][0-9]*)$
+
+- name: xfs-progs
+  type: git
+  icon: tag-outline
+  source:
+    branch: master
+    uri: https://git.kernel.org/pub/scm/fs/xfs/xfsprogs-dev.git
+    tag_filter: v*
 
 - name: zlib
   type: github-release
@@ -906,6 +930,27 @@ jobs:
        repository: bumped-repo
     on_failure: *ci-notification
   - do:
+    - get: inih
+      attempts: 3
+      params:
+        fetch_tags: true
+      trigger: true
+    - task: bump-bosh-blob-inih
+      image: image
+      attempts: 4
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: inih
+      params:
+        BOSH_BLOB_PATH: inih/inih-*.tar.gz
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+    on_failure: *ci-notification
+  - do:
     - get: iptables
       attempts: 3
       params:
@@ -1033,19 +1078,19 @@ jobs:
        repository: bumped-repo
     on_failure: *ci-notification
   - do:
-    - get: pkg-config
+    - get: pkgconf
       attempts: 3
       params:
         fetch_tags: true
       trigger: true
-    - task: bump-bosh-blob-pkg-config
+    - task: bump-bosh-blob-pkgconf
       image: image
       attempts: 4
       file: ci/shared/tasks/bump-bosh-blobs/linux.yml
       input_mapping:
-        blob: pkg-config
+        blob: pkgconf
       params:
-        BOSH_BLOB_PATH: pkg-config/pkg-config-*.tar.gz
+        BOSH_BLOB_PATH: pkgconf/pkgconf-*.tar.gz
         AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
@@ -1094,6 +1139,27 @@ jobs:
        repository: bumped-repo
     on_failure: *ci-notification
   - do:
+    - get: userspace-rcu
+      attempts: 3
+      params:
+        fetch_tags: true
+      trigger: true
+    - task: bump-bosh-blob-userspace-rcu
+      image: image
+      attempts: 4
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: userspace-rcu
+      params:
+        BOSH_BLOB_PATH: userspace-rcu/userspace-rcu-*.tar.bz2
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+    on_failure: *ci-notification
+  - do:
     - get: util-linux
       attempts: 3
       params:
@@ -1107,6 +1173,27 @@ jobs:
         blob: util-linux
       params:
         BOSH_BLOB_PATH: util-linux/util-linux-*.tar.gz
+        AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
+    - put: repo
+      params:
+       rebase: true
+       repository: bumped-repo
+    on_failure: *ci-notification
+  - do:
+    - get: xfs-progs
+      attempts: 3
+      params:
+        fetch_tags: true
+      trigger: true
+    - task: bump-bosh-blob-xfs-progs
+      image: image
+      attempts: 4
+      file: ci/shared/tasks/bump-bosh-blobs/linux.yml
+      input_mapping:
+        blob: xfs-progs
+      params:
+        BOSH_BLOB_PATH: xfs-progs/xfsprogs-*.tar.gz
         AWS_ACCESS_KEY_ID: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/access-key-id))
         AWS_SECRET_ACCESS_KEY: ((aws-s3-590183821845-wg-ari-bosh-blob-buckets/secret-access-key))
     - put: repo
