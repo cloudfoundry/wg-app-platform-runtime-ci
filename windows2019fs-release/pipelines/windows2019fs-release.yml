@@ -563,6 +563,7 @@ jobs:
     - get: cf-deployment-concourse-tasks
   - task: export-release
     file: ci/shared/tasks/bosh-export-release/linux.yml
+    attempts: 3
     image: image
     params:
       OS: windows
@@ -744,7 +745,7 @@ jobs:
         path: sh
         args:
         - -exc
-        - sleep 4h
+        - sleep 6h
 
 - name: cleanup-env
   serial: true
