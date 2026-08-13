@@ -52,6 +52,10 @@ function build_pkg_config(){
     pushd "$tmpDir" || exit
     bosh sync-blobs
     ln -s ./blobs/pkgconf ./pkgconf
+    # pkgconf's packaging script runs ./autogen.sh (the GitHub tag archive has no
+    # pre-generated configure), which needs aclocal/autoconf/libtoolize. Real bosh
+    # stemcells ship autotools system-wide; this CI image does not.
+    apt-get update -qq && apt-get install -qq -y autoconf automake libtool
     echo "Executing pkg-config packaging script"
     local packaging_log="$(mktemp -p /tmp "pkg-config-packaging-XXXX.log")"
     if ! BOSH_INSTALL_TARGET="${target}" bash packages/pkgconf/packaging &> "${packaging_log}"; then

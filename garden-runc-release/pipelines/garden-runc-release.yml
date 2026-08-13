@@ -506,9 +506,9 @@ resources:
   type: git
   icon: tag-outline
   source:
-    branch: master
+    branch: main
     uri: https://github.com/pkgconf/pkgconf.git
-    tag_filter: pkgconf-*
+    tag_filter: "pkgconf-2\\.5\\.1" #! pin to the last known working version
 
 - name: tar
   type: git
@@ -530,7 +530,7 @@ resources:
   type: git
   icon: tag-outline
   source:
-    branch: master
+    branch: stable-0.15
     uri: https://github.com/urcu/userspace-rcu.git
     tag_filter: v*
 
@@ -548,7 +548,7 @@ resources:
   source:
     branch: master
     uri: https://git.kernel.org/pub/scm/fs/xfs/xfsprogs-dev.git
-    tag_filter: v*
+    tag_filter: "v6\\.19\\.0" #! pin to the last known working version
 
 - name: zlib
   type: github-release
