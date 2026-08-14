@@ -102,8 +102,9 @@ function bosh_is_cf_deployed() {
     name=$(bosh ds --column=name --json | jq -r '.Tables[].Rows[] | select (.name |contains("cf")).name')
     if [[ "${name:=null}" == "null" ]]; then
         echo no
+    else
+        echo yes
     fi
-    echo yes
 }
 
 function bosh_cf_deployment_name(){
@@ -179,20 +180,23 @@ function bosh_get_password_from_credhub() {
     local field="${2:-.value}"
 
     local credential_path
-    credential_path=$(credhub find -j -n "${bosh_manifest_password_variable_name}" | jq -r .credentials[].name )
+    credential_path=$(credhub find -j -n "${bosh_manifest_password_variable_name}" | jq -r '.credentials[].name // empty' )
+
+    if [ -z "${credential_path}" ]; then
+        echo "${bosh_manifest_password_variable_name} variable not found" >&2
+        return 1
+    fi
+
     local credential_paths_len
-    credential_paths_len=$(echo "${credential_path}" | tr ' ' '\n' | wc -l)
+    credential_paths_len=$(echo "${credential_path}" | wc -l)
 
     if [ "${credential_paths_len}" -gt 1 ]; then
         echo "ambiguous ${bosh_manifest_password_variable_name} variable name; expected one got ${credential_paths_len}" >&2
-        echo "${credential_path}" | tr ' ' '\n' >&2
-        return
-    elif [ "${credential_paths_len}" -eq 0 ]; then
-        echo "${bosh_manifest_password_variable_name} variable not found" >&2
-        return
+        echo "${credential_path}" >&2
+        return 1
     fi
 
-    credhub find -j -n "${bosh_manifest_password_variable_name}" | jq -r .credentials[].name | xargs credhub get -j -n | jq -r "$field"
+    credhub get -j -n "${credential_path}" | jq -r "$field"
 }
 
 function bosh_configure_private_yml() {
