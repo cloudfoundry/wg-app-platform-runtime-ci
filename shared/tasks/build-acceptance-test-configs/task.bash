@@ -79,7 +79,7 @@ function cats() {
     local credhub_secret=""
     if [[ "${credhub_mode}" == "assisted" ]]; then
         credhub_client="credhub_admin_client"
-        credhub_secret="$(bosh_get_password_from_credhub credhub_admin_client_secret)"
+        credhub_secret="$(credhub_admin_client_secret)"
     fi
     local isoseg_domain
     if [[ -n "${ISOSEG_DOMAIN:-}" ]]; then
