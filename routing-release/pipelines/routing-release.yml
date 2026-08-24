@@ -1060,6 +1060,16 @@ jobs:
     params:
       DIR: "src/code.cloudfoundry.org/routing-acceptance-tests"
       ENVS: "CONFIG=$PWD/input-01/rats.json"
+      FLAGS: |
+        --keep-going
+        --trace
+        -r
+        --fail-on-pending
+        --randomize-all
+        --nodes=3
+        --race
+        --timeout 1h
+        --flake-attempts 2
       FUNCTIONS: "ci/routing-release/helpers/configure-binaries.bash"
     vars:
       image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
@@ -1085,6 +1095,16 @@ jobs:
     params:
       DIR: "src/code.cloudfoundry.org/routing-acceptance-tests"
       ENVS: "CONFIG=$PWD/input-01/rats.json"
+      FLAGS: |
+        --keep-going
+        --trace
+        -r
+        --fail-on-pending
+        --randomize-all
+        --nodes=3
+        --race
+        --timeout 1h
+        --flake-attempts 2
       FUNCTIONS: "ci/routing-release/helpers/configure-binaries.bash"
     vars:
       image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
