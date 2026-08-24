@@ -35,16 +35,13 @@ function cf_system_domain(){
     fi
 
     system_domain=$(jq -r .cf.api_url < "$(env_metadata)" | cut -d "." -f2-)
-    # fall back to checking the manifest with multiple instance group name options
+    # fall back to scanning the deployed manifest for system_domain on any instance
+    # group/job. The instance group and job names carrying system_domain vary across
+    # cf-deployment versions (blobstore, singleton-blobstore, api/cloud_controller_ng,
+    # ...), so match on the property rather than hardcoding names.
     if [[ -z "${system_domain}" || "${system_domain}" == "null" ]] ; then
-        system_domain=$(bosh int <(bosh_manifest) --path /instance_groups/name=singleton-blobstore?/jobs/name=blobstore/properties/system_domain 2>/dev/null || true)
-    fi
-    if [[ -z "${system_domain}" || "${system_domain}" == "null" ]] ; then
-        system_domain=$(bosh int <(bosh_manifest) --path /instance_groups/name=blobstore?/jobs/name=blobstore/properties/system_domain 2>/dev/null || true)
-    fi
-    # fall back for modern cf-deployment which uses cloud_controller_ng on the api instance group
-    if [[ -z "${system_domain}" || "${system_domain}" == "null" ]] ; then
-        system_domain=$(bosh int <(bosh_manifest) --path /instance_groups/name=api?/jobs/name=cloud_controller_ng?/properties/system_domain 2>/dev/null || true)
+        system_domain=$(bosh int <(bosh_manifest) --path /instance_groups 2>/dev/null | \
+            yq -r '[.[].jobs[].properties.system_domain | select(. != null)] | .[0] // ""' 2>/dev/null || true)
     fi
     if [[ -z "${system_domain}" || "${system_domain}" == "null" ]] ; then
         echo >&2 "ERROR: could not determine CF system domain from env metadata or CF manifest"
