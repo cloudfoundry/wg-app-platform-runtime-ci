@@ -406,6 +406,7 @@ jobs:
       GO_MODS: |
         src/code.cloudfoundry.org/go.mod
         src/routing_utils/nats_client/go.mod
+        src/code.cloudfoundry.org/routing-acceptance-tests/assets/tcp-sample-receiver/go.mod
       EXTRA_GO_TAGS: tools
   - put: repo
     params:
