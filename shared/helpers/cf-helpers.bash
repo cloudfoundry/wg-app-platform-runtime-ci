@@ -42,9 +42,9 @@ function cf_system_domain(){
     if [[ -z "${system_domain}" || "${system_domain}" == "null" ]] ; then
         system_domain=$(bosh int <(bosh_manifest) --path /instance_groups/name=blobstore?/jobs/name=blobstore/properties/system_domain 2>/dev/null || true)
     fi
-    # fall back for modern cf-deployment which uses cloud_controller on the api instance group
+    # fall back for modern cf-deployment which uses cloud_controller_ng on the api instance group
     if [[ -z "${system_domain}" || "${system_domain}" == "null" ]] ; then
-        system_domain=$(bosh int <(bosh_manifest) --path /instance_groups/name=api?/jobs/name=cloud_controller?/properties/system_domain 2>/dev/null || true)
+        system_domain=$(bosh int <(bosh_manifest) --path /instance_groups/name=api?/jobs/name=cloud_controller_ng?/properties/system_domain 2>/dev/null || true)
     fi
     if [[ -z "${system_domain}" || "${system_domain}" == "null" ]] ; then
         echo >&2 "ERROR: could not determine CF system domain from env metadata or CF manifest"
