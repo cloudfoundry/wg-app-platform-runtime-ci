@@ -1094,6 +1094,8 @@ jobs:
     - get: image
     - get: package-release
       resource: golang-release-latest
+    - get: garden-runc-release-rootfs
+      format: rootfs
   - task: determine-image-tag
     image: image
     file: ci/shared/tasks/determine-image-tag/linux.yml
@@ -1113,6 +1115,10 @@ jobs:
     - task: #@ "{}".format(repo.name)
       privileged: #@ helpers.privileged(repo)
       file: ci/shared/tasks/run-bin-test/linux.yml
+#@ if hasattr(repo, "rootfs_input") and repo.rootfs_input:
+      input_mapping:
+        input-01: garden-runc-release-rootfs
+#@ end
       vars:
         image_repository: cloudfoundry/tas-runtime-build
         image_password: ((gcp-arp-artifact-registry-service-account-token))
@@ -1121,7 +1127,10 @@ jobs:
         ENVS: |
           DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
           DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
-        DIR: #@ "src/{}".format(repo.name)
+#@ if hasattr(repo, "rootfs_input") and repo.rootfs_input:
+          GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs
+#@ end
+        DIR: #@ repo.src_dir if hasattr(repo, "src_dir") else "src/{}".format(repo.name)
 #@ end
 
 - name: lint-repo

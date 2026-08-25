@@ -4,16 +4,21 @@
 
 #! <MUST> repo/component/package to test in your repo/release
 internal_repos:
-- name: greenskeeper 
+- name: greenskeeper
+  src_dir: src/code.cloudfoundry.org/greenskeeper
   privileged: true
   same_repo: true
 - name: thresholder
+  src_dir: src/code.cloudfoundry.org/thresholder
   privileged: true
   same_repo: true
 - name: dontpanic
+  src_dir: src/code.cloudfoundry.org/dontpanic
   privileged: true
 - name: guardian
+  src_dir: src/code.cloudfoundry.org/guardian
   privileged: true
+  rootfs_input: true
 
 #! <OPTIONAL> set to a list of opsfile if pipeline needs to update cf-deployment
 opsfiles:
