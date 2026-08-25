@@ -3,12 +3,12 @@ params:
   MAPPING: |
     build_tar=.
     build_iptables=.
-    build_nstar=src/guardian/rundmc/nstar
+    build_nstar=src/code.cloudfoundry.org/guardian/rundmc/nstar
     build_runc=src/code.cloudfoundry.org
     build_socket2me=src/code.cloudfoundry.org
     build_fake_runc_stderr=src/code.cloudfoundry.org
     build_grootfs=src/code.cloudfoundry.org
-    build_init=src/guardian/cmd/init
+    build_init=src/code.cloudfoundry.org/guardian/cmd/init
     build_dadoo=src/code.cloudfoundry.org
     build_idmapper=src/code.cloudfoundry.org
     build_containerd=.
