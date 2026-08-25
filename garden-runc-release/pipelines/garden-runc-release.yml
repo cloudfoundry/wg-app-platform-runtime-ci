@@ -1095,7 +1095,8 @@ jobs:
     - get: package-release
       resource: golang-release-latest
     - get: garden-runc-release-rootfs
-      format: rootfs
+      params:
+        format: rootfs
   - task: determine-image-tag
     image: image
     file: ci/shared/tasks/determine-image-tag/linux.yml
