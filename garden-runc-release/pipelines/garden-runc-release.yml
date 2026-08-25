@@ -337,6 +337,15 @@ resources:
     password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
 
+- name: garden-runc-release-fuse-rootfs
+  type: registry-image
+  icon: docker
+  source:
+    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/garden-fuse
+    username: _json_key
+    password: ((gcp-arp-artifact-registry-service-account-token))
+    tag: latest
+
 - name: artifacts-bucket-gdn
   type: gcs
   icon: bitbucket
@@ -1097,6 +1106,9 @@ jobs:
     - get: garden-runc-release-rootfs
       params:
         format: rootfs
+    - get: garden-runc-release-fuse-rootfs
+      params:
+        format: rootfs
   - task: determine-image-tag
     image: image
     file: ci/shared/tasks/determine-image-tag/linux.yml
@@ -1114,13 +1126,14 @@ jobs:
   - in_parallel:
 #@ for repo in data.values.internal_repos:
 #@ base_envs = "DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))\nDOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))\n"
-#@ repo_envs = base_envs + ("GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs\n" if hasattr(repo, "rootfs_input") and repo.rootfs_input else "")
+#@ repo_envs = base_envs + ("GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs\nGARDEN_FUSE_TEST_ROOTFS=$PWD/input-02/rootfs\n" if hasattr(repo, "rootfs_input") and repo.rootfs_input else "")
     - task: #@ "{}".format(repo.name)
       privileged: #@ helpers.privileged(repo)
       file: ci/shared/tasks/run-bin-test/linux.yml
 #@ if hasattr(repo, "rootfs_input") and repo.rootfs_input:
       input_mapping:
         input-01: garden-runc-release-rootfs
+        input-02: garden-runc-release-fuse-rootfs
 #@ end
       vars:
         image_repository: cloudfoundry/tas-runtime-build
