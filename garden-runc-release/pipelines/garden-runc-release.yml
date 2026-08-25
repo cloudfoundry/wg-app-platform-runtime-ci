@@ -1112,6 +1112,8 @@ jobs:
         image_tag: ((.:image_tag))
   - in_parallel:
 #@ for repo in data.values.internal_repos:
+#@ base_envs = "DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))\nDOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))\n"
+#@ repo_envs = base_envs + ("GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs\n" if hasattr(repo, "rootfs_input") and repo.rootfs_input else "")
     - task: #@ "{}".format(repo.name)
       privileged: #@ helpers.privileged(repo)
       file: ci/shared/tasks/run-bin-test/linux.yml
@@ -1124,12 +1126,7 @@ jobs:
         image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
       params:
-        ENVS: |
-          DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
-          DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
-#@ if hasattr(repo, "rootfs_input") and repo.rootfs_input:
-          GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs
-#@ end
+        ENVS: #@ repo_envs
         DIR: #@ repo.src_dir if hasattr(repo, "src_dir") else "src/{}".format(repo.name)
 #@ end
 
