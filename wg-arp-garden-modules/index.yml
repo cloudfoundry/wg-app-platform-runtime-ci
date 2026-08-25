@@ -15,34 +15,6 @@ db_flavors:
 
 #! <MUST> repo/component/package to test in your repo/release
 internal_repos:
-- name: commandrunner
-  repo: cloudfoundry/commandrunner
-  on_windows: true
-  initial_version: 0.4.0
-- name: groot
-  repo: cloudfoundry/groot
-  on_windows: true
-  initial_version: 0.7.0
-- name: hydrator
-  repo: cloudfoundry/hydrator
-  initial_version: 0.7.0
-  on_windows: true
-- name: filelock
-  repo: cloudfoundry/filelock
-  on_windows: true
-  initial_version: 0.4.0
-- name: hwc
-  repo: cloudfoundry/hwc
-  on_branch: develop
-  on_windows: true
-  initial_version: 30.0.0
 - name: garden
   repo: cloudfoundry/garden
   initial_version: 0.1.0
-- name: guardian
-  repo: cloudfoundry/guardian
-  initial_version: 0.1.0
-  privileged: true
-  on_windows: true
-  needs_rootfs: true
-  needs_cgroupsv2: true

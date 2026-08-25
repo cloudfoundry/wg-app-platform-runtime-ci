@@ -12,6 +12,8 @@ internal_repos:
   same_repo: true
 - name: dontpanic
   privileged: true
+- name: guardian
+  privileged: true
 
 #! <OPTIONAL> set to a list of opsfile if pipeline needs to update cf-deployment
 opsfiles:

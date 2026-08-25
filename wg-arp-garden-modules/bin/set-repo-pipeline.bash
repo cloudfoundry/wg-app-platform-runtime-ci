@@ -9,7 +9,7 @@ FLY_TEAM=wg-arp-garden
 main() {
   local pipeline_dir="$(realpath $REPO/pipelines)"
   fly_login
-  fly_pipeline wg-arp-garden-modules -f "${pipeline_dir}/wg-arp-garden-modules.yml" \
+  fly_pipeline wg-arp-garden-modules-standalone -f "${pipeline_dir}/wg-arp-garden-modules.yml" \
     -f "$REPO/index.yml" \
     -f "$REPO/../shared/helpers/ytt-helpers.star"
 }

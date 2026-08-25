@@ -4,13 +4,13 @@ params:
     build_tar=.
     build_iptables=.
     build_nstar=src/code.cloudfoundry.org/guardian/rundmc/nstar
-    build_runc=src/code.cloudfoundry.org
-    build_socket2me=src/code.cloudfoundry.org
+    build_runc=src/code.cloudfoundry.org/guardian
+    build_socket2me=src/code.cloudfoundry.org/guardian
     build_fake_runc_stderr=src/code.cloudfoundry.org
-    build_grootfs=src/code.cloudfoundry.org
+    build_grootfs=src/code.cloudfoundry.org/guardian
     build_init=src/code.cloudfoundry.org/guardian/cmd/init
-    build_dadoo=src/code.cloudfoundry.org
-    build_idmapper=src/code.cloudfoundry.org
+    build_dadoo=src/code.cloudfoundry.org/guardian
+    build_idmapper=src/code.cloudfoundry.org/guardian
     build_containerd=.
   FUNCTIONS: ci/garden-runc-release/helpers/build-binaries.bash
 

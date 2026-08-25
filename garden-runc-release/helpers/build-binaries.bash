@@ -149,7 +149,7 @@ function build_socket2me(){
     mkdir -p "${target}"
 
     pushd "$source" || exit
-    go build -o "${target}/run" code.cloudfoundry.org/guardian/cmd/socket2me
+    go build -o "${target}/run" ./cmd/socket2me
     popd || exit
 
     cat > "${target}/run.bash" << EOF
@@ -167,7 +167,7 @@ function build_fake_runc_stderr(){
     mkdir -p "${target}"
 
     pushd "$source" || exit
-    go build -o "${target}/run" code.cloudfoundry.org/guardian/gqt/cmd/fake_runc_stderr
+    go build -mod=mod -o "${target}/run" code.cloudfoundry.org/guardian/gqt/cmd/fake_runc_stderr
     popd || exit
 
     cat > "${target}/run.bash" << EOF
@@ -208,8 +208,8 @@ function build_grootfs() {
     mkdir -p "${target}"
 
     pushd "$source" || exit
-    go build -tags cloudfoundry -o "${target}/grootfs" code.cloudfoundry.org/guardian/grootfs
-    go build -tags cloudfoundry -o "${target}/tardis" code.cloudfoundry.org/guardian/grootfs/store/filesystems/overlayxfs/tardis
+    go build -tags cloudfoundry -o "${target}/grootfs" ./grootfs
+    go build -tags cloudfoundry -o "${target}/tardis" ./grootfs/store/filesystems/overlayxfs/tardis
     chmod u+s "${target}/tardis"
     popd || exit
 
@@ -291,7 +291,7 @@ function build_dadoo() {
     verify_go
 
     pushd "$source" || exit
-    go build -o "${target}/dadoo" code.cloudfoundry.org/guardian/cmd/dadoo
+    go build -o "${target}/dadoo" ./cmd/dadoo
     popd || exit
 
     cat > "${target}/run.bash" << EOF
@@ -310,9 +310,9 @@ function build_idmapper() {
     verify_go
 
     pushd "$source" || exit
-    go build -o "${target}/newuidmap" code.cloudfoundry.org/guardian/idmapper/cmd/newuidmap
-    go build -o "${target}/newgidmap" code.cloudfoundry.org/guardian/idmapper/cmd/newgidmap
-    go build -o "${target}/maximus" code.cloudfoundry.org/guardian/idmapper/cmd/maximus
+    go build -o "${target}/newuidmap" ./idmapper/cmd/newuidmap
+    go build -o "${target}/newgidmap" ./idmapper/cmd/newgidmap
+    go build -o "${target}/maximus" ./idmapper/cmd/maximus
     popd || exit
 
     cat > "${target}/run.bash" << EOF

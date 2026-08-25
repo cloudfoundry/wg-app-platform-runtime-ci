@@ -88,7 +88,7 @@ resources:
   type: git
   icon: source-branch
   source:
-    branch: develop
+    branch: without-submodules
     uri: git@github.com:cloudfoundry/garden-runc-release.git
     private_key: ((github-appruntimeplatform-bot/private-key))
     ignore_paths:
@@ -133,7 +133,7 @@ resources:
   type: git
   icon: source-branch
   source:
-    branch: main
+    branch: with-stanalone-guardian
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: cf-deployment
@@ -183,47 +183,6 @@ resources:
   icon: source-branch
   source:
     uri: git@github.com:cloudfoundry/garden.git
-    branch: main
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
-
-- name: updated-go-mod-guardian
-  type: git
-  icon: source-branch
-  source:
-    uri: git@github.com:cloudfoundry/guardian.git
-    branch: main
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
-- name: updated-go-mod-idmapper
-  type: git
-  icon: source-branch
-  source:
-    uri: git@github.com:cloudfoundry/idmapper.git
-    branch: main
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
-- name: updated-go-mod-grootfs
-  type: git
-  icon: source-branch
-  source:
-    uri: git@github.com:cloudfoundry/grootfs.git
-    branch: main
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
-- name: updated-go-mod-groot
-  type: git
-  icon: source-branch
-  source:
-    uri: git@github.com:cloudfoundry/groot.git
-    branch: main
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
-- name: updated-go-mod-dontpanic
-  type: git
-  icon: source-branch
-  source:
-    uri: git@github.com:cloudfoundry/dontpanic.git
     branch: main
     private_key: ((github-appruntimeplatform-bot/private-key))
 
@@ -374,15 +333,6 @@ resources:
   icon: docker
   source:
     repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/garden-rootfs
-    username: _json_key
-    password: ((gcp-arp-artifact-registry-service-account-token))
-    tag: latest
-
-- name: garden-runc-release-fuse-rootfs
-  type: registry-image
-  icon: docker
-  source:
-    repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/garden-fuse
     username: _json_key
     password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
@@ -554,13 +504,8 @@ jobs:
     - get: ci
     - get: repo
     - get: updated-go-mod-garden
-    - get: updated-go-mod-idmapper
     - get: updated-go-mod-garden-performance-acceptance-tests
-    - get: updated-go-mod-grootfs
-    - get: updated-go-mod-groot
-    - get: updated-go-mod-guardian
     - get: updated-go-mod-garden-integration-tests
-    - get: updated-go-mod-dontpanic
     - get: image
     - get: weekly
       trigger: true
@@ -592,92 +537,16 @@ jobs:
         rebase: true
         repository: bumped-repo
   - do:
-    - task: idmapper-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-idmapper
-      params:
-        GO_MODS: go.mod
-    - put: updated-go-mod-idmapper
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: dontpanic-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-dontpanic
-      params:
-        GO_MODS: go.mod
-    - put: updated-go-mod-dontpanic
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: grootfs-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-grootfs
-        dep-local-repo-replace-01: updated-go-mod-idmapper
-      params:
-        GO_MODS: go.mod
-        REPLACE_DIRECTIVES: |
-          dep-local-repo-replace-01:idmapper
-    - put: updated-go-mod-grootfs
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: groot-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-groot
-      params:
-        GO_MODS: go.mod
-    - put: updated-go-mod-groot
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: guardian-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-guardian
-        dep-local-repo-replace-01: updated-go-mod-garden
-        dep-local-repo-replace-02: updated-go-mod-idmapper
-        dep-local-repo-replace-03: updated-go-mod-grootfs
-      params:
-        GO_MODS: go.mod
-        REPLACE_DIRECTIVES: |
-          dep-local-repo-replace-01:garden
-          dep-local-repo-replace-02:idmapper
-          dep-local-repo-replace-03:grootfs
-    - put: updated-go-mod-guardian
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
     - task: garden-integration-tests-bump-dependencies-go-mod
       file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
       image: image
       input_mapping:
         repo: updated-go-mod-garden-integration-tests
         dep-local-repo-replace-01: updated-go-mod-garden
-        dep-local-repo-replace-02: updated-go-mod-idmapper
-        dep-local-repo-replace-03: updated-go-mod-grootfs
-        dep-local-repo-replace-04: updated-go-mod-guardian
       params:
         GO_MODS: go.mod
         REPLACE_DIRECTIVES: |
           dep-local-repo-replace-01:garden
-          dep-local-repo-replace-02:idmapper
-          dep-local-repo-replace-03:grootfs
-          dep-local-repo-replace-04:guardian
     - put: updated-go-mod-garden-integration-tests
       params:
         rebase: true
@@ -686,11 +555,10 @@ jobs:
     - task: garden-runc-release-bump-dependencies-go-mod
       file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
       image: image
-      input_mapping:
-        dep-local-repo-replace-01: idmapper
-        dep-local-repo-replace-02: grootfs
       params:
         GO_MODS: |
+          src/code.cloudfoundry.org/go.mod
+          src/code.cloudfoundry.org/guardian/go.mod
           src/code.cloudfoundry.org/greenskeeper/go.mod
           src/code.cloudfoundry.org/thresholder/go.mod
     - put: repo

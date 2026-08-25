@@ -16,6 +16,8 @@ function run() {
   pushd "${repo_path}" > /dev/null
 
   BUILD_FLAGS="--tags cgo,seccomp" sync_package runc \
+    --subtree-module code.cloudfoundry.org/guardian \
+    --from-subtree \
     -app github.com/opencontainers/runc &
 
   BUILD_FLAGS="--tags daemon" sync_package guardian \
@@ -79,6 +81,7 @@ function sync_package() {
   shift
 
   local subtree_module=""
+  local force_from_subtree=false
   local c_pkgs=()
   local gosub_args=()
 
@@ -87,6 +90,10 @@ function sync_package() {
       --subtree-module)
         subtree_module="${2}"
         shift 2
+        ;;
+      --from-subtree)
+        force_from_subtree=true
+        shift
         ;;
       --c-pkg)
         c_pkgs+=("${2}")
@@ -128,18 +135,22 @@ function sync_package() {
       fi
     done
 
-    # Run gosub from the subtree if all -app/-test packages belong to the subtree module
+    # Run gosub from the subtree if forced, or if all -app/-test packages belong to the subtree module
     gosub_from_subtree=false
     if [[ -n "${subtree_module}" ]]; then
       local_mod="${subtree_module#code.cloudfoundry.org/}"
-      gosub_from_subtree=true
-      for arg in "${gosub_args[@]}"; do
-        if [[ "${arg}" == -* ]]; then continue; fi
-        if [[ "${arg}" != "${subtree_module}/"* ]]; then
-          gosub_from_subtree=false
-          break
-        fi
-      done
+      if [[ "${force_from_subtree}" == "true" ]]; then
+        gosub_from_subtree=true
+      else
+        gosub_from_subtree=true
+        for arg in "${gosub_args[@]}"; do
+          if [[ "${arg}" == -* ]]; then continue; fi
+          if [[ "${arg}" != "${subtree_module}/"* ]]; then
+            gosub_from_subtree=false
+            break
+          fi
+        done
+      fi
     fi
 
     if [[ "${gosub_from_subtree}" == "true" ]]; then
