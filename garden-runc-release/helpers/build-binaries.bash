@@ -37,16 +37,31 @@ function build_pkgconf(){
     mkdir -p "${target}"
     local built_dir=$(basename "${target}")
     target="$target/pkgconf"
-    mkdir -p "${target}"
+    mkdir -p "${target}/bin"
 
+    # Use system pkgconf/pkg-config if available; avoids needing autotools in the CI image.
+    local pkgconf_bin
+    pkgconf_bin=$(which pkgconf 2>/dev/null || which pkg-config 2>/dev/null || true)
+    if [[ -n "${pkgconf_bin}" ]]; then
+        ln -sf "${pkgconf_bin}" "${target}/bin/pkgconf"
+        ln -sf pkgconf "${target}/bin/pkg-config"
+        return 0
+    fi
+
+    # Fall back: build from source (requires autoconf/automake/libtoolize).
     local tmpDir=$(mktemp -d -p /tmp "build-pkgconf-XXXX")
-
     rsync -aq "$source/" "$tmpDir"
     pushd "$tmpDir" || exit
     bosh sync-blobs
-    ln -s ./blobs/pkgconf ./pkgconf
-    echo "Executing pkgconf packaging script"
-    BOSH_INSTALL_TARGET="${target}" bash packages/pkgconf/packaging &> /dev/null
+    tar xzf ./blobs/pkgconf/pkgconf-*.tar.gz
+    pushd pkgconf-pkgconf-* || exit
+    echo "Building pkgconf from source"
+    ./autogen.sh &> /dev/null
+    ./configure "--prefix=${target}" &> /dev/null
+    make &> /dev/null
+    make install "prefix=${target}" &> /dev/null
+    ln -sf pkgconf "${target}/bin/pkg-config"
+    popd || exit
     popd || exit
     rm -rf "$tmpDir"
 }
