@@ -1383,7 +1383,7 @@ jobs:
     file: ci/shared/tasks/run-bin-release-binaries/linux.yml
     image: image
     params:
-      DIR: src/code.cloudfoundry.org
+      DIR: src/code.cloudfoundry.org/guardian
       OS: |
         linux
       ARCH: |
@@ -1396,7 +1396,7 @@ jobs:
       input-02: garden-runc-release-rootfs
     privileged: true
     params:
-      DIR: src/garden-integration-tests
+      DIR: src/code.cloudfoundry.org/garden-integration-tests
       FUNCTIONS: ci/garden-runc-release/helpers/configure-binaries.bash
       ENVS: |
         GDN_BINARY=$PWD/input-01/gdn-linux-amd64

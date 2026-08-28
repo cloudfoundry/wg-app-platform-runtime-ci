@@ -30,23 +30,23 @@ export TAR_BINARY="\$PWD/${built_dir}/tar/run"
 EOF
 }
 
-function build_pkg_config(){
+function build_pkgconf(){
     local source="${1?Provide source dir}"
     local target="${2?Provide target dir}"
 
     mkdir -p "${target}"
     local built_dir=$(basename "${target}")
-    target="$target/pkg-config"
+    target="$target/pkgconf"
     mkdir -p "${target}"
 
-    local tmpDir=$(mktemp -d -p /tmp "build-pkg-config-XXXX")
+    local tmpDir=$(mktemp -d -p /tmp "build-pkgconf-XXXX")
 
     rsync -aq "$source/" "$tmpDir"
     pushd "$tmpDir" || exit
     bosh sync-blobs
-    ln -s ./blobs/pkg-config ./pkg-config
-    echo "Executing pkg-config packaging script"
-    BOSH_INSTALL_TARGET="${target}" bash packages/pkg-config/packaging &> /dev/null
+    ln -s ./blobs/pkgconf ./pkgconf
+    echo "Executing pkgconf packaging script"
+    BOSH_INSTALL_TARGET="${target}" bash packages/pkgconf/packaging &> /dev/null
     popd || exit
     rm -rf "$tmpDir"
 }
@@ -86,7 +86,7 @@ function build_iptables(){
     local source="${1?Provide source dir}"
     local target="${2?Provide target dir}"
 
-    build_pkg_config $source "/var/vcap/packages"
+    build_pkgconf $source "/var/vcap/packages"
 
     local built_dir=$(basename "${target}")
     target="$target/iptables"

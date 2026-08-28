@@ -193,12 +193,12 @@ function run() {
         local dir_name="$(dirname ${bosh_blob_path})"
         bosh remove-blob "${dir_name}/${blob_name}"
         bosh add-blob "${blob}/${tgz_name}" "${dir_name}/${tgz_name}"
-    elif [[ "$bosh_blob_path" == 'pkg-config/pkg-config-*.tar.gz' ]]; then
-        echo "Bumping pkg-config blob"
+    elif [[ "$bosh_blob_path" == 'pkgconf/pkgconf-*.tar.gz' ]]; then
+        echo "Bumping pkgconf blob"
         pushd "${blob}" > /dev/null
         local version=$(git describe --tags --abbrev=0 | tr -d '[a-z]-')
-        local tgz_name="pkg-config-${version}.tar.gz"
-        retry_http_download_until_success "https://pkgconfig.freedesktop.org/releases/pkg-config-${version}.tar.gz" "${tgz_name}" 900 30 "garden pkg-config"
+        local tgz_name="pkgconf-${version}.tar.gz"
+        retry_http_download_until_success "https://github.com/pkgconf/pkgconf/archive/refs/tags/pkgconf-${version}.tar.gz" "${tgz_name}" 900 30 "garden pkgconf"
         popd > /dev/null
 
         if [[ -f $(find ./blobs  -type f -regextype posix-extended -regex ".*$tgz_name") ]]; then
