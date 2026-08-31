@@ -178,71 +178,6 @@ resources:
     branch: release-candidate
     uri: https://github.com/cloudfoundry/cf-acceptance-tests
 
-- name: updated-go-mod-garden
-  type: git
-  icon: source-branch
-  source:
-    uri: git@github.com:cloudfoundry/garden.git
-    branch: main
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
-
-- name: updated-go-mod-guardian
-  type: git
-  icon: source-branch
-  source:
-    uri: git@github.com:cloudfoundry/guardian.git
-    branch: main
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
-- name: updated-go-mod-idmapper
-  type: git
-  icon: source-branch
-  source:
-    uri: git@github.com:cloudfoundry/idmapper.git
-    branch: main
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
-- name: updated-go-mod-grootfs
-  type: git
-  icon: source-branch
-  source:
-    uri: git@github.com:cloudfoundry/grootfs.git
-    branch: main
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
-- name: updated-go-mod-groot
-  type: git
-  icon: source-branch
-  source:
-    uri: git@github.com:cloudfoundry/groot.git
-    branch: main
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
-- name: updated-go-mod-dontpanic
-  type: git
-  icon: source-branch
-  source:
-    uri: git@github.com:cloudfoundry/dontpanic.git
-    branch: main
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
-- name: updated-go-mod-garden-integration-tests
-  type: git
-  icon: source-branch
-  source:
-    uri: git@github.com:cloudfoundry/garden-integration-tests.git
-    branch: main
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
-- name: updated-go-mod-garden-performance-acceptance-tests
-  type: git
-  icon: source-branch
-  source:
-    uri: git@github.com:cloudfoundry/garden-performance-acceptance-tests.git
-    branch: main
-    private_key: ((github-appruntimeplatform-bot/private-key))
-
 - name: go-version
   type: git
   icon: source-branch
@@ -586,146 +521,17 @@ jobs:
   - in_parallel:
     - get: ci
     - get: repo
-    - get: updated-go-mod-garden
-    - get: updated-go-mod-idmapper
-    - get: updated-go-mod-garden-performance-acceptance-tests
-    - get: updated-go-mod-grootfs
-    - get: updated-go-mod-groot
-    - get: updated-go-mod-guardian
-    - get: updated-go-mod-garden-integration-tests
-    - get: updated-go-mod-dontpanic
     - get: image
     - get: weekly
       trigger: true
   - do:
-    - task: garden-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-garden
-      params:
-        GO_MODS: go.mod
-    - put: updated-go-mod-garden
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: garden-performance-acceptance-tests-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-garden-performance-acceptance-tests
-        dep-local-repo-replace-01: updated-go-mod-garden
-      params:
-        GO_MODS: go.mod
-        REPLACE_DIRECTIVES: |
-          dep-local-repo-replace-01:garden
-    - put: updated-go-mod-garden-performance-acceptance-tests
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: idmapper-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-idmapper
-      params:
-        GO_MODS: go.mod
-    - put: updated-go-mod-idmapper
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: dontpanic-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-dontpanic
-      params:
-        GO_MODS: go.mod
-    - put: updated-go-mod-dontpanic
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: grootfs-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-grootfs
-        dep-local-repo-replace-01: updated-go-mod-idmapper
-      params:
-        GO_MODS: go.mod
-        REPLACE_DIRECTIVES: |
-          dep-local-repo-replace-01:idmapper
-    - put: updated-go-mod-grootfs
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: groot-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-groot
-      params:
-        GO_MODS: go.mod
-    - put: updated-go-mod-groot
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: guardian-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-guardian
-        dep-local-repo-replace-01: updated-go-mod-garden
-        dep-local-repo-replace-02: updated-go-mod-idmapper
-        dep-local-repo-replace-03: updated-go-mod-grootfs
-      params:
-        GO_MODS: go.mod
-        REPLACE_DIRECTIVES: |
-          dep-local-repo-replace-01:garden
-          dep-local-repo-replace-02:idmapper
-          dep-local-repo-replace-03:grootfs
-    - put: updated-go-mod-guardian
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
-    - task: garden-integration-tests-bump-dependencies-go-mod
-      file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
-      image: image
-      input_mapping:
-        repo: updated-go-mod-garden-integration-tests
-        dep-local-repo-replace-01: updated-go-mod-garden
-        dep-local-repo-replace-02: updated-go-mod-idmapper
-        dep-local-repo-replace-03: updated-go-mod-grootfs
-        dep-local-repo-replace-04: updated-go-mod-guardian
-      params:
-        GO_MODS: go.mod
-        REPLACE_DIRECTIVES: |
-          dep-local-repo-replace-01:garden
-          dep-local-repo-replace-02:idmapper
-          dep-local-repo-replace-03:grootfs
-          dep-local-repo-replace-04:guardian
-    - put: updated-go-mod-garden-integration-tests
-      params:
-        rebase: true
-        repository: bumped-repo
-  - do:
     - task: garden-runc-release-bump-dependencies-go-mod
       file: ci/shared/tasks/bump-dependencies-go-mod/linux.yml
       image: image
-      input_mapping:
-        dep-local-repo-replace-01: idmapper
-        dep-local-repo-replace-02: grootfs
       params:
         GO_MODS: |
-          src/greenskeeper/go.mod
-          src/thresholder/go.mod
+          src/code.cloudfoundry.org/guardian/go.mod
+          src/code.cloudfoundry.org/go.mod
     - put: repo
       params:
         rebase: true
@@ -1360,50 +1166,47 @@ jobs:
         DEPLOYMENT: diego-worker-cgroupsv2
         INSTANCE_GROUP: worker
         BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
-
   - in_parallel:
 #@ for repo in data.values.internal_repos:
+#@ base_envs = "DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))\nDOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))\n"
+#@ repo_envs = base_envs + ("GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs\nGARDEN_FUSE_TEST_ROOTFS=$PWD/input-02/rootfs\n" if hasattr(repo, "rootfs_input") and repo.rootfs_input else "")
     - task: #@ "{}".format(repo.name)
       privileged: #@ helpers.privileged(repo)
       file: ci/shared/tasks/run-bin-test/linux.yml
+#@ if hasattr(repo, "rootfs_input") and repo.rootfs_input:
+      input_mapping:
+        input-01: garden-runc-release-rootfs
+        input-02: garden-runc-release-fuse-rootfs
+#@ end
       vars:
         image_repository: cloudfoundry/tas-runtime-build
         image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
-      input_mapping:
-        input-01: garden-runc-release-rootfs
-        input-02: garden-runc-release-fuse-rootfs
       params:
-        ENVS: |
-          DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
-          DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
-          GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs
-          GARDEN_FUSE_TEST_ROOTFS=$PWD/input-02/rootfs
-        DIR: #@ "src/{}".format(repo.name)
+        ENVS: #@ repo_envs
+        DIR: #@ repo.src_dir if hasattr(repo, "src_dir") else "src/{}".format(repo.name)
     - task: #@ "{}-cgroupsv2".format(repo.name)
       tags: [ diego-cgroupsv2 ]
       privileged: #@ helpers.privileged(repo)
       file: ci/shared/tasks/run-bin-test/linux.yml
+#@ if hasattr(repo, "rootfs_input") and repo.rootfs_input:
+      input_mapping:
+        input-01: garden-runc-release-rootfs
+        input-02: garden-runc-release-fuse-rootfs
+#@ end
       vars:
         image_repository: cloudfoundry/tas-runtime-build
         image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
-      input_mapping:
-        input-01: garden-runc-release-rootfs
-        input-02: garden-runc-release-fuse-rootfs
       params:
-        ENVS: |
-          DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
-          DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
-          GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs
-          GARDEN_FUSE_TEST_ROOTFS=$PWD/input-02/rootfs
-        DIR: #@ "src/{}".format(repo.name)
+        ENVS: #@ repo_envs
+        DIR: #@ repo.src_dir if hasattr(repo, "src_dir") else "src/{}".format(repo.name)
 #@ if helpers.on_windows(repo):
     - task: #@ "{}-windows".format(repo.name)
       file: ci/shared/tasks/run-bin-test/windows.yml
       privileged: #@ helpers.privileged(repo)
       params:
-        DIR: #@ "src/{}".format(repo.name)
+        DIR: #@ repo.src_dir if hasattr(repo, "src_dir") else "src/{}".format(repo.name)
 #@ end
 #@ end
   ensure:
@@ -1674,7 +1477,7 @@ jobs:
     file: ci/shared/tasks/run-bin-release-binaries/linux.yml
     image: image
     params:
-      DIR: src/guardian
+      DIR: src/code.cloudfoundry.org/guardian
       OS: |
         linux
       ARCH: |
@@ -1687,7 +1490,7 @@ jobs:
       input-02: garden-runc-release-rootfs
     privileged: true
     params:
-      DIR: src/garden-integration-tests
+      DIR: src/code.cloudfoundry.org/garden-integration-tests
       FUNCTIONS: ci/garden-runc-release/helpers/configure-binaries.bash
       ENVS: |
         GDN_BINARY=$PWD/input-01/gdn-linux-amd64

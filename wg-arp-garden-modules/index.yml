@@ -36,3 +36,6 @@ internal_repos:
   on_branch: develop
   on_windows: true
   initial_version: 30.0.0
+- name: garden
+  repo: cloudfoundry/garden
+  initial_version: 0.1.0

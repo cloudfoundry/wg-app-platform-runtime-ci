@@ -37,17 +37,26 @@ export TAR_BINARY="\$PWD/${built_dir}/tar/run"
 EOF
 }
 
-function build_pkg_config(){
+function build_pkgconf(){
     local source="${1?Provide source dir}"
     local target="${2?Provide target dir}"
 
     mkdir -p "${target}"
     local built_dir=$(basename "${target}")
-    target="$target/pkg-config"
-    mkdir -p "${target}"
+    target="$target/pkgconf"
+    mkdir -p "${target}/bin"
 
-    local tmpDir=$(mktemp -d -p /tmp "build-pkg-config-XXXX")
+    # Use system pkgconf/pkg-config if available; avoids needing autotools in the CI image.
+    local pkgconf_bin
+    pkgconf_bin=$(which pkgconf 2>/dev/null || which pkg-config 2>/dev/null || true)
+    if [[ -n "${pkgconf_bin}" ]]; then
+        ln -sf "${pkgconf_bin}" "${target}/bin/pkgconf"
+        ln -sf pkgconf "${target}/bin/pkg-config"
+        return 0
+    fi
 
+    # Fall back: build from source (requires autoconf/automake/libtoolize).
+    local tmpDir=$(mktemp -d -p /tmp "build-pkgconf-XXXX")
     rsync -aq "$source/" "$tmpDir"
     pushd "$tmpDir" || exit
     bosh sync-blobs
@@ -104,7 +113,7 @@ function build_iptables(){
     local source="${1?Provide source dir}"
     local target="${2?Provide target dir}"
 
-    build_pkg_config $source "/var/vcap/packages"
+    build_pkgconf $source "/var/vcap/packages"
 
     local built_dir=$(basename "${target}")
     target="$target/iptables"
@@ -174,7 +183,7 @@ function build_socket2me(){
     mkdir -p "${target}"
 
     pushd "$source" || exit
-    go build -o "${target}/run" .
+    go build -o "${target}/run" ./cmd/socket2me
     popd || exit
 
     cat > "${target}/run.bash" << EOF
@@ -192,7 +201,7 @@ function build_fake_runc_stderr(){
     mkdir -p "${target}"
 
     pushd "$source" || exit
-    go build -o "${target}/run" .
+    go build -mod=mod -o "${target}/run" code.cloudfoundry.org/guardian/gqt/cmd/fake_runc_stderr
     popd || exit
 
     cat > "${target}/run.bash" << EOF
@@ -210,8 +219,13 @@ function build_runc() {
     mkdir -p "${target}"
 
     pushd "$source" || exit
-    make BUILDTAGS='seccomp apparmor' static
-    mv runc "${target}"
+    CGO_ENABLED=1 go build \
+        -trimpath \
+        -buildmode=pie \
+        -tags "seccomp urfave_cli_no_docs netgo osusergo" \
+        -ldflags "-X main.gitCommit= -linkmode external -extldflags -static-pie" \
+        -o "${target}/runc" \
+        github.com/opencontainers/runc
     popd || exit
 
     cat > "${target}/run.bash" << EOF
@@ -223,23 +237,14 @@ function build_grootfs() {
     local source="${1?Provide source dir}"
     local target="${2?Provide target dir}"
 
-    if [[ "${WITH_MUSL:-no}" != "no" ]]; then
-        build_musl "$(echo ${source}|cut -d '/' -f1)" "${target}"
-        . "${target}/musl/run.bash"
-    fi
-
     local built_dir=$(basename "${target}")
     target="$target/grootfs"
     mkdir -p "${target}"
 
     pushd "$source" || exit
-    make clean
-    if [  "${WITH_MUSL:-no}" != "no" ]; then
-        CC="${MUSL_BINARY}" STATIC_BINARY=true make
-    else
-        make
-    fi
-    make prefix="${target}" install
+    go build -tags cloudfoundry -o "${target}/grootfs" ./grootfs
+    go build -tags cloudfoundry -o "${target}/tardis" ./grootfs/store/filesystems/overlayxfs/tardis
+    chmod u+s "${target}/tardis"
     popd || exit
 
     cat <<EOF > ${target}/grootfs-privileged.yml
@@ -320,7 +325,7 @@ function build_dadoo() {
     verify_go
 
     pushd "$source" || exit
-    go build -o "${target}/dadoo" .
+    go build -o "${target}/dadoo" ./cmd/dadoo
     popd || exit
 
     cat > "${target}/run.bash" << EOF
@@ -339,9 +344,9 @@ function build_idmapper() {
     verify_go
 
     pushd "$source" || exit
-    go build -o "${target}/newuidmap" ./cmd/newuidmap
-    go build -o "${target}/newgidmap" ./cmd/newgidmap
-    go build -o "${target}/maximus" ./cmd/maximus
+    go build -o "${target}/newuidmap" ./idmapper/cmd/newuidmap
+    go build -o "${target}/newgidmap" ./idmapper/cmd/newgidmap
+    go build -o "${target}/maximus" ./idmapper/cmd/maximus
     popd || exit
 
     cat > "${target}/run.bash" << EOF
