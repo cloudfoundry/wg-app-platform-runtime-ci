@@ -1173,6 +1173,7 @@ jobs:
     - task: #@ "{}".format(repo.name)
       privileged: #@ helpers.privileged(repo)
       file: ci/shared/tasks/run-bin-test/linux.yml
+      attempts: 3
 #@ if hasattr(repo, "rootfs_input") and repo.rootfs_input:
       input_mapping:
         input-01: garden-runc-release-rootfs
