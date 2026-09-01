@@ -1,0 +1,9 @@
+---
+readme: |
+  This task removes the ci-status directory from an env repo, clearing all
+  sentinel files written by write-env-sentinels. Run at the start of a new
+  pipeline run to ensure a clean state.
+oses:
+  - linux
+params:
+  BBL_STATE_DIR: name of bbl state dir (relative to the env resource)

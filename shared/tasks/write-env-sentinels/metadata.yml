@@ -1,0 +1,11 @@
+---
+readme: |
+  This task writes a sentinel file to the ci-status directory of an env repo,
+  signalling pipeline state (e.g. claimed, finished). Used to coordinate cleanup
+  jobs without relying on lock polling.
+oses:
+  - linux
+params:
+  SENTINEL_FILE: name of the sentinel file to write (e.g. claimed, finished)
+  BBL_STATE_DIR: name of bbl state dir (relative to the env resource)
+  REASON: human-readable reason for writing the sentinel (included in the commit message)

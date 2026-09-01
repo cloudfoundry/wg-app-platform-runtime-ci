@@ -33,12 +33,10 @@ groups:
 
 - name: cleanup
   jobs:
+  - mark-acceptance-tests-finished
   - cleanup-time-gate
-  - wait-for-env-lock-claim
-  - wait-for-acceptance-tests
-  - manual-cleanup-trigger
+  - force-cleanup
   - cleanup-env
-  - force-cleanup-env
   - release-env-lock
 
 - name: version
@@ -207,18 +205,7 @@ resources:
     days:
       - Monday
 
-- name: cleanup-timer
-  type: time
-  icon: clock
-  source:
-    interval: '1h'
-
 - name: manual-release-trigger
-  type: time
-  source:
-    interval: '1m'
-
-- name: manual-cleanup-trigger
   type: time
   source:
     interval: '1m'
@@ -237,6 +224,26 @@ resources:
     private_key: ((github-appruntimeplatform-bot/private-key))
     paths:
       - bbl-garden-env
+
+- name: env-claimed
+  type: git
+  icon: sheep
+  source:
+    branch: main
+    uri: git@github.com:cloudfoundry/app-runtime-platform-envs
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    paths:
+      - bbl-garden-env/ci-status/claimed
+
+- name: env-finished
+  type: git
+  icon: sheep
+  source:
+    branch: main
+    uri: git@github.com:cloudfoundry/app-runtime-platform-envs
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    paths:
+      - bbl-garden-env/ci-status/finished
 
 - name: github-release
   type: github-release
@@ -507,10 +514,6 @@ jobs:
 - name: manual-release-trigger
   plan:
   - put: manual-release-trigger
-
-- name: manual-cleanup-trigger
-  plan:
-  - put: manual-cleanup-trigger
 
 - name: bump-dependencies-go-mod
   on_failure: &ci-notification
@@ -1294,6 +1297,32 @@ jobs:
     file: ci/shared/tasks/wait-for-bosh-api/linux.yml
     params:
       BBL_STATE_DIR: bbl-garden-env
+  - task: clear-env-sentinels
+    image: image
+    file: ci/shared/tasks/clear-env-sentinels/linux.yml
+    input_mapping:
+      env: env
+    params:
+      BBL_STATE_DIR: bbl-garden-env
+      GIT_AUTHOR_NAME: "CI Bot"
+      GIT_AUTHOR_EMAIL: "platform-runtime-ci@cloudfoundry.org"
+  - put: env
+    params:
+      repository: updated-env
+      rebase: true
+  - task: mark-env-claimed
+    image: image
+    file: ci/shared/tasks/write-env-sentinels/linux.yml
+    input_mapping:
+      env: env
+    params:
+      BBL_STATE_DIR: bbl-garden-env
+      SENTINEL_FILE: claimed
+      REASON: env claimed for acceptance test run
+  - put: env
+    params:
+      repository: updated-env
+      rebase: true
 
 - name: prepare-env
   serial: true
@@ -1768,6 +1797,36 @@ jobs:
       ERRAND_NAME: gpats
       INSTANCE: gpats
 
+- name: mark-acceptance-tests-finished
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: image
+    - get: env
+      trigger: true
+      passed:
+        - run-cats
+        - run-standalone-gdn-gats
+        - run-gatsw
+        - run-gats-with-cpu-throttling
+        - run-gats-with-runc
+        - run-gats-with-containerd
+        - run-gats-with-containerd-cgroupsv2
+  - task: mark-env-finished
+    image: image
+    file: ci/shared/tasks/write-env-sentinels/linux.yml
+    input_mapping:
+      env: env
+    params:
+      BBL_STATE_DIR: bbl-garden-env
+      SENTINEL_FILE: finished
+      REASON: acceptance tests finished
+  - put: env
+    params:
+      repository: updated-env
+      rebase: true
+
 - name: export-release
   serial: true
   plan:
@@ -1949,38 +2008,63 @@ jobs:
       params: {file: next-version/number}
 
 - name: cleanup-time-gate
-  plan:
-  - get: cleanup-timer
-    trigger: true
-
-- name: wait-for-env-lock-claim
   serial: true
   plan:
-  - get: cleanup-timer
-    trigger: true
-    passed: [ cleanup-time-gate ]
-  - get: garden-runc-release-env-lock
-  - put: check-unclaimed-env-lock
-    resource: garden-runc-release-env-lock
-    params:
-      check_unclaimed: garden-runc-release-env-lock
-      retry-delay: 60m
-
-- name: wait-for-acceptance-tests
-  plan:
-  - get: image
-  - get: garden-runc-release-env-lock
-    passed: [ wait-for-env-lock-claim ]
-    trigger: true
-  - task: sleep
+  - in_parallel:
+    - get: ci
+    - get: image
+    - get: env-claimed
+      trigger: true
+    - get: env
+  - task: wait-5-hours
     image: image
     config:
       platform: linux
-      run: 
+      run:
         path: sh
-        args:
-        - -exc
-        - sleep 5h
+        args: ["-c", "echo 'Sleeping 5h before timeout cleanup...'; sleep 18000"]
+  - task: mark-env-finished-timeout
+    image: image
+    file: ci/shared/tasks/write-env-sentinels/linux.yml
+    input_mapping:
+      env: env
+    params:
+      BBL_STATE_DIR: bbl-garden-env
+      SENTINEL_FILE: finished
+      REASON: 5h timeout reached
+  - put: env
+    params:
+      repository: updated-env
+      rebase: true
+
+- name: release-env-lock
+  plan:
+  - get: garden-runc-release-env-lock
+  - put: garden-runc-release-env-lock
+    params:
+      release: garden-runc-release-env-lock
+
+- name: force-cleanup
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: env
+      - get: image
+  - task: mark-env-finished-force
+    image: image
+    file: ci/shared/tasks/write-env-sentinels/linux.yml
+    input_mapping:
+      env: env
+    params:
+      BBL_STATE_DIR: bbl-garden-env
+      SENTINEL_FILE: finished
+      REASON: manually forced cleanup
+  - put: env
+    params:
+      repository: updated-env
+      rebase: true
 
 - name: cleanup-env
   serial: true
@@ -1990,11 +2074,7 @@ jobs:
       - get: ci
       - get: env
       - get: image
-      - get: manual-cleanup-trigger
-        trigger: true
-        passed: [ manual-cleanup-trigger ]
-      - get: garden-runc-release-env-lock
-        passed: [ wait-for-acceptance-tests ]
+      - get: env-finished
         trigger: true
   - try:
       do:
@@ -2053,83 +2133,9 @@ jobs:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
       BBL_STATE_DIR: bbl-garden-env
       SUSPEND: false
-  - try:
-      do:
-      - put: garden-runc-release-env-lock
-        params:
-          release: garden-runc-release-env-lock 
-- name: release-env-lock
-  plan:
-  - get: garden-runc-release-env-lock
   - put: garden-runc-release-env-lock
     params:
       release: garden-runc-release-env-lock
-
-- name: force-cleanup-env
-  serial: true
-  plan:
-  - in_parallel:
-      steps:
-      - get: ci
-      - get: env
-      - get: image
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-garden-env
-          DEPLOYMENT_NAME: cf
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-garden-env
-          DEPLOYMENT_NAME: gatsw
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-garden-env
-          DEPLOYMENT_NAME: gats-with-runc
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-garden-env
-          DEPLOYMENT_NAME: gats-with-containerd
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-garden-env
-          DEPLOYMENT_NAME: gats-with-containerd-cgroupsv2
-  - try:
-      do:
-      - task: bosh-deld
-        image: image
-        file: ci/shared/tasks/bosh-deld/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-garden-env
-          DEPLOYMENT_NAME: gats-with-cpu-throttling
-  - task: stop-bbl-envs
-    image: image
-    file: ci/shared/tasks/stop-gcp-instance/linux.yml
-    input_mapping:
-      bbl-state: env
-    params:
-      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
-      BBL_STATE_DIR: bbl-garden-env
-      SUSPEND: false
 
 
 
