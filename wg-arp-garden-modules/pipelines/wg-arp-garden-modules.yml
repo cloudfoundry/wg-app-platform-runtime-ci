@@ -132,6 +132,22 @@ resources:
     days:
       - Wednesday
 
+- name: hwc-release-branch
+  type: git
+  icon: source-branch
+  source:
+    branch: release
+    uri: git@github.com:cloudfoundry/hwc.git
+    private_key: ((github-appruntimeplatform-bot/private-key))
+
+- name: hwc-develop-branch-mergeback
+  type: git
+  icon: source-branch
+  source:
+    branch: develop
+    uri: git@github.com:cloudfoundry/hwc.git
+    private_key: ((github-appruntimeplatform-bot/private-key))
+
 #! Define-Jobs
 jobs:
 
