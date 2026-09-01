@@ -19,6 +19,7 @@ groups:
   - run-gats-with-containerd-cgroupsv2
   - run-standalone-gdn-gats
   - export-release
+  - mark-acceptance-tests-finished
   - ship-what
   - ship-it
 
@@ -33,7 +34,6 @@ groups:
 
 - name: cleanup
   jobs:
-  - mark-acceptance-tests-finished
   - cleanup-time-gate
   - force-cleanup
   - cleanup-env
