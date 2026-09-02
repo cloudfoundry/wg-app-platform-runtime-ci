@@ -19,7 +19,7 @@ pushd updated-env
     if git diff --cached --quiet; then
       echo "No sentinels to clear."
     else
-      git commit -m "ci: clear ci-status sentinels for new run in ${BBL_STATE_DIR}"
+      git commit -m "ci: clear ci-status sentinels for new run in ${BBL_STATE_DIR} [ci skip]"
     fi
   else
     echo "No ci-status directory found, nothing to clear."
