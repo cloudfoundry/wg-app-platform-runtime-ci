@@ -17,7 +17,14 @@ function run(){
     pushd $DIR > /dev/null
     bosh_target
     popd > /dev/null
-    bosh -n -d ${DEPLOYMENT_NAME} deld --force
+
+    if [[ "${ALL_DEPLOYMENTS:-false}" == "true" ]]; then
+      bosh deployments --column=name --json | jq -r '.Tables[0].Rows[].name' | while read -r deployment; do
+        bosh -n -d "${deployment}" deld --force
+      done
+    else
+      bosh -n -d "${DEPLOYMENT_NAME}" deld --force
+    fi
     bosh -n clean-up --all
 }
 
