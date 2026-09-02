@@ -51,6 +51,15 @@ CF_TCP_DOMAIN: "${CF_TCP_DOMAIN}"
 CF_MANIFEST_VERSION: "${CF_MANIFEST_VERSION}"
 CF_MANIFEST_FILE: "cf.yml"
 EOF
+    else
+        echo >&2 "ERROR: no CF deployment found in BOSH director."
+        echo >&2 "Expected a deployment with 'cf' in its name. Current deployments:"
+        bosh ds --column=name >&2 || true
+        echo >&2 ""
+        echo >&2 "This usually means the environment was not fully provisioned (TAS was not deployed)."
+        echo >&2 "Check that the shepherd env includes a pre-deployed TAS, or that a prior pipeline"
+        echo >&2 "stage deployed TAS before this task ran."
+        exit 1
     fi
     if [[ "$(is_shepherd_v1_deployment)" == "no" ]]; then
         credhub_save_lb_cert
