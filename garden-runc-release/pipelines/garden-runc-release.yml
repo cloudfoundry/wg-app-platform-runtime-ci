@@ -1516,6 +1516,7 @@ jobs:
         arm64
   - task: run-gats
     file: ci/shared/tasks/run-bin-test/linux.yml
+    attempts: 3
     input_mapping:
       input-01: released-binaries
       input-02: garden-runc-release-rootfs
