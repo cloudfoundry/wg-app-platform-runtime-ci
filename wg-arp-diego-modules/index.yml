@@ -16,11 +16,6 @@ db_flavors:
   value: mysql
   db_user: root
   db_password: password
-- image: mysql-5.7
-  value: mysql
-  db_user: root
-  db_password: password
-
 #! <MUST> repo/component/package to test in your repo/release
 internal_repos:
 - name: clock

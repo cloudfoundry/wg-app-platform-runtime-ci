@@ -77,16 +77,6 @@ resources:
     json_key: ((gcp-wg-arp-oss-service-account/config-json))
     initial_version: #@ "{}.0".format(go_version.name)
 
-- name: #@ "mysql-5.7-image-version-{}".format(go_version.name)
-  type: semver
-  icon: counter
-  source:
-    driver: gcs
-    bucket: ci-image-versions
-    key: #@ "tas-runtime-mysql-5.7/version-{}".format(go_version.name)
-    json_key: ((gcp-wg-arp-oss-service-account/config-json))
-    initial_version: #@ "{}.0".format(go_version.name)
-
 - name: #@ "mysql-8.4-image-version-{}".format(go_version.name)
   type: semver
   icon: counter
@@ -222,30 +212,6 @@ resources:
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:docker-library/mysql.git
     branch: master
-- name: mysql-5.7-dockerfile
-  type: git
-  icon: source-branch
-  source:
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/wg-app-platform-runtime-ci.git
-    branch: main
-    paths:
-    - shared/dockerfiles/tas-runtime-mysql-5.7/*
-- name: mysql-5.7-image
-  type: registry-image 
-  icon: docker
-  source:
-    username: ((dockerhub-appruntimeplatform-username))
-    password: ((dockerhub-appruntimeplatform-password))
-    repository: cloudfoundry/tas-runtime-mysql-5.7
-- name: official-mysql-5.7-image
-  type: registry-image
-  icon: docker
-  source:
-    username: ((dockerhub-appruntimeplatform-username))
-    password: ((dockerhub-appruntimeplatform-password))
-    repository: mysql
-    tag: 5.7-debian
 - name: http-golang-download
   type: command-runner
   icon: link-variant
@@ -784,104 +750,4 @@ jobs:
   - put: #@ "mysql-9.7-image-version-{}".format(go_version.name)
     params:
       file: #@ "mysql-9.7-image-version-{}/version".format(go_version.name)
-- name: #@ "build-mysql-5.7-image-{}".format(go_version.name)
-  plan:
-  - in_parallel:
-    - get: mysql-5.7-dockerfile
-      trigger: true
-    - get: #@ "build-image-version-{}".format(go_version.name)
-      trigger: true
-      passed:
-      - #@ "build-build-image-{}".format(go_version.name)
-    - get: ruby-installer-git
-      passed:
-      - #@ "build-build-image-{}".format(go_version.name)
-    - get: ruby-git
-      passed:
-      - #@ "build-build-image-{}".format(go_version.name)
-    - get: #@ "mysql-5.7-image-version-{}".format(go_version.name)
-      params:
-        bump: patch
-    - get: official-mysql-5.7-image
-      trigger: true
-    - get: go-version
-      passed:
-      - #@ "build-build-image-{}".format(go_version.name)
-    - get: ci
-      passed:
-      - #@ "build-build-image-{}".format(go_version.name)
-    - get: build-image
-  - task: print-go-version-tag
-    image: build-image
-    file: ci/shared/tasks/build-golang-version-tags/linux.yml
-    params:
-      GO_MAJOR_MINOR_VERSION: #@ "{}".format(go_version.name)
-  - in_parallel:
-    - task: write-build-args
-      image: build-image
-      config:
-        platform: linux
-        inputs:
-        - name: tag
-        - name: official-mysql-5.7-image
-        - name: ruby-git
-        - name: ruby-installer-git
-        outputs:
-        - name: dockerfile-build-args
-        run:
-          path: /bin/bash
-          args:
-          - -c
-          - |
-            set -eux
-            mkdir -p dockerfile-build-args
-
-            export go_version="$(cat tag/build-args | jq -r .go_version)"
-            export mysql_uri="$(printf '%s:%s' $(cat official-mysql-5.7-image/repository) $(cat official-mysql-5.7-image/tag))"
-            export ruby_installer_version="$(cat ruby-installer-git/.git/ref | sed 's/v//g')"
-            export ruby_version="$(cat ruby-git/.git/ref | sed 's/v//g' | sed 's/_/./g')"
-
-            cat <<EOF > dockerfile-build-args/build_args
-            GO_VERSION=$go_version
-            MYSQL_URI=$mysql_uri
-            RUBY_INSTALLER_VERSION=$ruby_installer_version
-            RUBY_VERSION=$ruby_version
-            EOF
-
-            cat dockerfile-build-args/build_args
-  - task: build-mysql-5.7-image
-    privileged: true
-    config:
-      platform: linux
-      run:
-        path: build
-      params:
-        BUILD_ARGS_FILE: dockerfile-build-args/build_args
-        CONTEXT: mysql-5.7-dockerfile/shared/dockerfiles/tas-runtime-mysql-5.7
-        #! the upstream mysql image used for 5.7 isn't multi-arch so we can't make a multi-arch image of it
-        OUTPUT_OCI: true
-        IMAGE_PLATFORM: linux/amd64
-      inputs:
-        - name: mysql-5.7-dockerfile
-        - name: dockerfile-build-args
-      outputs:
-        - name: image
-      image_resource:
-        type: registry-image
-        source:
-          repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/concourse/oci-build-task
-          username: _json_key
-          password: ((gcp-arp-artifact-registry-service-account-token))
-  - load_var: mysql57-image-version
-    file: #@ "mysql-5.7-image-version-{}/version".format(go_version.name)
-    format: raw
-  - put: mysql-5.7-image
-    params:
-      image: image/image
-      version: ((.:mysql57-image-version))
-      additional_tags: tag/tag
-      bump_aliases: true
-  - put: #@ "mysql-5.7-image-version-{}".format(go_version.name)
-    params:
-      file: #@ "mysql-5.7-image-version-{}/version".format(go_version.name)
 #@ end
