@@ -9,9 +9,12 @@ outputs:
   - name: updated-env
 
 params:
-  SENTINEL_FILE: ~
   BBL_STATE_DIR: ~
+  SENTINEL_FILE: ~
   REASON: ~
+  TIMEOUT_SECONDS: ""
+  GITHUB_HOST: github.com
+  GITHUB_PRIVATE_KEY: ""
 
 run:
   path: ci/shared/tasks/write-env-sentinels/task.bash

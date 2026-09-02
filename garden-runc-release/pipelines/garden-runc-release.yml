@@ -2016,14 +2016,7 @@ jobs:
     - get: env-claimed
       trigger: true
     - get: env
-  - task: wait-5-hours
-    image: image
-    config:
-      platform: linux
-      run:
-        path: sh
-        args: ["-c", "echo 'Sleeping 5h before timeout cleanup...'; sleep 18000"]
-  - task: mark-env-finished-timeout
+  - task: wait-or-write-env-finished
     image: image
     file: ci/shared/tasks/write-env-sentinels/linux.yml
     input_mapping:
@@ -2032,6 +2025,8 @@ jobs:
       BBL_STATE_DIR: bbl-garden-env
       SENTINEL_FILE: finished
       REASON: 5h timeout reached
+      TIMEOUT_SECONDS: 18000
+      GITHUB_PRIVATE_KEY: ((github-appruntimeplatform-bot/private-key))
   - put: env
     params:
       repository: updated-env
@@ -2133,9 +2128,21 @@ jobs:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
       BBL_STATE_DIR: bbl-garden-env
       SUSPEND: false
-  - put: garden-runc-release-env-lock
+  - task: clear-ci-status
+    image: image
+    file: ci/shared/tasks/clear-env-sentinels/linux.yml
+    input_mapping:
+      env: env
     params:
-      release: garden-runc-release-env-lock
+      BBL_STATE_DIR: bbl-garden-env
+  - put: env
+    params:
+      repository: updated-env
+      rebase: true
+  - try:
+      put: garden-runc-release-env-lock
+      params:
+        release: garden-runc-release-env-lock
 
 
 

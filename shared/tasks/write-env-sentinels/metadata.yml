@@ -1,11 +1,20 @@
 ---
 readme: |
-  This task writes a sentinel file to the ci-status directory of an env repo,
-  signalling pipeline state (e.g. claimed, finished). Used to coordinate cleanup
-  jobs without relying on lock polling.
+  Writes a sentinel file to the ci-status directory of an env repo to signal
+  pipeline state (e.g. claimed, finished).
+
+  When TIMEOUT_SECONDS is set, the task first polls the remote repo every 5
+  minutes. If the sentinel is detected before the timeout, it exits without
+  writing (another job already wrote it). If the timeout is reached first, it
+  writes the sentinel. This mode requires GITHUB_PRIVATE_KEY for live fetch.
+
+  When TIMEOUT_SECONDS is not set, the sentinel is written immediately.
 oses:
   - linux
 params:
-  SENTINEL_FILE: name of the sentinel file to write (e.g. claimed, finished)
   BBL_STATE_DIR: name of bbl state dir (relative to the env resource)
-  REASON: human-readable reason for writing the sentinel (included in the commit message)
+  SENTINEL_FILE: name of the sentinel file to write (e.g. claimed, finished)
+  REASON: human-readable reason included in the git commit message
+  TIMEOUT_SECONDS: (optional) total seconds to poll before writing; omit or set to empty to write immediately
+  GITHUB_HOST: hostname of the GitHub server to trust via ssh-keyscan (default github.com)
+  GITHUB_PRIVATE_KEY: (required when TIMEOUT_SECONDS is set) SSH private key for fetching the env repo to check live sentinel state
