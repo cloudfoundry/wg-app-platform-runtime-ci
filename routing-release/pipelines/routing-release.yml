@@ -680,9 +680,9 @@ jobs:
   - task: build-binaries
     file: ci/shared/tasks/build-binaries/linux.yml
     vars:
-      image_repository: cloudfoundry/tas-runtime-mysql-5.7 #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
+      image_repository: cloudfoundry/tas-runtime-build
       image_password: ((gcp-arp-artifact-registry-service-account-token))
-      image_tag: ((.:image_tag_mysql_5_7))
+      image_tag: ((.:image_tag))
     params:
       DEFAULT_PARAMS: "ci/routing-release/default-params/build-binaries/linux.yml"
   - in_parallel:
@@ -1037,7 +1037,7 @@ jobs:
     params:
       DEFAULT_PARAMS: "ci/routing-release/default-params/build-binaries/linux.yml"
     vars:
-      image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
+      image_repository: cloudfoundry/tas-runtime-build
       image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
   - task: update-cf-with-tls-support-on-tcp-router-and-mtls-only
@@ -1072,7 +1072,7 @@ jobs:
         --flake-attempts 2
       FUNCTIONS: "ci/routing-release/helpers/configure-binaries.bash"
     vars:
-      image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
+      image_repository: cloudfoundry/tas-runtime-build
       image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
   - task: update-cf-with-no-tls-tcp-route-support
@@ -1107,7 +1107,7 @@ jobs:
         --flake-attempts 2
       FUNCTIONS: "ci/routing-release/helpers/configure-binaries.bash"
     vars:
-      image_repository: cloudfoundry/tas-runtime-build #! build with older version of ubuntu because of GLIB_C bump so that binaries could still be executed in mysql-5.7
+      image_repository: cloudfoundry/tas-runtime-build
       image_password: ((gcp-arp-artifact-registry-service-account-token))
       image_tag: ((.:image_tag))
   - task: reset-to-original-cf-deployment-settings
