@@ -15,6 +15,7 @@ cp -r env/. updated-env/
 if [[ -n "${TIMEOUT_SECONDS:-}" && "${TIMEOUT_SECONDS}" -gt 0 ]]; then
   eval "$(ssh-agent -s)"
   echo "${GITHUB_PRIVATE_KEY}" | ssh-add -
+  mkdir -p ~/.ssh
   ssh-keyscan "${GITHUB_HOST}" >> ~/.ssh/known_hosts 2>/dev/null
 
   DEADLINE=$(( $(date +%s) + TIMEOUT_SECONDS ))
