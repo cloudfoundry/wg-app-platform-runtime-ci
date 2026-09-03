@@ -314,6 +314,25 @@ export INIT_BINARY="\$PWD/${built_dir}/init/init"
 EOF
 }
 
+function build_gdn() {
+    local source="${1?Provide source dir}"
+    local target="${2?Provide target dir}"
+
+    local built_dir=$(basename "${target}")
+    target="$target/gdn"
+    mkdir -p "${target}"
+
+    verify_go
+
+    pushd "$source" || exit
+    go build -tags daemon -o "${target}/gdn" ./cmd/gdn
+    popd || exit
+
+    cat > "${target}/run.bash" << EOF
+export GDN_BINARY="\$PWD/${built_dir}/gdn/gdn"
+EOF
+}
+
 function build_dadoo() {
     local source="${1?Provide source dir}"
     local target="${2?Provide target dir}"

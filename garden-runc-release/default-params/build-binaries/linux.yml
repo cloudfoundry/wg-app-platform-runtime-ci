@@ -9,6 +9,7 @@ params:
     build_fake_runc_stderr=src/code.cloudfoundry.org
     build_grootfs=src/code.cloudfoundry.org/guardian
     build_init=src/code.cloudfoundry.org/guardian/cmd/init
+    build_gdn=src/code.cloudfoundry.org/guardian
     build_dadoo=src/code.cloudfoundry.org/guardian
     build_idmapper=src/code.cloudfoundry.org/guardian
     build_containerd=.
