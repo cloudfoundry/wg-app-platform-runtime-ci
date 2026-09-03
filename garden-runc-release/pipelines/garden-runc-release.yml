@@ -1345,7 +1345,6 @@ jobs:
   - try:
       do:
       - task: prepare-cf-deployment-env
-        attempts: 20
         image: image
         file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
         params:
