@@ -8,7 +8,8 @@ source "$THIS_FILE_DIR/../../../shared/helpers/git-helpers.bash"
 unset THIS_FILE_DIR
 
 SENTINEL_PATH="${BBL_STATE_DIR}/ci-status/${SENTINEL_FILE}"
-INTERVAL=300
+CLAIMED_SENTINEL_PATH="${BBL_STATE_DIR}/ci-status/claimed"
+INTERVAL=120
 
 cp -r env/. updated-env/
 
@@ -25,6 +26,12 @@ if [[ -n "${TIMEOUT_SECONDS:-}" && "${TIMEOUT_SECONDS}" -gt 0 ]]; then
 
     if git -C updated-env cat-file -e "origin/main:${SENTINEL_PATH}" 2>/dev/null; then
       echo "${SENTINEL_FILE} sentinel detected - skipping write."
+      git -C updated-env reset --hard origin/main
+      exit 0
+    fi
+
+    if [[ "${SENTINEL_FILE}" != "claimed" ]] && ! git -C updated-env cat-file -e "origin/main:${CLAIMED_SENTINEL_PATH}" 2>/dev/null; then
+      echo "claimed sentinel no longer present - env was already cleaned up, skipping write."
       git -C updated-env reset --hard origin/main
       exit 0
     fi
