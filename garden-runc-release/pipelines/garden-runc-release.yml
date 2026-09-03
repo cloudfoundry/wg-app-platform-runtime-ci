@@ -1327,8 +1327,6 @@ jobs:
 
 - name: prepare-env
   serial: true
-  on_abort: *release-env-lock
-  on_failure: *release-env-lock
   plan:
   - in_parallel:
     - get: manual-release-trigger
@@ -1344,14 +1342,14 @@ jobs:
     - get: env
       passed: [ claim-env ]
       trigger: true
-    - get: garden-runc-release-env-lock
-      passed: [ claim-env ]
-  - task: prepare-cf-deployment-env
-    attempts: 20
-    image: image
-    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
-    params:
-      BBL_STATE_DIR: bbl-garden-env
+  - try:
+      do:
+      - task: prepare-cf-deployment-env
+        attempts: 20
+        image: image
+        file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-garden-env
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image

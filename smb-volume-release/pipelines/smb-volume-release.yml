@@ -708,15 +708,16 @@ jobs:
           params:
             BBL_STATE_DIR: bbl-smb-volume-env
             DEPLOYMENT_NAME: cf
-  - task: prepare-cf-deployment-env
-    attempts: 10
-    image: image
-    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
-    params:
-      VARS:
-        smb-username: ((smb-volume-release-smbtestserver-credentials/username))
-        smb-password: ((smb-volume-release-smbtestserver-credentials/password))
-      BBL_STATE_DIR: bbl-smb-volume-env
+  - try:
+      do:
+      - task: prepare-cf-deployment-env
+        image: image
+        file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+        params:
+          VARS:
+            smb-username: ((smb-volume-release-smbtestserver-credentials/username))
+            smb-password: ((smb-volume-release-smbtestserver-credentials/password))
+          BBL_STATE_DIR: bbl-smb-volume-env
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image

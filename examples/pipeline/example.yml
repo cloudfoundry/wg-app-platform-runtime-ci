@@ -414,13 +414,14 @@ jobs:
           params:
             BBL_STATE_DIR: <REPLACE_ME>
             DEPLOYMENT_NAME: cf
-  - task: prepare-cf-deployment-env
-    attempts: 10
-    image: image
-    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
-    params:
-      BBL_STATE_DIR: <REPLACE_ME>
-      FUNCTIONS: "ci/<REPLACE_ME>/helpers/helpers.bash"
+  - try:
+      do:
+      - task: prepare-cf-deployment-env
+        image: image
+        file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+        params:
+          BBL_STATE_DIR: <REPLACE_ME>
+          FUNCTIONS: "ci/<REPLACE_ME>/helpers/helpers.bash"
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image

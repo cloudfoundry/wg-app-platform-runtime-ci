@@ -1209,12 +1209,13 @@ jobs:
             DEPLOYMENT_NAME: cf
   - in_parallel:
       steps:
-      - task: prepare-cf-deployment-env
-        attempts: 10
-        image: image
-        file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
-        params:
-          BBL_STATE_DIR: bbl-diego-env
+      - try:
+          do:
+          - task: prepare-cf-deployment-env
+            image: image
+            file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+            params:
+              BBL_STATE_DIR: bbl-diego-env
       - task: copy-grace-opsfile
         image: grace-image
         file: ci/diego-release/tasks/copy-grace-opsfile/linux.yml

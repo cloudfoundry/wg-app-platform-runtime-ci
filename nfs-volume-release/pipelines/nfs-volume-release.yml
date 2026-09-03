@@ -807,19 +807,20 @@ jobs:
           params:
             BBL_STATE_DIR: bbl-nfs-volume-env
             DEPLOYMENT_NAME: cf
-  - task: prepare-cf-deployment-env
-    attempts: 10
-    image: image
-    params:
-      BBL_STATE_DIR: bbl-nfs-volume-env
-      VARS:
-        nfs-ldap-host: "nfstestldapserver.service.cf.internal"
-        nfs-ldap-service-user: "cn=admin,dc=domain,dc=com"
-        nfs-ldap-service-password: "secret"
-        nfs-ldap-port: 636
-        nfs-ldap-proto: tcp
-        nfs-ldap-fqdn: "ou=Users,dc=domain,dc=com"
-    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+  - try:
+      do:
+      - task: prepare-cf-deployment-env
+        image: image
+        params:
+          BBL_STATE_DIR: bbl-nfs-volume-env
+          VARS:
+            nfs-ldap-host: "nfstestldapserver.service.cf.internal"
+            nfs-ldap-service-user: "cn=admin,dc=domain,dc=com"
+            nfs-ldap-service-password: "secret"
+            nfs-ldap-port: 636
+            nfs-ldap-proto: tcp
+            nfs-ldap-fqdn: "ou=Users,dc=domain,dc=com"
+        file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image

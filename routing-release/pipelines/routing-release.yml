@@ -800,12 +800,13 @@ jobs:
           params:
             BBL_STATE_DIR: bbl-routing-env
             DEPLOYMENT_NAME: cf
-  - task: prepare-cf-deployment-env
-    attempts: 10
-    image: image
-    file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
-    params:
-      BBL_STATE_DIR: bbl-routing-env
+  - try:
+      do:
+      - task: prepare-cf-deployment-env
+        image: image
+        file: ci/shared/tasks/run-bin-prepare-cf-deployment-env/linux.yml
+        params:
+          BBL_STATE_DIR: bbl-routing-env
   - task: combine-ops-files
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
