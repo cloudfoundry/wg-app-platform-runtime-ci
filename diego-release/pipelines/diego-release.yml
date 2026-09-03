@@ -35,11 +35,8 @@ groups:
 - name: cleanup
   jobs:
   - cleanup-time-gate
-  - wait-for-env-lock-claim
-  - wait-for-acceptance-tests
-  - manual-cleanup-trigger
+  - force-cleanup
   - cleanup-env
-  - force-cleanup-env
   - release-env-lock
 
 - name: version
@@ -67,12 +64,6 @@ resource_types:
     username: _json_key
     password: ((gcp-arp-artifact-registry-service-account-token))
     tag: latest
-
-- name: fork-pool
-  type: registry-image
-  source:
-    repository: ebroberson/pool-resource
-    tag: 0.0.4 #! TODO: unpin and use normal pool-resource when https://github.com/concourse/pool-resource/pull/82 is merged
 
 #! Define-Resources
 resources:
@@ -273,18 +264,7 @@ resources:
     days:
       - Wednesday
 
-- name: cleanup-timer
-  type: time
-  icon: clock
-  source:
-    interval: '1h'
-
 - name: manual-release-trigger
-  type: time
-  source:
-    interval: '1m'
-
-- name: manual-cleanup-trigger
   type: time
   source:
     interval: '1m'
@@ -304,6 +284,26 @@ resources:
     paths:
       - bbl-diego-env
 
+- name: env-claimed
+  type: git
+  icon: sheep
+  source:
+    branch: main
+    uri: git@github.com:cloudfoundry/app-runtime-platform-envs
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    paths:
+      - bbl-diego-env/ci-status/claimed
+
+- name: env-finished
+  type: git
+  icon: sheep
+  source:
+    branch: main
+    uri: git@github.com:cloudfoundry/app-runtime-platform-envs
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    paths:
+      - bbl-diego-env/ci-status/finished
+
 - name: github-release
   type: github-release
   icon: github
@@ -322,11 +322,11 @@ resources:
     json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
 - name: diego-release-env-lock
-  type: fork-pool
+  type: pool
   icon: cloud-lock
   source:
     branch: main
-    pool: diego-release-env-lock 
+    pool: diego-release-env-lock
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
     paths: [ diego-release-env-lock ]
@@ -393,10 +393,6 @@ jobs:
 - name: manual-release-trigger
   plan:
   - put: manual-release-trigger
-
-- name: manual-cleanup-trigger
-  plan:
-  - put: manual-cleanup-trigger
 
 - name: bump-dependencies-go-mod
   serial: true
@@ -1030,8 +1026,8 @@ jobs:
       params:
         FUNCTIONS: ci/garden-runc-release/helpers/build-binaries.ps1
         MAPPING: |
-          Build-Winit=src/guardian/cmd/winit
-          Build-Gdn=src/guardian/cmd/gdn
+          Build-Winit=src/code.cloudfoundry.org/guardian/cmd/winit
+          Build-Gdn=src/code.cloudfoundry.org/guardian/cmd/gdn
     - task: build-binaries-for-envoy-nginx-release-windows
       file: ci/shared/tasks/build-binaries/windows.yml
       tags: [ diego-windows ]
@@ -1173,6 +1169,32 @@ jobs:
     file: ci/shared/tasks/wait-for-bosh-api/linux.yml
     params:
       BBL_STATE_DIR: bbl-diego-env
+  - task: clear-env-sentinels
+    image: image
+    file: ci/shared/tasks/clear-env-sentinels/linux.yml
+    input_mapping:
+      env: env
+    params:
+      BBL_STATE_DIR: bbl-diego-env
+      GIT_AUTHOR_NAME: "CI Bot"
+      GIT_AUTHOR_EMAIL: "platform-runtime-ci@cloudfoundry.org"
+  - put: env
+    params:
+      repository: updated-env
+      rebase: true
+  - task: mark-env-claimed
+    image: image
+    file: ci/shared/tasks/write-env-sentinels/linux.yml
+    input_mapping:
+      env: env
+    params:
+      BBL_STATE_DIR: bbl-diego-env
+      SENTINEL_FILE: claimed
+      REASON: env claimed for acceptance test run
+  - put: env
+    params:
+      repository: updated-env
+      rebase: true
 
 - name: prepare-env
   serial: true
@@ -1197,8 +1219,6 @@ jobs:
       trigger: true
     - get: package-release
       resource: golang-release-latest
-    - get: diego-release-env-lock
-      passed: [ claim-env ]
   - try: &delete-cf-deployment
       do:
         - task: bosh-deld
@@ -1646,38 +1666,56 @@ jobs:
       params: {file: next-version/number}
 
 - name: cleanup-time-gate
-  plan:
-  - get: cleanup-timer
-    trigger: true
-
-- name: wait-for-env-lock-claim
   serial: true
   plan:
-  - get: cleanup-timer
-    trigger: true
-    passed: [ cleanup-time-gate ]
-  - get: diego-release-env-lock
-  - put: check-unclaimed-env-lock
-    resource: diego-release-env-lock
-    params:
-      check_unclaimed: diego-release-env-lock
-      retry-delay: 60m
-
-- name: wait-for-acceptance-tests
-  plan:
-  - get: image
-  - get: diego-release-env-lock
-    passed: [ wait-for-env-lock-claim ]
-    trigger: true
-  - task: sleep
+  - in_parallel:
+    - get: ci
+    - get: image
+    - get: env-claimed
+      trigger: true
+    - get: env
+  - task: wait-or-write-env-finished
     image: image
-    config:
-      platform: linux
-      run: 
-        path: sh
-        args:
-        - -exc
-        - sleep 7h
+    file: ci/shared/tasks/write-env-sentinels/linux.yml
+    input_mapping:
+      env: env
+    params:
+      BBL_STATE_DIR: bbl-diego-env
+      SENTINEL_FILE: finished
+      REASON: 7h timeout reached
+      TIMEOUT_SECONDS: 25200
+      GITHUB_PRIVATE_KEY: ((github-appruntimeplatform-bot/private-key))
+  - put: env
+    params:
+      repository: updated-env
+      rebase: true
+
+- name: release-env-lock
+  plan:
+  - get: diego-release-env-lock
+  - try: *release-env-lock
+
+- name: force-cleanup
+  serial: true
+  plan:
+  - in_parallel:
+      steps:
+      - get: ci
+      - get: env
+      - get: image
+  - task: mark-env-finished-force
+    image: image
+    file: ci/shared/tasks/write-env-sentinels/linux.yml
+    input_mapping:
+      env: env
+    params:
+      BBL_STATE_DIR: bbl-diego-env
+      SENTINEL_FILE: finished
+      REASON: manually forced cleanup
+  - put: env
+    params:
+      repository: updated-env
+      rebase: true
 
 - name: cleanup-env
   serial: true
@@ -1687,11 +1725,7 @@ jobs:
       - get: ci
       - get: env
       - get: image
-      - get: manual-cleanup-trigger
-        trigger: true
-        passed: [ manual-cleanup-trigger ]
-      - get: diego-release-env-lock
-        passed: [ wait-for-acceptance-tests ]
+      - get: env-finished
         trigger: true
   - try: *delete-cf-deployment
   - task: stop-bbl-envs
@@ -1703,31 +1737,21 @@ jobs:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
       BBL_STATE_DIR: bbl-diego-env
       SUSPEND: false
-  - try: *release-env-lock
-
-- name: release-env-lock
-  plan:
-  - get: diego-release-env-lock
-  - try: *release-env-lock
-
-- name: force-cleanup-env
-  serial: true
-  plan:
-  - in_parallel:
-      steps:
-      - get: ci
-      - get: env
-      - get: image
-  - try: *delete-cf-deployment
-  - task: stop-bbl-envs
+  - task: clear-ci-status
     image: image
-    file: ci/shared/tasks/stop-gcp-instance/linux.yml
+    file: ci/shared/tasks/clear-env-sentinels/linux.yml
     input_mapping:
-      bbl-state: env
+      env: env
     params:
-      SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-ci-bbl-service-account/config-json))
       BBL_STATE_DIR: bbl-diego-env
-      SUSPEND: false
+  - put: env
+    params:
+      repository: updated-env
+      rebase: true
+  - try:
+      put: diego-release-env-lock
+      params:
+        release: diego-release-env-lock
 
 
 #! versioning
