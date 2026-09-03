@@ -56,7 +56,7 @@ EOF
 ---
 EOF
     fi
-    if [[ "$(is_shepherd_v1_deployment)" == "no" ]]; then
+    if [[ "$(bosh_is_cf_deployed)" == "yes" ]] && [[ "$(is_shepherd_v1_deployment)" == "no" ]]; then
         credhub_save_lb_cert
     fi
 
