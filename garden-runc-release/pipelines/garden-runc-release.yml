@@ -1364,6 +1364,7 @@ jobs:
         {ci/garden-runc-release/opsfiles/*,combined-assets}
   - task: deploy-cf-deployment
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    attempts: 3
     input_mapping:
       ops-files: combined-assets
       vars-files: prepared-env
