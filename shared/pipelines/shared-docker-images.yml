@@ -707,13 +707,16 @@ jobs:
       run:
         path: build
       params:
+        BUILD_ARGS_FILE: dockerfile-build-args/build_args
         CONTEXT: dockerfile-out
+        OUTPUT_OCI: true
+        IMAGE_PLATFORM: linux/amd64
         DOCKERFILE: dockerfile-out/Dockerfile
         BUILDKIT_PROGRESS: plain
       image_resource:
         type: registry-image
         source:
-          repository: concourse/oci-build-task
+          repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/concourse/oci-build-task
           username: _json_key
           password: ((gcp-arp-artifact-registry-service-account-token))
       inputs:
@@ -725,19 +728,6 @@ jobs:
       build-args: dockerfile-build-args
     output_mapping:
       image: image
-  - in_parallel:
-    - task: create-tags
-      file: ci/shared/tasks/create-tags/linux.yml
-      image: build-image
-      input_mapping:
-        version: #@ "mysql-9.7-image-version-{}".format(go_version.name)
-      output_mapping:
-        tag: tag
-      params:
-        BASE_SEMVER_TAG_PREFIX: #@ "{}".format(go_version.name)
-        REGISTRY_MIRROR: gcp-arp-south-us-central1-docker.pkg.dev/wg-arp-cf-ci
-        IMAGE_PREFIX: cloudfoundry/tas-runtime-mysql-9.7
-        BUILD_NUMBER_FILE: tag/tag
   - load_var: mysql97-image-version
     file: #@ "mysql-9.7-image-version-{}/version".format(go_version.name)
     format: raw
