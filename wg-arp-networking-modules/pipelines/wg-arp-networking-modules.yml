@@ -109,6 +109,17 @@ resources:
       - Sunday
 
 #! Define-Jobs
+
+- name: concourse-env
+  type: git
+  icon: sheep
+  source:
+    branch: main
+    uri: git@github.com:cloudfoundry/app-runtime-platform-envs
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    paths:
+    - concourse-env
+
 jobs:
 
 #@ for repo in data.values.internal_repos:
@@ -173,6 +184,7 @@ jobs:
     - get: package-release
       resource: golang-release-latest
     - get: windows-worker-lock
+    - get: concourse-env
   - task: determine-image-tag
     image: image
     params:
@@ -196,10 +208,12 @@ jobs:
       - task: start-windows-worker
         image: image
         file: ci/shared/tasks/bosh-start/linux.yml
+        input_mapping:
+          env: concourse-env
         params:
           DEPLOYMENT: windows-worker
           INSTANCE_GROUP: windows-worker
-          BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+          BBL_STATE_DIR: concourse-env
       - task: #@ "{}-windows".format(package.name)
         file: ci/shared/tasks/run-bin-test/windows.yml
         privileged: #@ helpers.privileged(package)
@@ -207,10 +221,12 @@ jobs:
         task: stop-windows-worker
         image: image
         file: ci/shared/tasks/bosh-stop/linux.yml
+        input_mapping:
+          env: concourse-env
         params:
           DEPLOYMENT: windows-worker
           INSTANCE_GROUP: windows-worker
-          BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+          BBL_STATE_DIR: concourse-env
         ensure:
           task: prune-worker
           image: image
@@ -278,10 +294,12 @@ jobs:
       - task: start-windows-worker
         image: image
         file: ci/shared/tasks/bosh-start/linux.yml
+        input_mapping:
+          env: concourse-env
         params:
           DEPLOYMENT: windows-worker
           INSTANCE_GROUP: windows-worker
-          BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+          BBL_STATE_DIR: concourse-env
       - task: #@ "{}-mysql-windows".format(package.name)
         file: ci/shared/tasks/run-bin-test/windows.yml
         privileged: #@ helpers.privileged(package)
@@ -291,10 +309,12 @@ jobs:
         task: stop-windows-worker
         image: image
         file: ci/shared/tasks/bosh-stop/linux.yml
+        input_mapping:
+          env: concourse-env
         params:
           DEPLOYMENT: windows-worker
           INSTANCE_GROUP: windows-worker
-          BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+          BBL_STATE_DIR: concourse-env
         ensure:
           task: prune-worker
           image: image

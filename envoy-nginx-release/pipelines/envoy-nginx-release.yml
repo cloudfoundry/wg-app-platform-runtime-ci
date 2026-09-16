@@ -273,6 +273,17 @@ resources:
     tag_filter: release-*
 
 #! Define-Jobs
+
+- name: concourse-env
+  type: git
+  icon: sheep
+  source:
+    branch: main
+    uri: git@github.com:cloudfoundry/app-runtime-platform-envs
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    paths:
+    - concourse-env
+
 jobs:
 - name: manual-release-trigger
   plan:
@@ -417,16 +428,19 @@ jobs:
     - get: repo
       trigger: true
     - get: image
+    - get: concourse-env
     - put: windows-worker-lock
       params:
         acquire: true
   - task: start-windows-worker
     image: image
     file: ci/shared/tasks/bosh-start/linux.yml
+    input_mapping:
+      env: concourse-env
     params:
       DEPLOYMENT: windows-worker
       INSTANCE_GROUP: windows-worker
-      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+      BBL_STATE_DIR: concourse-env
   - in_parallel:
 #@ for repo in data.values.internal_repos:
     - task: #@ "{}".format(repo.name)
@@ -439,10 +453,12 @@ jobs:
     task: stop-windows-worker
     image: image
     file: ci/shared/tasks/bosh-stop/linux.yml
+    input_mapping:
+      env: concourse-env
     params:
       DEPLOYMENT: windows-worker
       INSTANCE_GROUP: windows-worker
-      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+      BBL_STATE_DIR: concourse-env
     ensure:
       task: prune-worker
       image: image

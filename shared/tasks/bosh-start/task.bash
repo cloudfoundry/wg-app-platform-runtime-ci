@@ -14,10 +14,7 @@ function run(){
     local task_tmp_dir="${1:?provide temp dir for task}"
     shift 1
 
-    eval "${BOSH_CREDS}"
-    mkdir -p "$(dirname "${JUMPBOX_PRIVATE_KEY}")"
-    echo "${SSH_PRIVATE_KEY}" > "${JUMPBOX_PRIVATE_KEY}"
-    chmod 600 "${JUMPBOX_PRIVATE_KEY}"
+    bosh_target
     wait_for_bosh_lock
     bosh -n -d "${DEPLOYMENT}" start "${INSTANCE_GROUP}"
     sleep 180 # sleep to make sure the vm finishes starting up happily for all things that rely on it

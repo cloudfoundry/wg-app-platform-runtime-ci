@@ -81,6 +81,17 @@ resources:
     private_key: ((github-appruntimeplatform-bot/private-key))
     uri: git@github.com:cloudfoundry/runtime-ci-pools.git
 
+
+- name: concourse-env
+  type: git
+  icon: sheep
+  source:
+    branch: main
+    uri: git@github.com:cloudfoundry/app-runtime-platform-envs
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    paths:
+    - concourse-env
+
 jobs:
 - name: groot-windows-test-link
   serial: true
@@ -92,16 +103,19 @@ jobs:
       trigger: true
     - get: ci
     - get: image
+    - get: concourse-env
   - put: windows-worker-lock
     params:
       acquire: true
   - task: start-windows-worker
     image: image
     file: ci/shared/tasks/bosh-start/linux.yml
+    input_mapping:
+      env: concourse-env
     params:
       DEPLOYMENT: windows-worker
       INSTANCE_GROUP: windows-worker
-      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+      BBL_STATE_DIR: concourse-env
   - task: build-push-groot-windows-dockerfile
     file: ci/winc-release/tasks/build-push-groot-windows-dockerfile/windows.yml
     params:
@@ -115,10 +129,12 @@ jobs:
     task: stop-windows-worker
     image: image
     file: ci/shared/tasks/bosh-stop/linux.yml
+    input_mapping:
+      env: concourse-env
     params:
       DEPLOYMENT: windows-worker
       INSTANCE_GROUP: windows-worker
-      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+      BBL_STATE_DIR: concourse-env
     ensure:
       task: prune-worker
       image: image
@@ -142,16 +158,19 @@ jobs:
       trigger: true
     - get: ci
     - get: image
+    - get: concourse-env
   - put: windows-worker-lock
     params:
       acquire: true
   - task: start-windows-worker
     image: image
     file: ci/shared/tasks/bosh-start/linux.yml
+    input_mapping:
+      env: concourse-env
     params:
       DEPLOYMENT: windows-worker
       INSTANCE_GROUP: windows-worker
-      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+      BBL_STATE_DIR: concourse-env
   - task: build-push-groot-windows-dockerfile
     file: ci/winc-release/tasks/build-push-groot-windows-dockerfile/windows.yml
     params:
@@ -165,10 +184,12 @@ jobs:
     task: stop-windows-worker
     image: image
     file: ci/shared/tasks/bosh-stop/linux.yml
+    input_mapping:
+      env: concourse-env
     params:
       DEPLOYMENT: windows-worker
       INSTANCE_GROUP: windows-worker
-      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+      BBL_STATE_DIR: concourse-env
     ensure:
       task: prune-worker
       image: image
@@ -192,16 +213,19 @@ jobs:
       trigger: true
     - get: ci
     - get: image
+    - get: concourse-env
   - put: windows-worker-lock
     params:
       acquire: true
   - task: start-windows-worker
     image: image
     file: ci/shared/tasks/bosh-start/linux.yml
+    input_mapping:
+      env: concourse-env
     params:
       DEPLOYMENT: windows-worker
       INSTANCE_GROUP: windows-worker
-      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+      BBL_STATE_DIR: concourse-env
   - task: build-push-groot-windows-dockerfile
     file: ci/winc-release/tasks/build-push-groot-windows-dockerfile/windows.yml
     params:
@@ -215,10 +239,12 @@ jobs:
     task: stop-windows-worker
     image: image
     file: ci/shared/tasks/bosh-stop/linux.yml
+    input_mapping:
+      env: concourse-env
     params:
       DEPLOYMENT: windows-worker
       INSTANCE_GROUP: windows-worker
-      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+      BBL_STATE_DIR: concourse-env
     ensure:
       task: prune-worker
       image: image
@@ -242,16 +268,19 @@ jobs:
       trigger: true
     - get: ci
     - get: image
+    - get: concourse-env
   - put: windows-worker-lock
     params:
       acquire: true
   - task: start-windows-worker
     image: image
     file: ci/shared/tasks/bosh-start/linux.yml
+    input_mapping:
+      env: concourse-env
     params:
       DEPLOYMENT: windows-worker
       INSTANCE_GROUP: windows-worker
-      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+      BBL_STATE_DIR: concourse-env
   - task: build-push-groot-windows-dockerfile
     file: ci/winc-release/tasks/build-push-groot-windows-dockerfile/windows.yml
     params:
@@ -265,10 +294,12 @@ jobs:
     task: stop-windows-worker
     image: image
     file: ci/shared/tasks/bosh-stop/linux.yml
+    input_mapping:
+      env: concourse-env
     params:
       DEPLOYMENT: windows-worker
       INSTANCE_GROUP: windows-worker
-      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+      BBL_STATE_DIR: concourse-env
     ensure:
       task: prune-worker
       image: image

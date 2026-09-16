@@ -89,6 +89,17 @@ resources:
     tag: 'latest'
 
 #! Define-Jobs
+
+- name: concourse-env
+  type: git
+  icon: sheep
+  source:
+    branch: main
+    uri: git@github.com:cloudfoundry/app-runtime-platform-envs
+    private_key: ((github-appruntimeplatform-bot/private-key))
+    paths:
+    - concourse-env
+
 jobs:
 - name: build-test-push-windows2016fs
   serial: true
@@ -110,6 +121,7 @@ jobs:
         globs: [Git-*-64-bit.exe]
     - get: version
       params: {bump: patch}
+    - get: concourse-env
   - task: combine-assets
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
@@ -128,10 +140,12 @@ jobs:
   - task: start-windows-worker
     image: image
     file: ci/shared/tasks/bosh-start/linux.yml
+    input_mapping:
+      env: concourse-env
     params:
       DEPLOYMENT: windows-worker
       INSTANCE_GROUP: windows-worker
-      BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+      BBL_STATE_DIR: concourse-env
   - task: start-smb-server-vm
     image: image
     file: ci/shared/tasks/start-gcp-instance/linux.yml
@@ -197,10 +211,12 @@ jobs:
     - task: stop-windows-worker
       image: image
       file: ci/shared/tasks/bosh-stop/linux.yml
+      input_mapping:
+        env: concourse-env
       params:
         DEPLOYMENT: windows-worker
         INSTANCE_GROUP: windows-worker
-        BOSH_CREDS: ((bosh-concourse-credentials/env_vars))
+        BBL_STATE_DIR: concourse-env
       ensure:
         task: prune-worker
         image: image
