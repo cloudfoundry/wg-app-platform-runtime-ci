@@ -699,6 +699,7 @@ jobs:
       - get: image
       - get: env-finished
         trigger: true
+      - get: healthchecker-release-env-lock
   - try: *delete-ea-deployment
   - task: stop-bbl-envs
     image: image

@@ -903,6 +903,7 @@ jobs:
       - get: image
       - get: env-finished
         trigger: true
+      - get: envoy-nginx-release-env-lock
   - try: *delete-cf-deployment
   - task: stop-bbl-envs
     image: image

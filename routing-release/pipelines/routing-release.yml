@@ -1517,6 +1517,7 @@ jobs:
       - get: image
       - get: env-finished
         trigger: true
+      - get: routing-release-env-lock
   - try: *delete-cf-deployment
   - try: *delete-cipher-deployment
   - try: *delete-old-route-registrar

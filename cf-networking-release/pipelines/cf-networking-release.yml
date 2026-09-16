@@ -1504,6 +1504,7 @@ jobs:
       - get: image
       - get: env-finished
         trigger: true
+      - get: cf-networking-release-env-lock
   - try: *delete-sdpt-deployment
   - try: *delete-cf-deployment
   - task: stop-bbl-envs

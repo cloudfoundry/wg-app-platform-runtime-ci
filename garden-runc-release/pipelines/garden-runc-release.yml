@@ -2070,6 +2070,7 @@ jobs:
       - get: image
       - get: env-finished
         trigger: true
+      - get: garden-runc-release-env-lock
   - try:
       do:
       - task: bosh-deld
