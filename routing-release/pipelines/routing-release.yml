@@ -164,7 +164,7 @@ resources:
   type: git
   icon: source-branch
   source:
-    branch: main
+    branch: fix/routing-api-readiness-check-before-cfsmoke
     uri: https://github.com/cloudfoundry/wg-app-platform-runtime-ci
 
 - name: go-version

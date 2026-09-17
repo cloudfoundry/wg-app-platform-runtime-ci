@@ -16,3 +16,6 @@
 - type: replace
   path: /instance_groups/name=smoke-tests/jobs/name=smoke_tests/properties/smoke_tests/backend?
   value: diego
+- type: replace
+  path: /instance_groups/name=smoke-tests/jobs/name=smoke_tests/properties/smoke_tests/ginkgo_opts?
+  value: "--procs=1"
