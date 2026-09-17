@@ -1091,9 +1091,6 @@ jobs:
       - get: weekly
         trigger: true
       - get: repo
-#@ for repo in helpers.packages_with_a_git_repo(data.values.internal_repos):
-      - get: #@ "{}-repo".format(repo.name)
-#@ end
         trigger: false
       - get: readme
         trigger: false
@@ -1105,19 +1102,6 @@ jobs:
       params:
        rebase: true
        repository: synced-repo
-#@ for repo in helpers.packages_with_a_git_repo(data.values.internal_repos):
-  - do:
-    - task: #@ "sync-readme-{}".format(repo.name)
-      file: ci/shared/tasks/sync-readme/linux.yml
-      image: image
-      input_mapping:
-        repo: #@ "{}-repo".format(repo.name)
-    - put: #@ "{}-repo".format(repo.name)
-      params:
-       rebase: true
-       repository: synced-repo
-#@ end
-
 
 - name: template-tests
   serial: true

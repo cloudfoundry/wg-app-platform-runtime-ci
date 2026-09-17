@@ -15,11 +15,13 @@ internal_repos:
 - name: dontpanic
   src_dir: src/code.cloudfoundry.org/dontpanic
   privileged: true
+  same_repo: true
 - name: guardian
   src_dir: src/code.cloudfoundry.org/guardian
   privileged: true
   rootfs_input: true
   on_windows: true
+  same_repo: true
 
 #! <OPTIONAL> set to a list of opsfile if pipeline needs to update cf-deployment
 opsfiles:
