@@ -19,3 +19,6 @@
 - type: replace
   path: /instance_groups/name=smoke-tests/jobs/name=smoke_tests/properties/smoke_tests/ginkgo_opts?
   value: "--procs=1"
+- type: replace
+  path: /instance_groups/name=smoke-tests/jobs/name=smoke_tests/properties/smoke_tests/timeout_scale?
+  value: 4
