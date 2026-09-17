@@ -19,4 +19,29 @@ params:
   WITH_DYNAMIC_ASG: (defaults to false) It will turn on/off dynamic asgs tests
   WITH_COMMA_DELIMITED_ASG_DESTINATIONS: (defaults to false) Turns on/off tests of comma delimited ASG destinations
   WITH_VOLUME_SERVICES: (defaults to false). Enables/Disables the volume services test suites in CATs
+  WITH_ROUTING_ISOSEG: (defaults to WITH_ISOSEG). Turns on/off routing isolation segment tests in CATs
+  WITH_TCP_ISOSEG: (defaults to WITH_ISOSEG). Turns on/off TCP isolation segment tests in CATs
+  CREDHUB_MODE: (defaults to assisted). CredHub mode for CATs config
+  WITH_HTTP2: (defaults to false). Turns on/off HTTP2 routing tests in CATs
+  ISOSEG_DOMAIN: Explicit isolation segment domain. If unset, derived from ISOSEG_DOMAIN_SUFFIX or CF_SYSTEM_DOMAIN
+  ISOSEG_DOMAIN_SUFFIX: Suffix used to compute isolation segment domain as <suffix>.<CF_SYSTEM_DOMAIN without sys.>
   ISOSEG_NAME: name of the isolation segment to use when testing (if WITH_ISOSEG is enabled)
+  WITH_APPS: (defaults to true). Turns on/off apps tests in CATs
+  WITH_CONTAINER_NETWORKING: (defaults to true). Turns on/off container networking tests in CATs
+  WITH_DETECT: (defaults to true). Turns on/off detect tests in CATs
+  WITH_DEPLOYMENTS: (defaults to true). Turns on/off deployments tests in CATs
+  WITH_DOCKER: (defaults to true). Turns on/off docker tests in CATs
+  WITH_INTERNET_DEPENDENT: (defaults to true). Turns on/off internet-dependent tests in CATs
+  WITH_ROUTE_SERVICES: (defaults to true). Turns on/off route services tests in CATs
+  WITH_ROUTING: (defaults to true). Turns on/off routing tests in CATs
+  WITH_SECURITY_GROUPS: (defaults to true). Turns on/off security groups tests in CATs
+  WITH_SERVICES: (defaults to true). Turns on/off services tests in CATs
+  WITH_SERVICE_DISCOVERY: (defaults to true). Turns on/off service discovery tests in CATs
+  WITH_SERVICE_INSTANCE_SHARING: (defaults to true). Turns on/off service instance sharing tests in CATs
+  WITH_SSH: (defaults to true). Turns on/off SSH tests in CATs
+  WITH_SSO: (defaults to true). Turns on/off SSO tests in CATs
+  WITH_TASKS: (defaults to true). Turns on/off tasks tests in CATs
+  WITH_TCP_ROUTING: (defaults to true). Turns on/off TCP routing tests in CATs
+  WITH_USER_PROVIDED_SERVICES: (defaults to true). Turns on/off user-provided services tests in CATs
+  WITH_V3: (defaults to true). Turns on/off V3 API tests in CATs
+  WITH_ZIPKIN: (defaults to true). Turns on/off Zipkin tracing tests in CATs
