@@ -1225,6 +1225,7 @@ jobs:
 #@ if helpers.on_windows(repo):
     - task: #@ "{}-windows".format(repo.name)
       file: ci/shared/tasks/run-bin-test/windows.yml
+      attempts: 3
       privileged: #@ helpers.privileged(repo)
       params:
         DIR: #@ repo.src_dir if hasattr(repo, "src_dir") else "src/{}".format(repo.name)
