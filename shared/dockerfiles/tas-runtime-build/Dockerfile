@@ -265,6 +265,13 @@ RUN go install github.com/cloudfoundry/uptimer@latest
 RUN go install github.com/pivotal-cf/kiln@latest
 
 #    staticcheck
+# Diagnostic: capture the raw GitHub API response for this call so we can see
+# the actual HTTP status/rate-limit headers/body if the build fails here again.
+# TODO: remove once root cause of the staticcheck jq failure is confirmed.
+RUN \
+  curl -s -D - -o /tmp/staticcheck-releases.json -w "HTTP_STATUS:%{http_code}\n" https://api.github.com/repos/dominikh/go-tools/releases || true; \
+  echo "--- response body ---"; cat /tmp/staticcheck-releases.json || true
+
 RUN \
   staticcheck_version="$(curl -s https://api.github.com/repos/dominikh/go-tools/releases | jq -r '.[0].tag_name')" && \
   go install "honnef.co/go/tools/cmd/staticcheck@$staticcheck_version"
