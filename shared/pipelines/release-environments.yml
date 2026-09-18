@@ -58,7 +58,7 @@ resources:
     repository: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
     username: _json_key
     password: ((gcp-arp-artifact-registry-service-account-token))
-    tag: 1.26.5
+    tag: latest
 
 groups:
 - name: bbl-environments
