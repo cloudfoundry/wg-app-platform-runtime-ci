@@ -37,7 +37,7 @@ function run() {
 
     echo "Getting latest tag that starts with go-${go_minor_version} for image ${IMAGE}"
 
-    local tag
+    local tag=""
     for (( i = 0; i <= MAX_RETRIES; i++ ))
     do
         set +e
@@ -52,6 +52,11 @@ function run() {
         echo -n "."
         sleep $RETRY_INTERVAL
     done
+
+    if [[ -z "$tag" ]]; then
+        echo "No tag starting with go-${go_minor_version} found for image ${IMAGE} after ${MAX_RETRIES} retries"
+        exit 1
+    fi
 
     echo "${tag}" > determined-image-tag/tag
 
