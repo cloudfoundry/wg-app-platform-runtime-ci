@@ -13,6 +13,12 @@ groups:
   - bump-package-golang
   - bump-bosh-blobs
 
+- name: version
+  jobs:
+  - major-bump
+  - minor-bump
+  - patch-bump
+
 resource_types:
 - name: command-runner
   type: docker-image
@@ -527,3 +533,28 @@ jobs:
     - put: next-version
       resource: version
       params: {file: next-version/number}
+
+#! versioning
+- name: patch-bump
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: patch}
+  - put: version
+    params: {file: version/number}
+
+- name: minor-bump
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: minor}
+  - put: version
+    params: {file: version/number}
+
+- name: major-bump
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: major}
+  - put: version
+    params: {file: version/number}
