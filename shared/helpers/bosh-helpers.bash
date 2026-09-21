@@ -248,9 +248,10 @@ function bosh_release_name() {
 }
 
 function wait_for_bosh_lock() {
-    while [[ $(bosh tasks -d concourse --json | jq '.Tables[].Rows| length') != 0 ]]; do
-        echo "Waiting for bosh task lock to clear:"
-        bosh tasks
+    local deployment="${1:?provide deployment name to wait on}"
+    while [[ $(bosh tasks -d "${deployment}" --json | jq '.Tables[].Rows| length') != 0 ]]; do
+        echo "Waiting for bosh task lock to clear on deployment '${deployment}':"
+        bosh tasks -d "${deployment}"
         sleep 60
     done
 }

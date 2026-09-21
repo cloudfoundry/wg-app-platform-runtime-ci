@@ -15,7 +15,7 @@ function run(){
     shift 1
 
     bosh_target
-    wait_for_bosh_lock
+    wait_for_bosh_lock "${DEPLOYMENT}"
     bosh -n -d "${DEPLOYMENT}" start "${INSTANCE_GROUP}"
     sleep 180 # sleep to make sure the vm finishes starting up happily for all things that rely on it
 }
