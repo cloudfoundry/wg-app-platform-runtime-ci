@@ -72,16 +72,6 @@ resources:
     check_command: "echo https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"
     in_command:    "curl --silent --fail --output $1/golang.tgz https://dl.google.com/go/$(curl -s https://go.dev/dl/?mode=json | grep -o 'go.*.linux-amd64.tar.gz' | head -n 1 | tr -d '\r\n')"
 
-- name: windows-worker-lock
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: windows-worker-lock
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-
-
 - name: concourse-env
   type: git
   icon: sheep
@@ -104,17 +94,14 @@ jobs:
     - get: ci
     - get: image
     - get: concourse-env
-  - put: windows-worker-lock
-    params:
-      acquire: true
   - task: start-windows-worker
     image: image
     file: ci/shared/tasks/bosh-start/linux.yml
     input_mapping:
       env: concourse-env
     params:
-      DEPLOYMENT: windows-worker
-      INSTANCE_GROUP: windows-worker
+      DEPLOYMENT: windows-workers
+      INSTANCE_GROUP: winc-docker-images-link
       BBL_STATE_DIR: concourse-env
   - task: build-push-groot-windows-dockerfile
     file: ci/winc-release/tasks/build-push-groot-windows-dockerfile/windows.yml
@@ -132,8 +119,8 @@ jobs:
     input_mapping:
       env: concourse-env
     params:
-      DEPLOYMENT: windows-worker
-      INSTANCE_GROUP: windows-worker
+      DEPLOYMENT: windows-workers
+      INSTANCE_GROUP: winc-docker-images-link
       BBL_STATE_DIR: concourse-env
     ensure:
       task: prune-worker
@@ -142,11 +129,6 @@ jobs:
       params:
         FLY_PASSWORD: ((concourse-bot-ci-user))
         FLY_WORKER_REGEX: " windows +none"
-      ensure:
-        put: windows-worker-lock
-        inputs: detect
-        params:
-          release: windows-worker-lock
 
 - name: groot-windows-test-regularfile
   serial: true
@@ -159,17 +141,14 @@ jobs:
     - get: ci
     - get: image
     - get: concourse-env
-  - put: windows-worker-lock
-    params:
-      acquire: true
   - task: start-windows-worker
     image: image
     file: ci/shared/tasks/bosh-start/linux.yml
     input_mapping:
       env: concourse-env
     params:
-      DEPLOYMENT: windows-worker
-      INSTANCE_GROUP: windows-worker
+      DEPLOYMENT: windows-workers
+      INSTANCE_GROUP: winc-docker-images-regularfile
       BBL_STATE_DIR: concourse-env
   - task: build-push-groot-windows-dockerfile
     file: ci/winc-release/tasks/build-push-groot-windows-dockerfile/windows.yml
@@ -187,8 +166,8 @@ jobs:
     input_mapping:
       env: concourse-env
     params:
-      DEPLOYMENT: windows-worker
-      INSTANCE_GROUP: windows-worker
+      DEPLOYMENT: windows-workers
+      INSTANCE_GROUP: winc-docker-images-regularfile
       BBL_STATE_DIR: concourse-env
     ensure:
       task: prune-worker
@@ -197,11 +176,6 @@ jobs:
       params:
         FLY_PASSWORD: ((concourse-bot-ci-user))
         FLY_WORKER_REGEX: " windows +none"
-      ensure:
-        put: windows-worker-lock
-        inputs: detect
-        params:
-          release: windows-worker-lock
 
 - name: groot-windows-test-servercore
   serial: true
@@ -214,17 +188,14 @@ jobs:
     - get: ci
     - get: image
     - get: concourse-env
-  - put: windows-worker-lock
-    params:
-      acquire: true
   - task: start-windows-worker
     image: image
     file: ci/shared/tasks/bosh-start/linux.yml
     input_mapping:
       env: concourse-env
     params:
-      DEPLOYMENT: windows-worker
-      INSTANCE_GROUP: windows-worker
+      DEPLOYMENT: windows-workers
+      INSTANCE_GROUP: winc-docker-images-servercore
       BBL_STATE_DIR: concourse-env
   - task: build-push-groot-windows-dockerfile
     file: ci/winc-release/tasks/build-push-groot-windows-dockerfile/windows.yml
@@ -242,8 +213,8 @@ jobs:
     input_mapping:
       env: concourse-env
     params:
-      DEPLOYMENT: windows-worker
-      INSTANCE_GROUP: windows-worker
+      DEPLOYMENT: windows-workers
+      INSTANCE_GROUP: winc-docker-images-servercore
       BBL_STATE_DIR: concourse-env
     ensure:
       task: prune-worker
@@ -252,11 +223,6 @@ jobs:
       params:
         FLY_PASSWORD: ((concourse-bot-ci-user))
         FLY_WORKER_REGEX: " windows +none"
-      ensure:
-        put: windows-worker-lock
-        inputs: detect
-        params:
-          release: windows-worker-lock
 
 - name: groot-windows-test-whiteout
   serial: true
@@ -269,17 +235,14 @@ jobs:
     - get: ci
     - get: image
     - get: concourse-env
-  - put: windows-worker-lock
-    params:
-      acquire: true
   - task: start-windows-worker
     image: image
     file: ci/shared/tasks/bosh-start/linux.yml
     input_mapping:
       env: concourse-env
     params:
-      DEPLOYMENT: windows-worker
-      INSTANCE_GROUP: windows-worker
+      DEPLOYMENT: windows-workers
+      INSTANCE_GROUP: winc-docker-images-whiteout
       BBL_STATE_DIR: concourse-env
   - task: build-push-groot-windows-dockerfile
     file: ci/winc-release/tasks/build-push-groot-windows-dockerfile/windows.yml
@@ -297,8 +260,8 @@ jobs:
     input_mapping:
       env: concourse-env
     params:
-      DEPLOYMENT: windows-worker
-      INSTANCE_GROUP: windows-worker
+      DEPLOYMENT: windows-workers
+      INSTANCE_GROUP: winc-docker-images-whiteout
       BBL_STATE_DIR: concourse-env
     ensure:
       task: prune-worker
@@ -307,9 +270,4 @@ jobs:
       params:
         FLY_PASSWORD: ((concourse-bot-ci-user))
         FLY_WORKER_REGEX: " windows +none"
-      ensure:
-        put: windows-worker-lock
-        inputs: detect
-        params:
-          release: windows-worker-lock
 

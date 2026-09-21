@@ -17,6 +17,9 @@ db_flavors:
   db_user: root
   db_password: password
 #! <MUST> repo/component/package to test in your repo/release
+windows_tags:
+- wg-arp-diego-modules
+
 internal_repos:
 - name: clock
   repo: cloudfoundry/clock
@@ -25,6 +28,7 @@ internal_repos:
 - name: certsplitter
   repo: cloudfoundry/certsplitter
   on_windows: true
+  tag: wg-arp-diego-modules
 - name: cfhttp
   repo: cloudfoundry/cfhttp
 - name: debugserver

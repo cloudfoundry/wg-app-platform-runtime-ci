@@ -293,15 +293,6 @@ resources:
     key: garden-runc-release/version
     json_key: ((gcp-wg-arp-oss-service-account/config-json))
 
-- name: windows-worker-lock
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: windows-worker-lock
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-
 - name: garden-runc-release-env-lock
   type: pool
   icon: cloud-lock
@@ -1147,9 +1138,6 @@ jobs:
         image_repository: cloudfoundry/tas-runtime-build
         image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
-  - put: windows-worker-lock
-    params:
-      acquire: true
   - in_parallel:
     - task: start-windows-worker
       image: image
@@ -1157,8 +1145,8 @@ jobs:
       input_mapping:
         env: concourse-env
       params:
-        DEPLOYMENT: windows-worker
-        INSTANCE_GROUP: windows-worker
+        DEPLOYMENT: windows-workers
+        INSTANCE_GROUP: #@ data.values.windows_tags[0]
         BBL_STATE_DIR: concourse-env
     - task: start-cgroups-v2-worker
       image: image
@@ -1223,8 +1211,8 @@ jobs:
       input_mapping:
         env: concourse-env
       params:
-        DEPLOYMENT: windows-worker
-        INSTANCE_GROUP: windows-worker
+        DEPLOYMENT: windows-workers
+        INSTANCE_GROUP: #@ data.values.windows_tags[0]
         BBL_STATE_DIR: concourse-env
       ensure:
         task: prune-worker
@@ -1233,11 +1221,6 @@ jobs:
         params:
           FLY_PASSWORD: ((concourse-bot-ci-user))
           FLY_WORKER_REGEX: " windows +none"
-        ensure:
-          put: windows-worker-lock
-          inputs: detect
-          params:
-            release: windows-worker-lock
     - task: stop-cgroups-v2-worker
       image: image
       file: ci/shared/tasks/bosh-stop/linux.yml

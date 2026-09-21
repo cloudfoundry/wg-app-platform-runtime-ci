@@ -65,6 +65,17 @@ def on_windows(package):
     return False
 end
 
+#! Returns the windows worker tag for a package: its own `tag` if set,
+#! otherwise the repo-wide default_tag.
+def windows_tag(package, default_tag):
+    if hasattr(package, "tag"):
+        if package.tag:
+            return package.tag
+        end
+    end
+    return default_tag
+end
+
 def privileged(package):
     if hasattr(package, "privileged"):
         if package.privileged:
@@ -180,6 +191,7 @@ helpers = struct.make(
     packages_names_array=packages_names_array,
     packages_names_array_without_acceptance=packages_names_array_without_acceptance,
     on_windows=on_windows,
+    windows_tag=windows_tag,
     privileged=privileged,
     on_branch=on_branch,
     go_submodule_dirs=go_submodule_dirs,

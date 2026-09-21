@@ -10,15 +10,6 @@ groups:
 
 #! Define-Resources
 resources:
-- name: windows-worker-lock
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: windows-worker-lock
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-
 #@ for package in data.values.internal_repos:
 - name: #@ package.name
   type: git
@@ -224,7 +215,6 @@ jobs:
     - get: image
     - get: package-release
       resource: golang-release-latest
-    - get: windows-worker-lock
     - get: concourse-env
 #@ if hasattr(package, 'needs_rootfs') and package.needs_rootfs:
     - get: garden-rootfs
@@ -298,6 +288,44 @@ jobs:
           GARDEN_TEST_ROOTFS=$PWD/input-01/rootfs
           GARDEN_FUSE_TEST_ROOTFS=$PWD/input-02/rootfs
 #@ end
+#@ if helpers.on_windows(package):
+#@ instance_group = helpers.windows_tag(package, package.name)
+    - do:
+      - task: start-windows-worker
+        image: image
+        file: ci/shared/tasks/bosh-start/linux.yml
+        input_mapping:
+          env: concourse-env
+        params:
+          DEPLOYMENT: windows-workers
+          INSTANCE_GROUP: #@ instance_group
+          BBL_STATE_DIR: concourse-env
+      - task: #@ "{}-windows".format(package.name)
+        file: ci/shared/tasks/run-bin-test/windows.yml
+        privileged: #@ helpers.privileged(package)
+        params:
+          ENVS: |
+            DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
+            DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
+            PRIVATE_DOCKER_IMAGE_URL=docker://cloudfoundry/garden-private-image-test:groot
+      ensure:
+        task: stop-windows-worker
+        image: image
+        file: ci/shared/tasks/bosh-stop/linux.yml
+        input_mapping:
+          env: concourse-env
+        params:
+          DEPLOYMENT: windows-workers
+          INSTANCE_GROUP: #@ instance_group
+          BBL_STATE_DIR: concourse-env
+        ensure:
+          task: prune-worker
+          image: image
+          file: ci/shared/tasks/fly-prune-worker/linux.yml
+          params:
+            FLY_PASSWORD: ((concourse-bot-ci-user))
+            FLY_WORKER_REGEX: " windows +none"
+#@ end
 #@ if hasattr(package, 'needs_cgroupsv2') and package.needs_cgroupsv2:
   ensure:
     task: stop-cgroups-v2-worker
@@ -323,7 +351,6 @@ jobs:
     - get: image
     - get: package-release
       resource: golang-release-latest
-    - get: windows-worker-lock
     - get: concourse-env
   - do:
     - task: determine-image-tag
@@ -364,18 +391,16 @@ jobs:
         DB: #@ db.value
 #@ end
 #@ if helpers.on_windows(package):
+#@ instance_group = helpers.windows_tag(package, package.name)
     - do:
-      - put: windows-worker-lock
-        params:
-          acquire: true
       - task: start-windows-worker
         image: image
         file: ci/shared/tasks/bosh-start/linux.yml
         input_mapping:
           env: concourse-env
         params:
-          DEPLOYMENT: windows-worker
-          INSTANCE_GROUP: windows-worker
+          DEPLOYMENT: windows-workers
+          INSTANCE_GROUP: #@ instance_group
           BBL_STATE_DIR: concourse-env
       - task: #@ "{}-mysql-windows".format(package.name)
         file: ci/shared/tasks/run-bin-test/windows.yml
@@ -393,8 +418,8 @@ jobs:
         input_mapping:
           env: concourse-env
         params:
-          DEPLOYMENT: windows-worker
-          INSTANCE_GROUP: windows-worker
+          DEPLOYMENT: windows-workers
+          INSTANCE_GROUP: #@ instance_group
           BBL_STATE_DIR: concourse-env
         ensure:
           task: prune-worker
@@ -403,11 +428,6 @@ jobs:
           params:
             FLY_PASSWORD: ((concourse-bot-ci-user))
             FLY_WORKER_REGEX: " windows +none"
-          ensure:
-            put: windows-worker-lock
-            inputs: detect
-            params:
-              release: windows-worker-lock
 #@ end
 #@ end
 - name: ship-it-hwc

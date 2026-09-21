@@ -3,6 +3,13 @@
 #@overlay/match missing_ok=True
 
 #! <MUST> repo/component/package to test in your repo/release
+windows_tags:
+- winc-release
+- winc-docker-images-link
+- winc-docker-images-regularfile
+- winc-docker-images-servercore
+- winc-docker-images-whiteout
+
 internal_repos:
 - name: cert-injector
 - name: diff-exporter

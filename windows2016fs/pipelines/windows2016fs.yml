@@ -30,15 +30,6 @@ resources:
     uri: git@github.com:cloudfoundry/windows2016fs.git
     private_key: ((github-appruntimeplatform-bot/private-key))
 
-- name: windows-worker-lock
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: windows-worker-lock
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-
 #! MS dockerfile we can pull update URLs from
 - name: dotnet-dockerfile
   type: git
@@ -134,17 +125,14 @@ jobs:
         {input-01/2019/Dockerfile,combined-assets}
         {input-02/Git-*-64-bit.exe,combined-assets}
         {input-03/src/runtime/4.8/windowsservercore-ltsc2019/Dockerfile,combined-assets/dotnet-dockerfile}
-  - put: windows-worker-lock
-    params:
-      acquire: true
   - task: start-windows-worker
     image: image
     file: ci/shared/tasks/bosh-start/linux.yml
     input_mapping:
       env: concourse-env
     params:
-      DEPLOYMENT: windows-worker
-      INSTANCE_GROUP: windows-worker
+      DEPLOYMENT: windows-workers
+      INSTANCE_GROUP: windows2016fs
       BBL_STATE_DIR: concourse-env
   - task: start-smb-server-vm
     image: image
@@ -214,8 +202,8 @@ jobs:
       input_mapping:
         env: concourse-env
       params:
-        DEPLOYMENT: windows-worker
-        INSTANCE_GROUP: windows-worker
+        DEPLOYMENT: windows-workers
+        INSTANCE_GROUP: windows2016fs
         BBL_STATE_DIR: concourse-env
       ensure:
         task: prune-worker
@@ -224,11 +212,6 @@ jobs:
         params:
           FLY_PASSWORD: ((concourse-bot-ci-user))
           FLY_WORKER_REGEX: " windows +none"
-        ensure:
-          put: windows-worker-lock
-          inputs: detect
-          params:
-            release: windows-worker-lock
     - task: stop-smb-server-vm
       image: image
       file: ci/shared/tasks/stop-gcp-instance/linux.yml

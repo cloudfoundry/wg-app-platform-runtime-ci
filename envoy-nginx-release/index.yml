@@ -2,6 +2,9 @@
 ---
 #@overlay/match missing_ok=True
 
+windows_tags:
+- envoy-nginx-release
+
 internal_repos:
 - name: "envoy-nginx"
 

@@ -14,10 +14,14 @@ db_flavors:
   value: mysql
 
 #! <MUST> repo/component/package to test in your repo/release
+windows_tags:
+- wg-arp-networking-modules
+
 internal_repos:
 - name: cf-networking-helpers
   repo: cloudfoundry/cf-networking-helpers
   on_windows: true
+  tag: wg-arp-networking-modules
   configure_db: true
 - name: policy_client
   repo: cloudfoundry/policy_client

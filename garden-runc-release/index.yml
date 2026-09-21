@@ -3,6 +3,9 @@
 #@overlay/match missing_ok=True
 
 #! <MUST> repo/component/package to test in your repo/release
+windows_tags:
+- garden-runc-release
+
 internal_repos:
 - name: greenskeeper
   src_dir: src/code.cloudfoundry.org/greenskeeper

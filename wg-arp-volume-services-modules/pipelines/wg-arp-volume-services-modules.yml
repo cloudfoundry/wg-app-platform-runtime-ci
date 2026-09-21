@@ -20,15 +20,6 @@ resources:
     private_key: ((github-appruntimeplatform-bot/private-key))
 #@ end
 
-- name: windows-worker-lock
-  type: pool
-  icon: cloud-lock
-  source:
-    branch: main
-    pool: windows-worker-lock
-    private_key: ((github-appruntimeplatform-bot/private-key))
-    uri: git@github.com:cloudfoundry/runtime-ci-pools.git
-
 #@ for package in helpers.packages_without_configure_db(data.values.internal_repos):
 
 - name: #@ "{}-github-release".format(package.name)
@@ -181,7 +172,6 @@ jobs:
     - get: image
     - get: package-release
       resource: golang-release-latest
-    - get: windows-worker-lock
     - get: concourse-env
   - task: determine-image-tag
     image: image
@@ -199,18 +189,16 @@ jobs:
         image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
 #@ if helpers.on_windows(package):
+#@ instance_group = helpers.windows_tag(package, package.name)
     - do:
-      - put: windows-worker-lock
-        params:
-          acquire: true
       - task: start-windows-worker
         image: image
         file: ci/shared/tasks/bosh-start/linux.yml
         input_mapping:
           env: concourse-env
         params:
-          DEPLOYMENT: windows-worker
-          INSTANCE_GROUP: windows-worker
+          DEPLOYMENT: windows-workers
+          INSTANCE_GROUP: #@ instance_group
           BBL_STATE_DIR: concourse-env
       - task: #@ "{}-windows".format(package.name)
         file: ci/shared/tasks/run-bin-test/windows.yml
@@ -222,8 +210,8 @@ jobs:
         input_mapping:
           env: concourse-env
         params:
-          DEPLOYMENT: windows-worker
-          INSTANCE_GROUP: windows-worker
+          DEPLOYMENT: windows-workers
+          INSTANCE_GROUP: #@ instance_group
           BBL_STATE_DIR: concourse-env
         ensure:
           task: prune-worker
@@ -232,11 +220,6 @@ jobs:
           params:
             FLY_PASSWORD: ((concourse-bot-ci-user))
             FLY_WORKER_REGEX: " windows +none"
-          ensure:
-            put: windows-worker-lock
-            inputs: detect
-            params:
-              release: windows-worker-lock
 #@ end
 #@ end
 

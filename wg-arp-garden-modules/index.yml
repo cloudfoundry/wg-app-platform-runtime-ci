@@ -11,27 +11,39 @@ db_flavors:
 - image: mysql-8.4
   value: mysql
 #! <MUST> repo/component/package to test in your repo/release
+windows_tags:
+- wg-arp-garden-modules-commandrunner
+- wg-arp-garden-modules-groot
+- wg-arp-garden-modules-hydrator
+- wg-arp-garden-modules-filelock
+- wg-arp-garden-modules-hwc
+
 internal_repos:
 - name: commandrunner
   repo: cloudfoundry/commandrunner
   on_windows: true
+  tag: wg-arp-garden-modules-commandrunner
   initial_version: 0.4.0
 - name: groot
   repo: cloudfoundry/groot
   on_windows: true
+  tag: wg-arp-garden-modules-groot
   initial_version: 0.7.0
 - name: hydrator
   repo: cloudfoundry/hydrator
   initial_version: 0.7.0
   on_windows: true
+  tag: wg-arp-garden-modules-hydrator
 - name: filelock
   repo: cloudfoundry/filelock
   on_windows: true
+  tag: wg-arp-garden-modules-filelock
   initial_version: 0.4.0
 - name: hwc
   repo: cloudfoundry/hwc
   on_branch: develop
   on_windows: true
+  tag: wg-arp-garden-modules-hwc
   initial_version: 30.0.0
 - name: garden
   repo: cloudfoundry/garden

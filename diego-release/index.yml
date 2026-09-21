@@ -19,6 +19,10 @@ inigo_db_flavors:
 - image: mysql-8.0
   value: mysql
 
+windows_tags:
+- diego-windows-inigo
+- diego-windows-unit
+
 internal_repos: []
 
 modules_to_test:
