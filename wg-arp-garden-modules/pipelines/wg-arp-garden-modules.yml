@@ -302,6 +302,8 @@ jobs:
           BBL_STATE_DIR: concourse-env
       - task: #@ "{}-windows".format(package.name)
         file: ci/shared/tasks/run-bin-test/windows.yml
+
+        tags: #@ [ instance_group ]
         privileged: #@ helpers.privileged(package)
         params:
           ENVS: |
@@ -324,7 +326,7 @@ jobs:
           file: ci/shared/tasks/fly-prune-worker/linux.yml
           params:
             FLY_PASSWORD: ((concourse-bot-ci-user))
-            FLY_WORKER_REGEX: " windows +none"
+            FLY_WORKER_REGEX: #@ instance_group
 #@ end
 #@ if hasattr(package, 'needs_cgroupsv2') and package.needs_cgroupsv2:
   ensure:
@@ -337,6 +339,13 @@ jobs:
       DEPLOYMENT: diego-worker-cgroupsv2
       INSTANCE_GROUP: worker
       BBL_STATE_DIR: concourse-env
+    ensure:
+      task: prune-worker-after-stop-cgroups-v2-worker
+      image: image
+      file: ci/shared/tasks/fly-prune-worker/linux.yml
+      params:
+        FLY_PASSWORD: ((concourse-bot-ci-user))
+        FLY_WORKER_REGEX: diego-cgroupsv2
 #@ end
 #@ end
 #@ for package in helpers.packages_with_configure_db(data.values.internal_repos):
@@ -404,6 +413,8 @@ jobs:
           BBL_STATE_DIR: concourse-env
       - task: #@ "{}-mysql-windows".format(package.name)
         file: ci/shared/tasks/run-bin-test/windows.yml
+
+        tags: #@ [ instance_group ]
         privileged: #@ helpers.privileged(package)
         params:
           ENVS: |
@@ -427,7 +438,7 @@ jobs:
           file: ci/shared/tasks/fly-prune-worker/linux.yml
           params:
             FLY_PASSWORD: ((concourse-bot-ci-user))
-            FLY_WORKER_REGEX: " windows +none"
+            FLY_WORKER_REGEX: #@ instance_group
 #@ end
 #@ end
 - name: ship-it-hwc

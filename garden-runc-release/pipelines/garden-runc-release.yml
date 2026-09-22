@@ -1139,24 +1139,26 @@ jobs:
         image_password: ((gcp-arp-artifact-registry-service-account-token))
         image_tag: ((.:image_tag))
   - in_parallel:
-    - task: start-windows-worker
-      image: image
-      file: ci/shared/tasks/bosh-start/linux.yml
-      input_mapping:
-        env: concourse-env
-      params:
-        DEPLOYMENT: windows-workers
-        INSTANCE_GROUP: #@ data.values.windows_tags[0]
-        BBL_STATE_DIR: concourse-env
-    - task: start-cgroups-v2-worker
-      image: image
-      file: ci/shared/tasks/bosh-start/linux.yml
-      input_mapping:
-        env: concourse-env
-      params:
-        DEPLOYMENT: diego-worker-cgroupsv2
-        INSTANCE_GROUP: worker
-        BBL_STATE_DIR: concourse-env
+    - do:
+      - task: start-windows-worker
+        image: image
+        file: ci/shared/tasks/bosh-start/linux.yml
+        input_mapping:
+          env: concourse-env
+        params:
+          DEPLOYMENT: windows-workers
+          INSTANCE_GROUP: #@ data.values.windows_tags[0]
+          BBL_STATE_DIR: concourse-env
+    - do:
+      - task: start-cgroups-v2-worker
+        image: image
+        file: ci/shared/tasks/bosh-start/linux.yml
+        input_mapping:
+          env: concourse-env
+        params:
+          DEPLOYMENT: diego-worker-cgroupsv2
+          INSTANCE_GROUP: worker
+          BBL_STATE_DIR: concourse-env
   - in_parallel:
 #@ for repo in data.values.internal_repos:
 #@ base_envs = "DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))\nDOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))\n"
@@ -1197,6 +1199,7 @@ jobs:
 #@ if helpers.on_windows(repo):
     - task: #@ "{}-windows".format(repo.name)
       file: ci/shared/tasks/run-bin-test/windows.yml
+      tags: #@ [ data.values.windows_tags[0] ]
       attempts: 3
       privileged: #@ helpers.privileged(repo)
       params:
@@ -1220,7 +1223,7 @@ jobs:
         file: ci/shared/tasks/fly-prune-worker/linux.yml
         params:
           FLY_PASSWORD: ((concourse-bot-ci-user))
-          FLY_WORKER_REGEX: " windows +none"
+          FLY_WORKER_REGEX: #@ data.values.windows_tags[0]
     - task: stop-cgroups-v2-worker
       image: image
       file: ci/shared/tasks/bosh-stop/linux.yml
@@ -1230,6 +1233,13 @@ jobs:
         DEPLOYMENT: diego-worker-cgroupsv2
         INSTANCE_GROUP: worker
         BBL_STATE_DIR: concourse-env
+      ensure:
+        task: prune-worker-after-stop-cgroups-v2-worker
+        image: image
+        file: ci/shared/tasks/fly-prune-worker/linux.yml
+        params:
+          FLY_PASSWORD: ((concourse-bot-ci-user))
+          FLY_WORKER_REGEX: diego-cgroupsv2
 
 - name: lint-repo
   serial: true

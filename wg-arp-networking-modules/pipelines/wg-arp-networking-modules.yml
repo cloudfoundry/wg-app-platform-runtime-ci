@@ -204,6 +204,8 @@ jobs:
           BBL_STATE_DIR: concourse-env
       - task: #@ "{}-windows".format(package.name)
         file: ci/shared/tasks/run-bin-test/windows.yml
+
+        tags: #@ [ instance_group ]
         privileged: #@ helpers.privileged(package)
       ensure:
         task: stop-windows-worker
@@ -221,7 +223,7 @@ jobs:
           file: ci/shared/tasks/fly-prune-worker/linux.yml
           params:
             FLY_PASSWORD: ((concourse-bot-ci-user))
-            FLY_WORKER_REGEX: " windows +none"
+            FLY_WORKER_REGEX: #@ instance_group
 #@ end
 #@ end
 
@@ -282,6 +284,8 @@ jobs:
           BBL_STATE_DIR: concourse-env
       - task: #@ "{}-mysql-windows".format(package.name)
         file: ci/shared/tasks/run-bin-test/windows.yml
+
+        tags: #@ [ instance_group ]
         privileged: #@ helpers.privileged(package)
         params:
           DB: mysql
@@ -301,7 +305,7 @@ jobs:
           file: ci/shared/tasks/fly-prune-worker/linux.yml
           params:
             FLY_PASSWORD: ((concourse-bot-ci-user))
-            FLY_WORKER_REGEX: " windows +none"
+            FLY_WORKER_REGEX: #@ instance_group
 #@ end
 #@ end
 

@@ -144,6 +144,8 @@ jobs:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
   - task: build-test-push-windows2016fs
     file: ci/shared/tasks/run-bin-test/windows.yml
+
+    tags: [ windows2016fs ]
     input_mapping:
       built-binaries: combined-assets
       input-01: windowsservercore-2019
@@ -211,7 +213,7 @@ jobs:
         file: ci/shared/tasks/fly-prune-worker/linux.yml
         params:
           FLY_PASSWORD: ((concourse-bot-ci-user))
-          FLY_WORKER_REGEX: " windows +none"
+          FLY_WORKER_REGEX: windows2016fs
     - task: stop-smb-server-vm
       image: image
       file: ci/shared/tasks/stop-gcp-instance/linux.yml

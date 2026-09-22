@@ -128,7 +128,7 @@ jobs:
       file: ci/shared/tasks/fly-prune-worker/linux.yml
       params:
         FLY_PASSWORD: ((concourse-bot-ci-user))
-        FLY_WORKER_REGEX: " windows +none"
+        FLY_WORKER_REGEX: winc-docker-images-link
 
 - name: groot-windows-test-regularfile
   serial: true
@@ -175,7 +175,7 @@ jobs:
       file: ci/shared/tasks/fly-prune-worker/linux.yml
       params:
         FLY_PASSWORD: ((concourse-bot-ci-user))
-        FLY_WORKER_REGEX: " windows +none"
+        FLY_WORKER_REGEX: winc-docker-images-regularfile
 
 - name: groot-windows-test-servercore
   serial: true
@@ -222,7 +222,7 @@ jobs:
       file: ci/shared/tasks/fly-prune-worker/linux.yml
       params:
         FLY_PASSWORD: ((concourse-bot-ci-user))
-        FLY_WORKER_REGEX: " windows +none"
+        FLY_WORKER_REGEX: winc-docker-images-servercore
 
 - name: groot-windows-test-whiteout
   serial: true
@@ -269,5 +269,5 @@ jobs:
       file: ci/shared/tasks/fly-prune-worker/linux.yml
       params:
         FLY_PASSWORD: ((concourse-bot-ci-user))
-        FLY_WORKER_REGEX: " windows +none"
+        FLY_WORKER_REGEX: winc-docker-images-whiteout
 

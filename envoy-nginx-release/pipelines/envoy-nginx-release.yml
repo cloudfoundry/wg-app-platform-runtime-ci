@@ -433,6 +433,8 @@ jobs:
 #@ for repo in data.values.internal_repos:
     - task: #@ "{}".format(repo.name)
       file: ci/shared/tasks/run-bin-test/windows.yml
+
+      tags: #@ [ data.values.windows_tags[0] ]
       params:
         DIR: #@ "src/code.cloudfoundry.org/{}".format(repo.name)
         ENVS: TEMP=/var/vcap/data/tmp
@@ -453,7 +455,7 @@ jobs:
       file: ci/shared/tasks/fly-prune-worker/linux.yml
       params:
         FLY_PASSWORD: ((concourse-bot-ci-user))
-        FLY_WORKER_REGEX: " windows +none"
+        FLY_WORKER_REGEX: #@ data.values.windows_tags[0]
 
 - name: lint-repo
   serial: true
