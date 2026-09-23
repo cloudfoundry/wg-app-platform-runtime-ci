@@ -1204,6 +1204,7 @@ jobs:
       privileged: #@ helpers.privileged(repo)
       params:
         DIR: #@ repo.src_dir if hasattr(repo, "src_dir") else "src/{}".format(repo.name)
+        ENVS: CGO_ENABLED=1
 #@ end
 #@ end
   ensure:
