@@ -204,7 +204,6 @@ jobs:
           BBL_STATE_DIR: concourse-env
       - task: #@ "{}-windows".format(package.name)
         file: ci/shared/tasks/run-bin-test/windows.yml
-
         tags: #@ [ instance_group ]
         privileged: #@ helpers.privileged(package)
       ensure:
@@ -239,6 +238,7 @@ jobs:
     - get: image
     - get: package-release
       resource: golang-release-latest
+    - get: concourse-env
   - do:
     - task: determine-image-tag
       image: image
