@@ -125,16 +125,6 @@ resources:
       - shared/github
       - winc-release/github
 
-#@ for repo in data.values.internal_repos:
-- name: #@ "{}-repo".format(repo.name)
-  type: git
-  icon: source-branch
-  source:
-    branch: main
-    uri: #@ "git@github.com:cloudfoundry/{}.git".format(repo.name)
-    private_key: ((github-appruntimeplatform-bot/private-key))
-#@ end
-
 - name: cf-deployment
   type: git
   icon: source-branch
@@ -476,9 +466,6 @@ jobs:
       - get: ci
       - get: image
       - get: repo
-#@ for repo in data.values.internal_repos:
-      - get: #@ "{}-repo".format(repo.name)
-#@ end
       - get: shared-templates
         trigger: true
   - do:
@@ -491,20 +478,6 @@ jobs:
       params:
        rebase: true
        repository: synced-repo
-#@ for repo in data.values.internal_repos:
-  - do:
-    - task: #@ "sync-dot-github-dir-{}".format(repo.name)
-      file: ci/shared/tasks/sync-dot-github-dir/linux.yml
-      image: image
-      input_mapping:
-        repo: #@ "{}-repo".format(repo.name)
-      params:
-        PARENT_TEMPLATE_DIR: winc-release
-    - put: #@ "{}-repo".format(repo.name)
-      params:
-       rebase: true
-       repository: synced-repo
-#@ end
 
 - name: template-tests
   serial: true
@@ -541,6 +514,7 @@ jobs:
       BBL_STATE_DIR: concourse-env
   - task: build-binaries
     file: ci/shared/tasks/build-binaries/windows.yml
+    tags: #@ [ data.values.windows_tags[0] ]
     params:
       FUNCTIONS: ci/winc-release/helpers/build-binaries.ps1
       MAPPING: |
