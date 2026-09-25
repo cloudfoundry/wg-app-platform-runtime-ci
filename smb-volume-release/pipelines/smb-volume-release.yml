@@ -1098,8 +1098,8 @@ jobs:
     params:
       BBL_STATE_DIR: bbl-smb-volume-env
       SENTINEL_FILE: finished
-      REASON: 3h timeout reached
-      TIMEOUT_SECONDS: 10800
+      REASON: 4h timeout reached
+      TIMEOUT_SECONDS: 14400
       GITHUB_PRIVATE_KEY: ((github-appruntimeplatform-bot/private-key))
   - put: env
     params:
