@@ -875,7 +875,6 @@ jobs:
       passed: [claim-env]
       trigger: true
     - get: cf-networking-release-env-lock
-      passed: [ claim-env ]
   - try: &delete-cf-deployment
       do:
         - task: bosh-deld

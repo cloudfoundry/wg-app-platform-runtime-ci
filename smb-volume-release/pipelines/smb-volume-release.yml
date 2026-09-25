@@ -721,7 +721,6 @@ jobs:
       passed: [claim-env]
       trigger: true
     - get: smb-volume-release-env-lock
-      passed: [claim-env]
   - try: &delete-cf-deployment
       do:
         - task: bosh-deld

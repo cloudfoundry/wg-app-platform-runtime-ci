@@ -407,7 +407,6 @@ jobs:
     - get: windows2016fs
       passed: [claim-env]
     - get: windowsfs-online-release-env-lock
-      passed: [claim-env]
   - try: &delete-cf-deployment
       do:
         - task: bosh-deld

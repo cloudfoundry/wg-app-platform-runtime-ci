@@ -533,7 +533,6 @@ jobs:
     - get: env
       passed: [ claim-env ]
     - get: nats-release-env-lock
-      passed: [ claim-env ]
   - try: &delete-cf-deployment
       do:
       - task: bosh-deld

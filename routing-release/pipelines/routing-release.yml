@@ -812,7 +812,6 @@ jobs:
       passed: [claim-env]
       trigger: true
     - get: routing-release-env-lock
-      passed: [claim-env]
   - try: &delete-cf-deployment
       do:
         - task: bosh-deld

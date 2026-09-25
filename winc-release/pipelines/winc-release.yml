@@ -654,7 +654,6 @@ jobs:
     - get: windows-stemcell
     - get: winc-release
     - get: winc-release-env-lock
-      passed: [claim-env]
   - try: &delete-cf-deployment
       do:
         - task: bosh-deld
