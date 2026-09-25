@@ -82,6 +82,16 @@ resources:
     tag_filter: v*
     uri: https://github.com/bosh-packages/golang-release.git
 
+#@ needs_groot = any([hasattr(p, 'needs_groot') and p.needs_groot for p in data.values.internal_repos])
+#@ if needs_groot:
+- name: winc-release
+  type: git
+  icon: source-branch
+  source:
+    branch: develop
+    uri: https://github.com/cloudfoundry/winc-release
+#@ end
+
 #@ needs_rootfs = any([(hasattr(p, 'needs_rootfs') and p.needs_rootfs) or (hasattr(p, 'needs_cgroupsv2') and p.needs_cgroupsv2) for p in data.values.internal_repos])
 #@ if needs_rootfs:
 - name: garden-rootfs
@@ -224,6 +234,9 @@ jobs:
       params:
         format: rootfs
 #@ end
+#@ if hasattr(package, 'needs_groot') and package.needs_groot:
+    - get: winc-release
+#@ end
   - task: determine-image-tag
     image: image
     params:
@@ -300,16 +313,37 @@ jobs:
           DEPLOYMENT: windows-workers
           INSTANCE_GROUP: #@ instance_group
           BBL_STATE_DIR: concourse-env
+#@ if hasattr(package, 'needs_groot') and package.needs_groot:
+      - task: build-binaries-for-winc-release-windows
+        file: ci/shared/tasks/build-binaries/windows.yml
+        tags: #@ [ instance_group ]
+        input_mapping:
+          repo: winc-release
+        output_mapping:
+          built-binaries: winc-release-windows-built-binaries
+        params:
+          FUNCTIONS: ci/winc-release/helpers/build-binaries.ps1
+          MAPPING: |
+            Build-Groot=src/code.cloudfoundry.org/groot-windows
+            Build-Winc=src/code.cloudfoundry.org/winc/cmd/winc
+            Build-Diff-Exporter=src/code.cloudfoundry.org/diff-exporter
+#@ end
       - task: #@ "{}-windows".format(package.name)
         file: ci/shared/tasks/run-bin-test/windows.yml
 
         tags: #@ [ instance_group ]
         privileged: #@ helpers.privileged(package)
+#@ if hasattr(package, 'needs_groot') and package.needs_groot:
+        input_mapping:
+          built-binaries: winc-release-windows-built-binaries
+#@ end
         params:
           ENVS: |
             DOCKER_REGISTRY_USERNAME=((dockerhub-appruntimeplatform-username))
             DOCKER_REGISTRY_PASSWORD=((dockerhub-appruntimeplatform-password))
             PRIVATE_DOCKER_IMAGE_URL=docker://cloudfoundry/garden-private-image-test:groot
+            IMAGE_NAME=cloudfoundry/windows2016fs
+            IMAGE_TAG=2019
       ensure:
         task: stop-windows-worker
         image: image

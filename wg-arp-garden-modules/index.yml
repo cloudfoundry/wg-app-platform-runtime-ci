@@ -33,6 +33,7 @@ internal_repos:
   repo: cloudfoundry/hydrator
   initial_version: 0.7.0
   on_windows: true
+  needs_groot: true
   tag: wg-arp-garden-modules-hydrator
 - name: filelock
   repo: cloudfoundry/filelock
