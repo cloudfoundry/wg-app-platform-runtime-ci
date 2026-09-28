@@ -977,7 +977,6 @@ jobs:
 
 - name: volume-services-acceptance-tests
   serial: true
-  serial_groups: [acceptance]
   plan:
   - in_parallel:
       fail_fast: true
@@ -1058,7 +1057,6 @@ jobs:
 
 - name: dockerdriver-integration
   serial: true
-  serial_groups: [acceptance]
   plan:
   - in_parallel:
       fail_fast: true
@@ -1086,7 +1084,6 @@ jobs:
 
 - name: map-fs-performance-acceptance-tests
   serial: true
-  serial_groups: [acceptance]
   plan:
   - in_parallel:
       fail_fast: true
@@ -1114,7 +1111,6 @@ jobs:
 
 - name: export-release
   serial: true
-  serial_groups: [acceptance]
   plan:
   - in_parallel:
     - get: manual-release-trigger
