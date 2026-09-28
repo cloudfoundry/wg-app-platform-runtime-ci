@@ -1020,7 +1020,7 @@ jobs:
         input_mapping:
           repo: cf-volume-services-acceptance-tests
           input-01: configs-without-ldap
-        attempts: 2
+        attempts: 4
         vars:
           image_repository: cloudfoundry/tas-runtime-build
           image_password: ((gcp-arp-artifact-registry-service-account-token))
@@ -1047,7 +1047,7 @@ jobs:
         input_mapping:
           repo: cf-volume-services-acceptance-tests
           input-01: configs-with-ldap
-        attempts: 2
+        attempts: 4
         vars:
           image_repository: cloudfoundry/tas-runtime-build
           image_password: ((gcp-arp-artifact-registry-service-account-token))
