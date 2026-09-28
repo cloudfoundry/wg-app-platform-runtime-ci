@@ -969,11 +969,12 @@ jobs:
       BBL_STATE_DIR: bbl-nfs-volume-env
   - task: cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
-    attempts: 2
+    attempts: 4
     input_mapping:
       integration-config: built-acceptance-test-configs
     params:
       CONFIG_FILE_PATH: cats.json
+      NODES: 4
 
 - name: volume-services-acceptance-tests
   serial: true
@@ -1276,8 +1277,8 @@ jobs:
     params:
       BBL_STATE_DIR: bbl-nfs-volume-env
       SENTINEL_FILE: finished
-      REASON: 4h timeout reached
-      TIMEOUT_SECONDS: 14400
+      REASON: 5h timeout reached
+      TIMEOUT_SECONDS: 18000
       GITHUB_PRIVATE_KEY: ((github-appruntimeplatform-bot/private-key))
   - put: env
     params:
