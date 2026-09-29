@@ -18,6 +18,7 @@ groups:
   - run-backwards-compatibility-route-registrar-test
   - export-release
   - run-cipher-suite
+  - mark-acceptance-tests-finished
   - ship-what
   - ship-it
 
@@ -1320,6 +1321,36 @@ jobs:
       BBL_STATE_DIR: bbl-routing-env
       DEPLOYMENT_NAME: cipher
       ERRAND_NAME: run-cipher-test
+
+- name: mark-acceptance-tests-finished
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: image
+    - get: env
+      trigger: true
+      passed:
+        - run-cats
+        - run-drats
+        - run-rats
+        - run-cfsmoke
+        - run-backwards-compatibility-route-registrar-test
+        - run-cipher-suite
+        - export-release
+  - task: mark-env-finished
+    image: image
+    file: ci/shared/tasks/write-env-sentinels/linux.yml
+    input_mapping:
+      env: env
+    params:
+      BBL_STATE_DIR: bbl-routing-env
+      SENTINEL_FILE: finished
+      REASON: acceptance tests finished
+  - put: env
+    params:
+      repository: updated-env
+      rebase: true
 
 - name: ship-what
   on_success:

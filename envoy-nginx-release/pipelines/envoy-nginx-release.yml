@@ -12,6 +12,7 @@ groups:
   - prepare-env
   - run-wats
   - export-release
+  - mark-acceptance-tests-finished
   - ship-what
   - ship-it
 
@@ -715,6 +716,31 @@ jobs:
     params:
       OS: windows
       BBL_STATE_DIR: bbl-envoy-nginx-env
+
+- name: mark-acceptance-tests-finished
+  serial: true
+  plan:
+  - in_parallel:
+    - get: ci
+    - get: image
+    - get: env
+      trigger: true
+      passed:
+        - run-wats
+        - export-release
+  - task: mark-env-finished
+    image: image
+    file: ci/shared/tasks/write-env-sentinels/linux.yml
+    input_mapping:
+      env: env
+    params:
+      BBL_STATE_DIR: bbl-envoy-nginx-env
+      SENTINEL_FILE: finished
+      REASON: acceptance tests finished
+  - put: env
+    params:
+      repository: updated-env
+      rebase: true
 
 - name: ship-what
   on_success:
