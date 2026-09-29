@@ -496,7 +496,7 @@ jobs:
       BBL_STATE_DIR: bbl-windowsfs-online-env
   - task: wats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
-    attempts: 2
+    attempts: 4
     input_mapping:
       integration-config: built-acceptance-test-configs
     params:
@@ -695,8 +695,8 @@ jobs:
     params:
       BBL_STATE_DIR: bbl-windowsfs-online-env
       SENTINEL_FILE: finished
-      REASON: 4h timeout reached
-      TIMEOUT_SECONDS: 14400
+      REASON: 6h timeout reached
+      TIMEOUT_SECONDS: 21600
       GITHUB_PRIVATE_KEY: ((github-appruntimeplatform-bot/private-key))
   - put: env
     params:

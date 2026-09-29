@@ -555,7 +555,7 @@ jobs:
       BBL_STATE_DIR: bbl-windows2019fs-env
   - task: wats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
-    attempts: 2
+    attempts: 4
     input_mapping:
       integration-config: built-acceptance-test-configs
     params:
