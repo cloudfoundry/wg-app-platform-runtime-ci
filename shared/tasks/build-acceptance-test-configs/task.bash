@@ -23,6 +23,13 @@ function run(){
     cf_target
     popd
 
+    if [[ -n "${APPS_DOMAIN:-}" ]]; then
+        CF_APPS_DOMAIN="${APPS_DOMAIN}"
+    fi
+    if [[ -n "${TCP_DOMAIN:-}" ]]; then
+        CF_TCP_DOMAIN="${TCP_DOMAIN}"
+    fi
+
     for entry in ${CONFIGS}
     do
         if [[ "$entry" == "cats" ]]; then
@@ -53,6 +60,7 @@ function run(){
 function cats() {
     local file="${1?Provide config file}"
 
+    local with_app_syslog_tcp="${WITH_APP_SYSLOG_TCP:-true}"
     local with_apps="${WITH_APPS:-true}"
     local with_container_networking="${WITH_CONTAINER_NETWORKING:-true}"
     local with_detect="${WITH_DETECT:-true}"
@@ -101,6 +109,7 @@ function cats() {
     "credhub_mode": "${credhub_mode}",
     "credhub_client": "${credhub_client}",
     "credhub_secret": "${credhub_secret}",
+    "include_app_syslog_tcp": ${with_app_syslog_tcp},
     "include_apps": ${with_apps},
     "include_container_networking": ${with_container_networking},
     "include_detect": ${with_detect},
@@ -134,7 +143,7 @@ function cats() {
     "stacks": ["cflinuxfs4"],
     "tcp_domain": "${CF_TCP_DOMAIN}",
     "timeout_scale": 2,
-    "use_http": true,
+    "use_http": ${USE_HTTP:-true},
     "volume_service_name": "${VOLUME_SERVICE_SERVICE_NAME:-}",
     "volume_service_plan_name": "${VOLUME_SERVICE_PLAN_NAME:-}",
     "volume_service_create_config": "${VOLUME_SERVICE_CREATE_CONFIG:-}",
