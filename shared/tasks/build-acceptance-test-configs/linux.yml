@@ -9,6 +9,7 @@ outputs:
 - name: built-acceptance-test-configs
 
 params:
+  APPS_DOMAIN:
   BBL_STATE_DIR:
   CONFIGS:
   CREDHUB_MODE: assisted
@@ -17,6 +18,9 @@ params:
   ISOSEG_DOMAIN:
   ISOSEG_DOMAIN_SUFFIX:
   ISOSEG_NAME: persistent_isolation_segment
+  TCP_DOMAIN:
+  USE_HTTP: true
+  WITH_APP_SYSLOG_TCP: true
   WITH_APPS: true
   WITH_COMMA_DELIMITED_ASG_DESTINATIONS: false
   WITH_CONTAINER_NETWORKING: true
