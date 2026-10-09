@@ -47,7 +47,24 @@ function verify_govet(){
 function verify_staticcheck(){
     local dir="${1:-$PWD}"
     pushd "${dir}" >/dev/null
-    staticcheck ./...
+
+    # Go 1.27.2+ writes export data v5, which staticcheck cannot decode yet
+    # ("export data version 5 is greater than maximum supported version 4").
+    # Run only staticcheck with the 1.27.1 toolchain until a staticcheck
+    # release includes dominikh/go-tools#1834. Override with STATICCHECK_GOTOOLCHAIN.
+    local toolchain="${STATICCHECK_GOTOOLCHAIN:-}"
+    local go_version
+    go_version="$(go env GOVERSION)"
+    if [[ -z "${toolchain}" && "${go_version}" =~ ^go1\.27\.([0-9]+) && "${BASH_REMATCH[1]}" -ge 2 ]]; then
+        toolchain="go1.27.1"
+    fi
+
+    if [[ -n "${toolchain}" ]]; then
+        echo "Running staticcheck with GOTOOLCHAIN=${toolchain} (container has ${go_version})"
+        GOTOOLCHAIN="${toolchain}" staticcheck ./...
+    else
+        staticcheck ./...
+    fi
     popd >/dev/null
 }
 
