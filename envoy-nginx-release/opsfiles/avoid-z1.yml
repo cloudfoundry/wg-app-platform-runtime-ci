@@ -1,0 +1,58 @@
+---
+# Keep every instance group out of z1 (us-central1-a in bbl-envoy-nginx-env).
+# Must be applied after scale-to-HA.yml, scale-down-windows2019.yml and
+# use-2-azs-for-router.yml, which all set azs including z1.
+- type: replace
+  path: /instance_groups/name=smoke-tests/azs
+  value: [ z2 ]
+- type: replace
+  path: /instance_groups/name=singleton-blobstore/azs
+  value: [ z2 ]
+- type: replace
+  path: /instance_groups/name=rotate-cc-database-key/azs
+  value: [ z2 ]
+- type: replace
+  path: /instance_groups/name=windows2019-cell/azs
+  value: [ z2 ]
+- type: replace
+  path: /instance_groups/name=database/azs
+  value: [ z2,z3 ]
+- type: replace
+  path: /instance_groups/name=nats/azs
+  value: [ z2,z3 ]
+- type: replace
+  path: /instance_groups/name=diego-api/azs
+  value: [ z2,z3 ]
+- type: replace
+  path: /instance_groups/name=uaa/azs
+  value: [ z2,z3 ]
+- type: replace
+  path: /instance_groups/name=api/azs
+  value: [ z2,z3 ]
+- type: replace
+  path: /instance_groups/name=cc-worker/azs
+  value: [ z2,z3 ]
+- type: replace
+  path: /instance_groups/name=scheduler/azs
+  value: [ z2,z3 ]
+- type: replace
+  path: /instance_groups/name=router/azs
+  value: [ z2,z3 ]
+- type: replace
+  path: /instance_groups/name=tcp-router/azs
+  value: [ z2,z3 ]
+- type: replace
+  path: /instance_groups/name=log-cache/azs
+  value: [ z2,z3 ]
+- type: replace
+  path: /instance_groups/name=doppler/azs
+  value: [ z2,z3 ]
+- type: replace
+  path: /instance_groups/name=diego-cell/azs
+  value: [ z2,z3 ]
+- type: replace
+  path: /instance_groups/name=log-api/azs
+  value: [ z2,z3 ]
+- type: replace
+  path: /instance_groups/name=credhub/azs
+  value: [ z2,z3 ]

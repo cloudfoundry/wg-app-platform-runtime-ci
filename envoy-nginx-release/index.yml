@@ -19,3 +19,4 @@ opsfiles:
   - scale-down-windows2019.yml
   - decrease-rep-evacuation-timeout.yml
   - use-2-azs-for-router.yml
+  - avoid-z1.yml
