@@ -472,7 +472,7 @@ resources:
   type: git
   icon: tag-outline
   source:
-    branch: stable/v2.39
+    branch: stable/v2.42
     uri: https://github.com/util-linux/util-linux.git
     tag_regex: ^v([0-9]|[1-9][0-9]*)\.([0-9]|[1-9][0-9]*)\.([0-9]|[1-9][0-9]*)$
 
