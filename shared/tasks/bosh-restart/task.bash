@@ -15,7 +15,7 @@ function run(){
     shift 1
 
     bosh_target
-    wait_for_bosh_lock "${DEPLOYMENT}"
+    wait_for_bosh_lock "${DEPLOYMENT_NAME}"
     bosh -n -d "${DEPLOYMENT_NAME}" restart "${INSTANCE_GROUP}"
 }
 
