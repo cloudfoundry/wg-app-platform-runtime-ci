@@ -10,6 +10,7 @@ unset THIS_FILE_DIR
 SENTINEL_PATH="${BBL_STATE_DIR}/ci-status/${SENTINEL_FILE}"
 CLAIMED_SENTINEL_PATH="${BBL_STATE_DIR}/ci-status/claimed"
 INTERVAL=120
+MAX_CONSECUTIVE_FETCH_FAILURES="${MAX_CONSECUTIVE_FETCH_FAILURES:-10}"
 
 cp -r env/. updated-env/
 
@@ -20,9 +21,23 @@ if [[ -n "${TIMEOUT_SECONDS:-}" && "${TIMEOUT_SECONDS}" -gt 0 ]]; then
   ssh-keyscan "${GITHUB_HOST}" >> ~/.ssh/known_hosts 2>/dev/null
 
   DEADLINE=$(( $(date +%s) + TIMEOUT_SECONDS ))
+  FETCH_FAILURES=0
 
   while true; do
-    git -C updated-env fetch origin
+    # A transient network blip (e.g. ssh connect timeout) must not abort a
+    # multi-hour wait; only give up after repeated consecutive failures.
+    if git -C updated-env fetch origin; then
+      FETCH_FAILURES=0
+    else
+      FETCH_FAILURES=$(( FETCH_FAILURES + 1 ))
+      echo "git fetch failed (${FETCH_FAILURES}/${MAX_CONSECUTIVE_FETCH_FAILURES} consecutive failures)"
+      if [[ "${FETCH_FAILURES}" -ge "${MAX_CONSECUTIVE_FETCH_FAILURES}" ]]; then
+        echo "Too many consecutive git fetch failures, giving up."
+        exit 1
+      fi
+      sleep "${INTERVAL}"
+      continue
+    fi
 
     if git -C updated-env cat-file -e "origin/main:${SENTINEL_PATH}" 2>/dev/null; then
       echo "${SENTINEL_FILE} sentinel detected - skipping write."

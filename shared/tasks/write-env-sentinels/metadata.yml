@@ -3,10 +3,12 @@ readme: |
   Writes a sentinel file to the ci-status directory of an env repo to signal
   pipeline state (e.g. claimed, finished).
 
-  When TIMEOUT_SECONDS is set, the task first polls the remote repo every 5
+  When TIMEOUT_SECONDS is set, the task first polls the remote repo every 2
   minutes. If the sentinel is detected before the timeout, it exits without
   writing (another job already wrote it). If the timeout is reached first, it
   writes the sentinel. This mode requires GITHUB_PRIVATE_KEY for live fetch.
+  A failed fetch (e.g. a transient network timeout) is retried on the next poll;
+  the task only fails after MAX_CONSECUTIVE_FETCH_FAILURES failures in a row.
 
   When TIMEOUT_SECONDS is not set, the sentinel is written immediately.
 oses:
@@ -18,3 +20,4 @@ params:
   TIMEOUT_SECONDS: (optional) total seconds to poll before writing; omit or set to empty to write immediately
   GITHUB_HOST: hostname of the GitHub server to trust via ssh-keyscan (default github.com)
   GITHUB_PRIVATE_KEY: (required when TIMEOUT_SECONDS is set) SSH private key for fetching the env repo to check live sentinel state
+  MAX_CONSECUTIVE_FETCH_FAILURES: (optional) number of consecutive failed git fetches while polling before the task fails (default 10)
