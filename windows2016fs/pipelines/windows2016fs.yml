@@ -144,7 +144,6 @@ jobs:
       SERVICE_ACCOUNT_KEY: ((gcp-wg-arp-service-account/config-json))
   - task: build-test-push-windows2016fs
     file: ci/shared/tasks/run-bin-test/windows.yml
-
     tags: [ windows2016fs ]
     input_mapping:
       built-binaries: combined-assets
@@ -167,6 +166,7 @@ jobs:
         SHARE_PASSWORD="((gcp-garden-windows-ci-smb-server/password))"
   - task: build-rootfs-metadata
     file: ci/windows2016fs/tasks/build-rootfs-metadata/windows.yml
+    tags: [ windows2016fs ]
   - task: add-kb-metadata
     file: ci/shared/tasks/combine-assets/linux.yml
     image: image
