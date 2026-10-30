@@ -1466,6 +1466,7 @@ jobs:
 
 - name: run-vizzini
   serial: true
+  serial_groups: [acceptance]
   plan:
   - in_parallel:
     - get: manual-release-trigger
