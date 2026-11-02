@@ -1594,6 +1594,7 @@ jobs:
         - run-cats
         - run-wats
         - run-bosh-restart
+        - run-vizzini
         - export-release
   - task: mark-env-finished
     image: image
