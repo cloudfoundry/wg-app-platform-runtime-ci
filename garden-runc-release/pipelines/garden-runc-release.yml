@@ -159,7 +159,6 @@ resources:
   type: git
   icon: source-branch
   source:
-    branch: master
     uri: https://github.com/cloudfoundry/windows-utilities-release.git
 
 - name: cf-deployment-concourse-tasks
