@@ -1488,7 +1488,11 @@ jobs:
         - run-bosh-restart
       trigger: true
     - get: env
-      passed: [prepare-env]
+      passed:
+        - run-cats
+        - run-wats
+        - export-release
+        - run-bosh-restart
       trigger: true
     - get: cf-deployment-concourse-tasks
   - in_parallel:
