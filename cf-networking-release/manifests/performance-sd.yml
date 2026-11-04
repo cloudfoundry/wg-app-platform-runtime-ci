@@ -23,7 +23,10 @@ instance_groups:
   instances: 1
   jobs:
   - name: performance-test-sd
-    properties: {}
+    properties:
+      nats:
+        cert_chain: "((nats_client_cert.certificate))"
+        private_key: "((nats_client_cert.private_key))"
     release: cf-networking
   - name: bpm
     release: bpm
@@ -36,7 +39,7 @@ instance_groups:
   azs: [((CF_AZ))]
   instances: 1
   jobs:
-  - name: nats
+  - name: nats-tls
     properties:
       nats:
         debug: true
@@ -52,9 +55,19 @@ instance_groups:
             ca: "((nats_internal_cert.ca))"
             private_key: "((nats_internal_cert.private_key))"
             certificate: "((nats_internal_cert.certificate))"
+        external:
+          tls:
+            ca: "((nats_ca.ca))"
+            private_key: "((nats_server_cert.private_key))"
+            certificate: "((nats_server_cert.certificate))"
+        client:
+          tls:
+            ca: "((nats_ca.ca))"
+            private_key: "((nats_client_cert.private_key))"
+            certificate: "((nats_client_cert.certificate))"
     provides:
-      nats:
-        as: nats
+      nats-tls:
+        as: nats-tls
         shared: true
     release: nats
   - name: bpm
@@ -92,6 +105,10 @@ instance_groups:
             ca: ((service_discovery_ca.ca))
             certificate: ((service_discovery_server_tls.certificate))
             private_key: ((service_discovery_server_tls.private_key))
+      nats:
+        tls_enabled: true
+        cert_chain: "((nats_client_cert.certificate))"
+        private_key: "((nats_client_cert.private_key))"
     release: cf-networking
   - name: bpm
     release: bpm
@@ -136,6 +153,28 @@ variables:
     extended_key_usage:
     - client_auth
     - server_auth
+
+- name: nats_server_cert
+  type: certificate
+  update_mode: converge
+  options:
+    ca: nats_ca
+    common_name: nats.service.cf.internal
+    alternative_names:
+    - ((NATS_IP))
+    - nats.service.cf.internal
+    - "*.nats.service.cf.internal"
+    extended_key_usage:
+    - server_auth
+
+- name: nats_client_cert
+  type: certificate
+  update_mode: converge
+  options:
+    ca: nats_ca
+    common_name: nats_client
+    extended_key_usage:
+    - client_auth
 
 - name: service_discovery_server_tls
   type: certificate
