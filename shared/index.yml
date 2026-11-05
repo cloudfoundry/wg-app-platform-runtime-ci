@@ -11,6 +11,8 @@ environments:
 
   - name: bbl-routing-env
     bosh_lite: false
+    gcp_zone: northamaerica-northeast2-b
+    gcp_region: norhtamerica-northeast2
     pipeline_lock: routing-release-env-lock
   - name: bbl-diego-env
     bosh_lite: false
