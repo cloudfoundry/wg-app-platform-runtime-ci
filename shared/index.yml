@@ -5,9 +5,13 @@ environments:
   - name: bbl-nats-env
     bosh_lite: false
     pipeline_lock: nats-release-env-lock
+    gcp_zone: northamaerica-northeast2-b
+    gcp_region: northamerica-northeast2
   - name: bbl-hlthchk-env
     bosh_lite: false
     pipeline_lock: healthchecker-release-env-lock
+    gcp_zone: northamaerica-northeast2-b
+    gcp_region: northamerica-northeast2
 
   - name: bbl-routing-env
     bosh_lite: false
@@ -17,33 +21,53 @@ environments:
   - name: bbl-diego-env
     bosh_lite: false
     pipeline_lock: diego-release-env-lock
+    gcp_zone: northamaerica-northeast2-b
+    gcp_region: northamerica-northeast2
   - name: bbl-diego-protobuf-env
     bosh_lite: false
     pipeline_lock: diego-protobuf-env-lock
+    gcp_zone: northamaerica-northeast2-b
+    gcp_region: northamerica-northeast2
   - name: bbl-cfnetworking-env
     bosh_lite: false
     pipeline_lock: cf-networking-release-env-lock
+    gcp_zone: northamaerica-northeast2-b
+    gcp_region: northamerica-northeast2
   - name: bbl-garden-env
     bosh_lite: false
     pipeline_lock: garden-runc-release-env-lock
+    gcp_zone: northamaerica-northeast2-b
+    gcp_region: northamerica-northeast2
   - name: bbl-nfs-volume-env
     bosh_lite: false
     pipeline_lock: nfs-volume-release-env-lock
+    gcp_zone: northamaerica-northeast2-b
+    gcp_region: northamerica-northeast2
   - name: bbl-smb-volume-env
     bosh_lite: false
     pipeline_lock: smb-volume-release-env-lock
+    gcp_zone: northamaerica-northeast2-b
+    gcp_region: northamerica-northeast2
   - name: bbl-winc-env
     bosh_lite: false
     pipeline_lock: winc-release-env-lock
+    gcp_zone: northamaerica-northeast2-b
+    gcp_region: northamerica-northeast2
   - name: bbl-envoy-nginx-env
     bosh_lite: false
     pipeline_lock: envoy-nginx-release-env-lock
+    gcp_zone: northamaerica-northeast2-b
+    gcp_region: northamerica-northeast2
   - name: bbl-windows2019fs-env
     bosh_lite: false
     pipeline_lock: windows2019fs-release-env-lock
+    gcp_zone: northamaerica-northeast2-b
+    gcp_region: northamerica-northeast2
   - name: bbl-windowsfs-online-env
     bosh_lite: false
     pipeline_lock: windowsfs-online-release-env-lock
+    gcp_zone: northamaerica-northeast2-b
+    gcp_region: northamerica-northeast2
 
 supported_go_versions:
   - name: 1.27
