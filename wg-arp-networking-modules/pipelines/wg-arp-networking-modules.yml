@@ -282,6 +282,7 @@ jobs:
           DEPLOYMENT: windows-workers
           INSTANCE_GROUP: #@ instance_group
           BBL_STATE_DIR: concourse-env
+          ENVS: CGO_ENABLED=1
       - task: #@ "{}-mysql-windows".format(package.name)
         file: ci/shared/tasks/run-bin-test/windows.yml
 
