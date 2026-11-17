@@ -105,6 +105,7 @@ jobs:
       BBL_STATE_DIR: concourse-env
   - task: build-push-groot-windows-dockerfile
     file: ci/winc-release/tasks/build-push-groot-windows-dockerfile/windows.yml
+    tags: [ winc-docker-images-link ]
     params:
       ENVS: |
         IMAGE_NAME=cloudfoundry/groot-windows-test
@@ -152,6 +153,7 @@ jobs:
       BBL_STATE_DIR: concourse-env
   - task: build-push-groot-windows-dockerfile
     file: ci/winc-release/tasks/build-push-groot-windows-dockerfile/windows.yml
+    tags: [ winc-docker-images-regularfile ]
     params:
       ENVS: |
         IMAGE_NAME=cloudfoundry/groot-windows-test
@@ -199,6 +201,7 @@ jobs:
       BBL_STATE_DIR: concourse-env
   - task: build-push-groot-windows-dockerfile
     file: ci/winc-release/tasks/build-push-groot-windows-dockerfile/windows.yml
+    tags: [ winc-docker-images-servercore ]
     params:
       ENVS: |
         IMAGE_NAME=cloudfoundry/groot-windows-test
@@ -246,6 +249,7 @@ jobs:
       BBL_STATE_DIR: concourse-env
   - task: build-push-groot-windows-dockerfile
     file: ci/winc-release/tasks/build-push-groot-windows-dockerfile/windows.yml
+    tags: [ winc-docker-images-whiteout ]
     params:
       ENVS: |
         IMAGE_NAME=cloudfoundry/groot-windows-test
