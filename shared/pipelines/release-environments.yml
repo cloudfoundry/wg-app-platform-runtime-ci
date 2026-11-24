@@ -111,11 +111,73 @@ jobs:
             params:
               repository: updated-bbl-state
               rebase: true
+#@ if getattr(env, "director_size_ops", False):
+    #! bbl-up regenerates create-director.sh from its built-in template on every run, which
+    #! drops any hand-added -o lines. Overlay the upstream plan-patch with a
+    #! create-director-override.sh (the supported hook) that keeps the director-size ops file.
+    - task: prepare-director-size-patch
+      image: image
+      config:
+        platform: linux
+        inputs:
+        - name: bbl
+        outputs:
+        - name: bbl-config-with-director-size
+        run:
+          path: bash
+          args:
+          - -ec
+          - |
+            patch_dir=bbl-config-with-director-size/plan-patches/iso-segs-gcp
+            mkdir -p "${patch_dir}/bbl-ops-files/gcp"
+            cp -r bbl/plan-patches/iso-segs-gcp/. "${patch_dir}/"
+
+            cat > "${patch_dir}/bbl-ops-files/gcp/bosh-director-size-ops.yml" <<'OPS'
+            # Bigger/faster director so `bosh export-release` for Windows stemcells
+            # (multi-GB windows2019fs package) doesn't stall on I/O and swap.
+            - type: replace
+              path: /resource_pools/name=vms/cloud_properties/machine_type
+              value: e2-standard-4
+            - type: replace
+              path: /resource_pools/name=vms/cloud_properties/root_disk_type
+              value: pd-ssd
+            - type: replace
+              path: /resource_pools/name=vms/cloud_properties/root_disk_size_gb
+              value: 150
+            - type: replace
+              path: /disk_pools/name=disks/disk_size
+              value: 102400
+            - type: replace
+              path: /disk_pools/name=disks/cloud_properties/type
+              value: pd-ssd
+            OPS
+
+            cat > "${patch_dir}/create-director-override.sh" <<'SCRIPT'
+            #!/bin/sh
+            bosh create-env \
+              ${BBL_STATE_DIR}/bosh-deployment/bosh.yml \
+              --state  ${BBL_STATE_DIR}/vars/bosh-state.json \
+              --vars-store  ${BBL_STATE_DIR}/vars/director-vars-store.yml \
+              --vars-file  ${BBL_STATE_DIR}/vars/director-vars-file.yml \
+              -o  ${BBL_STATE_DIR}/bosh-deployment/gcp/cpi.yml \
+              -o  ${BBL_STATE_DIR}/bosh-deployment/jumpbox-user.yml \
+              -o  ${BBL_STATE_DIR}/bosh-deployment/uaa.yml \
+              -o  ${BBL_STATE_DIR}/bosh-deployment/credhub.yml \
+              -o  ${BBL_STATE_DIR}/bbl-ops-files/gcp/bosh-director-ephemeral-ip-ops.yml \
+              -o  ${BBL_STATE_DIR}/bbl-ops-files/gcp/bosh-director-size-ops.yml \
+              --var-file  gcp_credentials_json="${BBL_GCP_SERVICE_ACCOUNT_KEY_PATH}" \
+              -v  project_id="${BBL_GCP_PROJECT_ID}" \
+              -v  zone="${BBL_GCP_ZONE}"
+            SCRIPT
+            chmod +x "${patch_dir}/create-director-override.sh"
+#@ end
     - task: bbl-up
       file: cf-deployment-concourse-tasks/bbl-up/task.yml
       input_mapping:
 #@ if env.bosh_lite:
         bbl-config: bbl-state
+#@ elif getattr(env, "director_size_ops", False):
+        bbl-config: bbl-config-with-director-size
 #@ else:
         bbl-config: bbl
 #@ end

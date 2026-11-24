@@ -63,11 +63,13 @@ environments:
     pipeline_lock: windows2019fs-release-env-lock
     gcp_zone: northamaerica-northeast2-b
     gcp_region: northamerica-northeast2
+    director_size_ops: true
   - name: bbl-windowsfs-online-env
     bosh_lite: false
     pipeline_lock: windowsfs-online-release-env-lock
     gcp_zone: northamaerica-northeast2-b
     gcp_region: northamerica-northeast2
+    director_size_ops: true
 
 supported_go_versions:
   - name: 1.27
